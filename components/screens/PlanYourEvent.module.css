@@ -1,0 +1,30 @@
+.bg_div_top {
+  background-image: url("/assets/background/bg-planyourevent-1.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  width: 100%;
+  height: auto;
+  min-height: calc((100vw * 465) / 1400);
+  background-position-x: center;
+  background-position-y: bottom;
+}
+@media only screen and (max-width: 600px) {
+  .bg_div_top {
+    background-image: url("/assets/background/bg-planyourevent-mobile.png");
+  }
+}
+.bg_div_bottom {
+  background-image: url("/assets/background/bg-planyourevent-2.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  width: 100%;
+  height: auto;
+  min-height: calc((100vw * 155) / 1399);
+  background-position-x: center;
+  background-position-y: top;
+}
+@media only screen and (max-width: 600px) {
+  .bg_div_bottom {
+    background: rgba(255, 255, 255, 1);
+  }
+}

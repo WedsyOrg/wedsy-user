@@ -1,0 +1,487 @@
+# Wedsy Event Management System - Cursor Rules
+
+## Overview
+This is a comprehensive event management system for wedding planning with multi-step forms, event day management, decoration planning, and admin approval workflows. The system handles event creation, decoration selection, pricing, and finalization processes.
+
+## System Architecture
+
+### Frontend Structure
+- **Framework**: Next.js with React
+- **Styling**: Tailwind CSS with custom design system
+- **State Management**: React hooks (useState, useEffect, useCallback, useMemo)
+- **Routing**: Next.js dynamic routes with query parameters
+- **Authentication**: JWT token-based with localStorage
+
+### Backend Structure
+- **Framework**: Express.js with Node.js
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT middleware with role-based access
+- **API Design**: RESTful endpoints with proper HTTP methods
+
+## Core Components & Pages
+
+### 1. Event Creation Flow (`/pages/event/index.js`)
+
+#### Multi-Step Form System
+- **Step 1**: Event name + Community selection
+- **Step 2**: Event day details (name, venue, date, time) in 2x2 grid
+- **Step 3**: Event summary with "Add more days" and "View event" options
+
+#### Component Architecture
+```javascript
+// Memoized form components for performance
+const EventFormStep1 = React.memo(({ data, errors, onChange, onSubmit }) => { ... });
+const EventFormStep2 = React.memo(({ data, errors, onChange, onSubmit, eventName }) => { ... });
+const EventFormStep3 = React.memo(({ data, eventName, onAddMoreDays, onViewEvent }) => { ... });
+const ClipboardVisual = React.memo(() => { ... });
+```
+
+#### State Management
+```javascript
+const [formStep, setFormStep] = useState(1);
+const [data, setData] = useState({
+  name: "",
+  community: "",
+  eventDay: "",
+  time: "",
+  date: "",
+  venue: "",
+});
+const [validationErrors, setValidationErrors] = useState({});
+```
+
+#### Performance Optimizations
+- **React.memo**: Prevents unnecessary re-renders
+- **useCallback**: Optimizes function references
+- **useMemo**: Caches validation calculations
+- **Debounced validation**: Real-time field validation without performance impact
+
+### 2. Event Detail Page (`/pages/event/[event_id]/index.js`)
+
+#### Purpose
+- Display existing event details
+- Manage event days (add, edit, delete)
+- Navigate to event planner
+
+#### Key Features
+- **Desktop Layout**: 2-column grid with form and visual elements
+- **Mobile Layout**: Stacked layout with touch-optimized interactions
+- **Event Day Management**: CRUD operations for event days
+- **Form Integration**: Connected form inputs with proper state management
+
+#### State Structure
+```javascript
+const [event, setEvent] = useState({});
+const [displayForm, setDisplayForm] = useState(false);
+const [data, setData] = useState({
+  name: "",
+  time: "",
+  date: "",
+  venue: "",
+  _id: "",
+});
+```
+
+#### API Integration
+- **GET**: `/event/${event_id}` - Fetch event details
+- **POST**: `/event/${event_id}/eventDay` - Create new event day
+- **PUT**: `/event/${event_id}/eventDay/${dayId}` - Update event day
+- **DELETE**: `/event/${event_id}/eventDay/${dayId}` - Delete event day
+
+### 3. Event Planner (`/pages/event/[event_id]/planner.js`)
+
+#### Purpose
+- Decoration selection and customization
+- Pricing calculations
+- Event day management
+- Notes and documentation
+
+#### Key Features
+- **Category Management**: Fetch and display decoration categories
+- **Platform & Flooring**: Price calculations for setup requirements
+- **Decor Items**: Add, edit, remove decoration items
+- **Packages**: Pre-configured decoration packages
+- **Custom Items**: User-defined items with pricing
+- **Notes System**: User and admin notes for each item
+- **Finalization**: Mark event days as complete
+
+#### Complex State Management
+```javascript
+const [event, setEvent] = useState({});
+const [eventDay, setEventDay] = useState();
+const [categoryList, setCategoryList] = useState([]);
+const [platformPrice, setPlatformPrice] = useState({ price: 0, image: "" });
+const [flooringPrice, setFlooringPrice] = useState([]);
+const [notes, setNotes] = useState({
+  open: false,
+  edit: false,
+  loading: false,
+  event_id: "",
+  eventDay: "",
+  decor_id: "",
+  package_id: "",
+  admin_notes: "",
+  user_notes: "",
+});
+```
+
+## Data Models & API Structure
+
+### Event Model Schema
+```javascript
+{
+  user: ObjectId (ref: User),
+  eventAccess: [String],
+  name: String (required),
+  community: String,
+  eventPlanner: String,
+  eventNotes: String,
+  eventType: String,
+  eventDays: [{
+    name: String (required),
+    date: String (required),
+    time: String (required),
+    venue: String (required),
+    notes: String,
+    decorItems: [DecorItemSchema],
+    packages: [PackageSchema],
+    customItems: [CustomItemSchema],
+    mandatoryItems: [MandatoryItemSchema],
+    status: {
+      finalized: Boolean,
+      approved: Boolean,
+      paymentDone: Boolean,
+      completed: Boolean
+    }
+  }],
+  status: {
+    finalized: Boolean,
+    approved: Boolean,
+    paymentDone: Boolean,
+    completed: Boolean,
+    lost: Boolean
+  },
+  amount: {
+    total: Number,
+    due: Number,
+    paid: Number,
+    discount: Number,
+    preTotal: Number,
+    costPrice: Number,
+    sellingPrice: Number,
+    summary: [EventDaySummarySchema]
+  }
+}
+```
+
+### API Endpoints Structure
+
+#### Event Management
+- `POST /event` - Create new event
+- `GET /event` - Get all user events
+- `GET /event/:_id` - Get specific event
+- `PUT /event/:_id` - Update event details
+- `DELETE /event` - Delete events (admin only)
+
+#### Event Day Management
+- `POST /event/:_id/eventDay` - Add new event day
+- `PUT /event/:_id/eventDay/:eventDay` - Update event day
+- `DELETE /event/:_id/eventDay/:eventDay` - Delete event day
+
+#### Decoration Management
+- `POST /event/:_id/decor/:dayId` - Add decoration item
+- `PUT /event/:_id/decor/:dayId` - Update decoration item
+- `DELETE /event/:_id/decor/:dayId` - Remove decoration item
+- `PUT /event/:_id/decor/:dayId/add-ons` - Update add-ons
+- `PUT /event/:_id/decor/:dayId/included` - Update included items
+- `PUT /event/:_id/decor/:dayId/primary-color` - Update primary color
+- `PUT /event/:_id/decor/:dayId/secondary-color` - Update secondary color
+- `PUT /event/:_id/decor/:dayId/setup-location-image` - Update setup image
+
+#### Package Management
+- `POST /event/:_id/decor-package/:dayId` - Add decoration package
+- `DELETE /event/:_id/decor-package/:dayId` - Remove decoration package
+
+#### Event Finalization
+- `POST /event/:_id/finalize/:dayId` - Finalize event day
+- `POST /event/:_id/finalize` - Finalize entire event
+- `POST /event/:_id/approve/:dayId` - Approve event day (admin)
+- `POST /event/:_id/approve` - Approve entire event (admin)
+
+#### Notes Management
+- `PUT /event/:_id/notes/:eventDay` - Update event day notes
+- `PUT /event/:_id/eventDay/:eventDay/notes` - Update item notes
+
+## Design System & UI Patterns
+
+### Color Scheme
+- **Page Background**: `#F4F4F4`
+- **Form Background**: `#F4DBD5`
+- **Primary Black**: `#000000`
+- **Accent Red**: `#840032`
+- **Text Colors**: `#2B3F6C`, `#5F3D30`
+- **White Separator**: `border-gray-200`
+
+### Typography
+- **Font Family**: Montserrat
+- **Main Titles**: `text-6xl font-semibold` (desktop), `text-2xl font-semibold` (mobile)
+- **Form Labels**: `text-2xl font-medium`
+- **Body Text**: `text-xl font-light` (desktop), `text-sm font-light` (mobile)
+- **Tracking**: `tracking-[0.1em]` for headers
+
+### Layout Patterns
+- **Desktop**: 2-column grid layouts with form left, visual right
+- **Mobile**: Single column with stacked elements
+- **Grid Systems**: CSS Grid (`grid-cols-2`, `grid-cols-3`, `grid-cols-5`)
+- **Spacing**: Consistent `gap-4`, `gap-6`, `gap-8` patterns
+- **Padding**: `p-6`, `p-8`, `py-4`, `px-6`, `py-8`
+
+### Component Styling
+```javascript
+// Form inputs
+className="w-full rounded-2xl p-4 text-center border-0 bg-white 
+           focus:outline-none focus:ring-2 focus:ring-pink-300 text-gray-600"
+
+// Buttons
+className="bg-[#000000] rounded-2xl p-4 px-12 text-white w-max mx-auto 
+           transition-colors duration-200 text-lg font-medium hover:cursor-pointer"
+
+// Cards
+className="bg-white rounded-3xl p-8 shadow-md"
+```
+
+## State Management Patterns
+
+### Form State Management
+```javascript
+// Controlled components with validation
+const handleDataChange = useCallback((e) => {
+  const { name, value } = e.target;
+  setData((prev) => ({ ...prev, [name]: value }));
+  validateField(name, value);
+}, [validateField]);
+
+// Real-time validation
+const validateField = useCallback((name, value) => {
+  const errors = { ...validationErrors };
+  if (!value.trim()) {
+    errors[name] = `${name.charAt(0).toUpperCase() + name.slice(1)} is required`;
+  } else {
+    delete errors[name];
+  }
+  setValidationErrors(errors);
+}, [validationErrors]);
+```
+
+### API State Management
+```javascript
+// Loading states
+const [isLoading, setIsLoading] = useState(true);
+const [isSubmitting, setIsSubmitting] = useState(false);
+
+// Error handling
+.catch((error) => {
+  console.error("Error:", error);
+  // Handle error state
+});
+```
+
+### Complex Object State
+```javascript
+// Nested state updates
+const updateDecorItem = (dayId, decorId, updates) => {
+  setEvent(prev => ({
+    ...prev,
+    eventDays: prev.eventDays.map(day => 
+      day._id === dayId 
+        ? {
+            ...day,
+            decorItems: day.decorItems.map(item =>
+              item.decor._id === decorId ? { ...item, ...updates } : item
+            )
+          }
+        : day
+    )
+  }));
+};
+```
+
+## Performance Optimization Guidelines
+
+### React Optimization
+- **React.memo**: Use for form components and visual elements
+- **useCallback**: Wrap event handlers and API calls
+- **useMemo**: Cache expensive calculations and validations
+- **Lazy Loading**: Load components only when needed
+
+### API Optimization
+- **Debounced Requests**: Prevent excessive API calls
+- **Caching**: Store frequently accessed data
+- **Error Boundaries**: Handle component errors gracefully
+- **Loading States**: Show skeleton screens instead of spinners
+
+### Bundle Optimization
+- **Dynamic Imports**: Load heavy components on demand
+- **Image Optimization**: Use Next.js Image component
+- **Code Splitting**: Split routes and components
+- **Tree Shaking**: Remove unused code
+
+## Authentication & Security
+
+### JWT Token Management
+```javascript
+// Token storage and retrieval
+const token = localStorage.getItem("token");
+
+// API headers
+headers: {
+  "Content-Type": "application/json",
+  authorization: `Bearer ${token}`,
+}
+
+// Login check
+if (!userLoggedIn) {
+  setOpenLoginModal(true);
+  return;
+}
+```
+
+### Role-Based Access
+- **User**: Can create, edit, and finalize their own events
+- **Admin**: Can approve, manage all events, and access admin features
+- **Token Validation**: Server-side token verification for all protected routes
+
+## Error Handling Patterns
+
+### API Error Handling
+```javascript
+.then((response) => response.json())
+.then((response) => {
+  if (response.message !== "error") {
+    // Success handling
+  } else {
+    // Error handling
+    router.push("/event");
+  }
+})
+.catch((error) => {
+  console.error("Error:", error);
+  router.push("/event");
+});
+```
+
+### Form Validation
+```javascript
+// Real-time validation with user feedback
+{errors.fieldName && (
+  <p className="text-red-500 text-sm mt-2 text-center">
+    {errors.fieldName}
+  </p>
+)}
+```
+
+### Loading States
+```javascript
+// Conditional rendering based on loading state
+if (isLoading) {
+  return <EventPageSkeleton formStep={formStep} />;
+}
+```
+
+## Mobile Responsiveness
+
+### Breakpoint Strategy
+- **Mobile First**: Design for mobile, enhance for desktop
+- **Breakpoints**: `md:` prefix for desktop styles
+- **Touch Optimization**: Larger touch targets, proper spacing
+
+### Mobile-Specific Features
+- **MobileStickyFooter**: 4-icon navigation footer
+- **Touch-Friendly**: Optimized button sizes and spacing
+- **Responsive Images**: Proper scaling for different screen sizes
+- **Stacked Layouts**: Single column layouts for mobile
+
+## Testing & Quality Assurance
+
+### Component Testing
+- Test form validation logic
+- Test API integration
+- Test responsive behavior
+- Test accessibility features
+
+### Performance Testing
+- Monitor bundle size
+- Test loading times
+- Monitor API response times
+- Test memory usage
+
+## Deployment & Environment
+
+### Environment Variables
+```javascript
+// API Configuration
+process.env.NEXT_PUBLIC_API_URL
+
+// Authentication
+localStorage.getItem("token")
+```
+
+### Build Optimization
+- **Production Builds**: Optimize for performance
+- **Static Generation**: Use Next.js static generation where possible
+- **Image Optimization**: Use Next.js Image component
+- **Bundle Analysis**: Monitor bundle size and performance
+
+## Common Patterns & Best Practices
+
+### Component Structure
+```javascript
+// Standard component pattern
+export default function ComponentName({ props }) {
+  // State declarations
+  const [state, setState] = useState(initialValue);
+  
+  // Effect hooks
+  useEffect(() => {
+    // Side effects
+  }, [dependencies]);
+  
+  // Event handlers
+  const handleEvent = useCallback(() => {
+    // Event logic
+  }, [dependencies]);
+  
+  // Conditional rendering
+  if (loading) return <Skeleton />;
+  
+  return (
+    <div className="component-styles">
+      {/* Component JSX */}
+    </div>
+  );
+}
+```
+
+### API Integration Pattern
+```javascript
+const fetchData = useCallback(async () => {
+  try {
+    setIsLoading(true);
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${token}`,
+      },
+    });
+    const result = await response.json();
+    setData(result);
+  } catch (error) {
+    console.error("Error:", error);
+  } finally {
+    setIsLoading(false);
+  }
+}, [dependencies]);
+```
+
+This comprehensive system handles the complete event management lifecycle from creation to finalization, with robust state management, performance optimizations, and responsive design patterns.

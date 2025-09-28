@@ -1,0 +1,6 @@
+.navbar__links {
+  min-width: 50%;
+}
+.navbar__links ul {
+  justify-content: space-between;
+}

@@ -1,0 +1,9 @@
+.bg_main_section {
+  background-image: url("/assets/background/bg-decor-page.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  width: 100%;
+  height: auto;
+  background-position-x: center;
+  background-position-y: center;
+}

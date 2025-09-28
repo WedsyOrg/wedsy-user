@@ -1,0 +1,19 @@
+.main__div {
+  background-image: url("/assets/background/bg-weddings_made_easy.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  width: 100%;
+  height: 100vh;
+  background-position-x: center;
+  background-position-y: center;
+  /* height: calc(100vw * 847 / 1400); */
+}
+@media only screen and (max-width: 600px) {
+  .main__div {
+    background-image: url("/assets/background/bg-weddings_made_easy-mobile.png");
+    height: auto !important ;
+    /* background-attachment: scroll; */
+    background-size: auto 100vh;
+    background-position: top;
+  }
+}

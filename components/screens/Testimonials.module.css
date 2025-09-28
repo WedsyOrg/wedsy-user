@@ -1,0 +1,15 @@
+.customers_div {
+  background-image: url("/assets/background/bg-customers_love.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  width: 100%;
+  height: 100vh;
+  background-position-x: center;
+  background-position-y: center;
+}
+@media only screen and (max-width: 600px) {
+  .customers_div {
+    height: auto !important ;
+    background: rgba(244, 203, 225, 1);
+  }
+}
