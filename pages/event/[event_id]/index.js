@@ -1,10 +1,10 @@
 import React from "react";
 import Image from "next/image";
-import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
-import { BiMap, BiSolidEditAlt, BiTrashAlt } from "react-icons/bi";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import {BsArrowLeft, BsArrowRight} from "react-icons/bs";
+import {BiMap, BiSolidEditAlt, BiTrashAlt} from "react-icons/bi";
+import {useEffect, useState, useCallback, useMemo} from "react";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import {useRouter} from "next/router";
 
 // Clipboard Visual Component
 const ClipboardVisual = React.memo(() => (
@@ -31,7 +31,44 @@ export default function EventTool() {
     venue: "",
     _id: "",
   });
-  const { event_id } = router.query;
+  const {event_id} = router.query;
+
+  // Helpers: determine the correct event date to display and sort by
+  const formatDisplayDate = useCallback((isoLike) => {
+    if (!isoLike) return "";
+    const d = new Date(isoLike);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  }, []);
+
+  const getEventSortDate = useCallback((e) => {
+    const candidates = [];
+    if (e?.eventDays?.length && e.eventDays[0]?.date)
+      candidates.push(new Date(e.eventDays[0].date));
+    if (e?.eventDate) candidates.push(new Date(e.eventDate));
+    if (e?.date && e?.createdAt && e.date !== e.createdAt)
+      candidates.push(new Date(e.date));
+    if (e?.createdAt) candidates.push(new Date(e.createdAt));
+    const valid = candidates.find((d) => !Number.isNaN(d.getTime()));
+    return valid || new Date(0);
+  }, []);
+
+  const getEventDisplayDate = useCallback(
+    (e) => {
+      if (e?.eventDays?.length && e.eventDays[0]?.date)
+        return formatDisplayDate(e.eventDays[0].date);
+      if (e?.eventDate) return formatDisplayDate(e.eventDate);
+      if (e?.date && e?.createdAt && e.date !== e.createdAt)
+        return formatDisplayDate(e.date);
+      if (e?.createdAt) return formatDisplayDate(e.createdAt);
+      return "";
+    },
+    [formatDisplayDate]
+  );
 
   const fetchEvents = useCallback(async () => {
     try {
@@ -43,18 +80,25 @@ export default function EventTool() {
         },
       });
       const result = await response.json();
-      setEvents(result);
+      const enriched = (Array.isArray(result) ? result : [])
+        .map((e) => ({
+          ...e,
+          _displayDate: getEventDisplayDate(e),
+          _sortTs: getEventSortDate(e).getTime(),
+        }))
+        .sort((a, b) => a._sortTs - b._sortTs); // FIFO by actual event date
+      setEvents(enriched);
     } catch (error) {
       console.error("Error fetching events:", error);
     }
-  }, []);
+  }, [getEventDisplayDate, getEventSortDate]);
 
   const fetchEvent = () => {
     if (!event_id) return; // Don't fetch if no event_id
-    
+
     // Only fetch if we're on the current event details page, not planner
     if (router.pathname !== `/event/[event_id]`) return;
-    
+
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/event/${event_id}`, {
       method: "GET",
       headers: {
@@ -76,7 +120,7 @@ export default function EventTool() {
         // Don't redirect on error - just log it
       });
   };
-  
+
   const deleteEventDay = (dayId) => {
     fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/event/${event_id}/eventDay/${dayId}`,
@@ -99,7 +143,7 @@ export default function EventTool() {
         // Don't redirect on error - just log it
       });
   };
-  
+
   const handleEventDay = () => {
     if (data._id) {
       fetch(
@@ -115,9 +159,9 @@ export default function EventTool() {
       )
         .then((response) => response.json())
         .then((response) => {
-          const { _id } = data;
+          const {_id} = data;
           fetchEvent();
-          setData({ name: "", time: "", date: "", venue: "", _id: "" });
+          setData({name: "", time: "", date: "", venue: "", _id: ""});
           console.log(response);
           router.push(`/event/${event_id}/planner?eventDay=${_id}`);
         })
@@ -136,34 +180,34 @@ export default function EventTool() {
         .then((response) => response.json())
         .then((response) => {
           fetchEvent();
-          setData({ name: "", time: "", date: "", venue: "", _id: "" });
+          setData({name: "", time: "", date: "", venue: "", _id: ""});
         })
         .catch((error) => {
           console.error("There was a problem with the fetch operation:", error);
         });
     }
   };
-  
+
   useEffect(() => {
     if (event_id) {
       fetchEvent();
     }
     fetchEvents();
   }, [event_id, fetchEvents]);
-  
+
   return (
     <>
       {/* Invisible Scrollbar Styles */}
       <style jsx>{`
         .scrollbar-hide {
-          -ms-overflow-style: none;  /* Internet Explorer 10+ */
-          scrollbar-width: none;  /* Firefox */
+          -ms-overflow-style: none; /* Internet Explorer 10+ */
+          scrollbar-width: none; /* Firefox */
         }
-        .scrollbar-hide::-webkit-scrollbar { 
-          display: none;  /* Safari and Chrome */
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none; /* Safari and Chrome */
         }
       `}</style>
-      
+
       {/* Desktop View */}
       <div className="hidden md:block bg-[#F4F4F4] min-h-screen">
         {/* Header */}
@@ -171,17 +215,25 @@ export default function EventTool() {
           <div className="px-24 py-8">
             <div
               className="text-black text-[30px] font-medium tracking-[0.1em]"
-              style={{ fontFamily: "Montserrat" }}
+              style={{fontFamily: "Montserrat"}}
             >
               MY EVENT
             </div>
           </div>
           <div className="w-full h-[3px] bg-white"></div>
-          
+
           {/* Description Paragraph */}
           <div className="px-24 py-8">
-            <div className="text-[20px] leading-relaxed" style={{ color: "#5F3D30", fontFamily: "Montserrat" ,fontWeight: "500"}}>
-              Congratulations! Your event has been successfully created! You can <br/> now begin adding your requirements from the Wedding Store.
+            <div
+              className="text-[20px] leading-relaxed"
+              style={{
+                color: "#5F3D30",
+                fontFamily: "Montserrat",
+                fontWeight: "500",
+              }}
+            >
+              Congratulations! Your event has been successfully created! You can{" "}
+              <br /> now begin adding your requirements from the Wedding Store.
             </div>
           </div>
         </div>
@@ -197,7 +249,7 @@ export default function EventTool() {
                   <div className="text-center text-[20px] md:text-2xl font-medium text-black">
                     YOUR EVENTS
                   </div>
-                  
+
                   {/* Events List with Invisible Scroll */}
                   <div className="mb-8">
                     <div className="max-h-[235px] overflow-y-auto scrollbar-hide">
@@ -210,22 +262,27 @@ export default function EventTool() {
                               className="flex flex-row justify-between items-center py-2 hover:text-pink-600 transition-colors"
                             >
                               <div className="flex items-center gap-4">
-                                <span className="text-lg font-medium text-black" style={{ fontFamily: "Montserrat" }}>
+                                <span
+                                  className="text-lg font-medium text-black"
+                                  style={{fontFamily: "Montserrat"}}
+                                >
                                   {index + 1}.
                                 </span>
-                                <span className="text-lg font-medium text-black" style={{ fontFamily: "Montserrat" }}>
+                                <span
+                                  className="text-lg font-medium text-black"
+                                  style={{fontFamily: "Montserrat"}}
+                                >
                                   {eventItem.name}
                                 </span>
                               </div>
                               <div className="flex items-center gap-4 text-sm text-gray-600">
-                                <span style={{ fontFamily: "Montserrat" }}>
-                                  {new Date(eventItem.createdAt).toLocaleDateString('en-GB', { 
-                                    day: 'numeric',
-                                    month: 'short', 
-                                    year: 'numeric' 
-                                  })}
+                                <span style={{fontFamily: "Montserrat"}}>
+                                  {eventItem._displayDate}
                                 </span>
-                                <BsArrowRight size={16} className="text-gray-400" />
+                                <BsArrowRight
+                                  size={16}
+                                  className="text-gray-400"
+                                />
                               </div>
                             </Link>
                           ))}
@@ -235,8 +292,15 @@ export default function EventTool() {
                           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <span className="text-2xl">🎉</span>
                           </div>
-                          <p className="text-gray-500 text-lg mb-2" style={{ fontFamily: "Montserrat" }}>No events yet</p>
-                          <p className="text-gray-400 text-sm">Create your first event to get started!</p>
+                          <p
+                            className="text-gray-500 text-lg mb-2"
+                            style={{fontFamily: "Montserrat"}}
+                          >
+                            No events yet
+                          </p>
+                          <p className="text-gray-400 text-sm">
+                            Create your first event to get started!
+                          </p>
                         </div>
                       )}
                     </div>
@@ -271,7 +335,7 @@ export default function EventTool() {
                 placeholder="EVENT DAY (eg: Reception)"
                 name="name"
                 value={data.name}
-                onChange={(e) => setData({ ...data, name: e.target.value })}
+                onChange={(e) => setData({...data, name: e.target.value})}
               />
               <div className="grid grid-cols-2 gap-8 w-full">
                 <input
@@ -280,7 +344,7 @@ export default function EventTool() {
                   placeholder="DATE"
                   name="date"
                   value={data.date}
-                  onChange={(e) => setData({ ...data, date: e.target.value })}
+                  onChange={(e) => setData({...data, date: e.target.value})}
                 />
                 <input
                   type="time"
@@ -288,7 +352,7 @@ export default function EventTool() {
                   placeholder="START TIME"
                   name="time"
                   value={data.time}
-                  onChange={(e) => setData({ ...data, time: e.target.value })}
+                  onChange={(e) => setData({...data, time: e.target.value})}
                 />
               </div>
               <input
@@ -297,7 +361,7 @@ export default function EventTool() {
                 placeholder="VENUE"
                 name="venue"
                 value={data.venue}
-                onChange={(e) => setData({ ...data, venue: e.target.value })}
+                onChange={(e) => setData({...data, venue: e.target.value})}
               />
               <button
                 className="bg-black disabled:bg-neutral-700 rounded-full p-2 px-12 text-white w-max mx-auto"
@@ -322,17 +386,25 @@ export default function EventTool() {
             </Link>
             <div
               className="text-black text-[24px] font-medium tracking-[0.1em]"
-              style={{ fontFamily: "Montserrat" }}
+              style={{fontFamily: "Montserrat"}}
             >
               MY EVENT
             </div>
           </div>
           <div className="w-full h-[2px] bg-white mx-6"></div>
-          
+
           {/* Description Paragraph */}
           <div className="px-6 py-4">
-            <div className="text-[16px] leading-relaxed" style={{ color: "#5F3D30", fontFamily: "Montserrat", fontWeight: "500"}}>
-              Congratulations! Your event has been successfully created! You can now begin adding your requirements from the Wedding Store.
+            <div
+              className="text-[16px] leading-relaxed"
+              style={{
+                color: "#5F3D30",
+                fontFamily: "Montserrat",
+                fontWeight: "500",
+              }}
+            >
+              Congratulations! Your event has been successfully created! You can
+              now begin adding your requirements from the Wedding Store.
             </div>
           </div>
         </div>
@@ -345,10 +417,13 @@ export default function EventTool() {
               <div className="text-center text-[20px] md:text-2xl font-medium text-black">
                 YOUR EVENTS
               </div>
-              
+
               {/* Events List with Invisible Scroll */}
               <div className="mb-6">
-                <div className="text-base font-semibold mb-3 text-gray-700" style={{ fontFamily: "Montserrat" }}>
+                <div
+                  className="text-base font-semibold mb-3 text-gray-700"
+                  style={{fontFamily: "Montserrat"}}
+                >
                   Your Events
                 </div>
                 <div className="max-h-[200px] overflow-y-auto scrollbar-hide">
@@ -361,20 +436,22 @@ export default function EventTool() {
                           className="flex flex-row justify-between items-center py-2 hover:text-pink-600 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="text-base font-medium text-black" style={{ fontFamily: "Montserrat" }}>
+                            <span
+                              className="text-base font-medium text-black"
+                              style={{fontFamily: "Montserrat"}}
+                            >
                               {index + 1}.
                             </span>
-                            <span className="text-base font-medium text-black" style={{ fontFamily: "Montserrat" }}>
+                            <span
+                              className="text-base font-medium text-black"
+                              style={{fontFamily: "Montserrat"}}
+                            >
                               {eventItem.name}
                             </span>
                           </div>
                           <div className="flex items-center gap-3 text-xs text-gray-600">
-                            <span style={{ fontFamily: "Montserrat" }}>
-                              {new Date(eventItem.createdAt).toLocaleDateString('en-GB', { 
-                                day: 'numeric',
-                                month: 'short', 
-                                year: 'numeric' 
-                              })}
+                            <span style={{fontFamily: "Montserrat"}}>
+                              {eventItem._displayDate}
                             </span>
                             <BsArrowRight size={14} className="text-gray-400" />
                           </div>
@@ -386,8 +463,15 @@ export default function EventTool() {
                       <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                         <span className="text-xl">🎉</span>
                       </div>
-                      <p className="text-gray-500 text-base mb-1" style={{ fontFamily: "Montserrat" }}>No events yet</p>
-                      <p className="text-gray-400 text-sm">Create your first event to get started!</p>
+                      <p
+                        className="text-gray-500 text-base mb-1"
+                        style={{fontFamily: "Montserrat"}}
+                      >
+                        No events yet
+                      </p>
+                      <p className="text-gray-400 text-sm">
+                        Create your first event to get started!
+                      </p>
                     </div>
                   )}
                 </div>

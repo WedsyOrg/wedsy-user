@@ -606,12 +606,12 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                   BACKDROPS
                 </span>
               </h2>
-              <a
+              <Link
                 href="/decor/view"
                 className="hidden md:block absolute right-4 text-[14px] sm:text-[16px] underline text-black font-medium font-['Montserrat'] cursor-pointer"
               >
                 see more
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -715,12 +715,12 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* See More Button */}
             <div className="flex justify-center mt-4">
-              <a
+              <Link
                 href="/decor/view"
                 className="text-[16px] underline text-black font-medium font-['Montserrat']"
               >
                 See More
-              </a>
+              </Link>
             </div>
           </div>
         </section>
@@ -736,12 +736,12 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                   GRAND ENTRY
                 </span>
               </h2>
-              <a
+              <Link
                 href="/decor/view"
                 className="hidden md:block absolute right-4 text-[14px] sm:text-[16px] underline text-black font-medium font-['Montserrat'] cursor-pointer"
               >
                 see more
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -845,12 +845,12 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* See More Button */}
             <div className="flex justify-center mt-4">
-              <a
+              <Link
                 href="/decor/view"
                 className="text-[16px] underline text-black font-medium font-['Montserrat']"
               >
                 See More
-              </a>
+              </Link>
             </div>
           </div>
         </section>
@@ -1017,12 +1017,12 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                   MANDAPS
                 </span>
               </h2>
-              <a
+              <Link
                 href="/decor/view"
                 className="hidden md:block absolute right-4 text-[14px] sm:text-[16px] underline text-black font-medium font-['Montserrat'] cursor-pointer"
               >
                 see more
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -1126,12 +1126,12 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* See More Button */}
             <div className="flex justify-center mt-4">
-              <a
+              <Link
                 href="/decor/view"
                 className="text-[16px] underline text-black font-medium font-['Montserrat']"
               >
                 See More
-              </a>
+              </Link>
             </div>
           </div>
         </section>
@@ -1147,12 +1147,12 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                   FURNITURE
                 </span>
               </h2>
-              <a
+              <Link
                 href="/decor/view"
                 className="hidden md:block absolute right-4 text-[14px] sm:text-[16px] underline text-black font-medium font-['Montserrat'] cursor-pointer"
               >
                 see more
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -1256,12 +1256,12 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* See More Button */}
             <div className="flex justify-center mt-4">
-              <a
+              <Link
                 href="/decor/view"
                 className="text-[16px] underline text-black font-medium font-['Montserrat']"
               >
                 See More
-              </a>
+              </Link>
             </div>
           </div>
         </section>
@@ -1277,12 +1277,12 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 </span>
                 <span className="ml-1">DESIGNS</span>
               </h2>
-              <a
+              <Link
                 href="/decor/view"
                 className="hidden md:block absolute right-4 text-[14px] sm:text-[16px] underline text-black font-medium font-['Montserrat'] cursor-pointer"
               >
                 see more
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -1431,12 +1431,12 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
               </div>
             </div>
             <div className="flex justify-center mt-4">
-              <a
+              <Link
                 href="/decor/view"
                 className="text-[16px] underline text-black font-medium font-['Montserrat']"
               >
                 See More
-              </a>
+              </Link>
             </div>
           </div>
         </section>

@@ -38,11 +38,11 @@ export default function EventToolSidebar({
                       "Mandap",
                     ].indexOf(b.category)
                 )
-                .map((item, index) =>
+                .map((item) =>
                   displayKey === `decor-${item.decor._id}` ? (
                     <div
                       className="font-medium text-lg flex flex-row gap-2 items-center pl-2"
-                      key={index}
+                      key={`decor-${item.decor._id}`}
                     >
                       {item.category}
                       <span className="h-px flex-grow bg-black"></span>
@@ -50,7 +50,7 @@ export default function EventToolSidebar({
                   ) : (
                     <div
                       className="text-gray-700 cursor-pointer"
-                      key={index}
+                      key={`decor-${item.decor._id}`}
                       onClick={() =>
                         handlePlannerClick(`decor-${item.decor._id}`)
                       }
@@ -67,11 +67,11 @@ export default function EventToolSidebar({
                       (i) => i.category === r.name
                     ).length > 0
                 )
-                .map((item, index) =>
+                .map((item) =>
                   displayKey === `category-${item.name}` ? (
                     <div
                       className="font-medium text-lg flex flex-row gap-2 items-center pl-2"
-                      key={index}
+                      key={`category-${item.name}`}
                     >
                       {item.name}
                       <span className="h-px flex-grow bg-black"></span>
@@ -79,7 +79,7 @@ export default function EventToolSidebar({
                   ) : (
                     <div
                       className="text-gray-700 cursor-pointer"
-                      key={index}
+                      key={`category-${item.name}`}
                       onClick={() =>
                         handlePlannerClick(`category-${item.name}`)
                       }
@@ -97,11 +97,11 @@ export default function EventToolSidebar({
               Decor Packages
             </p>
             <div className="flex flex-col gap-2">
-              {tempEventDay?.packages.map((item, index) =>
+              {tempEventDay?.packages.map((item) =>
                 displayKey === `package-${item.package._id}` ? (
                   <div
                     className="font-medium text-lg flex flex-row gap-2 items-center pl-2"
-                    key={index}
+                    key={`package-${item.package._id}`}
                   >
                     {item.package.name}
                     <span className="h-px flex-grow bg-black"></span>
@@ -109,7 +109,7 @@ export default function EventToolSidebar({
                 ) : (
                   <div
                     className="text-gray-700 cursor-pointer"
-                    key={index}
+                    key={`package-${item.package._id}`}
                     onClick={() =>
                       handlePlannerClick(`package-${item.package._id}`)
                     }
@@ -138,10 +138,10 @@ export default function EventToolSidebar({
             )}
           </div>
         )}
-        
+
         {/* Summary Section - Always show if there are any items */}
-        {(tempEventDay?.decorItems?.length > 0 || 
-          tempEventDay?.packages?.length > 0 || 
+        {(tempEventDay?.decorItems?.length > 0 ||
+          tempEventDay?.packages?.length > 0 ||
           tempEventDay?.customItems?.length > 0) && (
           <div className="flex flex-col gap-3 pl-3 font-medium text-xl">
             {displayKey === `event-summary` ? (

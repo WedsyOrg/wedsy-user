@@ -439,7 +439,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               src="/assets/images/bidding-mobile.png"
               className="w-full h-full"
             />
-            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-full px-12 flex flex-row w-full">
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-full px-12 flex flex-row">
               <button
                 className="bg-[#840032] text-white rounded-lg w-full grow text-center px-auto py-2 font-medium"
                 onClick={() => {
@@ -1536,7 +1536,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               src="/assets/images/bidding-mobile-success.png"
               className="w-full h-full"
             />
-            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-full px-12 flex flex-row w-full">
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-full px-12 flex flex-row">
               <button
                 className="bg-[#840032] text-white rounded-lg w-full grow text-center px-auto py-2 font-medium"
                 onClick={() => {
