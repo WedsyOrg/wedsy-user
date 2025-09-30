@@ -24,6 +24,15 @@ export default function EventToolHeader({
               <BsArrowLeft size={24} />
             </Link>
           )}
+          {allowEdit && (
+            <button
+              type="button"
+              onClick={() => onEditEvent?.()}
+              className="md:hidden ml-2"
+            >
+              <BiEditAlt size={20} />
+            </button>
+          )}
           <div className="hidden md:flex items-center gap-2">
             {allowEdit && (
               <Link href={`/event/${event_id}`} className="hidden md:block">

@@ -298,6 +298,9 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
   const router = useRouter();
   const [events, setEvents] = useState([]);
   const [formStep, setFormStep] = useState(1);
+  const [previousFormStep, setPreviousFormStep] = useState(1);
+  const [lastCompletedDay, setLastCompletedDay] = useState(null);
+  const [isAddingAdditionalDay, setIsAddingAdditionalDay] = useState(false);
   const [data, setData] = useState({
     name: "",
     community: "",
@@ -580,24 +583,36 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
         // Step 1 validation failed
         return;
       }
+      setPreviousFormStep(1);
       setFormStep(2);
     } else if (formStep === 2) {
       if (!data.eventDay || !data.venue || !data.date || !data.time) {
         // Step 2 validation failed
         return;
       }
+      setPreviousFormStep(2);
+      setLastCompletedDay({...data});
+      setIsAddingAdditionalDay(false);
       setFormStep(3);
     }
   }, [formStep, data]);
 
   const handlePrevStep = useCallback(() => {
     if (formStep > 1) {
-      setFormStep(formStep - 1);
+      if (formStep === 2 && (previousFormStep === 3 || isAddingAdditionalDay)) {
+        if (lastCompletedDay) {
+          setData(lastCompletedDay);
+        }
+        setIsAddingAdditionalDay(false);
+        setFormStep(3);
+      } else {
+        setFormStep(formStep - 1);
+      }
     } else if (formStep === 1) {
       // If we're on the first step, go back to the previous page in history
       router.back();
     }
-  }, [formStep, router]);
+  }, [formStep, previousFormStep, isAddingAdditionalDay, lastCompletedDay, router]);
 
   const handleAddMoreDays = useCallback(() => {
     setData((prev) => ({
@@ -607,7 +622,9 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
       date: "",
       time: "",
     }));
+    setPreviousFormStep(3);
     setFormStep(2);
+    setIsAddingAdditionalDay(true);
   }, []);
 
   const handleViewEvent = useCallback(() => {
@@ -825,6 +842,18 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
     );
   }
 
+  const deriveEventDisplayName = (event) => {
+    if (event?.eventDays?.length) {
+      const sortedDays = [...event.eventDays].sort((a, b) => {
+        const dateA = new Date(a.updatedAt || a.date || 0);
+        const dateB = new Date(b.updatedAt || b.date || 0);
+        return dateB - dateA;
+      });
+      return sortedDays[0]?.name || event.name;
+    }
+    return event?.eventDay || event?.name || "";
+  };
+
   return (
     <>
       {/* Desktop View */}
@@ -925,10 +954,7 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
               </div>
               <div className="flex flex-col gap-2" key={`events-${refreshKey}`}>
                 {events.map((item, index) => {
-                  const dayLabel = item?.eventDays?.[0]?.name
-                    ? item.eventDays[0].name
-                    : item?.eventDay || "";
-                  console.log(`Event ${item.name} day label:`, dayLabel);
+                  const displayName = deriveEventDisplayName(item);
                   return (
                     <div
                       className="flex flex-row justify-between items-center"
@@ -938,8 +964,7 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
                         href={`/event/${item._id}`}
                         className="text-lg hover:text-pink-600 transition-colors"
                       >
-                        {index + 1}. {item.name}
-                        {dayLabel ? ` • ${dayLabel}` : ""}
+                        {index + 1}. {displayName}
                       </Link>
                       <div className="text-gray-500">
                         {getEventDisplayDate(item)}
@@ -1045,10 +1070,7 @@ Utilize the tool to shortlist and choose your decorations effortlessly - all in 
                 key={`mobile-events-${refreshKey}`}
               >
                 {events.map((item, index) => {
-                  const dayLabel = item?.eventDays?.[0]?.name
-                    ? item.eventDays[0].name
-                    : item?.eventDay || "";
-                  console.log(`Mobile Event ${item.name} day label:`, dayLabel);
+                  const displayName = deriveEventDisplayName(item);
                   return (
                     <div
                       className="flex flex-row justify-between items-center"
@@ -1058,8 +1080,7 @@ Utilize the tool to shortlist and choose your decorations effortlessly - all in 
                         href={`/event/${item._id}`}
                         className="text-sm hover:text-pink-600 transition-colors"
                       >
-                        {index + 1}. {item.name}
-                        {dayLabel ? ` • ${dayLabel}` : ""}
+                        {index + 1}. {displayName}
                       </Link>
                       <div className="text-xs text-gray-500">
                         {getEventDisplayDate(item)}
