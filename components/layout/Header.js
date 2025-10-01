@@ -79,9 +79,47 @@ export default function Header({ userLoggedIn, user, Logout }) {
           <button className="p-0 m-0 bg-transparent border-none hover:cursor-pointer">
             <FiSearch className="w-[28px] h-[28px] text-[#2C365A] hover:text-[#840032] transition-colors duration-200" />
           </button>
-          <Link href="/chats" className="hover:cursor-pointer">
-            <FaRegUserCircle className="w-[28px] h-[28px] text-[#2C365A] hover:text-[#840032] transition-colors duration-200" />
-          </Link>
+          <Dropdown
+            inline
+            arrowIcon={false}
+            label={
+              <FaRegUserCircle className="w-[28px] h-[28px] text-[#2C365A] hover:text-[#840032] transition-colors duration-200" />
+            }
+            className="w-44"
+          >
+            {userLoggedIn ? (
+              <>
+                <Dropdown.Header as={Link} href="/my-account">
+                  <span className="block text-sm truncate">{user?.name || "My Account"}</span>
+                </Dropdown.Header>
+                <Dropdown.Item as={Link} href="/my-account">
+                  My Account
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} href="/my-bids">
+                  My Bids
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} href="/my-orders">
+                  Orders
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} href="/event">
+                  Events
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} href="/chats">
+                  Chats
+                </Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item className="flex items-center gap-2" onClick={Logout}>
+                  <BiLogOut />
+                  Logout
+                </Dropdown.Item>
+              </>
+            ) : (
+              <Dropdown.Item as={Link} href="/login" className="flex items-center gap-2">
+                <BiLogIn />
+                Login
+              </Dropdown.Item>
+            )}
+          </Dropdown>
         </div>
       </div>
       {/* Desktop Header */}

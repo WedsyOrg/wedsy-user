@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { BsArrowLeft } from "react-icons/bs";
+import {BsArrowLeft} from "react-icons/bs";
 import EventToolShareButton from "./EventToolShareButton";
-import { BiEditAlt } from "react-icons/bi";
-import { AiOutlinePlusSquare } from "react-icons/ai";
+import {BiEditAlt} from "react-icons/bi";
+import {AiOutlinePlusSquare} from "react-icons/ai";
 import EventToolAccessModal from "./EventToolAccessModal";
 
 export default function EventToolHeader({
@@ -13,6 +13,7 @@ export default function EventToolHeader({
   setAddEventDayModalOpen,
   event_id,
   allowEdit,
+  onEditEvent,
 }) {
   return (
     <>
@@ -23,14 +24,32 @@ export default function EventToolHeader({
               <BsArrowLeft size={24} />
             </Link>
           )}
-          <span className="mx-auto md:mr-0">{event.name}</span>
           {allowEdit && (
-            <Link
-              href={`/event/${event_id}`}
+            <button
+              type="button"
+              onClick={() => onEditEvent?.()}
+              className="md:hidden ml-2"
+            >
+              <BiEditAlt size={20} />
+            </button>
+          )}
+          <div className="hidden md:flex items-center gap-2">
+            {allowEdit && (
+              <Link href={`/event/${event_id}`} className="hidden md:block">
+                <BsArrowLeft size={20} />
+              </Link>
+            )}
+            <span className="mx-auto md:mr-0">{event.name}</span>
+          </div>
+          <span className="md:hidden mx-auto md:mr-0">{event.name}</span>
+          {allowEdit && (
+            <button
+              type="button"
+              onClick={() => onEditEvent?.()}
               className="hidden md:block ml-1 mr-1"
             >
               <BiEditAlt size={20} />
-            </Link>
+            </button>
           )}
           {allowEdit ? (
             <EventToolAccessModal

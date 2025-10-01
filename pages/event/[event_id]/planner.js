@@ -5,25 +5,26 @@ import DecorPackagesList from "@/components/event-tool/DecorPackagesList";
 import EventDayInfo from "@/components/event-tool/EventDayInfo";
 import EventSummaryTable from "@/components/event-tool/EventSummaryTable";
 import EventToolHeader from "@/components/event-tool/EventToolHeader";
+import EventEditModal from "@/components/event-tool/EventEditModal";
 import EventToolSidebar from "@/components/event-tool/EventToolSidebar";
 import MandatoryItemsList from "@/components/event-tool/MandatoryItemsList";
 import NotesModal from "@/components/event-tool/NotesModal";
 import SetupLocationImageModal from "@/components/event-tool/SetupLocationImageModal";
 import TotalSummaryTable from "@/components/event-tool/TotalSummaryTable";
-import { toPriceString } from "@/utils/text";
+import {toPriceString} from "@/utils/text";
 import Link from "next/link";
-import { useRouter } from "next/router";
-import { useEffect, useRef, useState } from "react";
+import {useRouter} from "next/router";
+import React, {useEffect, useRef, useState} from "react";
 
-export default function EventTool({ user }) {
+export default function EventTool({user}) {
   const divRef = useRef(null);
   const plannerRef = useRef(null);
-  const [divSize, setDivSize] = useState({ width: 0, height: 0 });
+  const [divSize, setDivSize] = useState({width: 0, height: 0});
   const [displayKey, setDisplayKey] = useState("");
   const router = useRouter();
   const [event, setEvent] = useState({});
   const [eventDay, setEventDay] = useState();
-  const { event_id } = router.query;
+  const {event_id} = router.query;
   const [loading, setLoading] = useState(false);
   const [setupLocationImage, setSetupLocationImage] = useState({
     open: false,
@@ -40,8 +41,9 @@ export default function EventTool({ user }) {
     admin_notes: "",
     user_notes: "",
   });
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [addEventDayModalOpen, setAddEventDayModalOpen] = useState(false);
-  const [platformPrice, setPlatformPrice] = useState({ price: 0, image: "" });
+  const [platformPrice, setPlatformPrice] = useState({price: 0, image: ""});
   const [flooringPrice, setFlooringPrice] = useState([]);
   const [categoryList, setCategoryList] = useState([]);
   const fetchCategoryList = () => {
@@ -272,10 +274,10 @@ export default function EventTool({ user }) {
   useEffect(() => {
     const handleResize = () => {
       if (divRef.current) {
-        const { width, height } = divRef.current.getBoundingClientRect();
-        const { top } = divRef.current.getBoundingClientRect();
+        const {width, height} = divRef.current.getBoundingClientRect();
+        const {top} = divRef.current.getBoundingClientRect();
         const totalHeight = window.innerHeight;
-        setDivSize({ width, height: totalHeight - top });
+        setDivSize({width, height: totalHeight - top});
       }
     };
     // Call handleResize initially to set the initial size
@@ -315,7 +317,7 @@ export default function EventTool({ user }) {
       }
     }
   };
-  const RemoveDecorFromEvent = ({ decor_id }) => {
+  const RemoveDecorFromEvent = ({decor_id}) => {
     fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/event/${event_id}/decor/${eventDay}`,
       {
@@ -340,7 +342,7 @@ export default function EventTool({ user }) {
         console.error("There was a problem with the fetch operation:", error);
       });
   };
-  const RemovePackageFromEvent = ({ package_id }) => {
+  const RemovePackageFromEvent = ({package_id}) => {
     fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/event/${event_id}/decor-package/${eventDay}`,
       {
@@ -373,6 +375,13 @@ export default function EventTool({ user }) {
         UpdateNotes={UpdateNotes}
         allowEdit={true}
       />
+      <EventEditModal
+        show={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        event={event}
+        onSaved={fetchEvent}
+        eventDayId={eventDay}
+      />
       <SetupLocationImageModal
         setSetupLocationImage={setSetupLocationImage}
         setupLocationImage={setupLocationImage}
@@ -394,11 +403,12 @@ export default function EventTool({ user }) {
           setAddEventDayModalOpen={setAddEventDayModalOpen}
           allowEdit={true}
           event_id={event_id}
+          onEditEvent={() => setEditModalOpen(true)}
         />
         <div
           className="grid md:grid-cols-5 gap-6 py-4 overflow-hidden hide-scrollbar grow"
           ref={divRef}
-          style={{ height: divSize.height ?? "100vh" }}
+          style={{height: divSize.height ?? "100vh"}}
         >
           <EventToolSidebar
             tempEventDay={event.eventDays?.filter((i) => i._id === eventDay)[0]}
@@ -413,8 +423,8 @@ export default function EventTool({ user }) {
           >
             {event.eventDays
               ?.filter((i) => i._id === eventDay)
-              ?.map((tempEventDay, tempIndex) => (
-                <>
+              ?.map((tempEventDay) => (
+                <React.Fragment key={tempEventDay._id}>
                   <EventDayInfo
                     tempEventDay={tempEventDay}
                     status={event?.status}
@@ -542,7 +552,7 @@ export default function EventTool({ user }) {
                       )}
                     </>
                   )}
-                </>
+                </React.Fragment>
               ))}
           </div>
         </div>
