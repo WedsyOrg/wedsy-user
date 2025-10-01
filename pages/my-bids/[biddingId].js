@@ -29,6 +29,7 @@ export default function Orders({ user }) {
   const [editCity, setEditCity] = useState("");
   const [editDate, setEditDate] = useState("");
   const [editTime, setEditTime] = useState("");
+  const [chatMap, setChatMap] = useState({});
   const openEdit = () => {
     setEditCity(bidding?.requirements?.city || "");
     const d = bidding?.events?.[0];
@@ -76,6 +77,29 @@ export default function Orders({ user }) {
       })
       .catch((error) => {
         console.error("There was a problem with the fetch operation:", error);
+      });
+  };
+
+  const fetchChats = () => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
+      .then((response) => (response.ok ? response.json() : []))
+      .then((response) => {
+        const map = {};
+        (response || []).forEach((chat) => {
+          if (chat?.vendor?._id) {
+            map[chat.vendor._id] = chat._id;
+          }
+        });
+        setChatMap(map);
+      })
+      .catch((error) => {
+        console.error("Unable to fetch chats:", error);
       });
   };
   const ViewBid = (_id) => {
@@ -154,6 +178,7 @@ export default function Orders({ user }) {
     }
     if (biddingId) {
       fetchBidding();
+      fetchChats();
     }
   }, [biddingId]);
 
@@ -368,14 +393,23 @@ export default function Orders({ user }) {
               />
             </div>
             <div className="flex items-center space-x-4 my-2">
-              <p className="text-xl ">New Quotations</p>
+              <p className="text-xl ">Vendor Quotations</p>
               <div className="flex-grow border-t border-gray-300" />
               <div className="flex items-center justify-center w-6 h-6 bg-rose-900 text-white rounded-full text-xs">
-                {((bidding?.bids ?? []).filter((i) => !i?.status?.userViewed)).length}
+                {(bidding?.bids ?? []).filter((i) => !i?.status?.userRejected).length}
               </div>
             </div>
+            {(bidding?.bids ?? []).filter((i) => !i?.status?.userRejected).length === 0 && (
+              <div className="text-sm text-gray-500 p-4 bg-white rounded-xl">
+                No quotations yet.
+              </div>
+            )}
             {bidding?.bids
-              ?.filter((i) => !i?.status?.userViewed)
+              ?.filter((i) => {
+                if (i?.status?.userRejected || i?.status?.userAccepted) return false;
+                const vendorId = i?.vendor?._id;
+                return !vendorId || !chatMap[vendorId];
+              })
               ?.map((item, index) => (
                 <div
                   key={item?._id}
@@ -397,13 +431,33 @@ export default function Orders({ user }) {
                         {toPriceString(item?.bid)}
                       </span>
                     </p>
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <button
+                        className="inline-flex items-center px-3 py-1 text-sm rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100"
+                        onClick={() => {
+                          router.push(`/makeup-and-beauty/artists/${item?.vendor?._id}`);
+                        }}
+                      >
+                        View Profile
+                      </button>
+                      <button
+                        className="inline-flex items-center px-3 py-1 text-sm rounded-full bg-[#2B3F6C] text-white hover:bg-[#1c294a]"
+                        onClick={() => {
+                          AcceptBid(item?._id);
+                        }}
+                      >
+                        Accept & Chat
+                      </button>
+                    </div>
                     <MdOutlineChevronRight
                       className="absolute right-0 top-1/2 -translate-y-1/2 transition-transform duration-200 group-hover:translate-x-1"
                       size={24}
                       cursor={"pointer"}
                       onClick={() => {
                         setView(item._id);
-                        ViewBid(item?._id);
+                        if (!item?.status?.userViewed) {
+                          ViewBid(item?._id);
+                        }
                       }}
                     />
                   </div>
@@ -413,7 +467,12 @@ export default function Orders({ user }) {
               {/* left cards of vendor for All dimensions*/}
             <div className="w-full border-t border-gray-300" />
             {bidding?.bids
-              ?.filter((i) => i?.status?.userViewed && !i?.status?.userRejected)
+              ?.filter((i) => {
+                if (i?.status?.userRejected) return false;
+                const vendorId = i?.vendor?._id;
+                const hasChat = vendorId && chatMap[vendorId];
+                return i?.status?.userViewed || i?.status?.userAccepted || hasChat;
+              })
               ?.map((item, index) => (
                 <div
                   key={item?._id}
@@ -441,6 +500,35 @@ export default function Orders({ user }) {
                         {toPriceString(item?.bid)}
                       </span>
                     </p>
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <button
+                        className="inline-flex items-center px-3 py-1 text-sm rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100"
+                        onClick={() => {
+                          router.push(`/makeup-and-beauty/artists/${item?.vendor?._id}`);
+                        }}
+                      >
+                        View Profile
+                      </button>
+                      {chatMap[item?.vendor?._id] ? (
+                        <button
+                          className="inline-flex items-center px-3 py-1 text-sm rounded-full bg-[#2B3F6C] text-white hover:bg-[#1c294a]"
+                          onClick={() => {
+                            router.push(`/chats/${chatMap[item?.vendor?._id]}`);
+                          }}
+                        >
+                          Open Chat
+                        </button>
+                      ) : (
+                        <button
+                          className="inline-flex items-center px-3 py-1 text-sm rounded-full bg-[#2B3F6C] text-white hover:bg-[#1c294a]"
+                          onClick={() => {
+                            AcceptBid(item?._id);
+                          }}
+                        >
+                          Accept & Chat
+                        </button>
+                      )}
+                    </div>
                     <MdOutlineChevronRight
                       className="absolute right-0 top-1/2 -translate-y-1/2 transition-transform duration-200 group-hover:translate-x-1"
                       size={24}

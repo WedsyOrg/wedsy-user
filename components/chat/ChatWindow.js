@@ -16,6 +16,7 @@ export default function ChatWindow({ user }) {
   const { chatId } = router.query;
 
   const fetchChatMessages = () => {
+    if (!chatId) return;
     setLoading(true);
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/${chatId}?read=true`, {
       method: "GET",
@@ -34,7 +35,11 @@ export default function ChatWindow({ user }) {
       });
   };
 
-  const CreateChatMessage = () => {
+  const handleSendMessage = () => {
+    const trimmed = content.trim();
+    if (!trimmed || !chatId) {
+      return;
+    }
     setLoading(true);
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/${chatId}/content`, {
       method: "POST",
@@ -42,10 +47,10 @@ export default function ChatWindow({ user }) {
         "Content-Type": "application/json",
         authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify({ content, contentType: "Text" }),
+      body: JSON.stringify({ content: trimmed, contentType: "Text" }),
     })
       .then((response) => response.json())
-      .then((response) => {
+      .then(() => {
         setContent("");
         fetchChatMessages();
         setLoading(false);
@@ -59,7 +64,7 @@ export default function ChatWindow({ user }) {
     if (chatId) {
       fetchChatMessages();
     }
-  }, []);
+  }, [chatId]);
 
   return (
     <>
@@ -81,7 +86,7 @@ export default function ChatWindow({ user }) {
             />
           ))}
         </div>
-        <div class="p-2 flex items-center gap-2 bg-[#D9D9D9] relative">
+        <div class="p-2 flex items-center gap-2 bg-[#D9D9D9] border-t border-gray-300">
           <input
             id="messageInput"
             type="text"
@@ -91,13 +96,17 @@ export default function ChatWindow({ user }) {
             onChange={(e) => {
               setContent(e.target.value);
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+              }
+            }}
           />
           <button
-            className="absolute right-4"
-            disabled={false}
-            onClick={() => {
-              CreateChatMessage();
-            }}
+            className="p-2 rounded-full bg-[#840032] text-white disabled:bg-[#d1a4b6] disabled:text-white/70"
+            disabled={loading || !content.trim()}
+            onClick={handleSendMessage}
           >
             <VscSend size={24} />
           </button>

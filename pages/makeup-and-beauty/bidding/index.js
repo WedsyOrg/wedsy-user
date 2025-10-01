@@ -23,6 +23,8 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [display, setDisplay] = useState("HowItWorks"); // HowItWorks, Events, Makeup,  Complete, Success
   const [eventsCount, setEventsCount] = useState("");
+  const [eventsCountError, setEventsCountError] = useState("");
+  const eventsCountInputRef = useRef(null);
   const [eventIndex, setEventIndex] = useState(0);
   const [events, setEvents] = useState([]);
   const [requirements, setRequirements] = useState({
@@ -609,23 +611,46 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                   </p>
 
                   <TextInput
+                    ref={eventsCountInputRef}
                     className="bg-white"
                     type="number"
                     placeholder="Number of Events"
+                    min={1}
+                    step={1}
                     value={eventsCount}
                     onChange={(e) => {
-                      setEventsCount(e.target.value);
+                      const value = e.target.value.replace(/^0+(?=\d)/, "");
+                      if (value === "" || /^\d+$/.test(value)) {
+                        setEventsCount(value);
+                        if (eventsCountError) {
+                          setEventsCountError("");
+                        }
+                      }
+                    }}
+                    onWheel={(e) => e.currentTarget.blur()}
+                    onKeyDown={(e) => {
+                      if (["e", "E", "+", "-", "."].includes(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const value = e.target.value;
+                      if (value && Number.parseInt(value, 10) < 1) {
+                        setEventsCount("");
+                      }
                     }}
                   />
+                  {eventsCountError && (
+                    <p className="text-sm text-red-600 text-center">{eventsCountError}</p>
+                  )}
                   <button
                     className="bg-[#840032] text-white rounded-lg px-16 py-2 text-lg font-medium"
                     onClick={() => {
-                      if (parseInt(eventsCount) >= 1) {
+                      const count = Number.parseInt(eventsCount, 10);
+                      if (Number.isFinite(count) && count >= 1) {
                         setDisplay("Makeup");
                         setEvents(
-                          new Array(parseInt(eventsCount))
-                            ?.fill("")
-                            ?.map((_) => ({
+                          Array.from({ length: count }, () => ({
                               eventName: "",
                               date: "",
                               time: "",
@@ -644,7 +669,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                         );
                         setEventIndex(0);
                       } else {
-                        alert("Enter valid numbe of events");
+                        setEventsCountError("Please enter a valid number of events (minimum 1)");
                       }
                     }}
                   >
