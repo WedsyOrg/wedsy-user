@@ -52,10 +52,18 @@ export default function ChatWindow({ user }) {
       other.paymentDone || other.orderPaymentDone || other.paid
     );
 
-    if (
-      (!accepted && !rejected) ||
-      (contentType === "PersonalPackageAccepted" && (!other.order || !orderPaid))
-    ) {
+    // Check if payment is required
+    let paymentRequired = false;
+    
+    if (!accepted && !rejected) {
+      // Offer not yet accepted or rejected
+      paymentRequired = true;
+    } else if (accepted && other.order) {
+      // Offer accepted and order exists - check if payment is done
+      paymentRequired = !orderPaid;
+    }
+
+    if (paymentRequired) {
       setPaymentRequired(true);
       setPaymentMessage(
         contentType === "PersonalPackageAccepted"

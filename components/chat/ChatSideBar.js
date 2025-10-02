@@ -2,7 +2,7 @@ import { formatMessageTime } from "@/utils/chat";
 import { Avatar } from "flowbite-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaWhatsapp } from "react-icons/fa";
 
 export default function ChatSideBar({}) {
   const [chats, setChats] = useState([]);
@@ -36,7 +36,7 @@ export default function ChatSideBar({}) {
       <div
         className={`hide-scrollbar overflow-y-auto ${
           chatId ? "hidden md:flex" : "flex"
-        } flex-col bg-[#f4f4f4]`}
+        } flex-col bg-[#f4f4f4] relative`}
       >
         <div className="relative flex flex-row m-6">
           <button
@@ -95,6 +95,17 @@ export default function ChatSideBar({}) {
               </div>
             </div>
           ))}
+        
+        {/* WhatsApp Button - Bottom Left */}
+        <a
+          href="https://wa.me/916364849760"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-6 left-6 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-full p-4 shadow-lg transition-all duration-300 hover:scale-110 z-50"
+          aria-label="Contact us on WhatsApp"
+        >
+          <FaWhatsapp size={28} />
+        </a>
       </div>
     </>
   );

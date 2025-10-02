@@ -127,7 +127,8 @@ export default function ChatMessage({
       .then((response) => (response.ok ? response.json() : null))
       .then((response) => {
         if (response?.message === "success") {
-          AcceptBiddingBid(order_id);
+          // Just refresh chat messages - the backend already updated the order and chat content
+          fetchChatMessages();
         }
       })
       .catch((error) => {
@@ -226,6 +227,10 @@ export default function ChatMessage({
       chat?.other?.bidding
     ) {
       fetchBidding();
+      // Also fetch order if it exists (for payment status check)
+      if (chat?.other?.order) {
+        fetchOrder();
+      }
     }
   }, [chat]);
 
@@ -277,12 +282,14 @@ export default function ChatMessage({
             Offer Declined
           </div>
         )}
-        {chat?.other?.accepted && chat?.other?.order && (
+        {chat?.other?.accepted && chat?.other?.order && order?._id && order?.status?.paymentDone && (
           <div className="bg-[#22C55E] text-white text-center py-3 rounded-lg font-medium">
             Congratulations! Booking confirmed 🎉
           </div>
         )}
-        {!chat?.other?.accepted && !chat?.other?.rejected && !showGlobalCta && (
+        {((!chat?.other?.accepted && !chat?.other?.rejected) || 
+          (chat?.other?.accepted && chat?.other?.order && order?._id && !order?.status?.paymentDone)) && 
+          !showGlobalCta && (
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 max-w-sm self-start">
             <p className="text-sm text-gray-600 mb-3">Here's your custom offer</p>
             <div className="mb-4">
@@ -341,12 +348,14 @@ export default function ChatMessage({
             Offer Declined
           </div>
         )}
-        {chat?.other?.accepted && chat?.other?.order && (
+        {chat?.other?.accepted && chat?.other?.order && order?._id && order?.status?.paymentDone && (
           <div className="bg-[#22C55E] text-white text-center py-3 rounded-lg font-medium">
             Congratulations! Booking confirmed 🎉
           </div>
         )}
-        {!(chat?.other?.accepted || chat?.other?.rejected) && !showGlobalCta && (
+        {(!(chat?.other?.accepted || chat?.other?.rejected) || 
+          (chat?.other?.accepted && chat?.other?.order && order?._id && !order?.status?.paymentDone)) && 
+          !showGlobalCta && (
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 max-w-sm self-start">
             <p className="text-sm text-gray-600 mb-3">Here's your custom offer</p>
             <div className="mb-4">
