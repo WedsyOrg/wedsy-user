@@ -14,7 +14,8 @@ export default function FooterComponent() {
       // router?.pathname?.startsWith("/event") ||
       router.pathname === "/my-payments/[paymentId]/invoice" ||
       router?.pathname === "/makeup-and-beauty/bidding" ||
-      router?.pathname?.startsWith("/my-bids")
+      router?.pathname?.startsWith("/my-bids") ||
+      router?.pathname?.startsWith("/chats")
     ) {
       setDisplayFooter(false);
     }

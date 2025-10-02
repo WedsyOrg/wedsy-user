@@ -158,7 +158,8 @@ function App({ Component, pageProps }) {
         }}
       />
       <Script id="google-ads" strategy="lazyOnload" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5861954260216854" crossOrigin="anonymous" />
-      <Script id="interakt-kiwi-sdk" strategy="lazyOnload" src="https://app.interakt.ai/kiwi-sdk/kiwi-sdk-17-prod-min.js"
+      {/* WhatsApp widget removed - moved to ChatSideBar */}
+      {/* <Script id="interakt-kiwi-sdk" strategy="lazyOnload" src="https://app.interakt.ai/kiwi-sdk/kiwi-sdk-17-prod-min.js"
         onLoad={() => {
             if (
             router.pathname !== "/event/[event_id]/view" &&
@@ -174,7 +175,7 @@ function App({ Component, pageProps }) {
               }
             }
         }}
-      />
+      /> */}
       
       {/* GTM Noscript Fallback */}
       <noscript>
