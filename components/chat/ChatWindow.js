@@ -275,6 +275,12 @@ export default function ChatWindow({ user }) {
           email: user?.email,
           contact: user?.phone,
         },
+        modal: {
+          ondismiss: function () {
+            // User closed the payment modal without completing payment
+            resolve(false);
+          },
+        },
       };
       const paymentObject = new window.Razorpay(options);
       paymentObject.on("payment.failed", async function (response) {
@@ -341,6 +347,12 @@ export default function ChatWindow({ user }) {
 
   const handlePayNow = async () => {
     if (!blockingMessage) return;
+    console.log("====== PAY NOW CLICKED ======");
+    console.log("Blocking message:", blockingMessage);
+    console.log("Message type:", blockingMessage?.contentType);
+    console.log("Events in message:", blockingMessage?.other?.events);
+    console.log("============================");
+    
     setCtaError("");
     setCtaLoading(true);
     let success = false;
@@ -353,27 +365,37 @@ export default function ChatWindow({ user }) {
         }
       } else {
         const bidding = await fetchBidding(blockingMessage?.other?.bidding);
+        console.log("Fetched bidding:", bidding);
         if (bidding) {
           const bidDoc = bidding?.bids?.find((item) => item?._id === blockingMessage?.other?.biddingBid);
+          console.log("Bid document:", bidDoc);
           const vendorId = bidDoc?.vendor?._id;
           const amount =
             blockingMessage.contentType === "BiddingOffer"
               ? parseInt(blockingMessage?.content, 10)
               : bidDoc?.bid;
+          console.log("Vendor ID:", vendorId);
+          console.log("Amount:", amount);
+          
+          // Use events from message if available, otherwise fall back to bidding events
+          const eventsToUse = blockingMessage?.other?.events || bidding?.events;
+          console.log("Events to use for order:", eventsToUse);
+          
           if (vendorId && amount) {
             success = await createBiddingOrder({
-              events:
-                blockingMessage.contentType === "BiddingOffer"
-                  ? blockingMessage?.other?.events
-                  : bidding?.events,
+              events: eventsToUse,
               vendor: vendorId,
               bid: amount,
             });
+          } else {
+            console.error("Missing vendor ID or amount:", { vendorId, amount });
           }
+        } else {
+          console.error("No bidding data found");
         }
       }
       if (!success) {
-        setCtaError("Payment could not be initiated. Please try again.");
+        setCtaError("Payment was cancelled or could not be completed. Please try again.");
       }
     } catch (error) {
       console.error("Payment flow failed:", error);
@@ -434,13 +456,13 @@ export default function ChatWindow({ user }) {
 
   return (
     <>
-      <div className="md:col-span-2 h-full w-full hide-scrollbar overflow-y-auto flex flex-col bg-[#f4f4f4]">
-        <div className="bg-[#5F5F5F] text-white p-3 font-medium text-xl">
+      <div className="md:col-span-2 h-full w-full hide-scrollbar overflow-y-auto flex flex-col bg-white">
+        <div className="bg-white border-b border-gray-200 p-4 font-semibold text-lg text-gray-900">
           {chat?.vendor?.name}
         </div>
         <div
           id="chat-container"
-          className="flex-1 overflow-y-auto p-2 bg-gray-100 flex flex-col-reverse gap-2 hide-scrollbar"
+          className="flex-1 overflow-y-auto p-4 bg-white flex flex-col-reverse gap-3 hide-scrollbar"
         >
           {chat?.messages?.map((item, index) => (
             <ChatMessage
@@ -456,9 +478,57 @@ export default function ChatWindow({ user }) {
             />
           ))}
         </div>
-        <div className="p-2 flex flex-col md:flex-row md:items-center gap-2 bg-[#D9D9D9] border-t border-gray-300">
+        {showGlobalCta && (
+          <div className="px-4 py-6 bg-white border-t border-gray-200 space-y-4">
+            <div className="text-center text-xs tracking-wide text-gray-500">
+              Request accepted by the artist
+            </div>
+            <div className="mx-auto max-w-xs rounded-2xl bg-[#f5f5f5] p-4 text-center shadow">
+              <p className="text-sm text-gray-600">Offer received</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {blockingAmount !== null ? toPriceString(blockingAmount) : "--"}
+              </p>
+            </div>
+            <button
+              className="mx-auto block text-sm font-medium underline text-gray-700 hover:text-gray-900"
+              onClick={() => {
+                const element = document.getElementById("chat-container");
+                if (element) {
+                  element.scrollTo({
+                    top: element.scrollHeight,
+                    behavior: "smooth",
+                  });
+                }
+              }}
+            >
+              View details
+            </button>
+            {ctaError && (
+              <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-center text-sm text-red-700">
+                {ctaError}
+              </div>
+            )}
+            <div className="flex flex-col md:flex-row gap-3 justify-center">
+              <button
+                className="px-6 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg font-medium hover:bg-gray-50"
+                onClick={declineBlockingOffer}
+                disabled={ctaLoading}
+              >
+                Decline
+              </button>
+              <button
+                className="px-6 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-800 disabled:bg-gray-400"
+                onClick={handlePayNow}
+                disabled={ctaLoading}
+              >
+                {ctaLoading ? "Processing..." : "Accept & Pay"}
+              </button>
+            </div>
+          </div>
+        )}
+        <div className="p-4 flex flex-col md:flex-row md:items-center gap-2 bg-white border-t border-gray-200">
           {(paymentRequired || sendError) && (
-            <div className="w-full rounded-lg border border-red-300 bg-white px-4 py-2 text-sm text-red-700">
+            <div className="w-full rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-700">
               {paymentMessage || sendError}
             </div>
           )}
@@ -469,9 +539,9 @@ export default function ChatWindow({ user }) {
               placeholder={
                 paymentRequired
                   ? "Complete payment to continue chatting"
-                  : "Send message here..."
+                  : "Type a message..."
               }
-              className="flex-1 rounded-full pl-4 focus:outline-0 focus:ring-0 focus:ring-offset-0 pr-6"
+              className="flex-1 rounded-full pl-4 pr-6 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#840032] focus:border-transparent"
               value={content}
               onChange={(e) => {
                 setContent(e.target.value);
@@ -488,55 +558,14 @@ export default function ChatWindow({ user }) {
               disabled={paymentRequired || loading}
             />
             <button
-              className="p-2 rounded-full bg-[#840032] text-white disabled:bg-[#d1a4b6] disabled:text-white/70"
+              className="p-3 rounded-full bg-[#840032] text-white disabled:bg-gray-300 disabled:text-gray-500"
               disabled={loading || !content.trim() || paymentRequired}
               onClick={handleSendMessage}
             >
-              <VscSend size={24} />
+              <VscSend size={20} />
             </button>
           </div>
         </div>
-        {showGlobalCta && (
-          <div className="px-4 py-6 bg-white border-b border-gray-200 space-y-4">
-            <div className="text-center text-xs tracking-wide text-gray-500">
-              Request accepted by the artist
-            </div>
-            <div className="mx-auto max-w-xs rounded-2xl bg-[#f5f5f5] p-4 text-center shadow">
-              <p className="text-sm text-gray-600">Offer received</p>
-              <p className="text-2xl font-semibold text-gray-900">
-                {blockingAmount !== null ? toPriceString(blockingAmount) : "--"}
-              </p>
-            </div>
-            <button
-              className="mx-auto text-sm font-medium underline text-gray-700"
-              onClick={() => {
-                const element = document.getElementById("chat-container");
-                if (element) {
-                  element.scrollTo({ top: element.scrollHeight, behavior: "smooth" });
-                }
-              }}
-            >
-              View details
-            </button>
-            {ctaError && <div className="text-center text-sm text-red-600">{ctaError}</div>}
-            <div className="flex flex-col gap-3">
-              <button
-                className="w-full rounded-md bg-black py-3 text-white text-sm font-semibold disabled:bg-gray-500"
-                onClick={handlePayNow}
-                disabled={ctaLoading}
-              >
-                {ctaLoading ? "Processing..." : "Pay now"}
-              </button>
-              <button
-                className="w-full rounded-md border border-gray-300 py-3 text-sm font-semibold text-gray-700 disabled:opacity-60"
-                onClick={declineBlockingOffer}
-                disabled={ctaLoading}
-              >
-                Decline offer
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </>
   );
