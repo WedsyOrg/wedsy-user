@@ -1,7 +1,16 @@
 import { toPriceString } from "@/utils/text";
 import { useEffect, useState } from "react";
 
-export default function ChatMessage({ chat, index, user, fetchChatMessages }) {
+export default function ChatMessage({
+  chat,
+  index,
+  user,
+  fetchChatMessages,
+  conversation,
+  paymentRequired,
+  blockingMessageId,
+  showGlobalCta,
+}) {
   const [order, setOrder] = useState(null);
   const [bidding, setBidding] = useState(null);
   function fetchOrder() {
@@ -98,7 +107,7 @@ export default function ChatMessage({ chat, index, user, fetchChatMessages }) {
     })
       .then((response) => (response.ok ? response.json() : null))
       .then((response) => {
-        if (response.message === "success") {
+        if (response?.message === "success") {
           makePayment({ order_id: response.order_id, amount: response.amount });
         }
       })
@@ -117,7 +126,7 @@ export default function ChatMessage({ chat, index, user, fetchChatMessages }) {
     })
       .then((response) => (response.ok ? response.json() : null))
       .then((response) => {
-        if (response.message === "success") {
+        if (response?.message === "success") {
           AcceptBiddingBid(order_id);
         }
       })
@@ -197,7 +206,7 @@ export default function ChatMessage({ chat, index, user, fetchChatMessages }) {
     })
       .then((response) => response.json())
       .then((response) => {
-        if (response.message === "success") {
+        if (response?.message === "success") {
           CreatePayment(response.id, response.amount);
         } else {
           alert("Please try again later");
@@ -223,13 +232,13 @@ export default function ChatMessage({ chat, index, user, fetchChatMessages }) {
   if (chat?.contentType === "Text") {
     if (chat?.sender?.role === "user") {
       return (
-        <div class="p-2 bg-rose-900 text-white rounded-xl rounded-br-none shadow self-end px-6">
+        <div className="p-2 bg-rose-900 text-white rounded-xl rounded-br-none shadow self-end px-6">
           {chat?.content}
         </div>
       );
     } else if (chat?.sender?.role === "vendor") {
       return (
-        <div class="p-2 bg-[#F5F5F5] rounded-xl rounded-bl-none shadow self-start px-6">
+        <div className="p-2 bg-[#F5F5F5] rounded-xl rounded-bl-none shadow self-start px-6">
           {chat?.content}
         </div>
       );
@@ -245,22 +254,24 @@ export default function ChatMessage({ chat, index, user, fetchChatMessages }) {
         {order?._id && order?.amount?.due > 0 && (
           <>
             <div className="border-t w-full" />
-            <button
-              class="p-2 bg-black text-white rounded-lg shadow self-end px-6"
-              onClick={() => {
-                CreatePayment(order?._id, order?.amount?.due);
-              }}
-            >
-              Pay now
-            </button>
+            {!showGlobalCta && (
+              <button
+                className="p-2 bg-black text-white rounded-lg shadow self-end px-6"
+                onClick={() => {
+                  CreatePayment(order?._id, order?.amount?.due);
+                }}
+              >
+                Pay now
+              </button>
+            )}
             <div className="border-t w-full" />
           </>
         )}
-        <div class="p-2 bg-[#F5F5F5] shadow self-start px-6 underline cursor-pointer">
+        <div className="p-2 bg-[#F5F5F5] shadow self-start px-6 underline cursor-pointer">
           View details
           {/* --PendingWork-- */}
         </div>
-        <div class="p-2 bg-[#F5F5F5] rounded-xl rounded-bl-none shadow self-start px-6">
+        <div className="p-2 bg-[#F5F5F5] rounded-xl rounded-bl-none shadow self-start px-6">
           Package price
           <p className="text-2xl font-semibold">
             {toPriceString(order?.amount?.total)}
@@ -284,43 +295,46 @@ export default function ChatMessage({ chat, index, user, fetchChatMessages }) {
             Congratulations! Booking confirmed ✅
           </div>
         )}
-        {!(chat?.other?.accepted || chat?.other?.rejected) && (
+        {!chat?.other?.accepted && !chat?.other?.rejected && (
           <>
             <div className="border-t w-full" />
-            <div className="flex flex-row gap-4 justify-end">
-              <button
-                class="grow md:grow-0 p-2 bg-white text-black rounded-lg shadow px-6"
-                onClick={() => {
-                  DeclineBiddingBid();
-                }}
-              >
-                Decline
-              </button>
-              <button
-                class="grow md:grow-0 p-2 bg-black text-white rounded-lg shadow px-6"
-                onClick={() => {
-                  CreateBiddingOrder(
-                    bidding?.events,
-                    bidding?.bids?.find(
-                      (item) => item?._id === chat?.other?.biddingBid
-                    )?.vendor?._id,
-                    bidding?.bids?.find(
-                      (item) => item?._id === chat?.other?.biddingBid
-                    )?.bid
-                  );
-                }}
-              >
-                Accept & Pay
-              </button>
-            </div>
+            {((paymentRequired && blockingMessageId === chat?._id) ||
+              !conversation?.canUserMessage) && !showGlobalCta ? (
+              <div className="flex flex-row gap-4 justify-end">
+                <button
+                  className="grow md:grow-0 p-2 bg-white text-black rounded-lg shadow px-6"
+                  onClick={() => {
+                    DeclineBiddingBid();
+                  }}
+                >
+                  Decline
+                </button>
+                <button
+                  className="grow md:grow-0 p-2 bg-black text-white rounded-lg shadow px-6"
+                  onClick={() => {
+                    CreateBiddingOrder(
+                      bidding?.events,
+                      bidding?.bids?.find(
+                        (item) => item?._id === chat?.other?.biddingBid
+                      )?.vendor?._id,
+                      bidding?.bids?.find(
+                        (item) => item?._id === chat?.other?.biddingBid
+                      )?.bid
+                    );
+                  }}
+                >
+                  Accept & Pay
+                </button>
+              </div>
+            ) : null}
             <div className="border-t w-full" />
           </>
         )}
-        <div class="p-2 bg-[#F5F5F5] shadow self-start px-6 underline cursor-pointer">
+        <div className="p-2 bg-[#F5F5F5] shadow self-start px-6 underline cursor-pointer">
           View details
           {/* --PendingWork-- */}
         </div>
-        <div class="p-2 bg-[#F5F5F5] rounded-xl rounded-bl-none shadow self-start px-6">
+        <div className="p-2 bg-[#F5F5F5] rounded-xl rounded-bl-none shadow self-start px-6">
           Offer received
           <p className="text-2xl font-semibold">
             {toPriceString(
@@ -348,38 +362,40 @@ export default function ChatMessage({ chat, index, user, fetchChatMessages }) {
         {!(chat?.other?.accepted || chat?.other?.rejected) && (
           <>
             <div className="border-t w-full" />
-            <div className="flex flex-row gap-4 justify-end">
-              <button
-                class="grow md:grow-0 p-2 bg-white text-black rounded-lg shadow px-6"
-                onClick={() => {
-                  DeclineBiddingBid();
-                }}
-              >
-                Decline
-              </button>
-              <button
-                class="grow md:grow-0 p-2 bg-black text-white rounded-lg shadow px-6"
-                onClick={() => {
-                  CreateBiddingOrder(
-                    chat?.other?.events,
-                    bidding?.bids?.find(
-                      (item) => item?._id === chat?.other?.biddingBid
-                    )?.vendor?._id,
-                    parseInt(chat?.content)
-                  );
-                }}
-              >
-                Accept & Pay
-              </button>
-            </div>
+            {!showGlobalCta && (
+              <div className="flex flex-row gap-4 justify-end">
+                <button
+                  className="grow md:grow-0 p-2 bg-white text-black rounded-lg shadow px-6"
+                  onClick={() => {
+                    DeclineBiddingBid();
+                  }}
+                >
+                  Decline
+                </button>
+                <button
+                  className="grow md:grow-0 p-2 bg-black text-white rounded-lg shadow px-6"
+                  onClick={() => {
+                    CreateBiddingOrder(
+                      chat?.other?.events,
+                      bidding?.bids?.find(
+                        (item) => item?._id === chat?.other?.biddingBid
+                      )?.vendor?._id,
+                      parseInt(chat?.content)
+                    );
+                  }}
+                >
+                  Accept & Pay
+                </button>
+              </div>
+            )}
             <div className="border-t w-full" />
           </>
         )}
-        <div class="p-2 bg-[#F5F5F5] shadow self-start px-6 underline cursor-pointer">
+        <div className="p-2 bg-[#F5F5F5] shadow self-start px-6 underline cursor-pointer">
           View details
           {/* --PendingWork-- */}
         </div>
-        <div class="p-2 bg-[#F5F5F5] rounded-xl rounded-bl-none shadow self-start px-6">
+        <div className="p-2 bg-[#F5F5F5] rounded-xl rounded-bl-none shadow self-start px-6">
           Offer received
           <p className="text-2xl font-semibold">
             {toPriceString(parseInt(chat?.content))}
