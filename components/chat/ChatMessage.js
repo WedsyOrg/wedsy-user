@@ -257,20 +257,30 @@ export default function ChatMessage({
           </div>
         )}
         {order?._id && order?.amount?.due > 0 && !showGlobalCta && (
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 max-w-sm self-start">
-            <p className="text-sm text-gray-600 mb-3">Here's your custom offer</p>
-            <div className="mb-4">
-              <p className="text-xs text-gray-500 mb-1">Package price</p>
-              <p className="text-3xl font-bold text-gray-900">
+          <>
+            <div className="bg-white rounded-xl p-6 shadow-md max-w-xs self-start">
+              <p className="text-xs text-gray-500 mb-2">Package price</p>
+              <p className="text-4xl font-bold text-gray-900">
                 {toPriceString(order?.amount?.total)}
               </p>
             </div>
-            <button
-              className="w-full text-sm text-[#840032] font-medium underline mb-4"
-            >
-              View details
-            </button>
-          </div>
+            <div className="bg-white rounded-xl p-3 shadow-md max-w-xs self-start">
+              <button
+                className="text-sm text-blue-600 font-medium underline hover:text-blue-800 transition-colors"
+                onClick={() => {
+                  const element = document.getElementById("chat-container");
+                  if (element) {
+                    element.scrollTo({
+                      top: element.scrollHeight,
+                      behavior: "smooth",
+                    });
+                  }
+                }}
+              >
+                View details
+              </button>
+            </div>
+          </>
         )}
       </>
     );
@@ -290,11 +300,10 @@ export default function ChatMessage({
         {((!chat?.other?.accepted && !chat?.other?.rejected) || 
           (chat?.other?.accepted && chat?.other?.order && order?._id && !order?.status?.paymentDone)) && 
           !showGlobalCta && (
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 max-w-sm self-start">
-            <p className="text-sm text-gray-600 mb-3">Here's your custom offer</p>
-            <div className="mb-4">
-              <p className="text-xs text-gray-500 mb-1">Offer received</p>
-              <p className="text-3xl font-bold text-gray-900">
+          <>
+            <div className="bg-white rounded-xl p-6 shadow-md max-w-xs self-start">
+              <p className="text-xs text-gray-500 mb-2">Offer received</p>
+              <p className="text-4xl font-bold text-gray-900">
                 {toPriceString(
                   bidding?.bids?.find(
                     (item) => item?._id === chat?.other?.biddingBid
@@ -302,41 +311,54 @@ export default function ChatMessage({
                 )}
               </p>
             </div>
-            <button
-              className="w-full text-sm text-[#840032] font-medium underline mb-4"
-            >
-              View details
-            </button>
+            <div className="bg-white rounded-xl p-3 shadow-md max-w-xs self-start">
+              <button
+                className="text-sm text-blue-600 font-medium underline hover:text-blue-800 transition-colors"
+                onClick={() => {
+                  const element = document.getElementById("chat-container");
+                  if (element) {
+                    element.scrollTo({
+                      top: element.scrollHeight,
+                      behavior: "smooth",
+                    });
+                  }
+                }}
+              >
+                View details
+              </button>
+            </div>
             {((paymentRequired && blockingMessageId === chat?._id) ||
               !conversation?.canUserMessage) && (
-              <div className="flex flex-col md:flex-row gap-3">
-                <button
-                  className="flex-1 rounded-lg border border-gray-300 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
-                  onClick={() => {
-                    DeclineBiddingBid();
-                  }}
-                >
-                  Decline
-                </button>
-                <button
-                  className="flex-1 rounded-lg bg-black py-2.5 text-white text-sm font-semibold hover:bg-gray-900"
-                  onClick={() => {
-                    CreateBiddingOrder(
-                      bidding?.events,
-                      bidding?.bids?.find(
-                        (item) => item?._id === chat?.other?.biddingBid
-                      )?.vendor?._id,
-                      bidding?.bids?.find(
-                        (item) => item?._id === chat?.other?.biddingBid
-                      )?.bid
-                    );
-                  }}
-                >
-                  Accept & Pay
-                </button>
+              <div className="bg-white rounded-xl p-4 shadow-md max-w-xs self-start mt-2">
+                <div className="flex flex-col md:flex-row gap-3">
+                  <button
+                    className="flex-1 rounded-lg border-2 border-gray-300 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                    onClick={() => {
+                      DeclineBiddingBid();
+                    }}
+                  >
+                    Decline
+                  </button>
+                  <button
+                    className="flex-1 rounded-lg bg-black py-2.5 text-white text-sm font-semibold hover:bg-gray-800 transition-colors"
+                    onClick={() => {
+                      CreateBiddingOrder(
+                        bidding?.events,
+                        bidding?.bids?.find(
+                          (item) => item?._id === chat?.other?.biddingBid
+                        )?.vendor?._id,
+                        bidding?.bids?.find(
+                          (item) => item?._id === chat?.other?.biddingBid
+                        )?.bid
+                      );
+                    }}
+                  >
+                    Accept & Pay
+                  </button>
+                </div>
               </div>
             )}
-          </div>
+          </>
         )}
       </>
     );
@@ -356,44 +378,56 @@ export default function ChatMessage({
         {(!(chat?.other?.accepted || chat?.other?.rejected) || 
           (chat?.other?.accepted && chat?.other?.order && order?._id && !order?.status?.paymentDone)) && 
           !showGlobalCta && (
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 max-w-sm self-start">
-            <p className="text-sm text-gray-600 mb-3">Here's your custom offer</p>
-            <div className="mb-4">
-              <p className="text-xs text-gray-500 mb-1">Offer received</p>
-              <p className="text-3xl font-bold text-gray-900">
+          <>
+            <div className="bg-white rounded-xl p-6 shadow-md max-w-xs self-start">
+              <p className="text-xs text-gray-500 mb-2">Offer received</p>
+              <p className="text-4xl font-bold text-gray-900">
                 {toPriceString(parseInt(chat?.content))}
               </p>
             </div>
-            <button
-              className="w-full text-sm text-[#840032] font-medium underline mb-4"
-            >
-              View details
-            </button>
-            <div className="flex flex-col md:flex-row gap-3">
+            <div className="bg-white rounded-xl p-3 shadow-md max-w-xs self-start">
               <button
-                className="flex-1 rounded-lg border border-gray-300 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                className="text-sm text-blue-600 font-medium underline hover:text-blue-800 transition-colors"
                 onClick={() => {
-                  DeclineBiddingBid();
+                  const element = document.getElementById("chat-container");
+                  if (element) {
+                    element.scrollTo({
+                      top: element.scrollHeight,
+                      behavior: "smooth",
+                    });
+                  }
                 }}
               >
-                Decline
-              </button>
-              <button
-                className="flex-1 rounded-lg bg-black py-2.5 text-white text-sm font-semibold hover:bg-gray-900"
-                onClick={() => {
-                  CreateBiddingOrder(
-                    chat?.other?.events,
-                    bidding?.bids?.find(
-                      (item) => item?._id === chat?.other?.biddingBid
-                    )?.vendor?._id,
-                    parseInt(chat?.content)
-                  );
-                }}
-              >
-                Accept & Pay
+                View details
               </button>
             </div>
-          </div>
+            <div className="bg-white rounded-xl p-4 shadow-md max-w-xs self-start mt-2">
+              <div className="flex flex-col md:flex-row gap-3">
+                <button
+                  className="flex-1 rounded-lg border-2 border-gray-300 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  onClick={() => {
+                    DeclineBiddingBid();
+                  }}
+                >
+                  Decline
+                </button>
+                <button
+                  className="flex-1 rounded-lg bg-black py-2.5 text-white text-sm font-semibold hover:bg-gray-800 transition-colors"
+                  onClick={() => {
+                    CreateBiddingOrder(
+                      chat?.other?.events,
+                      bidding?.bids?.find(
+                        (item) => item?._id === chat?.other?.biddingBid
+                      )?.vendor?._id,
+                      parseInt(chat?.content)
+                    );
+                  }}
+                >
+                  Accept & Pay
+                </button>
+              </div>
+            </div>
+          </>
         )}
       </>
     );
