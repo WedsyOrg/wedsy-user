@@ -487,68 +487,60 @@ export default function ChatWindow({ user }) {
           ))}
         </div>
         {showGlobalCta && (
-          <div className="px-4 py-6 bg-white border-t border-gray-200 space-y-4">
-            <div className="text-center text-xs tracking-wide text-gray-500">
-              Request accepted by the artist
-            </div>
-            <div className="mx-auto max-w-xs rounded-2xl bg-[#f5f5f5] p-4 text-center shadow">
-              <p className="text-sm text-gray-600">Offer received</p>
-              <p className="text-2xl font-semibold text-gray-900">
-                {blockingAmount !== null ? toPriceString(blockingAmount) : "--"}
-              </p>
-            </div>
-            <button
-              className="mx-auto block text-sm font-medium underline text-gray-700 hover:text-gray-900"
-              onClick={() => {
-                const element = document.getElementById("chat-container");
-                if (element) {
-                  element.scrollTo({
-                    top: element.scrollHeight,
-                    behavior: "smooth",
-                  });
-                }
-              }}
-            >
-              View details
-            </button>
-            {ctaError && (
-              <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-center text-sm text-red-700">
-                {ctaError}
+          <div className="px-4 md:px-6 py-6 bg-gray-50 border-t border-gray-200">
+            <div className="mx-auto max-w-6xl">
+              {ctaError && (
+                <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-center text-sm text-red-700 mb-4">
+                  {ctaError}
+                </div>
+              )}
+              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                <div className="bg-white rounded-lg p-6 shadow-sm">
+                  <p className="text-sm text-gray-500 mb-1">Offer received</p>
+                  <p className="text-4xl font-bold text-gray-900 mb-3">
+                    {blockingAmount !== null ? toPriceString(blockingAmount) : "--"}
+                  </p>
+                  <button
+                    className="text-sm underline text-gray-600 hover:text-gray-800"
+                    onClick={() => {
+                      const element = document.getElementById("chat-container");
+                      if (element) {
+                        element.scrollTo({
+                          top: element.scrollHeight,
+                          behavior: "smooth",
+                        });
+                      }
+                    }}
+                  >
+                    View details
+                  </button>
+                </div>
+                <div className="flex flex-row gap-3 justify-end md:justify-start">
+                  <button
+                    className="px-10 py-3 bg-white text-gray-900 border-2 border-gray-300 rounded-lg font-medium hover:bg-gray-50 disabled:opacity-50"
+                    onClick={declineBlockingOffer}
+                    disabled={ctaLoading}
+                  >
+                    Decline
+                  </button>
+                  <button
+                    className="px-10 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 disabled:bg-gray-400"
+                    onClick={handlePayNow}
+                    disabled={ctaLoading}
+                  >
+                    {ctaLoading ? "Processing..." : "Accept & Pay"}
+                  </button>
+                </div>
               </div>
-            )}
-            <div className="flex flex-col md:flex-row gap-3 justify-center">
-              <button
-                className="px-6 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg font-medium hover:bg-gray-50"
-                onClick={declineBlockingOffer}
-                disabled={ctaLoading}
-              >
-                Decline
-              </button>
-              <button
-                className="px-6 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-800 disabled:bg-gray-400"
-                onClick={handlePayNow}
-                disabled={ctaLoading}
-              >
-                {ctaLoading ? "Processing..." : "Accept & Pay"}
-              </button>
             </div>
           </div>
         )}
         <div className="p-4 flex flex-col md:flex-row md:items-center gap-2 bg-white border-t border-gray-200">
-          {(paymentRequired || sendError) && (
-            <div className="w-full rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-700">
-              {paymentMessage || sendError}
-            </div>
-          )}
           <div className="w-full flex flex-row gap-2">
             <input
               id="messageInput"
               type="text"
-              placeholder={
-                paymentRequired
-                  ? "Complete payment to continue chatting"
-                  : "Type a message..."
-              }
+              placeholder="Type a message..."
               className="flex-1 rounded-full pl-4 pr-6 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#840032] focus:border-transparent"
               value={content}
               onChange={(e) => {
