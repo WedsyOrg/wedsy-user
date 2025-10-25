@@ -92,94 +92,108 @@ export default function Login({ CheckLogin }) {
   };
   return (
     <>
-      <div
-        className="relative h-[max-content] grid grid-cols-1 md:grid-cols-3"
-        style={{
-          backgroundImage: 'url("/assets/images/login-mobile.png")',
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-        }}
-      >
-        <div className="hidden md:block md:col-span-2">
-          <Image
-            src={`/assets/images/login-image.png`}
-            alt="Decor"
-            width={0}
-            height={0}
-            sizes="100%"
-            style={{ width: "100%", height: "auto" }}
-          />
+      <div className="relative h-screen w-full flex overflow-hidden">
+        {/* Left side - Background image area (60% width) */}
+        <div className="hidden md:flex md:w-3/5 relative"
+          style={{
+            backgroundImage: 'url("/assets/background/bg-newLoginBackground.jpg")',
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+          }}
+        >
+          {/* Black shadow overlay for better text visibility */}
+          <div className="absolute inset-0 bg-black/30"></div>
+          {/* Centered text overlay */}
+          <div className="absolute inset-0 flex items-center justify-center text-white z-10">
+            <div className="text-center">
+              <h1 className="text-4xl font-bold mb-4">TOGETHER IS A BEAUTIFUL PLACE TO BE</h1>
+              <h2 className="text-2xl font-semibold">JOIN US AS WE SAY 'I DO!'</h2>
+            </div>
+          </div>
         </div>
-        <div className="h-[189vw] md:h-auto m-6 md:m-0 bg-white/80 md:bg-gradient-to-t md:to-[#ABBBC7] md:from-white flex flex-col p-8 md:p-0 rounded-2xl md:rounded-none gap-6 md:gap-16 md:px-8 md:pb-32 items-center justify-center">
-          <p className="font-semibold text-lg text-center mb-12 md:mb-0">{`"Together is a beautiful place to be. Join us as we say 'I do'!"`}</p>
-          <div className=" gap-6 flex flex-col w-3/4">
-            <input
-              type="text"
-              placeholder="NAME (First and Last Name)"
-              value={data.name}
-              onChange={(e) =>
-                setData({
-                  ...data,
-                  name: e.target.value,
-                })
-              }
-              name="name"
-              className="focus:ring-0 text-center text-black bg-transparent border-0 border-b border-b-black outline-0 outline-0 placeholder:text-black"
-            />
-            <input
-              type="text"
-              placeholder="PHONE NO."
-              value={data.phone}
-              onChange={(e) =>
-                setData({
-                  ...data,
-                  phone: e.target.value,
-                })
-              }
-              name="phone"
-              className="focus:ring-0 text-center text-black bg-transparent border-0 border-b border-b-black outline-0 outline-0 placeholder:text-black"
-            />
-            {data.otpSent && (
+        
+        {/* Right side - Background image area (40% width) */}
+        <div className="flex-1 md:w-2/5 relative">
+          {/* Background image */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'url("/assets/background/bg-newSignin.jpg")',
+              backgroundSize: "cover",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "center center",
+            }}
+          ></div>
+          {/* Login form overlay */}
+          <div className="absolute inset-0 bg-white/30 flex flex-col justify-center items-center">
+          {/* Decorative border with flowers */}
+          <div className="absolute inset-0 border-4 border-white/20 rounded-lg" style={{
+            backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'2\' fill=\'%23ffffff\' opacity=\'0.3\'/%3E%3C/svg%3E")',
+            backgroundSize: '20px 20px'
+          }}></div>
+          
+          <h2 className="text-2xl font-bold text-gray-800 mb-8">Sign in</h2>
+          <div className="w-full max-w-sm space-y-6">
+            <div>
               <input
                 type="text"
-                placeholder="OTP"
-                value={data.Otp}
+                placeholder="Phone number"
+                value={data.phone}
                 onChange={(e) =>
                   setData({
                     ...data,
-                    Otp: e.target.value,
+                    phone: e.target.value,
                   })
                 }
-                name="otp"
-                className="focus:ring-0 text-center text-black bg-transparent border-0 border-b border-b-black outline-0 outline-0 placeholder:text-black"
+                name="phone"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
               />
+            </div>
+            {data.otpSent && (
+              <div>
+                <input
+                  type="text"
+                  placeholder="OTP"
+                  value={data.Otp}
+                  onChange={(e) =>
+                    setData({
+                      ...data,
+                      Otp: e.target.value,
+                    })
+                  }
+                  name="otp"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
+                />
+              </div>
             )}
-            {data.message && <p className="text-red-500">{data.message}</p>}
+            {data.message && <p className="text-red-500 text-sm">{data.message}</p>}
+            <button
+              type="submit"
+              className="w-full bg-red-800 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors duration-200 disabled:bg-gray-400"
+              disabled={
+                !data.phone ||
+                data.loading ||
+                (data.otpSent ? !data.Otp : false)
+              }
+              onClick={() => {
+                data.otpSent ? handleLogin() : SendOTP();
+              }}
+            >
+              {data.loading ? (
+                <>
+                  <Spinner size="sm" />
+                  <span className="pl-3">Loading...</span>
+                </>
+              ) : (
+                <>Login</>
+              )}
+            </button>
+            <p className="text-center text-sm text-gray-600">
+              Not signed in yet? <span className="text-red-800 font-semibold cursor-pointer">Sign up</span>
+            </p>
           </div>
-          <button
-            type="submit"
-            className="rounded-full bg-black text-white py-2 w-3/4 disabled:bg-black/50"
-            disabled={
-              !data.name ||
-              !data.phone ||
-              // !/^\d{10}$/.test(data.phone) ||
-              !processMobileNumber(data.phone) ||
-              data.loading ||
-              (data.otpSent ? !data.Otp : false)
-            }
-            onClick={() => {
-              data.otpSent ? handleLogin() : SendOTP();
-            }}
-          >
-            {data.loading ? (
-              <>
-                <Spinner size="sm" />
-                <span className="pl-3">Loading...</span>
-              </>
-            ) : (
-              <>Login</>
-            )}
-          </button>
+          </div>
         </div>
       </div>
     </>
