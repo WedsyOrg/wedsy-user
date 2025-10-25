@@ -114,28 +114,26 @@ export default function Login({ CheckLogin }) {
         </div>
         
         {/* Right side - Background image area (40% width) */}
-        <div className="flex-1 md:w-2/5 relative">
-          {/* Background image */}
-          <div 
-            className="absolute inset-0"
-            style={{
-              backgroundImage: 'url("/assets/background/bg-newSignin.jpg")',
-              backgroundSize: "cover",
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "center center",
-            }}
-          ></div>
+        <div 
+          className="flex-1 md:w-2/5 relative"
+          style={{
+            backgroundImage: 'url("/assets/background/bg-newSignin.jpg")',
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center center",
+          }}
+        >
           {/* Login form overlay */}
-          <div className="absolute inset-0 bg-white/30 flex flex-col justify-center items-center">
-          {/* Decorative border with flowers */}
-          <div className="absolute inset-0 border-4 border-white/20 rounded-lg" style={{
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'2\' fill=\'%23ffffff\' opacity=\'0.3\'/%3E%3C/svg%3E")',
-            backgroundSize: '20px 20px'
-          }}></div>
+          <div 
+            className="absolute inset-0 bg-white/30 flex flex-col justify-center items-center z-10 px-4 py-8 shadow-lg md:shadow-none"
+            style={{
+              boxShadow: "0px 4px 4px 0px #00000040"
+            }}
+          >
           
-          <h2 className="text-2xl font-bold text-gray-800 mb-8">Sign in</h2>
-          <div className="w-full max-w-sm space-y-6">
-            <div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-8 z-20">Sign in</h2>
+          <div className="w-full max-w-sm space-y-6 z-20">
+            <div className="relative z-30">
               <input
                 type="text"
                 placeholder="Phone number"
@@ -147,11 +145,14 @@ export default function Login({ CheckLogin }) {
                   })
                 }
                 name="phone"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent relative z-30"
+                style={{
+                  boxShadow: "0px 4px 4px 0px #00000040"
+                }}
               />
             </div>
             {data.otpSent && (
-              <div>
+              <div className="relative z-30">
                 <input
                   type="text"
                   placeholder="OTP"
@@ -163,33 +164,37 @@ export default function Login({ CheckLogin }) {
                     })
                   }
                   name="otp"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent relative z-30"
+                  style={{
+                    boxShadow: "0px 4px 4px 0px #00000040"
+                  }}
                 />
               </div>
             )}
-            {data.message && <p className="text-red-500 text-sm">{data.message}</p>}
-            <button
-              type="submit"
-              className="w-full bg-red-800 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors duration-200 disabled:bg-gray-400"
-              disabled={
-                !data.phone ||
-                data.loading ||
-                (data.otpSent ? !data.Otp : false)
-              }
-              onClick={() => {
-                data.otpSent ? handleLogin() : SendOTP();
-              }}
-            >
-              {data.loading ? (
-                <>
-                  <Spinner size="sm" />
-                  <span className="pl-3">Loading...</span>
-                </>
-              ) : (
-                <>Login</>
-              )}
-            </button>
-            <p className="text-center text-sm text-gray-600">
+            {data.message && <p className="text-red-500 text-sm z-30">{data.message}</p>}
+            <div className="flex justify-center w-full">
+              <button
+                type="button"
+                className="w-2/3 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity duration-200 cursor-pointer relative z-30"
+                style={{
+                  backgroundColor: "#840032",
+                  boxShadow: "0px 4px 4px 0px #00000040"
+                }}
+                onClick={() => {
+                  data.otpSent ? handleLogin() : SendOTP();
+                }}
+              >
+                {data.loading ? (
+                  <>
+                    <Spinner size="sm" />
+                    <span className="pl-3">Loading...</span>
+                  </>
+                ) : (
+                  <>Login</>
+                )}
+              </button>
+            </div>
+            <p className="text-center text-sm text-gray-600 mb-4 md:mb-0">
               Not signed in yet? <span className="text-red-800 font-semibold cursor-pointer">Sign up</span>
             </p>
           </div>
