@@ -14,10 +14,8 @@ import { FaInfinity } from "react-icons/fa";
 import styles from "@/styles/DecorPage.module.css";
 import FAQAccordion from "@/components/accordion/FAQAccordion";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
-import { DecorPageSkeleton } from "@/components/skeletons/wedding-store";
 
 function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightList = [] }) {
-  const [isLoading, setIsLoading] = useState(true);
   const [spotlightIndex, setSpotlightIndex] = useState(0);
   const spotlightRef = useRef(null);
   const spotlightHorizontalRef = useRef(null);
@@ -77,13 +75,6 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
   
   // Item width calculation (451px + 24px gap = 475px)
   const itemWidth = 475;
-
-  // Use real data loading instead of simulated loading
-  useEffect(() => {
-    if (bestSeller && popular && spotlightList) {
-      setIsLoading(false);
-    }
-  }, [bestSeller, popular, spotlightList]);
 
   const handleEnquiry = () => {
     setEnquiryForm({
@@ -321,14 +312,14 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
     };
   }, [spotlightRef, spotlightList, spotlightIndex, spotlightSwipe]);
 
-  // Optimized carousel - reduced load, smooth movement
+  // Optimized carousel - reduced frequency for better performance
   useEffect(() => {
     if (!bestSeller || bestSeller.length === 0) return;
 
     let animationId;
     let lastTime = Date.now();
-    // Constant speed: one item width every 6 seconds
-    const constantSpeedPerSecond = itemWidth / 6; // pixels per second
+    // Slower speed: one item width every 8 seconds for better performance
+    const constantSpeedPerSecond = itemWidth / 8; // pixels per second
     let accumulatedMovement = 0;
 
     const animate = () => {
@@ -341,51 +332,59 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
       accumulatedMovement += constantMovement;
 
       // Only update if movement is significant enough (performance optimization)
-      if (accumulatedMovement >= 1) {
+      if (accumulatedMovement >= 2) { // Increased threshold for fewer updates
         const movementToApply = Math.floor(accumulatedMovement);
         accumulatedMovement -= movementToApply;
 
-        // Update each carousel's translateX with optimized movement
+        // Batch all updates together for better performance
+        const updates = {};
+        
         if (!isPaused.backdrops) {
-          setBackdropsTranslateX((prev) => {
+          updates.backdrops = (prev) => {
             let newX = prev - movementToApply;
-            const resetThreshold = -(bestSeller.length * itemWidth);
+            const resetThreshold = -(Math.min(bestSeller.length, 6) * itemWidth);
             if (newX <= resetThreshold) {
-              newX += bestSeller.length * itemWidth;
+              newX += Math.min(bestSeller.length, 6) * itemWidth;
             }
             return newX;
-          });
+          };
         }
         if (!isPaused.grandEntry) {
-          setGrandEntryTranslateX((prev) => {
+          updates.grandEntry = (prev) => {
             let newX = prev - movementToApply;
-            const resetThreshold = -(bestSeller.length * itemWidth);
+            const resetThreshold = -(Math.min(bestSeller.length, 6) * itemWidth);
             if (newX <= resetThreshold) {
-              newX += bestSeller.length * itemWidth;
+              newX += Math.min(bestSeller.length, 6) * itemWidth;
             }
             return newX;
-          });
+          };
         }
         if (!isPaused.mandaps) {
-          setMandapsTranslateX((prev) => {
+          updates.mandaps = (prev) => {
             let newX = prev - movementToApply;
-            const resetThreshold = -(bestSeller.length * itemWidth);
+            const resetThreshold = -(Math.min(bestSeller.length, 6) * itemWidth);
             if (newX <= resetThreshold) {
-              newX += bestSeller.length * itemWidth;
+              newX += Math.min(bestSeller.length, 6) * itemWidth;
             }
             return newX;
-          });
+          };
         }
         if (!isPaused.furniture) {
-          setFurnitureTranslateX((prev) => {
+          updates.furniture = (prev) => {
             let newX = prev - movementToApply;
-            const resetThreshold = -(bestSeller.length * itemWidth);
+            const resetThreshold = -(Math.min(bestSeller.length, 6) * itemWidth);
             if (newX <= resetThreshold) {
-              newX += bestSeller.length * itemWidth;
+              newX += Math.min(bestSeller.length, 6) * itemWidth;
             }
             return newX;
-          });
+          };
         }
+
+        // Apply all updates
+        if (updates.backdrops) setBackdropsTranslateX(updates.backdrops);
+        if (updates.grandEntry) setGrandEntryTranslateX(updates.grandEntry);
+        if (updates.mandaps) setMandapsTranslateX(updates.mandaps);
+        if (updates.furniture) setFurnitureTranslateX(updates.furniture);
       }
 
       animationId = requestAnimationFrame(animate);
@@ -398,11 +397,6 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
       cancelAnimationFrame(animationId);
     };
   }, [bestSeller, isPaused, itemWidth]);
-
-  // Show skeleton while loading
-  if (isLoading) {
-    return <DecorPageSkeleton />;
-  }
 
   return (
     <div className="bg-[#F4F4F4] min-h-screen w-full">
@@ -499,11 +493,29 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
               will-change: transform;
               backface-visibility: hidden;
               transform: translateZ(0);
+              contain: layout style paint;
+              isolation: isolate;
             }
             
             .carousel-container {
               will-change: transform;
               backface-visibility: hidden;
+              transform: translateZ(0);
+              contain: layout style paint;
+              isolation: isolate;
+            }
+            
+            /* Optimize images for better performance */
+            .carousel-item img {
+              image-rendering: optimizeSpeed;
+              image-rendering: -moz-crisp-edges;
+              image-rendering: -webkit-optimize-contrast;
+              image-rendering: crisp-edges;
+              transform: translateZ(0);
+            }
+            
+            /* Reduce repaints during animation */
+            .carousel-item * {
               transform: translateZ(0);
             }
           `}</style>
@@ -807,11 +819,11 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 className="flex gap-6"
                 style={{
                   transform: `translateX(${backdropsTranslateX}px)`,
-                  width: `${bestSeller.length * 3 * itemWidth}px` // Triple width for seamless circular flow
+                  width: `${Math.min(bestSeller.length, 6) * 3 * itemWidth}px` // Triple width for seamless circular flow
                 }}
               >
                 {/* Render cards three times for seamless circular loop */}
-                {[...bestSeller, ...bestSeller, ...bestSeller].map((decor, index) => (
+                    {[...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6)].map((decor, index) => (
                   <div 
                     key={`backdrops-${index}`} 
                     className="carousel-item relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
@@ -839,6 +851,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           <div className="md:hidden px-4">
             <div
               className="flex gap-4 overflow-x-auto snap-x scroll-smooth hide-scrollbar mobile-slider"
+              style={{ scrollBehavior: 'auto' }}
               onScroll={(e) => {
                 const scrollLeft = e.target.scrollLeft;
                 const slideWidth = e.target.scrollWidth / Math.ceil(bestSeller.length / 4);
@@ -846,7 +859,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 setCurrentSlide(newSlide);
               }}
             >
-              {Array.from({ length: Math.ceil(bestSeller.length / 4) }, (_, groupIndex) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, groupIndex) => (
                 <div
                   key={groupIndex}
                   className="min-w-full snap-start grid grid-cols-2 gap-4"
@@ -868,7 +881,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* Dots below slider*/}
             <div className="flex gap-2 items-center justify-center mt-4">
-              {Array.from({ length: Math.ceil(bestSeller.length / 4) }, (_, i) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, i) => (
                 <span
                   key={i}
                   className={`rounded-full h-2 w-2 cursor-pointer transition-colors duration-300 ${i === currentSlide ? 'bg-black' : 'bg-gray-400'
@@ -938,11 +951,11 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 className="flex gap-6"
                 style={{
                   transform: `translateX(${grandEntryTranslateX}px)`,
-                  width: `${bestSeller.length * 3 * itemWidth}px` // Triple width for seamless circular flow
+                  width: `${Math.min(bestSeller.length, 6) * 3 * itemWidth}px` // Triple width for seamless circular flow
                 }}
               >
                 {/* Render cards three times for seamless circular loop */}
-                {[...bestSeller, ...bestSeller, ...bestSeller].map((decor, index) => (
+                    {[...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6)].map((decor, index) => (
                   <div 
                     key={`grandEntry-${index}`} 
                     className="carousel-item relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
@@ -970,6 +983,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           <div className="md:hidden px-4">
             <div
               className="flex gap-4 overflow-x-auto snap-x scroll-smooth hide-scrollbar mobile-slider"
+              style={{ scrollBehavior: 'auto' }}
               onScroll={(e) => {
                 const scrollLeft = e.target.scrollLeft;
                 const slideWidth = e.target.scrollWidth / Math.ceil(bestSeller.length / 4);
@@ -977,7 +991,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 setCurrentSlide(newSlide);
               }}
             >
-              {Array.from({ length: Math.ceil(bestSeller.length / 4) }, (_, groupIndex) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, groupIndex) => (
                 <div
                   key={groupIndex}
                   className="min-w-full snap-start grid grid-cols-2 gap-4"
@@ -999,7 +1013,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* Dots below slider*/}
             <div className="flex gap-2 items-center justify-center mt-4">
-              {Array.from({ length: Math.ceil(bestSeller.length / 4) }, (_, i) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, i) => (
                 <span
                   key={i}
                   className={`rounded-full h-2 w-2 cursor-pointer transition-colors duration-300 ${i === currentSlide ? 'bg-black' : 'bg-gray-400'
@@ -1220,11 +1234,11 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 className="flex gap-6"
                 style={{
                   transform: `translateX(${mandapsTranslateX}px)`,
-                  width: `${bestSeller.length * 3 * itemWidth}px` // Triple width for seamless circular flow
+                  width: `${Math.min(bestSeller.length, 6) * 3 * itemWidth}px` // Triple width for seamless circular flow
                 }}
               >
                 {/* Render cards three times for seamless circular loop */}
-                {[...bestSeller, ...bestSeller, ...bestSeller].map((decor, index) => (
+                    {[...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6)].map((decor, index) => (
                   <div 
                     key={`mandaps-${index}`} 
                     className="carousel-item relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
@@ -1252,6 +1266,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           <div className="md:hidden px-4">
             <div
               className="flex gap-4 overflow-x-auto snap-x scroll-smooth hide-scrollbar mobile-slider"
+              style={{ scrollBehavior: 'auto' }}
               onScroll={(e) => {
                 const scrollLeft = e.target.scrollLeft;
                 const slideWidth = e.target.scrollWidth / Math.ceil(bestSeller.length / 4);
@@ -1259,7 +1274,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 setCurrentSlide(newSlide);
               }}
             >
-              {Array.from({ length: Math.ceil(bestSeller.length / 4) }, (_, groupIndex) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, groupIndex) => (
                 <div
                   key={groupIndex}
                   className="min-w-full snap-start grid grid-cols-2 gap-4"
@@ -1281,7 +1296,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* Dots below slider*/}
             <div className="flex gap-2 items-center justify-center mt-4">
-              {Array.from({ length: Math.ceil(bestSeller.length / 4) }, (_, i) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, i) => (
                 <span
                   key={i}
                   className={`rounded-full h-2 w-2 cursor-pointer transition-colors duration-300 ${i === currentSlide ? 'bg-black' : 'bg-gray-400'
@@ -1351,11 +1366,11 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 className="flex gap-6"
                 style={{
                   transform: `translateX(${furnitureTranslateX}px)`,
-                  width: `${bestSeller.length * 3 * itemWidth}px` // Triple width for seamless circular flow
+                  width: `${Math.min(bestSeller.length, 6) * 3 * itemWidth}px` // Triple width for seamless circular flow
                 }}
               >
                 {/* Render cards three times for seamless circular loop */}
-                {[...bestSeller, ...bestSeller, ...bestSeller].map((decor, index) => (
+                    {[...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6)].map((decor, index) => (
                   <div 
                     key={`furniture-${index}`} 
                     className="carousel-item relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
@@ -1383,6 +1398,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           <div className="md:hidden px-4">
             <div
               className="flex gap-4 overflow-x-auto snap-x scroll-smooth hide-scrollbar mobile-slider"
+              style={{ scrollBehavior: 'auto' }}
               onScroll={(e) => {
                 const scrollLeft = e.target.scrollLeft;
                 const slideWidth = e.target.scrollWidth / Math.ceil(bestSeller.length / 4);
@@ -1390,7 +1406,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 setCurrentSlide(newSlide);
               }}
             >
-              {Array.from({ length: Math.ceil(bestSeller.length / 4) }, (_, groupIndex) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, groupIndex) => (
                 <div
                   key={groupIndex}
                   className="min-w-full snap-start grid grid-cols-2 gap-4"
@@ -1412,7 +1428,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* Dots below slider*/}
             <div className="flex gap-2 items-center justify-center mt-4">
-              {Array.from({ length: Math.ceil(bestSeller.length / 4) }, (_, i) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, i) => (
                 <span
                   key={i}
                   className={`rounded-full h-2 w-2 cursor-pointer transition-colors duration-300 ${i === currentSlide ? 'bg-black' : 'bg-gray-400'

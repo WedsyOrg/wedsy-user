@@ -5,6 +5,7 @@ import { Spinner } from "flowbite-react";
 import { useRouter } from "next/router";
 import { MakeupAndBeautyPageSkeleton, WedsyPackagesPageSkeleton, MakeupArtistsPageSkeleton, BiddingPageSkeleton } from "@/components/skeletons/makeup-store";
 import { EventPageSkeleton } from "@/components/skeletons/event";
+import { DecorPageSkeleton } from "@/components/skeletons/wedding-store";
 import { useEffect, useState } from "react";
 import Script from "next/script";
 import LoginModal from "@/components/layout/LoginModal";
@@ -212,6 +213,8 @@ function App({ Component, pageProps }) {
                 <BiddingPageSkeleton />
               ) : router.pathname === '/event' ? (
                 <EventPageSkeleton formStep={1} />
+              ) : router.pathname === '/decor' ? (
+                <DecorPageSkeleton />
               ) : (
                 <div className="grid place-content-center h-screen "><Spinner size="xl" /></div>
               )
