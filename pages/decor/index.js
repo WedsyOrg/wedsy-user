@@ -321,7 +321,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
     };
   }, [spotlightRef, spotlightList, spotlightIndex, spotlightSwipe]);
 
-  // Constant smooth pace carousel - steady movement
+  // Optimized carousel - reduced load, smooth movement
   useEffect(() => {
     if (!bestSeller || bestSeller.length === 0) return;
 
@@ -329,6 +329,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
     let lastTime = Date.now();
     // Constant speed: one item width every 6 seconds
     const constantSpeedPerSecond = itemWidth / 6; // pixels per second
+    let accumulatedMovement = 0;
 
     const animate = () => {
       const currentTime = Date.now();
@@ -337,48 +338,54 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
       // Calculate constant movement amount for this frame
       const constantMovement = (deltaTime / 1000) * constantSpeedPerSecond;
+      accumulatedMovement += constantMovement;
 
-      // Update each carousel's translateX with constant smooth movement
-      if (!isPaused.backdrops) {
-        setBackdropsTranslateX((prev) => {
-          let newX = prev - constantMovement;
-          // Reset when first set scrolls out for seamless loop
-          const resetThreshold = -(bestSeller.length * itemWidth);
-          if (newX <= resetThreshold) {
-            newX += bestSeller.length * itemWidth;
-          }
-          return newX;
-        });
-      }
-      if (!isPaused.grandEntry) {
-        setGrandEntryTranslateX((prev) => {
-          let newX = prev - constantMovement;
-          const resetThreshold = -(bestSeller.length * itemWidth);
-          if (newX <= resetThreshold) {
-            newX += bestSeller.length * itemWidth;
-          }
-          return newX;
-        });
-      }
-      if (!isPaused.mandaps) {
-        setMandapsTranslateX((prev) => {
-          let newX = prev - constantMovement;
-          const resetThreshold = -(bestSeller.length * itemWidth);
-          if (newX <= resetThreshold) {
-            newX += bestSeller.length * itemWidth;
-          }
-          return newX;
-        });
-      }
-      if (!isPaused.furniture) {
-        setFurnitureTranslateX((prev) => {
-          let newX = prev - constantMovement;
-          const resetThreshold = -(bestSeller.length * itemWidth);
-          if (newX <= resetThreshold) {
-            newX += bestSeller.length * itemWidth;
-          }
-          return newX;
-        });
+      // Only update if movement is significant enough (performance optimization)
+      if (accumulatedMovement >= 1) {
+        const movementToApply = Math.floor(accumulatedMovement);
+        accumulatedMovement -= movementToApply;
+
+        // Update each carousel's translateX with optimized movement
+        if (!isPaused.backdrops) {
+          setBackdropsTranslateX((prev) => {
+            let newX = prev - movementToApply;
+            const resetThreshold = -(bestSeller.length * itemWidth);
+            if (newX <= resetThreshold) {
+              newX += bestSeller.length * itemWidth;
+            }
+            return newX;
+          });
+        }
+        if (!isPaused.grandEntry) {
+          setGrandEntryTranslateX((prev) => {
+            let newX = prev - movementToApply;
+            const resetThreshold = -(bestSeller.length * itemWidth);
+            if (newX <= resetThreshold) {
+              newX += bestSeller.length * itemWidth;
+            }
+            return newX;
+          });
+        }
+        if (!isPaused.mandaps) {
+          setMandapsTranslateX((prev) => {
+            let newX = prev - movementToApply;
+            const resetThreshold = -(bestSeller.length * itemWidth);
+            if (newX <= resetThreshold) {
+              newX += bestSeller.length * itemWidth;
+            }
+            return newX;
+          });
+        }
+        if (!isPaused.furniture) {
+          setFurnitureTranslateX((prev) => {
+            let newX = prev - movementToApply;
+            const resetThreshold = -(bestSeller.length * itemWidth);
+            if (newX <= resetThreshold) {
+              newX += bestSeller.length * itemWidth;
+            }
+            return newX;
+          });
+        }
       }
 
       animationId = requestAnimationFrame(animate);
@@ -486,6 +493,18 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
             
             .carousel-container {
               animation: subtlePulse 4s ease-in-out infinite;
+            }
+            
+            .carousel-item {
+              will-change: transform;
+              backface-visibility: hidden;
+              transform: translateZ(0);
+            }
+            
+            .carousel-container {
+              will-change: transform;
+              backface-visibility: hidden;
+              transform: translateZ(0);
             }
           `}</style>
         </Head>
@@ -783,12 +802,6 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
               setIsPaused(prev => ({ ...prev, backdrops: false }));
             }}
           >
-            <img
-              src="/assets/decor/icons/left-arrow.png"
-              alt="Previous"
-              className="cursor-pointer absolute left-16 z-10 top-1/2 -translate-y-1/2 scale-[0.5] md:scale-[1] w-12 h-12"
-              onClick={handleBestSellerPrev}
-            />
             <div className="flex gap-6 justify-center w-full overflow-hidden carousel-container">
               <div 
                 className="flex gap-6"
@@ -819,12 +832,6 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 ))}
               </div>
             </div>
-            <img
-              src="/assets/decor/icons/right-arrow.png"
-              alt="Next"
-              className="cursor-pointer absolute right-16 z-10 top-1/2 -translate-y-1/2 scale-[0.5] md:scale-[1] w-12 h-12"
-              onClick={handleBestSellerNext}
-            />
           </div>
 
 
@@ -926,12 +933,6 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
               setIsPaused(prev => ({ ...prev, grandEntry: false }));
             }}
           >
-            <img
-              src="/assets/decor/icons/left-arrow.png"
-              alt="Previous"
-              className="cursor-pointer absolute left-16 z-10 top-1/2 -translate-y-1/2 scale-[0.5] md:scale-[1] w-12 h-12"
-              onClick={handleGrandEntryPrev}
-            />
             <div className="flex gap-6 justify-center w-full overflow-hidden carousel-container">
               <div 
                 className="flex gap-6"
@@ -962,12 +963,6 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 ))}
               </div>
             </div>
-            <img
-              src="/assets/decor/icons/right-arrow.png"
-              alt="Next"
-              className="cursor-pointer absolute right-16 z-10 top-1/2 -translate-y-1/2 scale-[0.5] md:scale-[1] w-12 h-12"
-              onClick={handleGrandEntryNext}
-            />
           </div>
 
 
@@ -1220,12 +1215,6 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
               setIsPaused(prev => ({ ...prev, mandaps: false }));
             }}
           >
-            <img
-              src="/assets/decor/icons/left-arrow.png"
-              alt="Previous"
-              className="cursor-pointer absolute left-16 z-10 top-1/2 -translate-y-1/2 scale-[0.5] md:scale-[1] w-12 h-12"
-              onClick={handleMandapsPrev}
-            />
             <div className="flex gap-6 justify-center w-full overflow-hidden carousel-container">
               <div 
                 className="flex gap-6"
@@ -1256,12 +1245,6 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 ))}
               </div>
             </div>
-            <img
-              src="/assets/decor/icons/right-arrow.png"
-              alt="Next"
-              className="cursor-pointer absolute right-16 z-10 top-1/2 -translate-y-1/2 scale-[0.5] md:scale-[1] w-12 h-12"
-              onClick={handleMandapsNext}
-            />
           </div>
 
 
@@ -1363,12 +1346,6 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
               setIsPaused(prev => ({ ...prev, furniture: false }));
             }}
           >
-            <img
-              src="/assets/decor/icons/left-arrow.png"
-              alt="Previous"
-              className="cursor-pointer absolute left-16 z-10 top-1/2 -translate-y-1/2 scale-[0.5] md:scale-[1] w-12 h-12"
-              onClick={handleFurniturePrev}
-            />
             <div className="flex gap-6 justify-center w-full overflow-hidden carousel-container">
               <div 
                 className="flex gap-6"
@@ -1399,12 +1376,6 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 ))}
               </div>
             </div>
-            <img
-              src="/assets/decor/icons/right-arrow.png"
-              alt="Next"
-              className="cursor-pointer absolute right-16 z-10 top-1/2 -translate-y-1/2 scale-[0.5] md:scale-[1] w-12 h-12"
-              onClick={handleFurnitureNext}
-            />
           </div>
 
 
