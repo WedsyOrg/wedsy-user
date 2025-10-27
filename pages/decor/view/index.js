@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { Checkbox, Label, Dropdown } from "flowbite-react";
+import { MdSort, MdTune } from "react-icons/md";
 import DecorCard from "@/components/cards/DecorCard";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
 import Masonry from "react-masonry-css";
@@ -54,7 +55,17 @@ function DecorListing({
     sort: "Sort",
     occasion: [],
     colours: [],
+    size: {
+      length: null,
+      width: null,
+      height: null,
+    },
+    priceRange: [0, 115000],
   });
+
+  const [showFilterSort, setShowFilterSort] = useState(false);
+  const [activeTab, setActiveTab] = useState("sort"); // "sort" or "filter"
+  const [selectedSection, setSelectedSection] = useState(null);
 
   const occasionList = [
     "Reception",
@@ -64,6 +75,23 @@ function DecorListing({
     "Haldi",
     "Mehendi",
     "Muhurtham",
+  ];
+
+  const coloursList = [
+    { name: "Black", color: "#000000" },
+    { name: "Silver", color: "#C0C0C0" },
+    { name: "Gray", color: "#808080" },
+    { name: "White", color: "#FFFFFF" },
+    { name: "Maroon", color: "#800000" },
+    { name: "Red", color: "#FF0000" },
+    { name: "Purple", color: "#800080" },
+    { name: "Green", color: "#008000" },
+    { name: "Lime", color: "#00FF00" },
+    { name: "Olive", color: "#808000" },
+    { name: "Yellow", color: "#FFFF00" },
+    { name: "Navy", color: "#000080" },
+    { name: "Blue", color: "#0000FF" },
+    { name: "Peach", color: "#FFC0CB" },
   ];
 
   // Generate dynamic SEO content
@@ -290,81 +318,410 @@ function DecorListing({
               ))}
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:justify-end items-stretch sm:items-center gap-2 sm:gap-0 md:w-auto">
-              <div className="flex w-full sm:w-auto bg-white rounded-md overflow-hidden border divide-x">
-                <div className="flex-1">
-                  <Dropdown
-                    inline
-                    arrowIcon={false}
-                    label={
-                      <div className="ml-10 md:ml-0 px-4 py-2 flex items-center justify-center text-center gap-2 flex-1 min-h-[44px]">
-                        <img
-                          src="/assets/new_icons/sort.svg"
-                          alt="sort"
-                          className="h-4 w-4"
-                        />
-                        <span className="text-sm font-medium">Sort</span>
-                      </div>
-                    }
-                  >
-                    <Dropdown.Item
-                      onClick={() => handleSortChange("Price:Low-to-High")}
-                    >
-                      Price: Low to High
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() => handleSortChange("Price:High-to-Low")}
-                    >
-                      Price: High to Low
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() => handleSortChange("New-Arrivals")}
-                    >
-                      New Arrivals
-                    </Dropdown.Item>
-                    <Dropdown.Item onClick={() => handleSortChange("Sort")}>
-                      Default
-                    </Dropdown.Item>
-                  </Dropdown>
-                </div>
-
-                <div className="flex-1">
-                  <Dropdown
-                    inline
-                    arrowIcon={false}
-                    label={
-                      <div className="ml-10 md:ml-0 px-4 py-2 flex items-center justify-center text-center gap-2 flex-1 min-h-[44px]">
-                        <img
-                          src="/assets/new_icons/filter.svg"
-                          alt="filter"
-                          className="h-4 w-4"
-                        />
-                        <span className="text-sm font-medium">Filter</span>
-                      </div>
-                    }
-                  >
-                    <div className="p-4 space-y-4 w-64">
-                      <h3 className="font-semibold text-lg">Occasion</h3>
-                      {occasionList.map((o) => (
-                        <div key={o} className="flex items-center gap-2">
-                          <Checkbox
-                            id={o}
-                            checked={filters.occasion.includes(o)}
-                            onChange={() => handleFilterChange("occasion", o)}
-                          />
-                          <Label htmlFor={o}>{o}</Label>
-                        </div>
-                      ))}
-                    </div>
-                  </Dropdown>
-                </div>
-              </div>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => {
+                  setActiveTab("sort");
+                  setSelectedSection("sort-price");
+                  setShowFilterSort(true);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
+              >
+                <MdSort size={20} />
+                Sort
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab("filter");
+                  setSelectedSection("occasion");
+                  setShowFilterSort(true);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
+              >
+                <MdTune size={20} />
+                Filter
+              </button>
             </div>
           </div>
 
           <h1 className="text-xl sm:text-3xl font-semibold text-center mb-6 sm:mb-10 uppercase tracking-widest">
             {dynamicHeading}
           </h1>
+
+          {/* Filter/Sort Modal */}
+          {showFilterSort && (
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-30 z-40"
+              onClick={() => setShowFilterSort(false)}
+            >
+              <div className="absolute top-[180px] right-4 md:right-8 z-50">
+                <div 
+                  className="bg-white rounded-lg w-[420px] max-h-[500px] flex flex-col shadow-xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Content Area */}
+                  <div className="flex md:flex-row flex-col flex-1 overflow-hidden pt-2">
+                    {/* Left Panel - Sections */}
+                    <div className="md:w-1/2 w-full md:border-r border-b overflow-y-auto bg-gray-50">
+                      <div className="p-3 space-y-1">
+                        {activeTab === "filter" && (
+                          <>
+                            <button
+                              onClick={() => setSelectedSection("occasion")}
+                              className={`w-full text-left px-3 py-2 text-sm rounded ${
+                                selectedSection === "occasion" ? "bg-white shadow-sm" : "hover:bg-gray-100"
+                              }`}
+                            >
+                              Occasion
+                            </button>
+                            <button
+                              onClick={() => setSelectedSection("colours")}
+                              className={`w-full text-left px-3 py-2 text-sm rounded ${
+                                selectedSection === "colours" ? "bg-white shadow-sm" : "hover:bg-gray-100"
+                              }`}
+                            >
+                              Colours
+                            </button>
+                            <button
+                              onClick={() => setSelectedSection("size")}
+                              className={`w-full text-left px-3 py-2 text-sm rounded ${
+                                selectedSection === "size" ? "bg-white shadow-sm" : "hover:bg-gray-100"
+                              }`}
+                            >
+                              Stage Size (in sqft.)
+                            </button>
+                            <button
+                              onClick={() => setSelectedSection("price-range")}
+                              className={`w-full text-left px-3 py-2 text-sm rounded ${
+                                selectedSection === "price-range" ? "bg-white shadow-sm" : "hover:bg-gray-100"
+                              }`}
+                            >
+                              Price Range
+                            </button>
+                          </>
+                        )}
+                        {activeTab === "sort" && (
+                          <button
+                            onClick={() => setSelectedSection("sort-price")}
+                            className={`w-full text-left px-3 py-2 text-sm rounded ${
+                              selectedSection === "sort-price" ? "bg-white shadow-sm" : "hover:bg-gray-100"
+                            }`}
+                          >
+                            Price range
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right Panel - Options */}
+                    <div className="md:w-1/2 w-full p-3 overflow-y-auto">
+                      {activeTab === "sort" && selectedSection === "sort-price" && (
+                        <div className="space-y-1">
+                          <button
+                            onClick={() => {
+                              handleSortChange("Price:Low-to-High");
+                              setShowFilterSort(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-sm rounded ${
+                              filters.sort === "Price:Low-to-High" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
+                            }`}
+                          >
+                            Price - Low to high
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleSortChange("Price:High-to-Low");
+                              setShowFilterSort(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-sm rounded ${
+                              filters.sort === "Price:High-to-Low" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
+                            }`}
+                          >
+                            Price - High to low
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleSortChange("New-Arrivals");
+                              setShowFilterSort(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-sm rounded ${
+                              filters.sort === "New-Arrivals" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
+                            }`}
+                          >
+                            New Arrivals
+                          </button>
+                        </div>
+                      )}
+                      
+                      {activeTab === "filter" && selectedSection === "occasion" && (
+                        <div className="space-y-1">
+                          {occasionList.map((occasion) => (
+                            <label key={occasion} className="flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-gray-50 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={filters.occasion.includes(occasion)}
+                                onChange={(e) => {
+                                  handleFilterChange("occasion", occasion);
+                                }}
+                                className="w-4 h-4 border-gray-300 rounded"
+                              />
+                              <span>{occasion}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {activeTab === "filter" && selectedSection === "colours" && (
+                        <div className="space-y-1">
+                          {coloursList.map((colour) => (
+                            <label key={colour.name} className="flex items-center gap-3 px-3 py-2 text-sm rounded hover:bg-gray-50 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={filters.colours.includes(colour.name)}
+                                onChange={(e) => {
+                                  handleFilterChange("colours", colour.name);
+                                }}
+                                className="w-4 h-4 border-gray-300 rounded"
+                              />
+                              <div 
+                                className="w-4 h-4 rounded-full border border-gray-300"
+                                style={{ backgroundColor: colour.color }}
+                              />
+                              <span>{colour.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {activeTab === "filter" && selectedSection === "size" && (
+                        <div className="space-y-4">
+                          <div className="space-y-3 px-3 pb-3">
+                            {/* Length Dropdown */}
+                            <div className="relative">
+                              <select
+                                value={filters.size.length || ""}
+                                onChange={(e) => {
+                                  setFilters(prev => ({
+                                    ...prev,
+                                    size: { ...prev.size, length: e.target.value }
+                                  }));
+                                }}
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm appearance-none cursor-pointer hover:border-blue-400 focus:border-blue-500 focus:outline-none"
+                              >
+                                <option value="">Length: Select Range</option>
+                                <option value="0-5">Length: 0 - 5 ft.</option>
+                                <option value="5-10">Length: 5 - 10 ft.</option>
+                                <option value="10-15">Length: 10 - 15 ft.</option>
+                                <option value="15-20">Length: 15 - 20 ft.</option>
+                                <option value="20-25">Length: 20 - 25 ft.</option>
+                                <option value="25-30">Length: 25 - 30 ft.</option>
+                              </select>
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </div>
+                            </div>
+                            
+                            {/* Width Dropdown */}
+                            <div className="relative">
+                              <select
+                                value={filters.size.width || ""}
+                                onChange={(e) => {
+                                  setFilters(prev => ({
+                                    ...prev,
+                                    size: { ...prev.size, width: e.target.value }
+                                  }));
+                                }}
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm appearance-none cursor-pointer hover:border-blue-400 focus:border-blue-500 focus:outline-none"
+                              >
+                                <option value="">Width: Select Range</option>
+                                <option value="0-5">Width: 0 - 5 ft.</option>
+                                <option value="5-10">Width: 5 - 10 ft.</option>
+                                <option value="10-15">Width: 10 - 15 ft.</option>
+                                <option value="15-20">Width: 15 - 20 ft.</option>
+                                <option value="20-25">Width: 20 - 25 ft.</option>
+                                <option value="25-30">Width: 25 - 30 ft.</option>
+                              </select>
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </div>
+                            </div>
+                            
+                            {/* Height Dropdown */}
+                            <div className="relative">
+                              <select
+                                value={filters.size.height || ""}
+                                onChange={(e) => {
+                                  setFilters(prev => ({
+                                    ...prev,
+                                    size: { ...prev.size, height: e.target.value }
+                                  }));
+                                }}
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm appearance-none cursor-pointer hover:border-blue-400 focus:border-blue-500 focus:outline-none"
+                              >
+                                <option value="">Height: Select Range</option>
+                                <option value="0-5">Height: 0 - 5 ft.</option>
+                                <option value="5-10">Height: 5 - 10 ft.</option>
+                                <option value="10-15">Height: 10 - 15 ft.</option>
+                                <option value="15-20">Height: 15 - 20 ft.</option>
+                                <option value="20-25">Height: 20 - 25 ft.</option>
+                                <option value="25-30">Height: 25 - 30 ft.</option>
+                              </select>
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {activeTab === "filter" && selectedSection === "price-range" && (
+                        <div className="space-y-4 -m-3">
+                          <label className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer">
+                            <input
+                              type="checkbox"
+                              className="w-4 h-4 border-gray-300 rounded"
+                            />
+                            <span>Apply Price filter</span>
+                          </label>
+                          
+                          {/* Range Slider */}
+                          <style jsx>{`
+                            input[type="range"]::-webkit-slider-thumb {
+                              appearance: none;
+                              height: 20px;
+                              width: 20px;
+                              border-radius: 50%;
+                              background: #2563eb;
+                              cursor: pointer;
+                              border: 2px solid white;
+                              box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                              position: relative;
+                            }
+                            input[type="range"]::-webkit-slider-thumb::after {
+                              content: '';
+                              position: absolute;
+                              top: 50%;
+                              left: 50%;
+                              transform: translate(-50%, -50%);
+                              width: 8px;
+                              height: 2px;
+                              background: white;
+                            }
+                            input[type="range"]::-moz-range-thumb {
+                              height: 20px;
+                              width: 20px;
+                              border-radius: 50%;
+                              background: #2563eb;
+                              cursor: pointer;
+                              border: 2px solid white;
+                              box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                            }
+                            input[type="range"]::-webkit-slider-track {
+                              background: transparent;
+                              height: 2px;
+                            }
+                            input[type="range"]::-moz-range-track {
+                              background: transparent;
+                              height: 2px;
+                            }
+                          `}</style>
+                          <div className="px-3 py-4 pb-6">
+                            <div className="relative max-w-xs mx-auto">
+                              <div className="absolute h-0.5 w-full bg-gray-300 rounded-lg" />
+                              <input
+                                type="range"
+                                min="0"
+                                max="115000"
+                                value={filters.priceRange[0]}
+                                onChange={(e) => {
+                                  const newMin = Math.min(Number(e.target.value), filters.priceRange[1]);
+                                  setFilters(prev => ({
+                                    ...prev,
+                                    priceRange: [newMin, prev.priceRange[1]]
+                                  }));
+                                }}
+                                className="absolute w-full h-0.5 rounded-lg appearance-none cursor-pointer"
+                                style={{
+                                  zIndex: 3,
+                                  pointerEvents: filters.priceRange[0] === filters.priceRange[1] ? 'auto' : 'none'
+                                }}
+                              />
+                              <input
+                                type="range"
+                                min="0"
+                                max="115000"
+                                value={filters.priceRange[1]}
+                                onChange={(e) => {
+                                  const newMax = Math.max(Number(e.target.value), filters.priceRange[0]);
+                                  setFilters(prev => ({
+                                    ...prev,
+                                    priceRange: [prev.priceRange[0], newMax]
+                                  }));
+                                }}
+                                className="absolute w-full h-0.5 rounded-lg appearance-none cursor-pointer"
+                                style={{ zIndex: 3 }}
+                              />
+                              <div 
+                                className="absolute h-0.5 bg-blue-600"
+                                style={{
+                                  left: `${(filters.priceRange[0] / 115000) * 100}%`,
+                                  width: `${((filters.priceRange[1] - filters.priceRange[0]) / 115000) * 100}%`,
+                                  zIndex: 0
+                                }}
+                              />
+                              {/* Static Min/Max Labels */}
+                              <span className="absolute text-xs text-gray-600 -bottom-5 -left-2">0</span>
+                              <span className="absolute text-xs text-gray-600 -bottom-5 -right-2">115000</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {!selectedSection && (
+                        <div className="text-gray-400 text-center py-8">
+                          Select a section to see options
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Bottom Buttons */}
+                  <div className="flex border-t p-3 gap-3">
+                    <button
+                      onClick={() => {
+                        setFilters(prev => ({ 
+                          ...prev, 
+                          sort: "Sort", 
+                          occasion: [], 
+                          colours: [],
+                          priceRange: [0, 115000],
+                          size: { length: null, width: null, height: null }
+                        }));
+                        setSelectedSection(null);
+                      }}
+                      className="flex-1 px-4 py-2 text-sm border border-gray-300 rounded font-medium hover:bg-gray-50 transition-colors"
+                    >
+                      Reset
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowFilterSort(false);
+                      }}
+                      className="flex-1 px-4 py-2 text-sm bg-black text-white rounded font-medium hover:bg-gray-800 transition-colors"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {loading ? (
             <SpecificCategorySkeleton />
