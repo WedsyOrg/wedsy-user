@@ -14,10 +14,8 @@ import { FaInfinity } from "react-icons/fa";
 import styles from "@/styles/DecorPage.module.css";
 import FAQAccordion from "@/components/accordion/FAQAccordion";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
-import { DecorPageSkeleton } from "@/components/skeletons/wedding-store";
 
 function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightList = [] }) {
-  const [isLoading, setIsLoading] = useState(true);
   const [spotlightIndex, setSpotlightIndex] = useState(0);
   const spotlightRef = useRef(null);
   const spotlightHorizontalRef = useRef(null);
@@ -61,12 +59,22 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
   const [mandapsIndex, setMandapsIndex] = useState([0, 1, 2, 3]);
   const [furnitureIndex, setFurnitureIndex] = useState([0, 1, 2, 3]);
 
-  // Use real data loading instead of simulated loading
-  useEffect(() => {
-    if (bestSeller && popular && spotlightList) {
-      setIsLoading(false);
-    }
-  }, [bestSeller, popular, spotlightList]);
+  // True sliding carousel states
+  const [backdropsTranslateX, setBackdropsTranslateX] = useState(0);
+  const [grandEntryTranslateX, setGrandEntryTranslateX] = useState(0);
+  const [mandapsTranslateX, setMandapsTranslateX] = useState(0);
+  const [furnitureTranslateX, setFurnitureTranslateX] = useState(0);
+  
+  // Pause states for hover functionality
+  const [isPaused, setIsPaused] = useState({
+    backdrops: false,
+    grandEntry: false,
+    mandaps: false,
+    furniture: false
+  });
+  
+  // Item width calculation (451px + 24px gap = 475px)
+  const itemWidth = 475;
 
   const handleEnquiry = () => {
     setEnquiryForm({
@@ -304,10 +312,91 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
     };
   }, [spotlightRef, spotlightList, spotlightIndex, spotlightSwipe]);
 
-  // Show skeleton while loading
-  if (isLoading) {
-    return <DecorPageSkeleton />;
-  }
+  // Optimized carousel - reduced frequency for better performance
+  useEffect(() => {
+    if (!bestSeller || bestSeller.length === 0) return;
+
+    let animationId;
+    let lastTime = Date.now();
+    // Slower speed: one item width every 8 seconds for better performance
+    const constantSpeedPerSecond = itemWidth / 8; // pixels per second
+    let accumulatedMovement = 0;
+
+    const animate = () => {
+      const currentTime = Date.now();
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+
+      // Calculate constant movement amount for this frame
+      const constantMovement = (deltaTime / 1000) * constantSpeedPerSecond;
+      accumulatedMovement += constantMovement;
+
+      // Only update if movement is significant enough (performance optimization)
+      if (accumulatedMovement >= 2) { // Increased threshold for fewer updates
+        const movementToApply = Math.floor(accumulatedMovement);
+        accumulatedMovement -= movementToApply;
+
+        // Batch all updates together for better performance
+        const updates = {};
+        
+        if (!isPaused.backdrops) {
+          updates.backdrops = (prev) => {
+            let newX = prev - movementToApply;
+            const resetThreshold = -(Math.min(bestSeller.length, 6) * itemWidth);
+            if (newX <= resetThreshold) {
+              newX += Math.min(bestSeller.length, 6) * itemWidth;
+            }
+            return newX;
+          };
+        }
+        if (!isPaused.grandEntry) {
+          updates.grandEntry = (prev) => {
+            let newX = prev - movementToApply;
+            const resetThreshold = -(Math.min(bestSeller.length, 6) * itemWidth);
+            if (newX <= resetThreshold) {
+              newX += Math.min(bestSeller.length, 6) * itemWidth;
+            }
+            return newX;
+          };
+        }
+        if (!isPaused.mandaps) {
+          updates.mandaps = (prev) => {
+            let newX = prev - movementToApply;
+            const resetThreshold = -(Math.min(bestSeller.length, 6) * itemWidth);
+            if (newX <= resetThreshold) {
+              newX += Math.min(bestSeller.length, 6) * itemWidth;
+            }
+            return newX;
+          };
+        }
+        if (!isPaused.furniture) {
+          updates.furniture = (prev) => {
+            let newX = prev - movementToApply;
+            const resetThreshold = -(Math.min(bestSeller.length, 6) * itemWidth);
+            if (newX <= resetThreshold) {
+              newX += Math.min(bestSeller.length, 6) * itemWidth;
+            }
+            return newX;
+          };
+        }
+
+        // Apply all updates
+        if (updates.backdrops) setBackdropsTranslateX(updates.backdrops);
+        if (updates.grandEntry) setGrandEntryTranslateX(updates.grandEntry);
+        if (updates.mandaps) setMandapsTranslateX(updates.mandaps);
+        if (updates.furniture) setFurnitureTranslateX(updates.furniture);
+      }
+
+      animationId = requestAnimationFrame(animate);
+    };
+
+    // Start the animation
+    animationId = requestAnimationFrame(animate);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+    };
+  }, [bestSeller, isPaused, itemWidth]);
 
   return (
     <div className="bg-[#F4F4F4] min-h-screen w-full">
@@ -333,6 +422,103 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           <meta name="robots" content="index, follow" />
           <meta name="copyright" content="Wedsy" />
           <meta name="language" content="EN" />
+          <style jsx>{`
+            @keyframes slideInFromRight {
+              0% {
+                opacity: 0;
+                transform: translateX(100px) scale(0.9);
+              }
+              50% {
+                opacity: 0.7;
+                transform: translateX(-10px) scale(0.95);
+              }
+              100% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+              }
+            }
+            
+            @keyframes slideOutToLeft {
+              0% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+              }
+              50% {
+                opacity: 0.7;
+                transform: translateX(10px) scale(0.95);
+              }
+              100% {
+                opacity: 0;
+                transform: translateX(-100px) scale(0.9);
+              }
+            }
+            
+            @keyframes fadeInScale {
+              0% {
+                opacity: 0;
+                transform: scale(0.8);
+              }
+              100% {
+                opacity: 1;
+                transform: scale(1);
+              }
+            }
+            
+            .carousel-item {
+              animation: fadeInScale 0.6s ease-out;
+            }
+            
+            .carousel-item.slide-in {
+              animation: slideInFromRight 0.7s ease-out;
+            }
+            
+            .carousel-item.slide-out {
+              animation: slideOutToLeft 0.5s ease-in;
+            }
+            
+            @keyframes subtlePulse {
+              0%, 100% {
+                transform: scale(1);
+              }
+              50% {
+                transform: scale(1.02);
+              }
+            }
+            
+            .carousel-container {
+              animation: subtlePulse 4s ease-in-out infinite;
+            }
+            
+            .carousel-item {
+              will-change: transform;
+              backface-visibility: hidden;
+              transform: translateZ(0);
+              contain: layout style paint;
+              isolation: isolate;
+            }
+            
+            .carousel-container {
+              will-change: transform;
+              backface-visibility: hidden;
+              transform: translateZ(0);
+              contain: layout style paint;
+              isolation: isolate;
+            }
+            
+            /* Optimize images for better performance */
+            .carousel-item img {
+              image-rendering: optimizeSpeed;
+              image-rendering: -moz-crisp-edges;
+              image-rendering: -webkit-optimize-contrast;
+              image-rendering: crisp-edges;
+              transform: translateZ(0);
+            }
+            
+            /* Reduce repaints during animation */
+            .carousel-item * {
+              transform: translateZ(0);
+            }
+          `}</style>
         </Head>
         {/* <div className="hidden">
           <h1>Wedding Decoration Packages - Wedsy&apos;s</h1>
@@ -616,47 +802,48 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           </div>
 
 
-          {/* Desktop Slider */}
-          <div className="hidden md:flex relative w-full justify-center items-center my-6">
-            <img
-              src="/assets/decor/icons/left-arrow.png"
-              alt="Previous"
-              className="cursor-pointer absolute left-16 z-10 top-1/2 -translate-y-1/2 scale-[0.5] md:scale-[1] w-12 h-12"
-              onClick={handleBestSellerPrev}
-            />
-            <div className="flex gap-6 justify-center w-full overflow-hidden">
-              <div
-                className="flex gap-6 transition-transform duration-500 ease-in-out"
+          {/* Desktop Slider - Moving Carousel */}
+          <div 
+            className="hidden md:flex relative w-full justify-center items-center my-6"
+            onMouseEnter={() => {
+              // Pause moving carousel on hover
+              setIsPaused(prev => ({ ...prev, backdrops: true }));
+            }}
+            onMouseLeave={() => {
+              // Resume moving carousel when mouse leaves
+              setIsPaused(prev => ({ ...prev, backdrops: false }));
+            }}
+          >
+            <div className="flex gap-6 justify-center w-full overflow-hidden carousel-container">
+              <div 
+                className="flex gap-6"
                 style={{
-                  transform: `translateX(-${bestSellerSlideOffset}px)`
+                  transform: `translateX(${backdropsTranslateX}px)`,
+                  width: `${Math.min(bestSeller.length, 6) * 3 * itemWidth}px` // Triple width for seamless circular flow
                 }}
               >
-                {bestSellerIndex.map((index, idx) =>
-                  bestSeller[index] ? (
-                    <div key={`${index}-${bestSellerSlideOffset}`} className="relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden">
-                      <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
-                        <DecorCard
-                          decor={bestSeller[index]}
-                          className="w-full h-full rounded-[30px] overflow-hidden"
-                          hideInfo={true}
-                        />
-                      </div>
-                      {/* Hover overlay for name and price */}
-                      <div className="hidden md:flex flex-col justify-end absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6">
-                        <h3 className="text-lg font-semibold text-white mb-1">{bestSeller[index].name}</h3>
-                        <p className="text-base font-semibold text-white">₹ {bestSeller[index].productTypes?.[0]?.sellingPrice}</p>
-                      </div>
+                {/* Render cards three times for seamless circular loop */}
+                    {[...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6)].map((decor, index) => (
+                  <div 
+                    key={`backdrops-${index}`} 
+                    className="carousel-item relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
+                  >
+                    <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
+                      <DecorCard
+                        decor={decor}
+                        className="w-full h-full rounded-[30px] overflow-hidden"
+                        hideInfo={true}
+                      />
                     </div>
-                  ) : null
-                )}
+                    {/* Hover overlay for name and price */}
+                    <div className="hidden md:flex flex-col justify-end absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6">
+                      <h3 className="text-lg font-semibold text-white mb-1">{decor.name}</h3>
+                      <p className="text-base font-semibold text-white">₹ {decor.productTypes?.[0]?.sellingPrice}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-            <img
-              src="/assets/decor/icons/right-arrow.png"
-              alt="Next"
-              className="cursor-pointer absolute right-16 z-10 top-1/2 -translate-y-1/2 scale-[0.5] md:scale-[1] w-12 h-12"
-              onClick={handleBestSellerNext}
-            />
           </div>
 
 
@@ -664,6 +851,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           <div className="md:hidden px-4">
             <div
               className="flex gap-4 overflow-x-auto snap-x scroll-smooth hide-scrollbar mobile-slider"
+              style={{ scrollBehavior: 'auto' }}
               onScroll={(e) => {
                 const scrollLeft = e.target.scrollLeft;
                 const slideWidth = e.target.scrollWidth / Math.ceil(bestSeller.length / 4);
@@ -671,7 +859,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 setCurrentSlide(newSlide);
               }}
             >
-              {Array.from({ length: Math.ceil(bestSeller.length / 4) }, (_, groupIndex) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, groupIndex) => (
                 <div
                   key={groupIndex}
                   className="min-w-full snap-start grid grid-cols-2 gap-4"
@@ -693,7 +881,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* Dots below slider*/}
             <div className="flex gap-2 items-center justify-center mt-4">
-              {Array.from({ length: Math.ceil(bestSeller.length / 4) }, (_, i) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, i) => (
                 <span
                   key={i}
                   className={`rounded-full h-2 w-2 cursor-pointer transition-colors duration-300 ${i === currentSlide ? 'bg-black' : 'bg-gray-400'
@@ -746,47 +934,48 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           </div>
 
 
-          {/* Desktop Slider */}
-          <div className="hidden md:flex relative w-full justify-center items-center my-6">
-            <img
-              src="/assets/decor/icons/left-arrow.png"
-              alt="Previous"
-              className="cursor-pointer absolute left-16 z-10 top-1/2 -translate-y-1/2 scale-[0.5] md:scale-[1] w-12 h-12"
-              onClick={handleGrandEntryPrev}
-            />
-            <div className="flex gap-6 justify-center w-full overflow-hidden">
-              <div
-                className="flex gap-6 transition-transform duration-500 ease-in-out"
+          {/* Desktop Slider - Moving Carousel */}
+          <div 
+            className="hidden md:flex relative w-full justify-center items-center my-6"
+            onMouseEnter={() => {
+              // Pause moving carousel on hover
+              setIsPaused(prev => ({ ...prev, grandEntry: true }));
+            }}
+            onMouseLeave={() => {
+              // Resume moving carousel when mouse leaves
+              setIsPaused(prev => ({ ...prev, grandEntry: false }));
+            }}
+          >
+            <div className="flex gap-6 justify-center w-full overflow-hidden carousel-container">
+              <div 
+                className="flex gap-6"
                 style={{
-                  transform: `translateX(-${grandEntrySlideOffset}px)`
+                  transform: `translateX(${grandEntryTranslateX}px)`,
+                  width: `${Math.min(bestSeller.length, 6) * 3 * itemWidth}px` // Triple width for seamless circular flow
                 }}
               >
-                {grandEntryIndex.map((index, idx) =>
-                  bestSeller[index] ? (
-                    <div key={`${index}-${grandEntrySlideOffset}`} className="relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden">
-                      <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
-                        <DecorCard
-                          decor={bestSeller[index]}
-                          className="w-full h-full rounded-[30px] overflow-hidden"
-                          hideInfo={true}
-                        />
-                      </div>
-                      {/* Hover overlay for name and price */}
-                      <div className="hidden md:flex flex-col justify-end absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6">
-                        <h3 className="text-lg font-semibold text-white mb-1">{bestSeller[index].name}</h3>
-                        <p className="text-base font-semibold text-white">₹ {bestSeller[index].productTypes?.[0]?.sellingPrice}</p>
-                      </div>
+                {/* Render cards three times for seamless circular loop */}
+                    {[...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6)].map((decor, index) => (
+                  <div 
+                    key={`grandEntry-${index}`} 
+                    className="carousel-item relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
+                  >
+                    <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
+                      <DecorCard
+                        decor={decor}
+                        className="w-full h-full rounded-[30px] overflow-hidden"
+                        hideInfo={true}
+                      />
                     </div>
-                  ) : null
-                )}
+                    {/* Hover overlay for name and price */}
+                    <div className="hidden md:flex flex-col justify-end absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6">
+                      <h3 className="text-lg font-semibold text-white mb-1">{decor.name}</h3>
+                      <p className="text-base font-semibold text-white">₹ {decor.productTypes?.[0]?.sellingPrice}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-            <img
-              src="/assets/decor/icons/right-arrow.png"
-              alt="Next"
-              className="cursor-pointer absolute right-16 z-10 top-1/2 -translate-y-1/2 scale-[0.5] md:scale-[1] w-12 h-12"
-              onClick={handleGrandEntryNext}
-            />
           </div>
 
 
@@ -794,6 +983,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           <div className="md:hidden px-4">
             <div
               className="flex gap-4 overflow-x-auto snap-x scroll-smooth hide-scrollbar mobile-slider"
+              style={{ scrollBehavior: 'auto' }}
               onScroll={(e) => {
                 const scrollLeft = e.target.scrollLeft;
                 const slideWidth = e.target.scrollWidth / Math.ceil(bestSeller.length / 4);
@@ -801,7 +991,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 setCurrentSlide(newSlide);
               }}
             >
-              {Array.from({ length: Math.ceil(bestSeller.length / 4) }, (_, groupIndex) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, groupIndex) => (
                 <div
                   key={groupIndex}
                   className="min-w-full snap-start grid grid-cols-2 gap-4"
@@ -823,7 +1013,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* Dots below slider*/}
             <div className="flex gap-2 items-center justify-center mt-4">
-              {Array.from({ length: Math.ceil(bestSeller.length / 4) }, (_, i) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, i) => (
                 <span
                   key={i}
                   className={`rounded-full h-2 w-2 cursor-pointer transition-colors duration-300 ${i === currentSlide ? 'bg-black' : 'bg-gray-400'
@@ -1027,47 +1217,48 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           </div>
 
 
-          {/* Desktop Slider */}
-          <div className="hidden md:flex relative w-full justify-center items-center my-6">
-            <img
-              src="/assets/decor/icons/left-arrow.png"
-              alt="Previous"
-              className="cursor-pointer absolute left-16 z-10 top-1/2 -translate-y-1/2 scale-[0.5] md:scale-[1] w-12 h-12"
-              onClick={handleMandapsPrev}
-            />
-            <div className="flex gap-6 justify-center w-full overflow-hidden">
-              <div
-                className="flex gap-6 transition-transform duration-500 ease-in-out"
+          {/* Desktop Slider - Moving Carousel */}
+          <div 
+            className="hidden md:flex relative w-full justify-center items-center my-6"
+            onMouseEnter={() => {
+              // Pause moving carousel on hover
+              setIsPaused(prev => ({ ...prev, mandaps: true }));
+            }}
+            onMouseLeave={() => {
+              // Resume moving carousel when mouse leaves
+              setIsPaused(prev => ({ ...prev, mandaps: false }));
+            }}
+          >
+            <div className="flex gap-6 justify-center w-full overflow-hidden carousel-container">
+              <div 
+                className="flex gap-6"
                 style={{
-                  transform: `translateX(-${mandapsSlideOffset}px)`
+                  transform: `translateX(${mandapsTranslateX}px)`,
+                  width: `${Math.min(bestSeller.length, 6) * 3 * itemWidth}px` // Triple width for seamless circular flow
                 }}
               >
-                {mandapsIndex.map((index, idx) =>
-                  bestSeller[index] ? (
-                    <div key={`${index}-${mandapsSlideOffset}`} className="relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden">
-                      <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
-                        <DecorCard
-                          decor={bestSeller[index]}
-                          className="w-full h-full rounded-[30px] overflow-hidden"
-                          hideInfo={true}
-                        />
-                      </div>
-                      {/* Hover overlay for name and price */}
-                      <div className="hidden md:flex flex-col justify-end absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6">
-                        <h3 className="text-lg font-semibold text-white mb-1">{bestSeller[index].name}</h3>
-                        <p className="text-base font-semibold text-white">₹ {bestSeller[index].productTypes?.[0]?.sellingPrice}</p>
-                      </div>
+                {/* Render cards three times for seamless circular loop */}
+                    {[...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6)].map((decor, index) => (
+                  <div 
+                    key={`mandaps-${index}`} 
+                    className="carousel-item relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
+                  >
+                    <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
+                      <DecorCard
+                        decor={decor}
+                        className="w-full h-full rounded-[30px] overflow-hidden"
+                        hideInfo={true}
+                      />
                     </div>
-                  ) : null
-                )}
+                    {/* Hover overlay for name and price */}
+                    <div className="hidden md:flex flex-col justify-end absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6">
+                      <h3 className="text-lg font-semibold text-white mb-1">{decor.name}</h3>
+                      <p className="text-base font-semibold text-white">₹ {decor.productTypes?.[0]?.sellingPrice}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-            <img
-              src="/assets/decor/icons/right-arrow.png"
-              alt="Next"
-              className="cursor-pointer absolute right-16 z-10 top-1/2 -translate-y-1/2 scale-[0.5] md:scale-[1] w-12 h-12"
-              onClick={handleMandapsNext}
-            />
           </div>
 
 
@@ -1075,6 +1266,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           <div className="md:hidden px-4">
             <div
               className="flex gap-4 overflow-x-auto snap-x scroll-smooth hide-scrollbar mobile-slider"
+              style={{ scrollBehavior: 'auto' }}
               onScroll={(e) => {
                 const scrollLeft = e.target.scrollLeft;
                 const slideWidth = e.target.scrollWidth / Math.ceil(bestSeller.length / 4);
@@ -1082,7 +1274,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 setCurrentSlide(newSlide);
               }}
             >
-              {Array.from({ length: Math.ceil(bestSeller.length / 4) }, (_, groupIndex) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, groupIndex) => (
                 <div
                   key={groupIndex}
                   className="min-w-full snap-start grid grid-cols-2 gap-4"
@@ -1104,7 +1296,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* Dots below slider*/}
             <div className="flex gap-2 items-center justify-center mt-4">
-              {Array.from({ length: Math.ceil(bestSeller.length / 4) }, (_, i) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, i) => (
                 <span
                   key={i}
                   className={`rounded-full h-2 w-2 cursor-pointer transition-colors duration-300 ${i === currentSlide ? 'bg-black' : 'bg-gray-400'
@@ -1157,47 +1349,48 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           </div>
 
 
-          {/* Desktop Slider */}
-          <div className="hidden md:flex relative w-full justify-center items-center my-6">
-            <img
-              src="/assets/decor/icons/left-arrow.png"
-              alt="Previous"
-              className="cursor-pointer absolute left-16 z-10 top-1/2 -translate-y-1/2 scale-[0.5] md:scale-[1] w-12 h-12"
-              onClick={handleFurniturePrev}
-            />
-            <div className="flex gap-6 justify-center w-full overflow-hidden">
-              <div
-                className="flex gap-6 transition-transform duration-500 ease-in-out"
+          {/* Desktop Slider - Moving Carousel */}
+          <div 
+            className="hidden md:flex relative w-full justify-center items-center my-6"
+            onMouseEnter={() => {
+              // Pause moving carousel on hover
+              setIsPaused(prev => ({ ...prev, furniture: true }));
+            }}
+            onMouseLeave={() => {
+              // Resume moving carousel when mouse leaves
+              setIsPaused(prev => ({ ...prev, furniture: false }));
+            }}
+          >
+            <div className="flex gap-6 justify-center w-full overflow-hidden carousel-container">
+              <div 
+                className="flex gap-6"
                 style={{
-                  transform: `translateX(-${furnitureSlideOffset}px)`
+                  transform: `translateX(${furnitureTranslateX}px)`,
+                  width: `${Math.min(bestSeller.length, 6) * 3 * itemWidth}px` // Triple width for seamless circular flow
                 }}
               >
-                {furnitureIndex.map((index, idx) =>
-                  bestSeller[index] ? (
-                    <div key={`${index}-${furnitureSlideOffset}`} className="relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden">
-                      <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
-                        <DecorCard
-                          decor={bestSeller[index]}
-                          className="w-full h-full rounded-[30px] overflow-hidden"
-                          hideInfo={true}
-                        />
-                      </div>
-                      {/* Hover overlay for name and price */}
-                      <div className="hidden md:flex flex-col justify-end absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6">
-                        <h3 className="text-lg font-semibold text-white mb-1">{bestSeller[index].name}</h3>
-                        <p className="text-base font-semibold text-white">₹ {bestSeller[index].productTypes?.[0]?.sellingPrice}</p>
-                      </div>
+                {/* Render cards three times for seamless circular loop */}
+                    {[...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6)].map((decor, index) => (
+                  <div 
+                    key={`furniture-${index}`} 
+                    className="carousel-item relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
+                  >
+                    <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
+                      <DecorCard
+                        decor={decor}
+                        className="w-full h-full rounded-[30px] overflow-hidden"
+                        hideInfo={true}
+                      />
                     </div>
-                  ) : null
-                )}
+                    {/* Hover overlay for name and price */}
+                    <div className="hidden md:flex flex-col justify-end absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6">
+                      <h3 className="text-lg font-semibold text-white mb-1">{decor.name}</h3>
+                      <p className="text-base font-semibold text-white">₹ {decor.productTypes?.[0]?.sellingPrice}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-            <img
-              src="/assets/decor/icons/right-arrow.png"
-              alt="Next"
-              className="cursor-pointer absolute right-16 z-10 top-1/2 -translate-y-1/2 scale-[0.5] md:scale-[1] w-12 h-12"
-              onClick={handleFurnitureNext}
-            />
           </div>
 
 
@@ -1205,6 +1398,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           <div className="md:hidden px-4">
             <div
               className="flex gap-4 overflow-x-auto snap-x scroll-smooth hide-scrollbar mobile-slider"
+              style={{ scrollBehavior: 'auto' }}
               onScroll={(e) => {
                 const scrollLeft = e.target.scrollLeft;
                 const slideWidth = e.target.scrollWidth / Math.ceil(bestSeller.length / 4);
@@ -1212,7 +1406,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 setCurrentSlide(newSlide);
               }}
             >
-              {Array.from({ length: Math.ceil(bestSeller.length / 4) }, (_, groupIndex) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, groupIndex) => (
                 <div
                   key={groupIndex}
                   className="min-w-full snap-start grid grid-cols-2 gap-4"
@@ -1234,7 +1428,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* Dots below slider*/}
             <div className="flex gap-2 items-center justify-center mt-4">
-              {Array.from({ length: Math.ceil(bestSeller.length / 4) }, (_, i) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, i) => (
                 <span
                   key={i}
                   className={`rounded-full h-2 w-2 cursor-pointer transition-colors duration-300 ${i === currentSlide ? 'bg-black' : 'bg-gray-400'
