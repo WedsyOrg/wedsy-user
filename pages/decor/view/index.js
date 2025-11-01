@@ -7,6 +7,7 @@ import DecorCard from "@/components/cards/DecorCard";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
 import Masonry from "react-masonry-css";
 import { SpecificCategorySkeleton } from "@/components/skeletons/wedding-store/specific-category";
+import SortFilterButton from "@/components/SortFilterButton";
 
 // SEO Configuration for Different Categories
 const CATEGORY_SEO_MAP = {
@@ -318,29 +319,19 @@ function DecorListing({
               ))}
             </div>
 
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={() => {
+            <div className="flex justify-end">
+              <SortFilterButton
+                onSortClick={() => {
                   setActiveTab("sort");
                   setSelectedSection("sort-price");
                   setShowFilterSort(true);
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
-              >
-                <MdSort size={20} />
-                Sort
-              </button>
-              <button
-                onClick={() => {
+                onFilterClick={() => {
                   setActiveTab("filter");
                   setSelectedSection("occasion");
                   setShowFilterSort(true);
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
-              >
-                <MdTune size={20} />
-                Filter
-              </button>
+              />
             </div>
           </div>
 
