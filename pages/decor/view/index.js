@@ -65,6 +65,9 @@ function DecorListing({
   const [showFilterSort, setShowFilterSort] = useState(false);
   const [activeTab, setActiveTab] = useState("sort"); // "sort" or "filter"
   const [selectedSection, setSelectedSection] = useState(null);
+  
+  // Temporary state for pending filter/sort changes (only applied on Apply button click)
+  const [tempFilters, setTempFilters] = useState(filters);
 
   const occasionList = [
     "Reception",
@@ -359,7 +362,7 @@ function DecorListing({
   };
 
   const handleFilterChange = (filterType, value) => {
-    setFilters((prev) => ({
+    setTempFilters((prev) => ({
       ...prev,
       [filterType]: prev[filterType].includes(value)
         ? prev[filterType].filter((item) => item !== value)
@@ -368,7 +371,42 @@ function DecorListing({
   };
 
   const handleSortChange = (sortValue) => {
-    setFilters((prev) => ({ ...prev, sort: sortValue }));
+    setTempFilters((prev) => ({ ...prev, sort: sortValue }));
+  };
+
+  const handleTempPriceRangeChange = (newRange) => {
+    setTempFilters((prev) => ({ ...prev, priceRange: newRange }));
+  };
+
+  // Initialize temp filters when modal opens
+  useEffect(() => {
+    if (showFilterSort) {
+      setTempFilters({ ...filters });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showFilterSort]);
+
+  // Apply filters/sort when Apply button is clicked
+  const handleApplyFilters = () => {
+    setFilters(tempFilters);
+    setShowFilterSort(false);
+  };
+
+  // Reset filters (both temp and actual)
+  const handleResetFilters = () => {
+    const resetFilters = {
+      category: filters.category, // Keep current category
+      sort: "Sort",
+      occasion: [],
+      colours: [],
+      type: [],
+      size: [],
+      style: [],
+      priceRange: [0, 115000],
+    };
+    setTempFilters(resetFilters);
+    setFilters(resetFilters);
+    setSelectedSection(null);
   };
 
   const dynamicHeading = filters.category ? `${filters.category}` : "All Decor";
@@ -647,10 +685,9 @@ function DecorListing({
                           <button
                             onClick={() => {
                               handleSortChange("Newest to Oldest");
-                              setShowFilterSort(false);
                             }}
                             className={`w-full text-left px-3 py-2 text-sm rounded ${
-                              filters.sort === "Newest to Oldest" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
+                              tempFilters.sort === "Newest to Oldest" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
                             }`}
                           >
                             Newest to Oldest
@@ -658,10 +695,9 @@ function DecorListing({
                           <button
                             onClick={() => {
                               handleSortChange("Oldest to Newest");
-                              setShowFilterSort(false);
                             }}
                             className={`w-full text-left px-3 py-2 text-sm rounded ${
-                              filters.sort === "Oldest to Newest" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
+                              tempFilters.sort === "Oldest to Newest" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
                             }`}
                           >
                             Oldest to Newest
@@ -669,10 +705,9 @@ function DecorListing({
                           <button
                             onClick={() => {
                               handleSortChange("Price: Low to High");
-                              setShowFilterSort(false);
                             }}
                             className={`w-full text-left px-3 py-2 text-sm rounded ${
-                              filters.sort === "Price: Low to High" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
+                              tempFilters.sort === "Price: Low to High" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
                             }`}
                           >
                             Price: Low to High
@@ -680,10 +715,9 @@ function DecorListing({
                           <button
                             onClick={() => {
                               handleSortChange("Price: High to Low");
-                              setShowFilterSort(false);
                             }}
                             className={`w-full text-left px-3 py-2 text-sm rounded ${
-                              filters.sort === "Price: High to Low" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
+                              tempFilters.sort === "Price: High to Low" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
                             }`}
                           >
                             Price: High to Low
@@ -697,7 +731,7 @@ function DecorListing({
                             <label key={occasion} className="flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-gray-50 cursor-pointer">
                               <input
                                 type="checkbox"
-                                checked={filters.occasion.includes(occasion)}
+                                checked={tempFilters.occasion.includes(occasion)}
                                 onChange={(e) => {
                                   handleFilterChange("occasion", occasion);
                                 }}
@@ -715,7 +749,7 @@ function DecorListing({
                             <label key={colour.name} className="flex items-center gap-3 px-3 py-2 text-sm rounded hover:bg-gray-50 cursor-pointer">
                               <input
                                 type="checkbox"
-                                checked={filters.colours.includes(colour.name)}
+                                checked={tempFilters.colours.includes(colour.name)}
                                 onChange={(e) => {
                                   handleFilterChange("colours", colour.name);
                                 }}
@@ -737,7 +771,7 @@ function DecorListing({
                             <label key={type} className="flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-gray-50 cursor-pointer">
                               <input
                                 type="checkbox"
-                                checked={filters.type.includes(type)}
+                                checked={tempFilters.type.includes(type)}
                                 onChange={() => {
                                   handleFilterChange("type", type);
                                 }}
@@ -755,7 +789,7 @@ function DecorListing({
                             <label key={size} className="flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-gray-50 cursor-pointer">
                               <input
                                 type="checkbox"
-                                checked={filters.size.includes(size)}
+                                checked={tempFilters.size.includes(size)}
                                 onChange={() => {
                                   handleFilterChange("size", size);
                                 }}
@@ -764,7 +798,7 @@ function DecorListing({
                               <span>{size}</span>
                             </label>
                           ))}
-                              </div>
+                        </div>
                       )}
                       
                       {activeTab === "filter" && selectedSection === "style" && (
@@ -773,7 +807,7 @@ function DecorListing({
                             <label key={style} className="flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-gray-50 cursor-pointer">
                               <input
                                 type="checkbox"
-                                checked={filters.style.includes(style)}
+                                checked={tempFilters.style.includes(style)}
                                 onChange={() => {
                                   handleFilterChange("style", style);
                                 }}
@@ -843,31 +877,25 @@ function DecorListing({
                                 type="range"
                                 min="0"
                                 max="115000"
-                                value={filters.priceRange[0]}
+                                value={tempFilters.priceRange[0]}
                                 onChange={(e) => {
-                                  const newMin = Math.min(Number(e.target.value), filters.priceRange[1]);
-                                  setFilters(prev => ({
-                                    ...prev,
-                                    priceRange: [newMin, prev.priceRange[1]]
-                                  }));
+                                  const newMin = Math.min(Number(e.target.value), tempFilters.priceRange[1]);
+                                  handleTempPriceRangeChange([newMin, tempFilters.priceRange[1]]);
                                 }}
                                 className="absolute w-full h-0.5 rounded-lg appearance-none cursor-pointer"
                                 style={{
                                   zIndex: 3,
-                                  pointerEvents: filters.priceRange[0] === filters.priceRange[1] ? 'auto' : 'none'
+                                  pointerEvents: tempFilters.priceRange[0] === tempFilters.priceRange[1] ? 'auto' : 'none'
                                 }}
                               />
                               <input
                                 type="range"
                                 min="0"
                                 max="115000"
-                                value={filters.priceRange[1]}
+                                value={tempFilters.priceRange[1]}
                                 onChange={(e) => {
-                                  const newMax = Math.max(Number(e.target.value), filters.priceRange[0]);
-                                  setFilters(prev => ({
-                                    ...prev,
-                                    priceRange: [prev.priceRange[0], newMax]
-                                  }));
+                                  const newMax = Math.max(Number(e.target.value), tempFilters.priceRange[0]);
+                                  handleTempPriceRangeChange([tempFilters.priceRange[0], newMax]);
                                 }}
                                 className="absolute w-full h-0.5 rounded-lg appearance-none cursor-pointer"
                                 style={{ zIndex: 3 }}
@@ -875,8 +903,8 @@ function DecorListing({
                               <div 
                                 className="absolute h-0.5 bg-blue-600"
                                 style={{
-                                  left: `${(filters.priceRange[0] / 115000) * 100}%`,
-                                  width: `${((filters.priceRange[1] - filters.priceRange[0]) / 115000) * 100}%`,
+                                  left: `${(tempFilters.priceRange[0] / 115000) * 100}%`,
+                                  width: `${((tempFilters.priceRange[1] - tempFilters.priceRange[0]) / 115000) * 100}%`,
                                   zIndex: 0
                                 }}
                               />
@@ -899,27 +927,13 @@ function DecorListing({
                   {/* Bottom Buttons */}
                   <div className="flex border-t p-3 gap-3">
                     <button
-                      onClick={() => {
-                        setFilters(prev => ({ 
-                          ...prev, 
-                          sort: "Sort", 
-                          occasion: [],
-                          colours: [],
-                          type: [],
-                          size: [],
-                          style: [],
-                          priceRange: [0, 115000]
-                        }));
-                        setSelectedSection(null);
-                      }}
+                      onClick={handleResetFilters}
                       className="flex-1 px-4 py-2 text-sm border border-gray-300 rounded font-medium hover:bg-gray-50 transition-colors"
                     >
                       Reset
                     </button>
                     <button
-                      onClick={() => {
-                        setShowFilterSort(false);
-                      }}
+                      onClick={handleApplyFilters}
                       className="flex-1 px-4 py-2 text-sm bg-black text-white rounded font-medium hover:bg-gray-800 transition-colors"
                     >
                       Apply
