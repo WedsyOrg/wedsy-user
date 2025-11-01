@@ -55,12 +55,10 @@ function DecorListing({
     category: category || "Stage",
     sort: "Sort",
     occasion: [],
-    colours: [],
-    size: {
-      length: null,
-      width: null,
-      height: null,
-    },
+    colours: [], // Multi-select: Previous filter category
+    type: [], // Multi-select: 'Modern', 'Traditional'
+    size: [], // Multi-select: 'Small', 'Medium', 'Large' (category-specific)
+    style: [], // Multi-select: 'Single', 'Running' (only for Pathway)
     priceRange: [0, 115000],
   });
 
@@ -95,6 +93,102 @@ function DecorListing({
     { name: "Peach", color: "#FFC0CB" },
   ];
 
+  // Helper function to get category-specific filter configuration
+  const getCategoryFilters = (cat) => {
+    // Map "Stage" to "Backdrop" for filtering purposes
+    const normalizedCat = cat === "Stage" ? "Backdrop" : cat;
+    const categoryMap = {
+      Backdrop: {
+        occasion: true,
+        colours: true, // Keep previous filter
+        type: true,
+        size: true,
+        style: false,
+      },
+      Mandap: {
+        occasion: true,
+        colours: true, // Keep previous filter
+        type: true,
+        size: true,
+        style: false,
+      },
+      Photobooth: {
+        occasion: true,
+        colours: true, // Keep previous filter
+        type: true,
+        size: false,
+        style: false,
+      },
+      Entrance: {
+        occasion: true,
+        colours: true, // Keep previous filter
+        type: true,
+        size: true,
+        style: false,
+      },
+      Pathway: {
+        occasion: true,
+        colours: true, // Keep previous filter
+        type: true,
+        size: false,
+        style: true,
+      },
+      Nameboard: {
+        occasion: true,
+        colours: true, // Keep previous filter
+        type: true,
+        size: true,
+        style: false,
+      },
+    };
+    return categoryMap[normalizedCat] || {
+      occasion: true,
+      colours: true, // Keep previous filter
+      type: true,
+      size: false,
+      style: false,
+    };
+  };
+
+  // Helper function to get size options based on category
+  const getSizeOptions = (cat) => {
+    // Map "Stage" to "Backdrop" for filtering purposes
+    const normalizedCat = cat === "Stage" ? "Backdrop" : cat;
+    if (normalizedCat === "Backdrop") {
+      return ["Small", "Medium", "Large"];
+    } else if (normalizedCat === "Mandap" || normalizedCat === "Entrance" || normalizedCat === "Nameboard") {
+      return ["Medium", "Large"];
+    }
+    return [];
+  };
+
+  // Helper function to map product length to size category (for Backdrop)
+  const getProductSize = (product) => {
+    const length = product.length || product.productInfo?.length || 0;
+    if (length <= 16) return "Small";
+    if (length <= 30) return "Medium";
+    return "Large";
+  };
+
+  // Helper function to map product quantity_unit to style (for Pathway)
+  const getProductStyle = (product) => {
+    const unit = product.unit || product.quantity_unit || "";
+    if (unit.toLowerCase() === "pc" || unit.toLowerCase() === "piece") {
+      return "Single";
+    }
+    if (unit.toLowerCase() === "ft" || unit.toLowerCase() === "meter" || unit.toLowerCase().includes("running")) {
+      return "Running";
+    }
+    return null;
+  };
+
+  // Helper function to get product type (Modern/Traditional)
+  // This would need to be based on your actual data structure
+  // For now, we'll check if product has a type field or use a default
+  const getProductType = (product) => {
+    return product.type || product.style || "Modern"; // Default to Modern if not specified
+  };
+
   // Generate dynamic SEO content
   const currentCategory = filters.category || "Stage";
   const seoConfig =
@@ -121,13 +215,6 @@ function DecorListing({
       });
 
       if (filters.category) params.append("category", filters.category);
-      if (
-        filters.sort &&
-        filters.sort !== "Sort" &&
-        filters.sort !== "New-Arrivals"
-      ) {
-        params.append("sort", filters.sort);
-      }
       if (filters.occasion.length > 0) {
         params.append("occassion", filters.occasion.join("|"));
       }
@@ -138,15 +225,115 @@ function DecorListing({
         );
         const data = await response.json();
 
-        let sortedList = data.list || [];
-        if (filters.sort === "New-Arrivals") {
-          sortedList = [...sortedList].sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          );
+        let filteredList = data.list || [];
+
+        // Apply client-side filtering
+        filteredList = filteredList.filter((product) => {
+          // Filter by occasion
+          if (filters.occasion.length > 0) {
+            const productOccasions = product.occasions || product.occasion || [];
+            const hasMatchingOccasion = filters.occasion.some((occ) =>
+              Array.isArray(productOccasions)
+                ? productOccasions.includes(occ)
+                : productOccasions === occ
+            );
+            if (!hasMatchingOccasion) return false;
+          }
+
+          // Filter by colours (previous filter category)
+          if (filters.colours.length > 0) {
+            const productColours = product.colours || product.colors || product.color || [];
+            const hasMatchingColour = filters.colours.some((colour) =>
+              Array.isArray(productColours)
+                ? productColours.some((pc) => 
+                    typeof pc === "string" ? pc.toLowerCase() === colour.toLowerCase() : pc.name?.toLowerCase() === colour.toLowerCase()
+                  )
+                : (typeof productColours === "string" ? productColours.toLowerCase() === colour.toLowerCase() : productColours.name?.toLowerCase() === colour.toLowerCase())
+            );
+            if (!hasMatchingColour) return false;
+          }
+
+          // Filter by type (Modern/Traditional)
+          if (filters.type.length > 0) {
+            const productType = getProductType(product);
+            if (!filters.type.includes(productType)) return false;
+          }
+
+          // Filter by size (category-specific)
+          const normalizedCategory = currentCategory === "Stage" ? "Backdrop" : currentCategory;
+          if (filters.size.length > 0 && normalizedCategory === "Backdrop") {
+            const productSize = getProductSize(product);
+            if (!filters.size.includes(productSize)) return false;
+          } else if (filters.size.length > 0 && ["Mandap", "Entrance", "Nameboard"].includes(normalizedCategory)) {
+            // For Mandap, Entrance, and Nameboard, we need to determine size based on product dimensions
+            // This is a placeholder - you may need to adjust based on your actual product data structure
+            // For now, we'll check if product has size field or derive from dimensions
+            const productSize = product.size || 
+                               (product.length > 20 ? "Large" : "Medium") || 
+                               "Medium";
+            if (!filters.size.includes(productSize)) return false;
+          }
+
+          // Filter by style (Pathway only)
+          if (filters.style.length > 0 && normalizedCategory === "Pathway") {
+            const productStyle = getProductStyle(product);
+            if (!productStyle || !filters.style.includes(productStyle)) return false;
+          }
+
+          // Filter by price range
+          const minPrice = product.productTypes?.reduce((min, pt) => 
+            Math.min(min, pt.sellingPrice || 0), 
+            product.productTypes[0]?.sellingPrice || 0
+          ) || 0;
+          if (minPrice < filters.priceRange[0] || minPrice > filters.priceRange[1]) {
+            return false;
+          }
+
+          return true;
+        });
+
+        // Apply sorting
+        let sortedList = [...filteredList];
+        if (filters.sort === "Newest to Oldest") {
+          sortedList.sort((a, b) => {
+            const dateA = new Date(a.createdAt || a.date_added || 0);
+            const dateB = new Date(b.createdAt || b.date_added || 0);
+            return dateB - dateA;
+          });
+        } else if (filters.sort === "Oldest to Newest") {
+          sortedList.sort((a, b) => {
+            const dateA = new Date(a.createdAt || a.date_added || 0);
+            const dateB = new Date(b.createdAt || b.date_added || 0);
+            return dateA - dateB;
+          });
+        } else if (filters.sort === "Price: Low to High") {
+          sortedList.sort((a, b) => {
+            const priceA = a.productTypes?.reduce((min, pt) => 
+              Math.min(min, pt.sellingPrice || 0), 
+              a.productTypes[0]?.sellingPrice || 0
+            ) || 0;
+            const priceB = b.productTypes?.reduce((min, pt) => 
+              Math.min(min, pt.sellingPrice || 0), 
+              b.productTypes[0]?.sellingPrice || 0
+            ) || 0;
+            return priceA - priceB;
+          });
+        } else if (filters.sort === "Price: High to Low") {
+          sortedList.sort((a, b) => {
+            const priceA = a.productTypes?.reduce((min, pt) => 
+              Math.min(min, pt.sellingPrice || 0), 
+              a.productTypes[0]?.sellingPrice || 0
+            ) || 0;
+            const priceB = b.productTypes?.reduce((min, pt) => 
+              Math.min(min, pt.sellingPrice || 0), 
+              b.productTypes[0]?.sellingPrice || 0
+            ) || 0;
+            return priceB - priceA;
+          });
         }
 
         setList(sortedList);
-        setTotalPages(data.totalPages || 1);
+        setTotalPages(Math.ceil(sortedList.length / 14) || 1);
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
@@ -154,10 +341,16 @@ function DecorListing({
       }
     };
     fetchList(page);
-  }, [page, filters]);
+  }, [page, filters, currentCategory]);
 
   useEffect(() => {
-    setFilters((prev) => ({ ...prev, category: category || "Stage" }));
+    setFilters((prev) => ({ 
+      ...prev, 
+      category: category || "Stage",
+      // Reset filters that don't apply to new category
+      size: [],
+      style: [],
+    }));
     setPage(parseInt(queryPage) || 1);
   }, [category, queryPage]);
 
@@ -323,12 +516,26 @@ function DecorListing({
               <SortFilterButton
                 onSortClick={() => {
                   setActiveTab("sort");
-                  setSelectedSection("sort-price");
+                  setSelectedSection("sort-options");
                   setShowFilterSort(true);
                 }}
                 onFilterClick={() => {
                   setActiveTab("filter");
-                  setSelectedSection("occasion");
+                  const categoryFilters = getCategoryFilters(currentCategory);
+                  // Set first available filter section as selected
+                  if (categoryFilters.occasion) {
+                    setSelectedSection("occasion");
+                  } else if (categoryFilters.colours) {
+                    setSelectedSection("colours");
+                  } else if (categoryFilters.type) {
+                    setSelectedSection("type");
+                  } else if (categoryFilters.size) {
+                    setSelectedSection("size");
+                  } else if (categoryFilters.style) {
+                    setSelectedSection("style");
+                  } else {
+                    setSelectedSection("price-range");
+                  }
                   setShowFilterSort(true);
                 }}
               />
@@ -355,32 +562,60 @@ function DecorListing({
                     {/* Left Panel - Sections */}
                     <div className="md:w-1/2 w-full md:border-r border-b overflow-y-auto bg-gray-50">
                       <div className="p-3 space-y-1">
-                        {activeTab === "filter" && (
+                        {activeTab === "filter" && (() => {
+                          const categoryFilters = getCategoryFilters(currentCategory);
+                          return (
                           <>
+                              {categoryFilters.occasion && (
+                                <button
+                                  onClick={() => setSelectedSection("occasion")}
+                                  className={`w-full text-left px-3 py-2 text-sm rounded ${
+                                    selectedSection === "occasion" ? "bg-white shadow-sm" : "hover:bg-gray-100"
+                                  }`}
+                                >
+                                  Occasion
+                                </button>
+                              )}
+                              {categoryFilters.colours && (
+                                <button
+                                  onClick={() => setSelectedSection("colours")}
+                                  className={`w-full text-left px-3 py-2 text-sm rounded ${
+                                    selectedSection === "colours" ? "bg-white shadow-sm" : "hover:bg-gray-100"
+                                  }`}
+                                >
+                                  Colours
+                                </button>
+                              )}
+                              {categoryFilters.type && (
                             <button
-                              onClick={() => setSelectedSection("occasion")}
+                                  onClick={() => setSelectedSection("type")}
                               className={`w-full text-left px-3 py-2 text-sm rounded ${
-                                selectedSection === "occasion" ? "bg-white shadow-sm" : "hover:bg-gray-100"
+                                    selectedSection === "type" ? "bg-white shadow-sm" : "hover:bg-gray-100"
                               }`}
                             >
-                              Occasion
+                                  Type
                             </button>
-                            <button
-                              onClick={() => setSelectedSection("colours")}
-                              className={`w-full text-left px-3 py-2 text-sm rounded ${
-                                selectedSection === "colours" ? "bg-white shadow-sm" : "hover:bg-gray-100"
-                              }`}
-                            >
-                              Colours
-                            </button>
+                              )}
+                              {categoryFilters.size && (
                             <button
                               onClick={() => setSelectedSection("size")}
                               className={`w-full text-left px-3 py-2 text-sm rounded ${
                                 selectedSection === "size" ? "bg-white shadow-sm" : "hover:bg-gray-100"
                               }`}
                             >
-                              Stage Size (in sqft.)
+                                  Size
                             </button>
+                              )}
+                              {categoryFilters.style && (
+                                <button
+                                  onClick={() => setSelectedSection("style")}
+                                  className={`w-full text-left px-3 py-2 text-sm rounded ${
+                                    selectedSection === "style" ? "bg-white shadow-sm" : "hover:bg-gray-100"
+                                  }`}
+                                >
+                                  Style
+                                </button>
+                              )}
                             <button
                               onClick={() => setSelectedSection("price-range")}
                               className={`w-full text-left px-3 py-2 text-sm rounded ${
@@ -390,15 +625,16 @@ function DecorListing({
                               Price Range
                             </button>
                           </>
-                        )}
+                          );
+                        })()}
                         {activeTab === "sort" && (
                           <button
-                            onClick={() => setSelectedSection("sort-price")}
+                            onClick={() => setSelectedSection("sort-options")}
                             className={`w-full text-left px-3 py-2 text-sm rounded ${
-                              selectedSection === "sort-price" ? "bg-white shadow-sm" : "hover:bg-gray-100"
+                              selectedSection === "sort-options" ? "bg-white shadow-sm" : "hover:bg-gray-100"
                             }`}
                           >
-                            Price range
+                            Sort Options
                           </button>
                         )}
                       </div>
@@ -406,40 +642,51 @@ function DecorListing({
 
                     {/* Right Panel - Options */}
                     <div className="md:w-1/2 w-full p-3 overflow-y-auto">
-                      {activeTab === "sort" && selectedSection === "sort-price" && (
+                      {activeTab === "sort" && selectedSection === "sort-options" && (
                         <div className="space-y-1">
                           <button
                             onClick={() => {
-                              handleSortChange("Price:Low-to-High");
+                              handleSortChange("Newest to Oldest");
                               setShowFilterSort(false);
                             }}
                             className={`w-full text-left px-3 py-2 text-sm rounded ${
-                              filters.sort === "Price:Low-to-High" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
+                              filters.sort === "Newest to Oldest" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
                             }`}
                           >
-                            Price - Low to high
+                            Newest to Oldest
                           </button>
                           <button
                             onClick={() => {
-                              handleSortChange("Price:High-to-Low");
+                              handleSortChange("Oldest to Newest");
                               setShowFilterSort(false);
                             }}
                             className={`w-full text-left px-3 py-2 text-sm rounded ${
-                              filters.sort === "Price:High-to-Low" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
+                              filters.sort === "Oldest to Newest" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
                             }`}
                           >
-                            Price - High to low
+                            Oldest to Newest
                           </button>
                           <button
                             onClick={() => {
-                              handleSortChange("New-Arrivals");
+                              handleSortChange("Price: Low to High");
                               setShowFilterSort(false);
                             }}
                             className={`w-full text-left px-3 py-2 text-sm rounded ${
-                              filters.sort === "New-Arrivals" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
+                              filters.sort === "Price: Low to High" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
                             }`}
                           >
-                            New Arrivals
+                            Price: Low to High
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleSortChange("Price: High to Low");
+                              setShowFilterSort(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-sm rounded ${
+                              filters.sort === "Price: High to Low" ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
+                            }`}
+                          >
+                            Price: High to Low
                           </button>
                         </div>
                       )}
@@ -484,90 +731,57 @@ function DecorListing({
                         </div>
                       )}
                       
+                      {activeTab === "filter" && selectedSection === "type" && (
+                        <div className="space-y-1">
+                          {["Modern", "Traditional"].map((type) => (
+                            <label key={type} className="flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-gray-50 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={filters.type.includes(type)}
+                                onChange={() => {
+                                  handleFilterChange("type", type);
+                                }}
+                                className="w-4 h-4 border-gray-300 rounded"
+                              />
+                              <span>{type}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                      
                       {activeTab === "filter" && selectedSection === "size" && (
-                        <div className="space-y-4">
-                          <div className="space-y-3 px-3 pb-3">
-                            {/* Length Dropdown */}
-                            <div className="relative">
-                              <select
-                                value={filters.size.length || ""}
-                                onChange={(e) => {
-                                  setFilters(prev => ({
-                                    ...prev,
-                                    size: { ...prev.size, length: e.target.value }
-                                  }));
+                        <div className="space-y-1">
+                          {getSizeOptions(currentCategory).map((size) => (
+                            <label key={size} className="flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-gray-50 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={filters.size.includes(size)}
+                                onChange={() => {
+                                  handleFilterChange("size", size);
                                 }}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm appearance-none cursor-pointer hover:border-blue-400 focus:border-blue-500 focus:outline-none"
-                              >
-                                <option value="">Length: Select Range</option>
-                                <option value="0-5">Length: 0 - 5 ft.</option>
-                                <option value="5-10">Length: 5 - 10 ft.</option>
-                                <option value="10-15">Length: 10 - 15 ft.</option>
-                                <option value="15-20">Length: 15 - 20 ft.</option>
-                                <option value="20-25">Length: 20 - 25 ft.</option>
-                                <option value="25-30">Length: 25 - 30 ft.</option>
-                              </select>
-                              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
+                                className="w-4 h-4 border-gray-300 rounded"
+                              />
+                              <span>{size}</span>
+                            </label>
+                          ))}
                               </div>
-                            </div>
-                            
-                            {/* Width Dropdown */}
-                            <div className="relative">
-                              <select
-                                value={filters.size.width || ""}
-                                onChange={(e) => {
-                                  setFilters(prev => ({
-                                    ...prev,
-                                    size: { ...prev.size, width: e.target.value }
-                                  }));
+                      )}
+                      
+                      {activeTab === "filter" && selectedSection === "style" && (
+                        <div className="space-y-1">
+                          {["Single", "Running"].map((style) => (
+                            <label key={style} className="flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-gray-50 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={filters.style.includes(style)}
+                                onChange={() => {
+                                  handleFilterChange("style", style);
                                 }}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm appearance-none cursor-pointer hover:border-blue-400 focus:border-blue-500 focus:outline-none"
-                              >
-                                <option value="">Width: Select Range</option>
-                                <option value="0-5">Width: 0 - 5 ft.</option>
-                                <option value="5-10">Width: 5 - 10 ft.</option>
-                                <option value="10-15">Width: 10 - 15 ft.</option>
-                                <option value="15-20">Width: 15 - 20 ft.</option>
-                                <option value="20-25">Width: 20 - 25 ft.</option>
-                                <option value="25-30">Width: 25 - 30 ft.</option>
-                              </select>
-                              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                              </div>
-                            </div>
-                            
-                            {/* Height Dropdown */}
-                            <div className="relative">
-                              <select
-                                value={filters.size.height || ""}
-                                onChange={(e) => {
-                                  setFilters(prev => ({
-                                    ...prev,
-                                    size: { ...prev.size, height: e.target.value }
-                                  }));
-                                }}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm appearance-none cursor-pointer hover:border-blue-400 focus:border-blue-500 focus:outline-none"
-                              >
-                                <option value="">Height: Select Range</option>
-                                <option value="0-5">Height: 0 - 5 ft.</option>
-                                <option value="5-10">Height: 5 - 10 ft.</option>
-                                <option value="10-15">Height: 10 - 15 ft.</option>
-                                <option value="15-20">Height: 15 - 20 ft.</option>
-                                <option value="20-25">Height: 20 - 25 ft.</option>
-                                <option value="25-30">Height: 25 - 30 ft.</option>
-                              </select>
-                              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
+                                className="w-4 h-4 border-gray-300 rounded"
+                              />
+                              <span>{style}</span>
+                            </label>
+                          ))}
                         </div>
                       )}
                       
@@ -689,10 +903,12 @@ function DecorListing({
                         setFilters(prev => ({ 
                           ...prev, 
                           sort: "Sort", 
-                          occasion: [], 
+                          occasion: [],
                           colours: [],
-                          priceRange: [0, 115000],
-                          size: { length: null, width: null, height: null }
+                          type: [],
+                          size: [],
+                          style: [],
+                          priceRange: [0, 115000]
                         }));
                         setSelectedSection(null);
                       }}
