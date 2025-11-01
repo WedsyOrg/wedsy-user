@@ -583,7 +583,7 @@ function DecorListing({
                   const categoryFilters = getCategoryFilters(currentCategory);
                   // Set first available filter section as selected
                   if (categoryFilters.occasion) {
-                    setSelectedSection("occasion");
+                  setSelectedSection("occasion");
                   } else if (categoryFilters.colours) {
                     setSelectedSection("colours");
                   } else if (categoryFilters.type) {
@@ -626,24 +626,24 @@ function DecorListing({
                           return (
                           <>
                               {categoryFilters.occasion && (
-                                <button
-                                  onClick={() => setSelectedSection("occasion")}
-                                  className={`w-full text-left px-3 py-2 text-sm rounded ${
-                                    selectedSection === "occasion" ? "bg-white shadow-sm" : "hover:bg-gray-100"
-                                  }`}
-                                >
-                                  Occasion
-                                </button>
+                            <button
+                              onClick={() => setSelectedSection("occasion")}
+                              className={`w-full text-left px-3 py-2 text-sm rounded ${
+                                selectedSection === "occasion" ? "bg-white shadow-sm" : "hover:bg-gray-100"
+                              }`}
+                            >
+                              Occasion
+                            </button>
                               )}
                               {categoryFilters.colours && (
-                                <button
-                                  onClick={() => setSelectedSection("colours")}
-                                  className={`w-full text-left px-3 py-2 text-sm rounded ${
-                                    selectedSection === "colours" ? "bg-white shadow-sm" : "hover:bg-gray-100"
-                                  }`}
-                                >
-                                  Colours
-                                </button>
+                            <button
+                              onClick={() => setSelectedSection("colours")}
+                              className={`w-full text-left px-3 py-2 text-sm rounded ${
+                                selectedSection === "colours" ? "bg-white shadow-sm" : "hover:bg-gray-100"
+                              }`}
+                            >
+                              Colours
+                            </button>
                               )}
                               {categoryFilters.type && (
                             <button
@@ -801,7 +801,7 @@ function DecorListing({
                               <span>{type}</span>
                             </label>
                           ))}
-                        </div>
+                              </div>
                       )}
                       
                       {activeTab === "filter" && selectedSection === "size" && (
@@ -819,7 +819,7 @@ function DecorListing({
                               <span>{size}</span>
                             </label>
                           ))}
-                        </div>
+                              </div>
                       )}
                       
                       {activeTab === "filter" && selectedSection === "style" && (
