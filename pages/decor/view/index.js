@@ -50,6 +50,7 @@ function DecorListing({
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
+  const [showingRandomProducts, setShowingRandomProducts] = useState(false);
 
   const [filters, setFilters] = useState({
     category: category || "Stage",
@@ -335,10 +336,37 @@ function DecorListing({
           });
         }
 
+        // If no products found after filtering, fetch random products
+        if (sortedList.length === 0 && currentPage === 1) {
+          setShowingRandomProducts(true);
+          try {
+            const randomParams = new URLSearchParams({
+              page: "1",
+              limit: "14",
+              displayVisible: "true",
+              displayAvailable: "true",
+            });
+            const randomResponse = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/decor?${randomParams.toString()}`
+            );
+            const randomData = await randomResponse.json();
+            const allProducts = randomData.list || [];
+            // Shuffle and take 14 random products
+            const shuffled = [...allProducts].sort(() => 0.5 - Math.random());
+            sortedList = shuffled.slice(0, 14);
+          } catch (error) {
+            console.error("Error fetching random products:", error);
+            setShowingRandomProducts(false);
+          }
+        } else {
+          setShowingRandomProducts(false);
+        }
+
         setList(sortedList);
         setTotalPages(Math.ceil(sortedList.length / 14) || 1);
       } catch (error) {
         console.error("Error fetching products:", error);
+        setShowingRandomProducts(false);
       } finally {
         setLoading(false);
       }
@@ -1068,12 +1096,7 @@ function DecorListing({
                 </button>
               </div>
             </>
-          ) : (
-            <div className="text-center py-16">
-              <h2 className="text-2xl font-semibold">No Products Found</h2>
-              <p className="text-gray-600 mt-2">Try adjusting your filters.</p>
-            </div>
-          )}
+          ) : null}
         </main>
       </div>
     </>
