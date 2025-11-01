@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { processMobileNumber } from "@/utils/phoneNumber";
 
-export default function Login({ CheckLogin }) {
+export default function Signup({ CheckLogin }) {
   const router = useRouter();
   const [data, setData] = useState({
     phone: "",
@@ -16,80 +16,96 @@ export default function Login({ CheckLogin }) {
     ReferenceId: "",
     message: "",
   });
-  const SendOTP = () => {
-    setData({
-      ...data,
-      loading: true,
-    });
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/otp`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        phone: processMobileNumber(data.phone),
-      }),
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        setData({
-          ...data,
-          loading: false,
-          otpSent: true,
-          ReferenceId: response.ReferenceId,
+
+  const handleSignup = async () => {
+    if (await processMobileNumber(data.phone)) {
+      setData({
+        ...data,
+        loading: true,
+      });
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/enquiry`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: data.name,
+          phone: processMobileNumber(data.phone),
+          verified: true,
+          source: "Signup Page",
+          Otp: data.Otp,
+          ReferenceId: data.ReferenceId,
+        }),
+      })
+        .then((response) => response.json())
+        .then((response) => {
+          if (
+            response.message === "Enquiry Added Successfully" &&
+            response.token
+          ) {
+            setData({
+              ...data,
+              phone: "",
+              name: "",
+              loading: false,
+              success: true,
+              otpSent: false,
+              Otp: "",
+              ReferenceId: "",
+              message: "",
+            });
+            localStorage.setItem("token", response.token);
+            router.push("/decor/view");
+            CheckLogin();
+          } else {
+            setData({
+              ...data,
+              loading: false,
+              Otp: "",
+              message: response.message,
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("There was a problem with the fetch operation:", error);
         });
-      })
-      .catch((error) => {
-        console.error("There was a problem with the fetch operation:", error);
-      });
+    } else {
+      alert("Please enter valid mobile number");
+    }
   };
-  const handleLogin = () => {
-    setData({
-      ...data,
-      loading: true,
-    });
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: data.name,
-        phone: processMobileNumber(data.phone),
-        Otp: data.Otp,
-        ReferenceId: data.ReferenceId,
-      }),
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        if (response.message === "Login Successful" && response.token) {
-          setData({
-            ...data,
-            phone: "",
-            name: "",
-            loading: false,
-            success: true,
-            otpSent: false,
-            Otp: "",
-            ReferenceId: "",
-            message: "",
-          });
-          localStorage.setItem("token", response.token);
-          router.push("/decor/view");
-          CheckLogin();
-        } else {
+
+  const SendOTP = async () => {
+    if (await processMobileNumber(data.phone)) {
+      setData({
+        ...data,
+        loading: true,
+      });
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone: processMobileNumber(data.phone),
+        }),
+      })
+        .then((response) => response.json())
+        .then((response) => {
           setData({
             ...data,
             loading: false,
-            Otp: "",
-            message: response.message,
+            otpSent: true,
+            ReferenceId: response.ReferenceId,
           });
-        }
-      })
-      .catch((error) => {
-        console.error("There was a problem with the fetch operation:", error);
-      });
+        })
+        .catch((error) => {
+          console.error("There was a problem with the fetch operation:", error);
+        });
+    } else {
+      alert("Please enter valid mobile number");
+    }
   };
+
   return (
     <>
       <div className="relative h-screen w-full flex overflow-hidden">
@@ -131,8 +147,26 @@ export default function Login({ CheckLogin }) {
             }}
           >
           
-          <h2 className="text-2xl font-bold text-gray-800 mb-8 z-20">Sign in</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-8 z-20">Sign up</h2>
           <div className="w-full max-w-sm space-y-6 z-20">
+            <div className="relative z-30">
+              <input
+                type="text"
+                placeholder="Name"
+                value={data.name}
+                onChange={(e) =>
+                  setData({
+                    ...data,
+                    name: e.target.value,
+                  })
+                }
+                name="name"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent relative z-30"
+                style={{
+                  boxShadow: "0px 4px 4px 0px #00000040"
+                }}
+              />
+            </div>
             <div className="relative z-30">
               <input
                 type="text"
@@ -181,7 +215,7 @@ export default function Login({ CheckLogin }) {
                   boxShadow: "0px 4px 4px 0px #00000040"
                 }}
                 onClick={() => {
-                  data.otpSent ? handleLogin() : SendOTP();
+                  data.otpSent ? handleSignup() : SendOTP();
                 }}
               >
                 {data.loading ? (
@@ -190,17 +224,17 @@ export default function Login({ CheckLogin }) {
                     <span className="pl-3">Loading...</span>
                   </>
                 ) : (
-                  <>Login</>
+                  <>Sign up</>
                 )}
               </button>
             </div>
             <p className="text-center text-sm text-gray-600 mb-4 md:mb-0">
-              Not signed in yet?               <span 
+              Already have an account? <span 
                 className="text-red-800 font-semibold cursor-pointer hover:underline"
                 onClick={() => {
-                  router.push('/signup');
+                  router.push('/login');
                 }}
-              >Sign up</span>
+              >Sign in</span>
             </p>
           </div>
           </div>

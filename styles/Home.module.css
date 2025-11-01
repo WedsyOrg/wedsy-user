@@ -1,11 +1,11 @@
 .main__div {
-  background-image: url("/assets/background/Home_wedding_first_section.png");
+  background-image: url("/assets/background/Home_wedding_first_section 2.png ");
   background-size: cover;
   background-repeat: no-repeat;
   width: 100%;
   height: 100vh;
   background-position-x: center;
-  background-position-y: bottom;
+  background-position-y: center;
   /* height: calc(100vw * 847 / 1400); */
 }
 @media only screen and (max-width: 600px) {
