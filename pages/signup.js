@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { processMobileNumber } from "@/utils/phoneNumber";
+import Head from "next/head";
 
 export default function Signup({ CheckLogin }) {
   const router = useRouter();
@@ -108,6 +109,11 @@ export default function Signup({ CheckLogin }) {
 
   return (
     <>
+      <Head>
+        <title>Sign Up | Wedsy</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://www.wedsy.in/signup" />
+      </Head>
       <div className="relative h-screen w-full flex overflow-hidden">
         {/* Left side - Background image area (60% width) */}
         <div className="hidden md:flex md:w-3/5 relative"

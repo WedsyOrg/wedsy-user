@@ -3,6 +3,7 @@ import Image from "next/image";
 import {BsArrowRight} from "react-icons/bs";
 import Link from "next/link";
 import {useRouter} from "next/router";
+import Head from "next/head";
 import EventHowItWorks from "@/components/screens/EventHowItWorks";
 import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import {EventPageSkeleton} from "@/components/skeletons/event";
@@ -856,6 +857,11 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
 
   return (
     <>
+      <Head>
+        <title>My Events | Wedsy</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://www.wedsy.in/event" />
+      </Head>
       {/* Desktop View */}
       <div className="hidden md:block bg-[#F4F4F4] min-h-screen">
         {/* Header */}

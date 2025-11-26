@@ -254,21 +254,59 @@ function DecorListing({
           }`}
         />
 
+        {/* Open Graph Tags */}
         <meta property="og:title" content={seoTitle} />
         <meta property="og:description" content={seoDescription} />
+        <meta property="og:image" content="https://www.wedsy.in/logo-black.png" />
         <meta
           property="og:url"
-          content={`https://www.wedsy.in/decor/view?category=${filters.category}`}
+          content={`https://www.wedsy.in/decor/view?category=${filters.category || ""}`}
         />
         <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Wedsy" />
 
+        {/* Twitter Card Tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={seoTitle} />
         <meta name="twitter:description" content={seoDescription} />
+        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.png" />
 
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
+        {/* Breadcrumb Schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://www.wedsy.in"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "Decor",
+                  "item": "https://www.wedsy.in/decor"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 3,
+                  "name": filters.category || "All Categories",
+                  "item": `https://www.wedsy.in/decor/view?category=${filters.category || ""}`
+                }
+              ]
+            })
+          }}
+        />
+
+        {/* ItemList Schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
       </Head>
 
       <div className="bg-[#F4F4F4]">

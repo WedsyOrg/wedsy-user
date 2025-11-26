@@ -3,6 +3,7 @@ import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
 import { Dropdown } from "flowbite-react";
 import Image from "next/image";
 import Link from "next/link";
+import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import { BsInstagram } from "react-icons/bs";
 
@@ -77,8 +78,75 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
     };
   }, [spotlightRef, spotlightList, spotlightIndex, spotlightSwipe]);
 
+  // Generate ItemList Schema
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Wedding Store - Decoration Items",
+    "description": "Browse wedding decoration items including stages, mandaps, pathways, entrances, and more",
+    "itemListElement": [
+      ...(bestSeller?.slice(0, 10) || []).map((item, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": item.name,
+        "url": `https://www.wedsy.in/decor/view/${item._id}`
+      }))
+    ]
+  };
+
+  // Generate Breadcrumb Schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wedsy.in"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Wedding Store",
+        "item": "https://www.wedsy.in/wedding-store"
+      }
+    ]
+  };
+
   return (
     <>
+      <Head>
+        <title>Wedding Store | Premium Wedding Decorations in Bangalore | Wedsy</title>
+        <meta name="description" content="Explore Wedsy's wedding store for premium wedding decorations in Bangalore. Browse stages, mandaps, pathways, entrances, and more decoration items." />
+        <meta name="keywords" content="wedding store, wedding decorations bangalore, wedding decor items, wedding stage decoration, wedding mandap decoration" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://www.wedsy.in/wedding-store" />
+        
+        {/* Open Graph Tags */}
+        <meta property="og:title" content="Wedding Store | Premium Wedding Decorations in Bangalore | Wedsy" />
+        <meta property="og:description" content="Explore Wedsy's wedding store for premium wedding decorations in Bangalore. Browse stages, mandaps, pathways, and more." />
+        <meta property="og:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta property="og:url" content="https://www.wedsy.in/wedding-store" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Wedsy" />
+        
+        {/* Twitter Card Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Wedding Store | Premium Wedding Decorations in Bangalore | Wedsy" />
+        <meta name="twitter:description" content="Explore Wedsy's wedding store for premium wedding decorations in Bangalore." />
+        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.png" />
+        
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      </Head>
       <DecorDisclaimer />
       <div className="hidden md:block relative pt-[31%] mb-6">
         <Image

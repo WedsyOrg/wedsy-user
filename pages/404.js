@@ -1,9 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
+import Head from "next/head";
 
 export default function Custom404() {
   return (
-    <div className="min-h-screen bg-[#F4F4F4] flex flex-col">
+    <>
+      <Head>
+        <title>404 - Page Not Found | Wedsy</title>
+        <meta name="description" content="The page you are looking for does not exist." />
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://www.wedsy.in/404" />
+      </Head>
+      <div className="min-h-screen bg-[#F4F4F4] flex flex-col">
       {/* Main Content Area */}
       <div className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="max-w-6xl w-full">
@@ -36,6 +44,6 @@ export default function Custom404() {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

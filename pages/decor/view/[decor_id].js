@@ -559,17 +559,95 @@ function DecorListing({
     );
   }
 
+  // Generate Product Schema
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": decor.name,
+    "description": decor?.seoTags?.description || decor.description || `${decor.name} - Wedding decoration item from Wedsy`,
+    "image": decor?.seoTags?.image ? [decor.seoTags.image] : decor.image ? [decor.image] : [],
+    "offers": {
+      "@type": "Offer",
+      "price": decor?.productTypes?.[0]?.sellingPrice || "0",
+      "priceCurrency": "INR",
+      "availability": "https://schema.org/InStock",
+      "url": `https://www.wedsy.in/decor/view/${decor_id}`
+    },
+    "brand": {
+      "@type": "Brand",
+      "name": "Wedsy"
+    },
+    "category": decor.category || "Wedding Decoration"
+  };
+
+  // Generate Breadcrumb Schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wedsy.in"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Decor",
+        "item": "https://www.wedsy.in/decor"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": decor.category || "Category",
+        "item": `https://www.wedsy.in/decor/view?category=${decor.category || ""}`
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": decor.name,
+        "item": `https://www.wedsy.in/decor/view/${decor_id}`
+      }
+    ]
+  };
+
+  const pageTitle = decor?.seoTags?.title || `${decor.name} | Wedding ${decor.category || "Decoration"} | Wedsy`;
+  const pageDescription = decor?.seoTags?.description || `${decor.name} - ${decor.description?.substring(0, 150) || "Premium wedding decoration item"} | Starting at ₹${decor?.productTypes?.[0]?.sellingPrice || "0"}. Book now for your special day in Bangalore.`;
+  const pageKeywords = decor?.seoTags?.keywords || `${decor.name}, ${decor.category || "wedding decoration"}, wedding decor bangalore, ${decor.category?.toLowerCase()} decoration, wedding planning bangalore`;
+  const ogImage = decor?.seoTags?.image || decor.image || "https://www.wedsy.in/logo-black.png";
+
   return (
     <>
       <Head>
-        <title>{decor.name} | Wedsy</title>
-        <meta name="description" content={decor?.seoTags?.description} />
-        <meta property="og:title" content={decor.name} />
-        <meta property="og:description" content={decor?.seoTags?.description} />
-        <meta property="og:image" content={decor?.seoTags?.image} />
-        <link
-          rel="canonical"
-          href={`https://www.wedsy.in/decor/view/${decor_id}`}
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta name="keywords" content={pageKeywords} />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={`https://www.wedsy.in/decor/view/${decor_id}`} />
+        
+        {/* Open Graph Tags */}
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:url" content={`https://www.wedsy.in/decor/view/${decor_id}`} />
+        <meta property="og:type" content="product" />
+        <meta property="og:site_name" content="Wedsy" />
+        
+        {/* Twitter Card Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        <meta name="twitter:image" content={ogImage} />
+        
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       </Head>
       <CreateEventModal

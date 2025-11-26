@@ -1,5 +1,6 @@
 import { Dropdown, Select, Checkbox, Label } from "flowbite-react";
 import { useRouter } from "next/router";
+import Head from "next/head";
 import { useEffect, useState } from "react";
 import { FaMapMarkerAlt, FaSearch, FaStar } from "react-icons/fa";
 import MobileStickyFooter from "@/components/layout/MobileStickyFooter";

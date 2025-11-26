@@ -3,6 +3,7 @@ import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import { toPriceString } from "@/utils/text";
 import { Modal } from "flowbite-react";
 import Link from "next/link";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -111,8 +112,81 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+  // Generate ItemList Schema
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Makeup & Beauty Packages",
+    "description": "Browse professional makeup and beauty packages in Bangalore for your wedding",
+    "itemListElement": [
+      ...(wedsyPackages?.slice(0, 10) || []).map((item, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": item.name,
+        "url": `https://www.wedsy.in/makeup-and-beauty/wedsy-packages`
+      }))
+    ]
+  };
+
+  // Generate Breadcrumb Schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wedsy.in"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Makeup & Beauty",
+        "item": "https://www.wedsy.in/makeup-and-beauty"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Packages",
+        "item": "https://www.wedsy.in/makeup-and-beauty/wedsy-packages"
+      }
+    ]
+  };
+
   return (
     <>
+      <Head>
+        <title>Makeup & Beauty Packages in Bangalore | Wedding Packages | Wedsy</title>
+        <meta name="description" content="Browse professional makeup and beauty packages in Bangalore for your wedding. Compare prices and book the perfect package for your special day." />
+        <meta name="keywords" content="makeup packages bangalore, beauty packages bangalore, wedding makeup packages, bridal makeup packages, makeup artist packages" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://www.wedsy.in/makeup-and-beauty/wedsy-packages" />
+        
+        {/* Open Graph Tags */}
+        <meta property="og:title" content="Makeup & Beauty Packages in Bangalore | Wedding Packages | Wedsy" />
+        <meta property="og:description" content="Browse professional makeup and beauty packages in Bangalore for your wedding. Compare prices and book the perfect package." />
+        <meta property="og:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta property="og:url" content="https://www.wedsy.in/makeup-and-beauty/wedsy-packages" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Wedsy" />
+        
+        {/* Twitter Card Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Makeup & Beauty Packages in Bangalore | Wedding Packages | Wedsy" />
+        <meta name="twitter:description" content="Browse professional makeup and beauty packages in Bangalore for your wedding." />
+        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.png" />
+        
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      </Head>
       <MobileStickyFooter />
       {selectedPackages?.reduce((accumulator, item) => {
         return accumulator + item.quantity;

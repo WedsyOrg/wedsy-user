@@ -289,6 +289,51 @@ function Home({ packages }) {
     };
   }, [decorIndex, isHovered]);
 
+  // Generate FAQ Schema
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqsData.map((faq) => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  };
+
+  // Generate Organization Schema
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Wedsy",
+    "description": "India's first online wedding planning platform. Premium wedding decorations, makeup artists, and event planning services in Bangalore.",
+    "url": "https://www.wedsy.in",
+    "logo": "https://www.wedsy.in/logo-black.png",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+91-6364849760",
+      "contactType": "Customer Service",
+      "email": "hello@wedsy.in",
+      "areaServed": "IN",
+      "availableLanguage": "English"
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "#14, HM Geneva House, Cunningham Road",
+      "addressLocality": "Bangalore",
+      "addressRegion": "Karnataka",
+      "postalCode": "560052",
+      "addressCountry": "IN"
+    },
+    "sameAs": [
+      "https://www.facebook.com/wedsy.in",
+      "https://www.instagram.com/wedsy.in",
+      "https://x.com/wedsyindia"
+    ]
+  };
+
   // Show skeleton while loading
   if (isLoading) {
     return <LandingPageSkeleton />;
@@ -312,6 +357,30 @@ function Home({ packages }) {
         <meta name="robots" content="index, follow" />
         <meta name="copyright" content="Wedsy" />
         <meta name="language" content="EN" />
+        
+        {/* Open Graph Tags */}
+        <meta property="og:title" content="Affordable Wedding Packages in Bangalore - Best Planners in Bangalore | Wedsy" />
+        <meta property="og:description" content="Find affordable wedding planners in Bangalore. Explore budget-friendly wedding, event, and destination packages in India. Tailored solutions for your perfect day!" />
+        <meta property="og:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta property="og:url" content="https://www.wedsy.in/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Wedsy" />
+        
+        {/* Twitter Card Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Affordable Wedding Packages in Bangalore - Best Planners in Bangalore | Wedsy" />
+        <meta name="twitter:description" content="Find affordable wedding planners in Bangalore. Explore budget-friendly wedding, event, and destination packages in India." />
+        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.png" />
+        
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
       </Head>
       <div className="hidden">
         <h1>Affordable & Best Wedding Planner in Bangalore</h1>

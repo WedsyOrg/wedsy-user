@@ -1,8 +1,22 @@
 import Link from "next/link";
+import Head from "next/head";
 
 export default function Home() {
   return (
-    <div className="p-6 md:py-16 md:px-24">
+    <>
+      <Head>
+        <title>Privacy Policy | Wedsy</title>
+        <meta name="description" content="Wedsy's privacy policy. Learn how we collect, use, and protect your personal information when you use our wedding planning services." />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://www.wedsy.in/privacy-policy" />
+        
+        {/* Open Graph Tags */}
+        <meta property="og:title" content="Privacy Policy | Wedsy" />
+        <meta property="og:description" content="Wedsy's privacy policy. Learn how we collect, use, and protect your personal information." />
+        <meta property="og:url" content="https://www.wedsy.in/privacy-policy" />
+        <meta property="og:type" content="website" />
+      </Head>
+      <div className="p-6 md:py-16 md:px-24">
       <h2 className="text-rose-900 font-semibold text-2xl">PRIVACY POLICY</h2>
       <p className="pt-8">
         Welcome to WEDSY! This Privacy Policy explains how we collect, use,
@@ -91,6 +105,6 @@ export default function Home() {
           </p>
         </div>
       </div>
-    </div>
+    </>
   );
 }

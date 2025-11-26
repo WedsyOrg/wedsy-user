@@ -459,32 +459,104 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   ];
 
 
+  // Generate LocalBusiness Schema
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": vendor?.name || "Makeup Artist",
+    "description": vendor?.about || `${vendor?.name} - ${vendor?.speciality || "Professional Makeup Artist"} in ${vendor?.businessAddress?.city || "Bangalore"}`,
+    "image": vendor?.gallery?.coverPhoto ? [vendor.gallery.coverPhoto] : [],
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": vendor?.businessAddress?.city || "Bangalore",
+      "addressRegion": vendor?.businessAddress?.state || "Karnataka",
+      "addressCountry": "IN",
+      "postalCode": vendor?.businessAddress?.postalCode || ""
+    },
+    "aggregateRating": vendor?.rating ? {
+      "@type": "AggregateRating",
+      "ratingValue": vendor.rating.toString(),
+      "reviewCount": vendor.reviewCount?.toString() || "0"
+    } : undefined,
+    "priceRange": vendor?.priceRange || "₹₹",
+    "telephone": vendor?.phone || "",
+    "url": `https://www.wedsy.in/makeup-and-beauty/artists/${vendorId}`
+  };
+
+  // Remove undefined fields
+  if (!localBusinessSchema.aggregateRating) {
+    delete localBusinessSchema.aggregateRating;
+  }
+
+  // Generate Breadcrumb Schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wedsy.in"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Makeup & Beauty",
+        "item": "https://www.wedsy.in/makeup-and-beauty"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Artists",
+        "item": "https://www.wedsy.in/makeup-and-beauty/artists"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": vendor?.name || "Artist",
+        "item": `https://www.wedsy.in/makeup-and-beauty/artists/${vendorId}`
+      }
+    ]
+  };
+
+  const pageTitle = vendor?.name ? `${vendor.name} | ${vendor.speciality || "Makeup Artist"} in ${vendor.businessAddress?.city || "Bangalore"} | Wedsy` : "Makeup Artist | Wedsy";
+  const pageDescription = vendor?.about || `${vendor?.name || "Professional Makeup Artist"} - ${vendor?.speciality || "Makeup Artist"} in ${vendor?.businessAddress?.city || "Bangalore"}. ${vendor?.rating ? `Rated ${vendor.rating}/5. ` : ""}Book now for your special day.`;
+  const pageKeywords = `${vendor?.name || ""}, ${vendor?.speciality || "makeup artist"}, makeup artist ${vendor?.businessAddress?.city || "bangalore"}, bridal makeup, wedding makeup, makeup artist near me`.trim();
+  const ogImage = vendor?.gallery?.coverPhoto || "https://www.wedsy.in/logo-black.png";
+
   return (
     <>
       <Head>
-        {/* <title>{vendor.name} | Wedsy</title> */}
-        {/* <meta name="description" content={decor?.seoTags?.description} />
-        <meta property="og:title" content={decor.name} />
-        <meta property="og:description" content={decor?.seoTags?.description} /> */}
-        {/* <meta property="og:image" content={vendor?.gallery?.coverPhoto} /> */}
-        <Head>
-          <title>{vendor?.name} | Wedsy</title>
-          <meta property="og:title" content={`${vendor?.name} - Wedsy`} />
-          <meta
-            property="og:description"
-            content={`${vendor?.speciality || "Makeup Artist"} • ${vendor?.businessAddress?.city || ""
-              }`}
-          />
-          <meta
-            property="og:image"
-            content={vendor?.gallery?.coverPhoto || "/default-thumbnail.jpg"}
-          />
-          <meta
-            property="og:url"
-            content={`https://wedsy.in/makeup-and-beauty/artists/${vendor?._id}`}
-          />
-          <meta property="og:type" content="website" />
-        </Head>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta name="keywords" content={pageKeywords} />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={`https://www.wedsy.in/makeup-and-beauty/artists/${vendorId}`} />
+        
+        {/* Open Graph Tags */}
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:url" content={`https://www.wedsy.in/makeup-and-beauty/artists/${vendorId}`} />
+        <meta property="og:type" content="profile" />
+        <meta property="og:site_name" content="Wedsy" />
+        
+        {/* Twitter Card Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        <meta name="twitter:image" content={ogImage} />
+        
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
       </Head>
       <MobileStickyFooter />
       {selectedPackages?.reduce((accumulator, item) => {
