@@ -271,6 +271,42 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
     };
   }, [spotlightIndex, spotlightList]);
 
+  // Generate ItemList Schema for Decor Listing
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Wedding Decoration Items",
+    "description": "Browse our collection of wedding decoration items including stages, mandaps, pathways, entrances, and more",
+    "itemListElement": [
+      ...(bestSeller?.slice(0, 10) || []).map((item, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": item.name,
+        "url": `https://www.wedsy.in/decor/view/${item._id}`
+      }))
+    ]
+  };
+
+  // Generate Breadcrumb Schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wedsy.in"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Decor",
+        "item": "https://www.wedsy.in/decor"
+      }
+    ]
+  };
+
   useEffect(() => {
     if (!spotlightRef.current || !Array.isArray(spotlightList) || spotlightList.length === 0) {
       return;
@@ -422,6 +458,30 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           <meta name="robots" content="index, follow" />
           <meta name="copyright" content="Wedsy" />
           <meta name="language" content="EN" />
+          
+          {/* Open Graph Tags */}
+          <meta property="og:title" content="Wedding Decorations | Premium Wedding Decor in Bangalore | Wedsy" />
+          <meta property="og:description" content="Transform your wedding with Wedsy's premium decor services. Discover exquisite themes, floral arrangements, and custom setups designed to bring your dream wedding to life." />
+          <meta property="og:image" content="https://www.wedsy.in/logo-black.png" />
+          <meta property="og:url" content="https://www.wedsy.in/decor" />
+          <meta property="og:type" content="website" />
+          <meta property="og:site_name" content="Wedsy" />
+          
+          {/* Twitter Card Tags */}
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="Wedding Decorations | Premium Wedding Decor in Bangalore | Wedsy" />
+          <meta name="twitter:description" content="Transform your wedding with Wedsy's premium decor services. Discover exquisite themes, floral arrangements, and custom setups." />
+          <meta name="twitter:image" content="https://www.wedsy.in/logo-black.png" />
+          
+          {/* Structured Data */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+          />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+          />
           <style jsx>{`
             @keyframes slideInFromRight {
               0% {

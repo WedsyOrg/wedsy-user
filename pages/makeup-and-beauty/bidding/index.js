@@ -2,6 +2,7 @@ import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
 import { Label, Select, TextInput, Textarea } from "flowbite-react";
 import Link from "next/link";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
@@ -432,6 +433,12 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   }, [events]);
 
   return (
+    <>
+      <Head>
+        <title>Bidding | Wedsy</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://www.wedsy.in/makeup-and-beauty/bidding" />
+      </Head>
     <>
       <MobileStickyFooter />
       {display === "HowItWorks" && (

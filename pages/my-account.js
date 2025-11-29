@@ -5,6 +5,7 @@ import { uploadFile } from "@/utils/file";
 import { processMobileNumber } from "@/utils/phoneNumber";
 import { Avatar, Button, TextInput } from "flowbite-react";
 import Image from "next/image";
+import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
 import { BiEditAlt } from "react-icons/bi";
@@ -119,6 +120,11 @@ export default function Account({ user }) {
   }, []);
   return (
     <>
+      <Head>
+        <title>My Account | Wedsy</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://www.wedsy.in/my-account" />
+      </Head>
       <div className="flex flex-col bg-gray-100">
         <UserProfileHeader display={"my-account"} />
         <div className="flex flex-col gap-3 px-8 md:px-36 mb-12 md:my-12">

@@ -4,6 +4,7 @@ import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import { MakeupAndBeautyPageSkeleton } from "@/components/skeletons/makeup-store";
 import { toPriceString } from "@/utils/text";
 import Link from "next/link";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import {
@@ -133,8 +134,75 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
     return <MakeupAndBeautyPageSkeleton />;
   }
 
+  // Generate ItemList Schema
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Makeup Artists & Beauty Services",
+    "description": "Browse professional makeup artists and beauty services in Bangalore for your wedding",
+    "itemListElement": [
+      ...(vendors?.slice(0, 10) || []).map((item, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": item.name,
+        "url": `https://www.wedsy.in/makeup-and-beauty/artists/${item._id}`
+      }))
+    ]
+  };
+
+  // Generate Breadcrumb Schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wedsy.in"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Makeup & Beauty",
+        "item": "https://www.wedsy.in/makeup-and-beauty"
+      }
+    ]
+  };
+
   return (
     <>
+      <Head>
+        <title>Makeup Artists & Beauty Services in Bangalore | Wedsy</title>
+        <meta name="description" content="Find the best makeup artists and beauty services in Bangalore for your wedding. Browse professional bridal makeup artists, compare prices, and book your perfect look." />
+        <meta name="keywords" content="makeup artists bangalore, bridal makeup bangalore, wedding makeup artists, beauty services bangalore, makeup artist near me" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://www.wedsy.in/makeup-and-beauty" />
+        
+        {/* Open Graph Tags */}
+        <meta property="og:title" content="Makeup Artists & Beauty Services in Bangalore | Wedsy" />
+        <meta property="og:description" content="Find the best makeup artists and beauty services in Bangalore for your wedding. Browse professional bridal makeup artists and book your perfect look." />
+        <meta property="og:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta property="og:url" content="https://www.wedsy.in/makeup-and-beauty" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Wedsy" />
+        
+        {/* Twitter Card Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Makeup Artists & Beauty Services in Bangalore | Wedsy" />
+        <meta name="twitter:description" content="Find the best makeup artists and beauty services in Bangalore for your wedding." />
+        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.png" />
+        
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      </Head>
       <MobileStickyFooter />
       {selectedPackages?.reduce((accumulator, item) => {
         return accumulator + item.quantity;

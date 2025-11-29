@@ -4,6 +4,7 @@ import { processMobileNumber } from "@/utils/phoneNumber";
 import { Checkbox, Footer, Label, Select, TextInput } from "flowbite-react";
 import Image from "next/image";
 import Link from "next/link";
+import Head from "next/head";
 import Script from "next/script";
 import { useState } from "react";
 import { BsFacebook, BsInstagram, BsTwitter, BsGoogle } from "react-icons/bs";
@@ -77,8 +78,86 @@ export default function HomePage({}) {
     });
     return false;
   }
+  // Generate Organization Schema
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Wedsy",
+    "description": "India's first online wedding planning platform. Premium wedding decorations, makeup artists, and event planning services in Bangalore.",
+    "url": "https://www.wedsy.in",
+    "logo": "https://www.wedsy.in/logo-black.png",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+91-6364849760",
+      "contactType": "Customer Service",
+      "email": "hello@wedsy.in",
+      "areaServed": "IN",
+      "availableLanguage": "English"
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "#14, HM Geneva House, Cunningham Road",
+      "addressLocality": "Bangalore",
+      "addressRegion": "Karnataka",
+      "postalCode": "560052",
+      "addressCountry": "IN"
+    },
+    "sameAs": [
+      "https://www.facebook.com/wedsy.in",
+      "https://www.instagram.com/wedsy.in",
+      "https://x.com/wedsyindia"
+    ]
+  };
+
+  // Generate Service Schema
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "serviceType": "Wedding Planning",
+    "provider": {
+      "@type": "Organization",
+      "name": "Wedsy"
+    },
+    "areaServed": {
+      "@type": "City",
+      "name": "Bangalore"
+    },
+    "description": "Complete wedding planning services including decorations, makeup artists, venue consultation, and event management"
+  };
+
   return (
     <>
+      <Head>
+        <title>Weddings Made Easy | India's First Online Wedding Planning Platform | Wedsy</title>
+        <meta name="description" content="Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform. Get free quotes, expert consultation, and premium wedding services in Bangalore." />
+        <meta name="keywords" content="wedding planning, online wedding planning, wedding planners bangalore, event planning bangalore, wedding services, wedding consultation" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://www.wedsy.in/weddings-made-easy" />
+        
+        {/* Open Graph Tags */}
+        <meta property="og:title" content="Weddings Made Easy | India's First Online Wedding Planning Platform | Wedsy" />
+        <meta property="og:description" content="Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform. Get free quotes and expert consultation." />
+        <meta property="og:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta property="og:url" content="https://www.wedsy.in/weddings-made-easy" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Wedsy" />
+        
+        {/* Twitter Card Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Weddings Made Easy | India's First Online Wedding Planning Platform | Wedsy" />
+        <meta name="twitter:description" content="Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform." />
+        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.png" />
+        
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+        />
+      </Head>
       <Script
         strategy="afterInteractive"
         src={`https://www.googletagmanager.com/gtag/js?id=AW-468340693`}

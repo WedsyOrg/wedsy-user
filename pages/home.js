@@ -2,11 +2,119 @@ import FAQAccordion from "@/components/accordion/FAQAccordion";
 import PlanYourEvent from "@/components/screens/PlanYourEvent";
 import { Button } from "flowbite-react";
 import Image from "next/image";
+import Head from "next/head";
 import { MdArrowRight, MdArrowRightAlt } from "react-icons/md";
 
 function Home({ categoryList }) {
+  // Generate FAQ Schema
+  const faqData = [
+    {
+      question: "What services do Wedsy's event planners in Bangalore offer?",
+      answer: "Our team at Wedsy offers comprehensive event planning services in Bangalore, including venue selection, thematic decoration, catering, photography, makeup artists, mehendi artists, DJ, Emcee, and personalized event itineraries. We ensure your celebration in Bangalore is flawless from start to finish."
+    },
+    {
+      question: "How do Wedsy's wedding planners in Bangalore personalize weddings?",
+      answer: "At Wedsy, we ensure that every wedding reflects the couple's personality. Our wedding planners in Bangalore collaborate closely with you to understand your vision and preferences, crafting a celebration as unique as your love story. From the color of cloth to flowers, flooring type to lighting, every detail is fully customizable. Your designated wedding planner will discuss these details with you and document them in the notes on the event tool for clear communication and reference."
+    },
+    {
+      question: "What sets Wedsy's event decorators in Bangalore apart?",
+      answer: "Wedsy's event decorators stand out for their creativity and versatility. We lead in staying ahead of trends, utilizing innovative design techniques and technology to craft stunning visual experiences tailored to your event's theme and ambiance. Being India's first online store with transparent pricing, you can conveniently select and customize all decor online. We pride ourselves as a one-stop-shop for all your wedding needs."
+    },
+    {
+      question: "What budget range does Wedsy cater to for weddings and events?",
+      answer: "Being among the top wedding planners in Bangalore, Wedsy caters to a diverse range of budgets. We collaborate closely with our clients to tailor custom packages that align with their financial considerations, ensuring a high-quality execution of their special day. From as low as 10,000 INR to 10 lakhs and beyond, we accommodate a wide spectrum of budgets."
+    },
+    {
+      question: "Does Wedsy have packages for decorators in Bangalore?",
+      answer: "Yes, Wedsy offers a range of packages for wedding decorations that can be tailored to fit your specific needs and budget. Our packages include a variety of décor options curated by the best decorators in Bangalore to make your wedding truly exceptional."
+    },
+    {
+      question: "How do I book Wedsy's services for my upcoming wedding or event?",
+      answer: "Booking with Wedsy is easy. Reach out to us through our website, phone, or email. Your designated planner, your single point of contact for all wedding needs, will guide you through the entire process. We recommend scheduling a consultation with our team to discuss event details and secure our services well in advance, especially for peak seasons in Bangalore."
+    },
+    {
+      question: "What is the event tool?",
+      answer: "The event tool is a specially designed organizational tool for your events. Simply create an event, such as a Haldi wedding, and add multiple event days like Haldi, sangeet, and the wedding ceremony. Once set, you easily add your selected decor to the respective event days. This tool ensures your event stays well-organized and hassle-free."
+    }
+  ];
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqData.map((faq) => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  };
+
+  // Generate Organization Schema
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Wedsy",
+    "description": "India's first online wedding planning platform. Premium wedding decorations, makeup artists, and event planning services in Bangalore.",
+    "url": "https://www.wedsy.in",
+    "logo": "https://www.wedsy.in/logo-black.png",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+91-6364849760",
+      "contactType": "Customer Service",
+      "email": "hello@wedsy.in",
+      "areaServed": "IN",
+      "availableLanguage": "English"
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "#14, HM Geneva House, Cunningham Road",
+      "addressLocality": "Bangalore",
+      "addressRegion": "Karnataka",
+      "postalCode": "560052",
+      "addressCountry": "IN"
+    },
+    "sameAs": [
+      "https://www.facebook.com/wedsy.in",
+      "https://www.instagram.com/wedsy.in",
+      "https://x.com/wedsyindia"
+    ]
+  };
+
   return (
     <>
+      <Head>
+        <title>Wedding Planning Made Easy | Premium Wedding Services in Bangalore | Wedsy</title>
+        <meta name="description" content="Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform. Get expert consultation, premium decorations, makeup artists, and complete wedding services in Bangalore." />
+        <meta name="keywords" content="wedding planning, online wedding planning, wedding planners bangalore, event planning bangalore, wedding services, wedding decoration bangalore, makeup artists bangalore" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://www.wedsy.in/home" />
+        
+        {/* Open Graph Tags */}
+        <meta property="og:title" content="Wedding Planning Made Easy | Premium Wedding Services in Bangalore | Wedsy" />
+        <meta property="og:description" content="Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform. Get expert consultation and premium wedding services." />
+        <meta property="og:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta property="og:url" content="https://www.wedsy.in/home" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Wedsy" />
+        
+        {/* Twitter Card Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Wedding Planning Made Easy | Premium Wedding Services in Bangalore | Wedsy" />
+        <meta name="twitter:description" content="Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform." />
+        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.png" />
+        
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      </Head>
       <div className="hidden md:block relative pt-[52.6%]">
         <Image
           src={"/assets/background/bg-weddings_made_easy-new.png"}

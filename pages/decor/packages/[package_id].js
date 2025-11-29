@@ -238,17 +238,97 @@ function DecorListing({
         console.error("There was a problem with the fetch operation:", error);
       });
   };
+  // Generate Product Schema for Package
+  const packagePrice = decorPackage.variant?.[variant]?.sellingPrice || decorPackage.variant?.artificialFlowers?.sellingPrice || "0";
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": decorPackage.name,
+    "description": decorPackage?.seoTags?.description || decorPackage.description || `${decorPackage.name} - Wedding decoration package from Wedsy`,
+    "image": decorPackage?.seoTags?.image ? [decorPackage.seoTags.image] : decorPackage.image ? [decorPackage.image] : [],
+    "offers": {
+      "@type": "Offer",
+      "price": packagePrice,
+      "priceCurrency": "INR",
+      "availability": "https://schema.org/InStock",
+      "url": `https://www.wedsy.in/decor/packages/${package_id}`
+    },
+    "brand": {
+      "@type": "Brand",
+      "name": "Wedsy"
+    },
+    "category": "Wedding Decoration Package"
+  };
+
+  // Generate Breadcrumb Schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.wedsy.in"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Decor",
+        "item": "https://www.wedsy.in/decor"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Packages",
+        "item": "https://www.wedsy.in/decor/packages"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": decorPackage.name,
+        "item": `https://www.wedsy.in/decor/packages/${package_id}`
+      }
+    ]
+  };
+
+  const pageTitle = decorPackage?.seoTags?.title || `${decorPackage.name} | Wedding Decoration Package | Wedsy`;
+  const pageDescription = decorPackage?.seoTags?.description || `${decorPackage.name} - ${decorPackage.description?.substring(0, 150) || "Complete wedding decoration package"} | Starting at ₹${packagePrice}. Book now for your special day in Bangalore.`;
+  const pageKeywords = decorPackage?.seoTags?.keywords || `${decorPackage.name}, wedding decoration package, wedding decor bangalore, decoration package, wedding planning bangalore`;
+  const ogImage = decorPackage?.seoTags?.image || decorPackage.image || "https://www.wedsy.in/logo-black.png";
+
   return (
     <>
       <Head>
-        <title>{decorPackage.name} | Wedsy</title>
-        <meta name="description" content={decorPackage?.seoTags?.description} />
-        <meta property="og:title" content={decorPackage.name} />
-        <meta
-          property="og:description"
-          content={decorPackage?.seoTags?.description}
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta name="keywords" content={pageKeywords} />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={`https://www.wedsy.in/decor/packages/${package_id}`} />
+        
+        {/* Open Graph Tags */}
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:url" content={`https://www.wedsy.in/decor/packages/${package_id}`} />
+        <meta property="og:type" content="product" />
+        <meta property="og:site_name" content="Wedsy" />
+        
+        {/* Twitter Card Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        <meta name="twitter:image" content={ogImage} />
+        
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
         />
-        <meta property="og:image" content={decorPackage?.seoTags?.image} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
       </Head>
       <DecorDisclaimer />
       <Modal

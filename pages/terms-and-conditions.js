@@ -1,8 +1,22 @@
 import Link from "next/link";
+import Head from "next/head";
 
 export default function Home() {
   return (
-    <div className="p-6 md:py-16 md:px-24">
+    <>
+      <Head>
+        <title>Terms & Conditions | Wedsy</title>
+        <meta name="description" content="Wedsy's terms and conditions. Read our terms of service, refund policy, and guidelines for using our wedding planning platform." />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://www.wedsy.in/terms-and-conditions" />
+        
+        {/* Open Graph Tags */}
+        <meta property="og:title" content="Terms & Conditions | Wedsy" />
+        <meta property="og:description" content="Wedsy's terms and conditions. Read our terms of service and guidelines for using our wedding planning platform." />
+        <meta property="og:url" content="https://www.wedsy.in/terms-and-conditions" />
+        <meta property="og:type" content="website" />
+      </Head>
+      <div className="p-6 md:py-16 md:px-24">
       <h2 className="text-rose-900 font-semibold text-2xl">
         TERMS & CONDITIONS
       </h2>
@@ -163,6 +177,6 @@ export default function Home() {
           </p>
         </div>
       </div>
-    </div>
+    </>
   );
 }

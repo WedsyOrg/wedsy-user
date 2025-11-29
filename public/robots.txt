@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Disallow: /event/
+Disallow: /my-account
+Disallow: /my-orders/
+Disallow: /my-payments/
+Disallow: /my-bids/
+Disallow: /wishlist/
+Disallow: /chats/
+Disallow: /login
+Disallow: /signup
+Disallow: /api/
+Disallow: /makeup-and-beauty/wedsy-packages/checkout
+
+Sitemap: https://www.wedsy.in/sitemap.xml
+

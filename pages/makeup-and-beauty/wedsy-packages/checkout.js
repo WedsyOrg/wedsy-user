@@ -5,6 +5,7 @@ import { toPriceString, toProperCase } from "@/utils/text";
 import { Button, Label, Modal, Select, TextInput } from "flowbite-react";
 import Link from "next/link";
 import Image from "next/image";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -422,6 +423,11 @@ function MakeupAndBeauty({ user }) {
   }, []);
   return (
     <>
+      <Head>
+        <title>Checkout | Wedsy</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://www.wedsy.in/makeup-and-beauty/wedsy-packages/checkout" />
+      </Head>
       <MobileStickyFooter />
       <div className="md:hidden flex flex-col bg-[#F4F4F4]">
         <div className="grid grid-cols-3 divide-x bg-white">

@@ -1,10 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
+import Head from "next/head";
 import { AiOutlinePlusSquare } from "react-icons/ai";
 
 function Wishlist() {
   return (
     <>
+      <Head>
+        <title>Wishlist | Wedsy</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://www.wedsy.in/wishlist" />
+      </Head>
       <div className="px-6 py-6 md:py-12 md:px-24 flex flex-col gap-4 md:gap-8 md:pt-24">
         <div className="text-black text-2xl md:text-4xl font-semibold">
           WISHLIST
