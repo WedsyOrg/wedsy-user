@@ -1,4 +1,3 @@
-import UserProfileHeader from "@/components/layout/UserProfileHeader";
 import UserSidebar from "@/components/layout/UserSidebar";
 import { checkValidEmail } from "@/utils/email";
 import { uploadFile } from "@/utils/file";
@@ -7,10 +6,12 @@ import { Avatar, Button, TextInput } from "flowbite-react";
 import Image from "next/image";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/router";
 import { AiOutlinePlus } from "react-icons/ai";
 import { BiEditAlt } from "react-icons/bi";
 
 export default function Account({ user }) {
+  const router = useRouter();
   const [userInfo, setUserInfo] = useState(user);
   const [editProfile, setEditProfile] = useState(false);
   const [editAddress, setEditAddress] = useState(false);
@@ -126,7 +127,40 @@ export default function Account({ user }) {
         <link rel="canonical" href="https://www.wedsy.in/my-account" />
       </Head>
       <div className="flex flex-col bg-gray-100">
-        <UserProfileHeader display={"my-account"} />
+        <div className="flex flex-row justify-around items-center bg-[#2B2B2BE5] px-4 md:px-24 py-4 text-white">
+          <p
+            className="text-xs md:text-base cursor-pointer"
+            onClick={() => {
+              router.push("/my-bids");
+            }}
+          >
+            MY BIDS
+          </p>
+          <p
+            className="text-xs md:text-base cursor-pointer"
+            onClick={() => {
+              router.push("/my-orders");
+            }}
+          >
+            ORDERS
+          </p>
+          <p
+            className="text-xs md:text-base border-b border-b-white cursor-pointer"
+            onClick={() => {
+              router.push("/my-account");
+            }}
+          >
+            ACCOUNT
+          </p>
+          <p
+            className="text-xs md:text-base cursor-pointer"
+            onClick={() => {
+              router.push("/my-payments");
+            }}
+          >
+            PAYMENTS
+          </p>
+        </div>
         <div className="flex flex-col gap-3 px-8 md:px-36 mb-12 md:my-12">
           <p className="text-2xl font-medium">Personal Information</p>
           <div className="flex flex-col md:flex-row gap-8 md:gap-12 md:items-center mb-8">

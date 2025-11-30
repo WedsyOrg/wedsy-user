@@ -47,9 +47,9 @@ export default function Orders({ user }) {
   return (
     <>
       <div className="flex flex-col bg-gray-100 min-h-[70vh]">
-        <div className="flex flex-row justify-around items-center bg-[#2B2B2B] px-4 md:px-24 py-4 text-white">
+        <div className="flex flex-row justify-around items-center bg-[#2B2B2BE5] px-4 md:px-24 py-4 text-white">
           <p
-            className="border-b border-b-[#2B2B2B] cursor-pointer"
+            className="text-xs md:text-base cursor-pointer"
             onClick={() => {
               router.push("/my-bids");
             }}
@@ -57,7 +57,7 @@ export default function Orders({ user }) {
             MY BIDS
           </p>
           <p
-            className="border-b border-b-white cursor-pointer"
+            className="text-xs md:text-base border-b border-b-white cursor-pointer"
             onClick={() => {
               router.push("/my-orders");
             }}
@@ -65,12 +65,20 @@ export default function Orders({ user }) {
             ORDERS
           </p>
           <p
-            className="border-b border-b-[#2B2B2B] cursor-pointer"
+            className="text-xs md:text-base cursor-pointer"
             onClick={() => {
               router.push("/my-account");
             }}
           >
             ACCOUNT
+          </p>
+          <p
+            className="text-xs md:text-base cursor-pointer"
+            onClick={() => {
+              router.push("/my-payments");
+            }}
+          >
+            PAYMENTS
           </p>
         </div>
         <div className="bg-white uppercase px-12 hidden md:flex flex-row gap-6 items-center py-6 text-xl font-semibold border-b-2">

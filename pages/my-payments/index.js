@@ -1,12 +1,13 @@
-import UserProfileHeader from "@/components/layout/UserProfileHeader";
 import UserSidebar from "@/components/layout/UserSidebar";
 import { toProperCase } from "@/utils/text";
 import { Button, Pagination, Select, Table } from "flowbite-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import { BsBell } from "react-icons/bs";
 
 export default function Payments({ user }) {
+  const router = useRouter();
   const [payments, setPayments] = useState([]);
   const [paymentStats, setPaymentStats] = useState({
     totalAmount: 0,
@@ -74,7 +75,40 @@ export default function Payments({ user }) {
   return (
     <>
       <div className="flex flex-col bg-gray-100 min-h-[85vh]">
-        <UserProfileHeader display={"my-payments"} />
+        <div className="flex flex-row justify-around items-center bg-[#2B2B2BE5] px-4 md:px-24 py-4 text-white">
+          <p
+            className="text-xs md:text-base cursor-pointer"
+            onClick={() => {
+              router.push("/my-bids");
+            }}
+          >
+            MY BIDS
+          </p>
+          <p
+            className="text-xs md:text-base cursor-pointer"
+            onClick={() => {
+              router.push("/my-orders");
+            }}
+          >
+            ORDERS
+          </p>
+          <p
+            className="text-xs md:text-base cursor-pointer"
+            onClick={() => {
+              router.push("/my-account");
+            }}
+          >
+            ACCOUNT
+          </p>
+          <p
+            className="text-xs md:text-base border-b border-b-white cursor-pointer"
+            onClick={() => {
+              router.push("/my-payments");
+            }}
+          >
+            PAYMENTS
+          </p>
+        </div>
         <div className="flex flex-col gap-3 px-8 md:px-36 mb-12 md:my-12">
           <div className="flex flex-row justify-center items-center bg-white p-1 text-black mx-auto rounded-xl">
             <span className="uppercase bg-black text-white px-8 py-2 rounded-lg">
