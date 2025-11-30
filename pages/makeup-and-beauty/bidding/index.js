@@ -439,7 +439,6 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://www.wedsy.in/makeup-and-beauty/bidding" />
       </Head>
-    <>
       <MobileStickyFooter />
       {display === "HowItWorks" && (
         <>

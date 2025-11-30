@@ -20,7 +20,7 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
         setSpotlightIndex(
           (prevSlide) => (prevSlide + 1) % spotlightList.length
         );
-      }, 15000); // Change slide every 15 seconds
+      }, 4000); // Change slide every 4 seconds
     };
     const resetAutoPlay = () => {
       clearInterval(intervalId);
@@ -186,79 +186,87 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
         <p className="hidden md:block text-black text-lg md:text-2xl font-medium uppercase text-center mt-6">
           SPOTLIGHT
         </p>
-        <div ref={spotlightRef}>
-          {spotlightList.length > 0 && spotlightList[spotlightIndex]._id && (
-            <div
-              className={`grid grid-cols-1 md:grid-cols-2 md:m-6 mt-10 md:gap-8 bg-[${spotlightList[spotlightIndex].spotlightColor}]`}
-              style={{
-                backgroundColor: spotlightList[spotlightIndex].spotlightColor,
-              }}
-            >
-              <div className="relative h-72 md:hidden">
-                <Image
-                  src={spotlightList[spotlightIndex].thumbnail}
-                  alt="Decor Image"
-                  width={0}
-                  height={0}
-                  sizes="100%"
-                  layout={"fill"}
-                  objectFit="cover"
-                  className="w-full"
-                />
-                <div className="absolute p-4 bottom-0 w-full bg-black/70 text-white flex flex-row items-center">
-                  <p className="text-xl grow">
-                    {spotlightList[spotlightIndex].name}
-                  </p>
-                  <p className="text-xl">
-                    ₹{" "}
-                    {spotlightList[spotlightIndex].productInfo.variant
-                      .artificialFlowers.sellingPrice ||
-                      spotlightList[spotlightIndex].productInfo.variant
-                        .mixedFlowers.sellingPrice ||
-                      spotlightList[spotlightIndex].productInfo.variant
-                        .naturalFlowers.sellingPrice}
-                  </p>
-                </div>
-              </div>
-              <div className="hidden md:flex flex-col p-6 justify-between md:py-8 order-last md:order-first gap-4 md:gap-4">
-                <p className="text-xl md:text-3xl font-semibold">
-                  {spotlightList[spotlightIndex].name}
-                </p>
-                <p className="hidden md:block">
-                  {spotlightList[spotlightIndex].description}
-                </p>
-                <div className="flex flex-row justify-between mt-auto">
-                  <p className="text-xl md:text-3xl font-semibold text-right md:text-left">
-                    ₹{" "}
-                    {spotlightList[spotlightIndex].productInfo.variant
-                      .artificialFlowers.sellingPrice ||
-                      spotlightList[spotlightIndex].productInfo.variant
-                        .mixedFlowers.sellingPrice ||
-                      spotlightList[spotlightIndex].productInfo.variant
-                        .naturalFlowers.sellingPrice}
-                  </p>
-                  <Link
-                    href={`/decor/view/${spotlightList[spotlightIndex]._id}`}
+        <div ref={spotlightRef} className="relative overflow-hidden">
+          {spotlightList.length > 0 && (
+            <div className="relative w-full" style={{ minHeight: '400px' }}>
+              {spotlightList.map((item, index) => (
+                item._id && (
+                  <div
+                    key={item._id || index}
+                    className="absolute inset-0 w-full"
+                    style={{
+                      opacity: index === spotlightIndex ? 1 : 0,
+                      transform: `translateX(${index === spotlightIndex ? 0 : index < spotlightIndex ? -30 : 30}px)`,
+                      transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      pointerEvents: index === spotlightIndex ? 'auto' : 'none',
+                      willChange: 'opacity, transform',
+                    }}
                   >
-                    <button className="mt-0 bg-black text-white py-2 px-4 md:px-8 rounded-lg">
-                      View More
-                    </button>
-                  </Link>
-                </div>
-              </div>
-              <div className="relative h-full hidden md:block w-full">
-                <Image
-                  src={spotlightList[spotlightIndex].thumbnail}
-                  alt="Decor"
-                  // width={0}
-                  // height={0}
-                  sizes="100%"
-                  // fill="cover"
-                  layout={"fill"}
-                  objectFit="cover"
-                  // style={{ width: "100%", height: "auto" }}
-                />
-              </div>
+                    <div
+                      className={`grid grid-cols-1 md:grid-cols-2 md:m-6 mt-10 md:gap-8`}
+                      style={{
+                        backgroundColor: item.spotlightColor,
+                      }}
+                    >
+                      <div className="relative h-72 md:hidden">
+                        <Image
+                          src={item.thumbnail}
+                          alt="Decor Image"
+                          width={0}
+                          height={0}
+                          sizes="100%"
+                          layout={"fill"}
+                          objectFit="cover"
+                          className="w-full"
+                        />
+                        <div className="absolute p-4 bottom-0 w-full bg-black/70 text-white flex flex-row items-center">
+                          <p className="text-xl grow">
+                            {item.name}
+                          </p>
+                          <p className="text-xl">
+                            ₹{" "}
+                            {item.productInfo?.variant?.artificialFlowers?.sellingPrice ||
+                              item.productInfo?.variant?.mixedFlowers?.sellingPrice ||
+                              item.productInfo?.variant?.naturalFlowers?.sellingPrice}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="hidden md:flex flex-col p-6 justify-between md:py-8 order-last md:order-first gap-4 md:gap-4">
+                        <p className="text-xl md:text-3xl font-semibold">
+                          {item.name}
+                        </p>
+                        <p className="hidden md:block">
+                          {item.description}
+                        </p>
+                        <div className="flex flex-row justify-between mt-auto">
+                          <p className="text-xl md:text-3xl font-semibold text-right md:text-left">
+                            ₹{" "}
+                            {item.productInfo?.variant?.artificialFlowers?.sellingPrice ||
+                              item.productInfo?.variant?.mixedFlowers?.sellingPrice ||
+                              item.productInfo?.variant?.naturalFlowers?.sellingPrice}
+                          </p>
+                          <Link
+                            href={`/decor/view/${item._id}`}
+                          >
+                            <button className="mt-0 bg-black text-white py-2 px-4 md:px-8 rounded-lg">
+                              View More
+                            </button>
+                          </Link>
+                        </div>
+                      </div>
+                      <div className="relative h-full hidden md:block w-full">
+                        <Image
+                          src={item.thumbnail}
+                          alt="Decor"
+                          sizes="100%"
+                          layout={"fill"}
+                          objectFit="cover"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )
+              ))}
             </div>
           )}
         </div>
@@ -267,8 +275,10 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
             {spotlightList.map((item, index) => (
               <span
                 key={index}
-                className={`cursor-pointer rounded-full h-2 md:h-4 w-2 md:w-4 ${
-                  index === spotlightIndex ? "bg-black" : "bg-gray-400"
+                className={`cursor-pointer rounded-full transition-all duration-200 ease-in-out h-2 md:h-4 w-2 md:w-4 ${
+                  index === spotlightIndex 
+                    ? "bg-black scale-125" 
+                    : "bg-gray-400 hover:bg-gray-500"
                 }`}
                 onClick={() => {
                   setSpotlightIndex(index);

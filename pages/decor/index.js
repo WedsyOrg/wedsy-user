@@ -250,7 +250,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
         setSpotlightIndex(
           (prevSlide) => (prevSlide + 1) % listLength
         );
-      }, 15000); // Change slide every 15 seconds
+      }, 4000); // Change slide every 4 seconds
     };
     const resetAutoPlay = () => {
       clearInterval(intervalId);
@@ -686,16 +686,20 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
             {categoryList.slice(0, 8).map((item, index) => (
               <div
                 key={index}
-                className="w-full h-[80px] sm:h-[100px] relative rounded-md overflow-hidden opacity-100 shadow-md transform transition duration-300 hover:scale-[1.03]"
+                className="group w-full h-[80px] sm:h-[100px] relative rounded-md overflow-hidden opacity-100 shadow-md transform transition duration-300 hover:scale-[1.03]"
               >
                 <Link href={`/decor/view?category=${item}`} className="block w-full h-full">
                   <img
                     src={`/assets/decor/categories-img/${item.toLowerCase()}.jpg`}
                     alt={item}
-                    className="w-full h-full object-cover brightness-75 transition duration-300 hover:brightness-100"
+                    className="w-full h-full object-cover brightness-75 transition-transform duration-300 group-hover:scale-105"
+                  />
+                  {/* black sweep from bottom appears only on hover */}
+                  <div
+                    className="absolute inset-x-0 bottom-0 h-0 group-hover:h-full transition-all duration-300 opacity-0 group-hover:opacity-70 bg-gradient-to-t from-black to-transparent"
                   />
                   <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
-                    <span className="text-white text-[16px] sm:text-[24px] md:text-[28px] font-normal tracking-[2px] text-shadow-lg uppercase">
+                    <span className="relative z-10 text-white text-[16px] sm:text-[24px] md:text-[28px] font-normal tracking-[2px] text-shadow-lg uppercase">
                       {item.toUpperCase()}
                     </span>
                   </div>
@@ -761,67 +765,82 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
           <div
             ref={spotlightRef}
-            className="w-full max-w-[1200px] h-auto md:h-[301px] mt-[30px] md:mt-[65px] mb-[30px] mx-auto relative flex items-center justify-center"
+            className="w-full max-w-[1200px] h-auto md:h-[301px] mt-[30px] md:mt-[65px] mb-[30px] mx-auto relative flex items-center justify-center overflow-hidden"
+            style={{ minHeight: '250px' }}
           >
+            {spotlightList.length > 0 && (
+              <div className="relative w-full h-full">
+                {spotlightList.map((item, index) => (
+                  item._id && (
+                    <div
+                      key={item._id || index}
+                      className="absolute inset-0 w-full flex items-center justify-center"
+                      style={{
+                        opacity: index === spotlightIndex ? 1 : 0,
+                        transform: `translateX(${index === spotlightIndex ? 0 : index < spotlightIndex ? -30 : 30}px)`,
+                        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        pointerEvents: index === spotlightIndex ? 'auto' : 'none',
+                        willChange: 'opacity, transform',
+                      }}
+                    >
+                      <div
+                        className="grid grid-cols-1 md:grid-cols-2 w-full h-full m-4 md:m-6 gap-4 md:gap-8"
+                        style={{
+                          backgroundColor: item.spotlightColor,
+                          borderRadius: 0,
+                          boxShadow: '0 2px 24px rgba(0,0,0,0.08)',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {/* Mobile-only thumbnail */}
+                        <div className="relative w-full h-48 sm:h-60 md:hidden">
+                          <Image
+                            src={item.thumbnail}
+                            alt="Decor Image"
+                            layout="fill"
+                            objectFit="cover"
+                            className="brightness-75"
+                          />
+                        </div>
 
-            {spotlightList.length > 0 && spotlightList[spotlightIndex]._id && (
-              <div
-                className="grid grid-cols-1 md:grid-cols-2 w-full h-full m-4 md:m-6 gap-4 md:gap-8"
-                style={{
-                  backgroundColor: spotlightList[spotlightIndex].spotlightColor,
-                  borderRadius: 0,
-                  boxShadow: '0 2px 24px rgba(0,0,0,0.08)',
-                  overflow: 'hidden',
-                }}
-              >
-                {/* Mobile-only thumbnail */}
-                <div className="relative w-full h-48 sm:h-60 md:hidden">
-                  <Image
-                    src={spotlightList[spotlightIndex].thumbnail}
-                    alt="Decor Image"
-                    layout="fill"
-                    objectFit="cover"
-                    className="brightness-75"
-                  />
-                </div>
+                        {/* Text Content */}
+                        <div className="flex flex-col p-4 sm:p-6 justify-between order-last md:order-first gap-2 sm:gap-4">
+                          <p className="text-xl md:text-3xl font-semibold">
+                            {item.name}
+                          </p>
+                          <p className="hidden md:block font-medium">
+                            {item.description}
+                          </p>
+                          <div className="flex justify-between items-center mt-4">
+                            <p className="text-xl md:text-3xl font-semibold">
+                              ₹{' '}
+                              {
+                                item.productInfo?.variant?.artificialFlowers?.sellingPrice ||
+                                item.productInfo?.variant?.mixedFlowers?.sellingPrice ||
+                                item.productInfo?.variant?.naturalFlowers?.sellingPrice
+                              }
+                            </p>
+                            <Link href={`/decor/view/${item._id}`}>
+                              <button className="bg-black text-white py-2 px-4 md:px-8 rounded-lg">
+                                View Details
+                              </button>
+                            </Link>
+                          </div>
+                        </div>
 
-                {/* Text Content */}
-                <div className="flex flex-col p-4 sm:p-6 justify-between order-last md:order-first gap-2 sm:gap-4">
-                  <p className="text-xl md:text-3xl font-semibold">
-                    {spotlightList[spotlightIndex].name}
-                  </p>
-                  <p className="hidden md:block font-medium">
-                    {spotlightList[spotlightIndex].description}
-                  </p>
-                  <div className="flex justify-between items-center mt-4">
-                    <p className="text-xl md:text-3xl font-semibold">
-                      ₹{' '}
-                      {
-                        spotlightList[spotlightIndex].productInfo.variant
-                          .artificialFlowers.sellingPrice ||
-                        spotlightList[spotlightIndex].productInfo.variant
-                          .mixedFlowers.sellingPrice ||
-                        spotlightList[spotlightIndex].productInfo.variant
-                          .naturalFlowers.sellingPrice
-                      }
-                    </p>
-                    <Link href={`/decor/view/${spotlightList[spotlightIndex]._id}`}>
-                      <button className="bg-black text-white py-2 px-4 md:px-8 rounded-lg">
-                        View Details
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Desktop-only thumbnail */}
-                <div className="relative w-full hidden md:block h-full">
-                  <Image
-                    src={spotlightList[spotlightIndex].thumbnail}
-                    alt="Decor"
-                    layout="fill"
-                    objectFit="cover"
-                  />
-                </div>
+                        {/* Desktop-only thumbnail */}
+                        <div className="relative w-full hidden md:block h-full">
+                          <Image
+                            src={item.thumbnail}
+                            alt="Decor"
+                            layout="fill"
+                            objectFit="cover"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )
+                ))}
               </div>
             )}
           </div>
@@ -831,8 +850,11 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
               {spotlightList.map((_, i) => (
                 <span
                   key={i}
-                  className={`cursor-pointer rounded-full transition-colors h-2 md:h-3 w-2 md:w-3 ${i === spotlightIndex ? 'bg-black' : 'bg-gray-400'
-                    }`}
+                  className={`cursor-pointer rounded-full transition-all duration-200 ease-in-out h-2 md:h-3 w-2 md:w-3 ${
+                    i === spotlightIndex 
+                      ? 'bg-black scale-125' 
+                      : 'bg-gray-400 hover:bg-gray-500'
+                  }`}
                   onClick={() => setSpotlightIndex(i)}
                 />
               ))}
@@ -1126,16 +1148,17 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
             ].map((pkg, index) => (
               <div
                 key={index}
-                className="w-full h-[60px] md:h-[100px] relative rounded-md overflow-hidden opacity-100 shadow-md transform transition duration-300 hover:scale-[1.03]"
+                className="group w-full h-[60px] md:h-[100px] relative rounded-md overflow-hidden opacity-100 shadow-md transform transition duration-300 hover:scale-[1.03]"
               >
                 <a href="#" className="block w-full h-full">
                   <img
                     src={`/assets/decor/packages-img/${pkg.image}`}
                     alt={pkg.label}
-                    className="w-full h-full object-cover brightness-75 transition duration-300 hover:brightness-100"
+                    className="w-full h-full object-cover brightness-75 transition-transform duration-300 group-hover:scale-105"
                   />
+                  <div className="absolute inset-x-0 bottom-0 h-0 group-hover:h-full transition-all duration-300 opacity-0 group-hover:opacity-70 bg-gradient-to-t from-black to-transparent" />
                   <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
-                    <span className="text-white text-[12px] md:text-[32px] font-normal tracking-[0.5px] md:tracking-[2px] text-shadow-lg uppercase text-center px-1 md:px-0">
+                    <span className="relative z-10 text-white text-[12px] md:text-[32px] font-normal tracking-[0.5px] md:tracking-[2px] text-shadow-lg uppercase text-center px-1 md:px-0">
                       {pkg.label}
                     </span>
                   </div>
@@ -1144,9 +1167,10 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
             ))}
 
             {/* View More */}
-            <div className="w-full h-[60px] md:h-[100px] relative rounded-md overflow-hidden opacity-100 shadow-md bg-black flex items-center justify-center transform transition duration-300 hover:scale-[1.03]">
-              <a href="#" className="block w-full h-full flex items-center justify-center">
-                <span className="text-white text-[12px] md:text-[32px] font-normal tracking-[0.5px] md:tracking-[2px] text-shadow-lg uppercase">
+            <div className="group w-full h-[60px] md:h-[100px] relative rounded-md overflow-hidden opacity-100 shadow-md bg-black flex items-center justify-center transform transition duration-300 hover:scale-[1.03]">
+              <a href="#" className="block w-full h-full flex items-center justify-center relative">
+                <div className="absolute inset-x-0 bottom-0 h-0 group-hover:h-full transition-all duration-300 opacity-0 group-hover:opacity-70 bg-gradient-to-t from-black to-transparent" />
+                <span className="relative z-10 text-white text-[12px] md:text-[32px] font-normal tracking-[0.5px] md:tracking-[2px] text-shadow-lg uppercase">
                   VIEW MORE
                 </span>
               </a>

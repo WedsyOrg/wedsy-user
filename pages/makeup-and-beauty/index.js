@@ -104,7 +104,16 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       .then((response) => response.json())
       .then((response) => {
         console.log(response);
-        setVendors(response);
+        // Normalize payload to an array; API may return { list: [...] } or a single object
+        const normalized =
+          Array.isArray(response)
+            ? response
+            : Array.isArray(response?.list)
+            ? response.list
+            : response
+            ? [response]
+            : [];
+        setVendors(normalized);
       })
       .catch((error) => {
         console.error("There was a problem with the fetch operation:", error);
@@ -710,7 +719,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
 
       {/* card section */}
       <div className="bg-[#f4f4f4] pb-12 grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-16 px-8 md:px-36">
-        {vendors
+        {(Array.isArray(vendors) ? vendors : [])
           ?.filter((i) =>
             search ? i.name.toLowerCase().includes(search.toLowerCase()) : true
           )

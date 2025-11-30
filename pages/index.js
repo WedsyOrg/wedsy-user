@@ -752,8 +752,8 @@ function Home({ packages }) {
                 className="rounded-xl transition-transform duration-300 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-black/80 rounded-xl"></div>
-              <Link
-                href="/decor"
+              <a
+                href="https://venues.wedsy.in"
                 className="relative z-10 text-white
              text-[10px] md:text-xl font-semibold 
              flex items-center justify-center md:justify-start"
@@ -771,7 +771,7 @@ function Home({ packages }) {
                     clipRule="evenodd"
                   />
                 </svg>
-              </Link>
+              </a>
               </div>
           </div>
         </div>

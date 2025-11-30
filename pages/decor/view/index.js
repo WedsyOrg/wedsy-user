@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { Checkbox, Label, Dropdown } from "flowbite-react";
@@ -54,7 +54,21 @@ function DecorListing({
     sort: "Sort",
     occasion: [],
     colours: [],
+    type: [],
+    priceRange: [0, 115000],
   });
+
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [selectedSection, setSelectedSection] = useState("occasion");
+  const [tempFilters, setTempFilters] = useState({
+    occasion: [],
+    colours: [],
+    type: [],
+    priceRange: [0, 115000],
+  });
+  const filterDropdownRef = useRef(null);
+  const filterButtonRef = useRef(null);
+  const filterDropdownContentRef = useRef(null);
 
   const occasionList = [
     "Reception",
@@ -65,6 +79,25 @@ function DecorListing({
     "Mehendi",
     "Muhurtham",
   ];
+
+  const coloursList = [
+    { name: "Black", color: "#000000" },
+    { name: "Silver", color: "#C0C0C0" },
+    { name: "Gray", color: "#808080" },
+    { name: "White", color: "#FFFFFF" },
+    { name: "Maroon", color: "#800000" },
+    { name: "Red", color: "#FF0000" },
+    { name: "Purple", color: "#800080" },
+    { name: "Green", color: "#008000" },
+    { name: "Lime", color: "#00FF00" },
+    { name: "Olive", color: "#808000" },
+    { name: "Yellow", color: "#FFFF00" },
+    { name: "Navy", color: "#000080" },
+    { name: "Blue", color: "#0000FF" },
+    { name: "Peach", color: "#FFC0CB" },
+  ];
+
+  const typeList = ["Modern", "Traditional"];
 
   // Generate dynamic SEO content
   const currentCategory = filters.category || "Stage";
@@ -102,6 +135,17 @@ function DecorListing({
       if (filters.occasion.length > 0) {
         params.append("occassion", filters.occasion.join("|"));
       }
+      if (filters.colours.length > 0) {
+        params.append("color", filters.colours.join("|"));
+      }
+      if (filters.type.length === 1) {
+        // Backend accepts single style value
+        params.append("style", filters.type[0]);
+      }
+      if (filters.priceRange && (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 115000)) {
+        params.append("priceLower", filters.priceRange[0].toString());
+        params.append("priceHigher", filters.priceRange[1].toString());
+      }
 
       try {
         const response = await fetch(
@@ -132,6 +176,41 @@ function DecorListing({
     setPage(parseInt(queryPage) || 1);
   }, [category, queryPage]);
 
+  useEffect(() => {
+    if (showFilterModal) {
+      setTempFilters({
+        occasion: [...filters.occasion],
+        colours: [...filters.colours],
+        type: [...filters.type],
+        priceRange: [...filters.priceRange],
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showFilterModal]);
+
+  useEffect(() => {
+    if (!showFilterModal) return;
+
+    const handleClickOutside = (event) => {
+      const isClickOnButton = filterButtonRef.current && filterButtonRef.current.contains(event.target);
+      const isClickOnDropdown = filterDropdownContentRef.current && filterDropdownContentRef.current.contains(event.target);
+      
+      if (!isClickOnButton && !isClickOnDropdown) {
+        setShowFilterModal(false);
+      }
+    };
+
+    // Add a delay to allow the button click to complete first
+    const timeoutId = setTimeout(() => {
+      document.addEventListener("click", handleClickOutside);
+    }, 200);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [showFilterModal]);
+
   const handleCategoryChange = (categoryName) => {
     router.push(`/decor/view?category=${categoryName}`);
   };
@@ -147,6 +226,45 @@ function DecorListing({
 
   const handleSortChange = (sortValue) => {
     setFilters((prev) => ({ ...prev, sort: sortValue }));
+  };
+
+  const handlePriceRangeChange = (newRange) => {
+    setFilters((prev) => ({ ...prev, priceRange: newRange }));
+  };
+
+  const handleTempFilterChange = (filterType, value) => {
+    setTempFilters((prev) => ({
+      ...prev,
+      [filterType]: prev[filterType].includes(value)
+        ? prev[filterType].filter((item) => item !== value)
+        : [...prev[filterType], value],
+    }));
+  };
+
+  const handleTempPriceRangeChange = (newRange) => {
+    setTempFilters((prev) => ({ ...prev, priceRange: newRange }));
+  };
+
+  const handleApplyFilters = () => {
+    setFilters((prev) => ({
+      ...prev,
+      occasion: [...tempFilters.occasion],
+      colours: [...tempFilters.colours],
+      type: [...tempFilters.type],
+      priceRange: [...tempFilters.priceRange],
+    }));
+    setShowFilterModal(false);
+  };
+
+  const handleResetFilters = () => {
+    const resetFilters = {
+      occasion: [],
+      colours: [],
+      type: [],
+      priceRange: [0, 115000],
+    };
+    setTempFilters(resetFilters);
+    setFilters((prev) => ({ ...prev, ...resetFilters }));
   };
 
   const dynamicHeading = filters.category ? `${filters.category}` : "All Decor";
@@ -167,23 +285,6 @@ function DecorListing({
     "md:col-span-4 md:row-span-2 md:row-start-12",
     "md:col-span-3 md:row-span-2 md:col-start-5 md:row-start-12",
   ];
-
-  // const mobileGridClasses = [
-  //   "min-h-[160px]",
-  //   "row-span-2 min-h-[240px]",
-  //   "row-span-2 min-h-[240px]",
-  //   "col-start-2 row-start-3 min-h-[160px]",
-  //   "row-start-4 min-h-[160px]",
-  //   "row-span-2 row-start-4 min-h-[240px]",
-  //   "row-span-2 row-start-5 min-h-[240px]",
-  //   "col-start-2 row-start-6 min-h-[160px]",
-  //   "row-start-7 min-h-[160px]",
-  //   "row-span-2 row-start-7 min-h-[240px]",
-  //   "row-span-2 row-start-8 min-h-[240px]",
-  //   "col-start-2 row-start-9 min-h-[160px]",
-  //   "col-span-2 row-span-2 row-start-10 min-h-[280px]",
-  //   "",
-  // ];
 
   const renderPaginationNumbers = () => {
     const numbers = [];
@@ -329,7 +430,7 @@ function DecorListing({
             </div>
 
             <div className="flex flex-col sm:flex-row sm:justify-end items-stretch sm:items-center gap-2 sm:gap-0 md:w-auto">
-              <div className="flex w-full sm:w-auto bg-white rounded-md overflow-hidden border divide-x">
+              <div className="flex w-full sm:w-auto bg-white rounded-md border divide-x relative">
                 <div className="flex-1">
                   <Dropdown
                     inline
@@ -366,35 +467,227 @@ function DecorListing({
                   </Dropdown>
                 </div>
 
-                <div className="flex-1">
-                  <Dropdown
-                    inline
-                    arrowIcon={false}
-                    label={
-                      <div className="ml-10 md:ml-0 px-4 py-2 flex items-center justify-center text-center gap-2 flex-1 min-h-[44px]">
-                        <img
-                          src="/assets/new_icons/filter.svg"
-                          alt="filter"
-                          className="h-4 w-4"
-                        />
-                        <span className="text-sm font-medium">Filter</span>
-                      </div>
-                    }
+                <div className="flex-1 relative" ref={filterDropdownRef}>
+                  <button
+                    ref={filterButtonRef}
+                    onClick={() => {
+                      setSelectedSection("occasion");
+                      setShowFilterModal((prev) => !prev);
+                    }}
+                    className="ml-10 md:ml-0 px-4 py-2 flex items-center justify-center text-center gap-2 flex-1 min-h-[44px] w-full"
                   >
-                    <div className="p-4 space-y-4 w-64">
-                      <h3 className="font-semibold text-lg">Occasion</h3>
-                      {occasionList.map((o) => (
-                        <div key={o} className="flex items-center gap-2">
-                          <Checkbox
-                            id={o}
-                            checked={filters.occasion.includes(o)}
-                            onChange={() => handleFilterChange("occasion", o)}
-                          />
-                          <Label htmlFor={o}>{o}</Label>
+                    <img
+                      src="/assets/new_icons/filter.svg"
+                      alt="filter"
+                      className="h-4 w-4"
+                    />
+                    <span className="text-sm font-medium">Filter</span>
+                  </button>
+
+                  {/* Filter Dropdown */}
+                  {showFilterModal && (
+                    <div 
+                      ref={filterDropdownContentRef}
+                      className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-xl border z-50 flex flex-col max-h-[450px] w-[90vw] sm:w-[600px]"
+                    >
+                      {/* Content Area */}
+                      <div className="flex flex-row flex-1 overflow-hidden">
+                        {/* Left Panel - Sections */}
+                        <div className="w-1/3 border-r bg-gray-50">
+                          <div className="p-4 space-y-1">
+                            <button
+                              onClick={() => setSelectedSection("occasion")}
+                              className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                                selectedSection === "occasion"
+                                  ? "bg-white shadow-sm font-medium"
+                                  : "hover:bg-gray-100"
+                              }`}
+                            >
+                              Occasion
+                            </button>
+                            <button
+                              onClick={() => setSelectedSection("colours")}
+                              className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                                selectedSection === "colours"
+                                  ? "bg-white shadow-sm font-medium"
+                                  : "hover:bg-gray-100"
+                              }`}
+                            >
+                              Colours
+                            </button>
+                            <button
+                              onClick={() => setSelectedSection("type")}
+                              className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                                selectedSection === "type"
+                                  ? "bg-white shadow-sm font-medium"
+                                  : "hover:bg-gray-100"
+                              }`}
+                            >
+                              Type
+                            </button>
+                            <button
+                              onClick={() => setSelectedSection("price-range")}
+                              className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                                selectedSection === "price-range"
+                                  ? "bg-white shadow-sm font-medium"
+                                  : "hover:bg-gray-100"
+                              }`}
+                            >
+                              Price range
+                            </button>
+                          </div>
                         </div>
-                      ))}
+
+                        {/* Right Panel - Options */}
+                        <div className="w-2/3 p-4 overflow-y-auto">
+                          {selectedSection === "occasion" && (
+                            <div className="space-y-2">
+                              {occasionList.map((o) => (
+                                <button
+                                  key={o}
+                                  onClick={() => handleTempFilterChange("occasion", o)}
+                                  className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                                    tempFilters.occasion.includes(o)
+                                      ? "bg-gray-100 font-medium"
+                                      : "hover:bg-gray-50"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="checkbox"
+                                      checked={tempFilters.occasion.includes(o)}
+                                      onChange={() => handleTempFilterChange("occasion", o)}
+                                      className="w-4 h-4"
+                                    />
+                                    <span>{o}</span>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+
+                          {selectedSection === "colours" && (
+                            <div className="space-y-2">
+                              {coloursList.map((colour) => (
+                                <button
+                                  key={colour.name}
+                                  onClick={() => handleTempFilterChange("colours", colour.name)}
+                                  className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                                    tempFilters.colours.includes(colour.name)
+                                      ? "bg-gray-100 font-medium"
+                                      : "hover:bg-gray-50"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={tempFilters.colours.includes(colour.name)}
+                                      onChange={() =>
+                                        handleTempFilterChange("colours", colour.name)
+                                      }
+                                      className="w-4 h-4"
+                                    />
+                                    <div
+                                      className="w-4 h-4 rounded-full border border-gray-300"
+                                      style={{ backgroundColor: colour.color }}
+                                    />
+                                    <span>{colour.name}</span>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+
+                          {selectedSection === "type" && (
+                            <div className="space-y-2">
+                              {typeList.map((type) => (
+                                <button
+                                  key={type}
+                                  onClick={() => handleTempFilterChange("type", type)}
+                                  className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                                    tempFilters.type.includes(type)
+                                      ? "bg-gray-100 font-medium"
+                                      : "hover:bg-gray-50"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="checkbox"
+                                      checked={tempFilters.type.includes(type)}
+                                      onChange={() => handleTempFilterChange("type", type)}
+                                      className="w-4 h-4"
+                                    />
+                                    <span>{type}</span>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+
+                          {selectedSection === "price-range" && (
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between gap-2">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="115000"
+                                  value={tempFilters.priceRange[0]}
+                                  onChange={(e) => {
+                                    const newMin = Math.min(
+                                      Math.max(0, parseInt(e.target.value) || 0),
+                                      tempFilters.priceRange[1]
+                                    );
+                                    handleTempPriceRangeChange([newMin, tempFilters.priceRange[1]]);
+                                  }}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                                  placeholder="Min"
+                                />
+                                <span className="text-gray-500">-</span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="115000"
+                                  value={tempFilters.priceRange[1]}
+                                  onChange={(e) => {
+                                    const newMax = Math.max(
+                                      Math.min(115000, parseInt(e.target.value) || 115000),
+                                      tempFilters.priceRange[0]
+                                    );
+                                    handleTempPriceRangeChange([
+                                      tempFilters.priceRange[0],
+                                      newMax,
+                                    ]);
+                                  }}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                                  placeholder="Max"
+                                />
+                              </div>
+                              <div className="text-sm text-gray-600 text-center">
+                                ₹{tempFilters.priceRange[0].toLocaleString()} - ₹
+                                {tempFilters.priceRange[1].toLocaleString()}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Bottom Buttons */}
+                      <div className="flex border-t p-4 gap-3">
+                        <button
+                          onClick={handleResetFilters}
+                          className="flex-1 px-4 py-2 text-sm border border-gray-300 rounded font-medium hover:bg-gray-50 transition-colors"
+                        >
+                          Reset
+                        </button>
+                        <button
+                          onClick={handleApplyFilters}
+                          className="flex-1 px-4 py-2 text-sm bg-black text-white rounded font-medium hover:bg-gray-800 transition-colors"
+                        >
+                          Apply
+                        </button>
+                      </div>
                     </div>
-                  </Dropdown>
+                  )}
                 </div>
               </div>
             </div>
