@@ -1823,13 +1823,29 @@ function Home({ packages }) {
 
 export async function getServerSideProps(context) {
   try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8090';
+    
+    if (!apiUrl) {
+      console.warn("NEXT_PUBLIC_API_URL not configured; returning empty packages list");
+      return {
+        props: {
+          packages: null,
+        },
+      };
+    }
+
     const packagesResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/decor-package?limit=8`
+      `${apiUrl}/decor-package?limit=8`
     );
+    
+    if (!packagesResponse.ok) {
+      throw new Error(`API responded with status: ${packagesResponse.status}`);
+    }
+    
     const packagesData = await packagesResponse.json();
     return {
       props: {
-        packages: packagesData.list.sort((a, b) => 0.5 - Math.random()),
+        packages: packagesData.list ? packagesData.list.sort((a, b) => 0.5 - Math.random()) : null,
       },
     };
   } catch (error) {

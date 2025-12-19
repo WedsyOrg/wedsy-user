@@ -27,6 +27,16 @@ import Head from "next/head";
 import DecorPackageCard from "@/components/cards/DecorPackageCard";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
 
+const CATEGORY_OPTIONS = [
+  "Reception",
+  "Haldi",
+  "Mehendi",
+  "Nikah",
+  "Sangeet",
+  "Muhurattam",
+  "Add Ons",
+];
+
 const addOnsInitialValues = {
   open: false,
   eventId: "",
@@ -48,9 +58,45 @@ const addOnsInitialValues = {
   ],
 };
 
+function buildQueryString(obj) {
+  const params = new URLSearchParams();
+  Object.entries(obj).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === "") return;
+    params.set(k, String(v));
+  });
+  return params.toString();
+}
+
+function matchesOccasionFilter(pkg, category) {
+  const cLower = String(category || "").toLowerCase().trim();
+  if (!cLower) return true;
+  const decor = Array.isArray(pkg?.decor) ? pkg.decor : [];
+  return decor.some((d) => {
+    const tags = Array.isArray(d?.tags) ? d.tags : [];
+    const occ = Array.isArray(d?.productVariation?.occassion)
+      ? d.productVariation.occassion
+      : [];
+    return (
+      tags.map((t) => String(t).toLowerCase()).includes(cLower) ||
+      occ.map((o) => String(o).toLowerCase()).includes(cLower)
+    );
+  });
+}
+
+function sortPackagesByNameNumber(list) {
+  const getNum = (pkg) => {
+    const m = String(pkg?.name || "").match(/(\d+)/);
+    return m ? parseInt(m[1], 10) : Number.MAX_SAFE_INTEGER;
+  };
+  return [...list].sort((a, b) => getNum(a) - getNum(b));
+}
+
 function DecorListing({
   similarDecorPackages,
   decorPackage,
+  packagesForTabs = [],
+  category = "",
+  firstPackageIdByCategory = {},
   userLoggedIn,
   setOpenLoginModal,
 }) {
@@ -296,6 +342,42 @@ function DecorListing({
   const pageDescription = decorPackage?.seoTags?.description || `${decorPackage.name} - ${decorPackage.description?.substring(0, 150) || "Complete wedding decoration package"} | Starting at ₹${packagePrice}. Book now for your special day in Bangalore.`;
   const pageKeywords = decorPackage?.seoTags?.keywords || `${decorPackage.name}, wedding decoration package, wedding decor bangalore, decoration package, wedding planning bangalore`;
   const ogImage = decorPackage?.seoTags?.image || decorPackage.image || "https://www.wedsy.in/logo-black.png";
+
+  const [selectedByCategory, setSelectedByCategory] = useState({});
+
+  // Group package items by category (Stage, Entrance, Pathway, Mandap, ...)
+  const grouped = (Array.isArray(decorPackage?.decor) ? decorPackage.decor : []).reduce(
+    (acc, item) => {
+      const key = item?.category || "Other";
+      acc[key] = acc[key] || [];
+      acc[key].push(item);
+      return acc;
+    },
+    {}
+  );
+
+  useEffect(() => {
+    // Initialize selected item per category to first item
+    const next = {};
+    Object.entries(grouped).forEach(([cat, items]) => {
+      if (items?.[0]?._id) next[cat] = items[0]._id;
+    });
+    setSelectedByCategory(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [decorPackage?._id]);
+
+  const selectedItemFor = (cat) => {
+    const items = grouped[cat] || [];
+    const id = selectedByCategory[cat];
+    return items.find((i) => i?._id === id) || items[0] || null;
+  };
+
+  const totalPackagePrice =
+    decorPackage?.variant?.[variant]?.sellingPrice ||
+    decorPackage?.variant?.artificialFlowers?.sellingPrice ||
+    decorPackage?.variant?.mixedFlowers?.sellingPrice ||
+    decorPackage?.variant?.naturalFlowers?.sellingPrice ||
+    0;
 
   return (
     <>
@@ -916,332 +998,294 @@ function DecorListing({
           </div>
         </Modal.Body>
       </Modal>
-      <div className="p-6 md:py-16 md:px-24">
-        <p className="font-semibold text-2xl md:text-4xl text-rose-900 mb-3">
-          {decorPackage.name}
-        </p>
-        <div className="grid md:grid-cols-3 gap-8 mb-3">
-          <div
-            className={`p-6 border bg-white shadow-md flex flex-col gap-2 rounded-xl border-b-4 border-b-rose-900`}
+      <div className="w-full bg-white">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-10">
+          {/* Title */}
+          <h1
+            className="text-center text-xl md:text-2xl tracking-[0.35em] text-gray-800"
+            style={{ fontFamily: "Montserrat, sans-serif" }}
           >
-            <div className={`grid grid-cols-2 gap-2`}>
-              {decorPackage.decor
-                .map((item) => item.thumbnail)
-                .map((item, index) => (
-                  <div className="relative pt-[100%]" key={index}>
-                    <Image
-                      key={index}
-                      src={`${item}`}
-                      alt="Decor"
-                      sizes="50%"
-                      layout={"fill"}
-                      objectFit="cover"
-                      className="rounded-md"
-                    />
-                  </div>
-                ))}
-            </div>
-            <p className="font-semibold">{decorPackage.name}</p>
-            <p className="">
-              {decorPackage.decor.map((item) => item.category).join(", ")}
-            </p>
-            <p className="flex">
-              Price for &nbsp;
-              {decorPackage.variant.artificialFlowers.sellingPrice > 0 ? (
-                <Dropdown
-                  inline
-                  renderTrigger={() => (
-                    <span className="font-semibold text-rose-900 cursor-pointer flex items-center gap-1">
-                      {variant === "artificialFlowers"
-                        ? "Artificial"
-                        : variant === "naturalFlowers"
-                        ? "Natural"
-                        : variant === "mixedFlowers"
-                        ? "Mixed"
-                        : ""}{" "}
-                      Flowers <BsChevronDown />
-                    </span>
-                  )}
-                  className="text-rose-900"
-                >
-                  {decorPackage.variant.artificialFlowers.sellingPrice > 0 &&
-                    variant !== "artificialFlowers" && (
-                      <Dropdown.Item
-                        onClick={() => {
-                          setVariant("artificialFlowers");
-                        }}
+            PACKAGES
+          </h1>
+          <div className="mt-4 h-px bg-gray-200" />
+
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-[240px_1fr] gap-8">
+            {/* Left filters */}
+            <aside className="relative">
+              <div className="hidden md:block absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
+              <div className="flex md:flex-col gap-3 md:gap-4 md:pr-8 overflow-x-auto md:overflow-visible py-1">
+                {CATEGORY_OPTIONS.map((c) => {
+                  const active = c === category;
+                  const targetId = firstPackageIdByCategory?.[c] || package_id;
+                  return (
+                    <Link
+                      key={c}
+                      href={
+                        active
+                          ? `/decor/packages/${package_id}`
+                          : `/decor/packages/${targetId}?${buildQueryString({ category: c })}`
+                      }
+                      className={`shrink-0 md:shrink rounded-full px-6 py-2 text-sm border transition-colors ${
+                        active
+                          ? "bg-black text-white border-black"
+                          : "bg-white text-gray-900 border-gray-300 hover:border-gray-400"
+                      }`}
+                      style={{ fontFamily: "Montserrat, sans-serif" }}
+                    >
+                      {c}
+                    </Link>
+                  );
+                })}
+              </div>
+            </aside>
+
+            {/* Right content */}
+            <section>
+              {/* Top package tabs */}
+              {Array.isArray(packagesForTabs) && packagesForTabs.length > 0 && (
+                <div className="flex gap-2 overflow-x-auto pb-3">
+                  {packagesForTabs.map((p) => {
+                    const active = p?._id === package_id;
+                    return (
+                      <Link
+                        key={p?._id}
+                        href={`/decor/packages/${p?._id}${
+                          category ? `?${buildQueryString({ category })}` : ""
+                        }`}
+                        className={`shrink-0 px-5 py-2 rounded-full text-xs border ${
+                          active
+                            ? "bg-[#D46A78] text-white border-[#D46A78]"
+                            : "bg-[#F2D7DB] text-gray-900 border-[#F2D7DB] hover:opacity-90"
+                        }`}
+                        style={{ fontFamily: "Montserrat, sans-serif" }}
                       >
-                        Artifical Flowers
-                      </Dropdown.Item>
-                    )}
-                  {decorPackage.variant.naturalFlowers.sellingPrice > 0 &&
-                    variant !== "naturalFlowers" && (
-                      <Dropdown.Item
-                        onClick={() => {
-                          setVariant("naturalFlowers");
-                        }}
-                      >
-                        Natural Flowers
-                      </Dropdown.Item>
-                    )}
-                  {decorPackage.variant.mixedFlowers.sellingPrice > 0 &&
-                    variant !== "mixedFlowers" && (
-                      <Dropdown.Item
-                        onClick={() => {
-                          setVariant("mixedFlowers");
-                        }}
-                      >
-                        Mixed Flowers
-                      </Dropdown.Item>
-                    )}
-                </Dropdown>
-              ) : (
-                <span className="font-semibold text-rose-900 flex items-center gap-1">
-                  {variant === "artificialFlowers"
-                    ? "Artificial"
-                    : variant === "naturalFlowers"
-                    ? "Natural"
-                    : variant === "mixedFlowers"
-                    ? "Mixed"
-                    : ""}{" "}
-                  Flowers
-                </span>
+                        {p?.name || "Package"}
+                      </Link>
+                    );
+                  })}
+                </div>
               )}
-            </p>
-            <p className="font-semibold text-xl">
-              ₹ {decorPackage.variant[variant].sellingPrice}
-            </p>
-            <div className="flex flex-row flex-wrap gap-4 items-center justify-start mt-3">
-              <Dropdown
-                inline
-                arrowIcon={false}
-                dismissOnClick={false}
-                label={
+
+              {/* Sections */}
+              <div className="mt-6 space-y-10">
+                {Object.keys(grouped).map((cat) => {
+                  const items = grouped[cat] || [];
+                  const selected = selectedItemFor(cat);
+                  if (!selected) return null;
+                  const included = Array.isArray(selected?.productInfo?.included)
+                    ? selected.productInfo.included
+                    : [];
+
+                  return (
+                    <div key={cat} className="border-t border-gray-200 pt-8">
+                      <div className="flex items-center justify-between mb-4">
+                        <p
+                          className="text-sm font-semibold text-gray-800 tracking-widest"
+                          style={{ fontFamily: "Montserrat, sans-serif" }}
+                        >
+                          {String(cat).toUpperCase()}
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-6">
+                        {/* Left image */}
+                        <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-gray-200">
+                          {selected?.image ? (
+                            <Image
+                              src={selected.image}
+                              alt={selected?.name || cat}
+                              fill
+                              sizes="(min-width: 768px) 320px, 100vw"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300" />
+                          )}
+                        </div>
+
+                        {/* Right info */}
+                        <div className="space-y-4">
+                          <div className="rounded-lg border border-gray-200 bg-white p-4">
+                            <p className="text-xs font-semibold text-gray-700 mb-2">
+                              Inclusive of:
+                            </p>
+                            <ul className="text-xs text-gray-700 space-y-1 list-disc pl-4">
+                              {included.length > 0 ? (
+                                included.map((x, idx) => (
+                                  <li key={idx}>{x}</li>
+                                ))
+                              ) : (
+                                <li>—</li>
+                              )}
+                            </ul>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-gray-700">Quantity</span>
+                            <div className="rounded-full border border-gray-300 px-4 py-1 text-xs">
+                              {selected?.productInfo?.quantity || 1}
+                            </div>
+                          </div>
+
+                          {/* Thumbnails (swap options) */}
+                          <div>
+                            <div className="inline-flex items-center bg-[#F5E27A] text-[11px] px-3 py-1 rounded">
+                              Swap between different options
+                            </div>
+
+                            <div className="mt-3 grid grid-cols-4 gap-3">
+                              {Array.from({ length: 4 }).map((_, idx) => {
+                                const option = items[idx];
+                                const active = option?._id === selected?._id;
+                                return (
+                                  <button
+                                    key={option?._id || idx}
+                                    type="button"
+                                    onClick={() => {
+                                      if (!option?._id) return;
+                                      setSelectedByCategory((prev) => ({
+                                        ...prev,
+                                        [cat]: option._id,
+                                      }));
+                                    }}
+                                    className={`relative aspect-square rounded-md overflow-hidden border ${
+                                      active
+                                        ? "border-[#840032]"
+                                        : "border-gray-200 hover:border-gray-300"
+                                    } bg-gray-200`}
+                                    aria-label={`Select ${cat} option ${idx + 1}`}
+                                  >
+                                    {option?.thumbnail ? (
+                                      <Image
+                                        src={option.thumbnail}
+                                        alt={option?.name || `${cat} option`}
+                                        fill
+                                        sizes="80px"
+                                        className="object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300" />
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Bottom bar */}
+              <div className="mt-10 pt-6 border-t border-gray-200 flex items-center justify-between gap-4 flex-wrap">
+                <div className="text-sm">
+                  <span className="text-gray-700">Total package price: </span>
+                  <span className="font-semibold text-gray-900">₹ {totalPackagePrice}</span>
+                </div>
+
+                <div className="flex items-center gap-3">
                   <button
-                    type="button"
-                    className="text-white bg-rose-900 hover:bg-rose-900 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none"
+                    className={`${
+                      isAddedToWishlist
+                        ? "text-rose-900 bg-white hover:bg-white"
+                        : "text-white bg-rose-900 hover:bg-rose-900"
+                    } cursor-pointer px-4 py-2 focus:outline-none rounded-lg border-rose-900 border `}
                     onClick={() => {
-                      if (!userLoggedIn) {
+                      if (userLoggedIn) {
+                        isAddedToWishlist ? RemoveFromWishList() : AddToWishlist();
+                      } else {
                         setOpenLoginModal(true);
                       }
                     }}
                   >
-                    Add to Event
+                    <AiFillHeart size={18} />
                   </button>
-                }
-                className="border border-black rounded-lg bg-black"
-              >
-                <Dropdown.Item className="text-white">Event List</Dropdown.Item>
-                {eventList?.map((item) => (
-                  <>
-                    <Dropdown.Divider className="bg-black h-[1px] my-0" />
-                    <Dropdown.Item
-                      className="bg-white flex flex-row gap-4"
-                      as="p"
-                    >
-                      <Label className="flex">{item.name}</Label>
-                    </Dropdown.Item>
-                    {item.eventDays.map((rec) => (
-                      <Dropdown.Item
-                        key={rec._id}
-                        className="bg-white flex flex-row gap-4"
-                        onClick={() => {}}
-                        as={Label}
+
+                  <Dropdown
+                    inline
+                    arrowIcon={false}
+                    dismissOnClick={false}
+                    label={
+                      <button
+                        type="button"
+                        className="text-white bg-[#840032] hover:bg-[#6a0029] font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none"
+                        onClick={() => {
+                          if (!userLoggedIn) setOpenLoginModal(true);
+                        }}
                       >
-                        <Checkbox
-                          checked={
-                            rec.packages.filter((i) => i.package === package_id)
-                              .length > 0
-                          }
-                          disabled={rec.status.finalized}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setAddOns({
-                                open: true,
-                                eventDayId: rec._id,
-                                eventId: item._id,
-                                package: package_id,
-                                price: 0,
-                                variant,
-                                decorItems: decorPackage.decor.map(
-                                  (tempItem, tempIndex) => ({
-                                    quantity: 1,
-                                    unit: tempItem.unit,
-                                    decor: tempItem._id,
-                                    platform: [
-                                      "Stage",
-                                      "Photobooth",
-                                      "Mandap",
-                                    ].includes(tempItem.category)
-                                      ? undefined
-                                      : false,
-                                    flooring: [
-                                      "Stage",
-                                      "Photobooth",
-                                      "Mandap",
-                                    ].includes(tempItem.category)
-                                      ? undefined
-                                      : "",
-                                    dimensions: {
-                                      length: 0,
-                                      breadth: 0,
-                                      height: 0,
-                                    },
-                                    category: tempItem.category,
-                                    baseCost: 0,
-                                  })
-                                ),
-                              });
-                            } else {
-                              RemoveFromEvent({
-                                eventDayId: rec._id,
-                                eventId: item._id,
-                              });
-                            }
-                          }}
-                        />
-                        {rec.name}
-                      </Dropdown.Item>
-                    ))}
-                  </>
-                ))}
-                <Dropdown.Divider className="bg-black h-[1px] my-0" />
-                <Dropdown.Item
-                  as={Link}
-                  href="/event"
-                  className="bg-white text-cyan-600"
-                >
-                  + Create New Event
-                </Dropdown.Item>
-              </Dropdown>
-              <button
-                className={`${
-                  isAddedToWishlist
-                    ? "text-rose-900 bg-white hover:bg-white"
-                    : "text-white bg-rose-900 hover:bg-rose-900"
-                } cursor-pointer px-5 py-2.5 focus:outline-none rounded-lg border-rose-900 border `}
-                onClick={() => {
-                  if (userLoggedIn) {
-                    isAddedToWishlist ? RemoveFromWishList() : AddToWishlist();
-                  } else {
-                    setOpenLoginModal(true);
-                  }
-                }}
-              >
-                <AiFillHeart size={20} />
-              </button>
-            </div>
-          </div>
-          <div className="hidden md:block col-span-2">
-            <p className="font-semibold text-2xl md:text-3xl mb-2">
-              Similar Packages
-            </p>
-            <div className="grid grid-cols-3 gap-4">
-              <DecorPackageCard decorPackage={decorPackage} />
-              <DecorPackageCard decorPackage={decorPackage} />
-              <DecorPackageCard decorPackage={decorPackage} />
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-col gap-3 mt-16 mb-3">
-          {decorPackage.decor.map((item, index) => (
-            <div className="" key={index}>
-              <p className="font-semibold text-2xl md:text-2xl mb-2 text-rose-900">
-                {item.category}: {item.name}
-              </p>
-              <div className="grid md:grid-cols-3 gap-2 md:gap-6">
-                <div className="order-last md:order-first border-b pb-2 md:pb-0 md:border-b-0 border-black flex flex-col md:divide-y gap-2 md:divide-black md:pr-6">
-                  <p className="text-xl font-medium hidden md:block">
-                    Description
-                  </p>
-                  {item.category !== "Mandap" && (
-                    <div className="flex flex-col px-4 md:px-0">
-                      <p className="text-lg flex flex-row justify-between">
-                        Can be used for
-                      </p>
-                      <ul className="list-disc pl-4 flex flex-col gap-1">
-                        {item.productVariation.occassion.map((rec, index) => (
-                          <li className="" key={index}>
-                            {toProperCase(rec)}
-                          </li>
+                        ADD TO EVENT
+                      </button>
+                    }
+                    className="border border-black rounded-lg bg-black"
+                  >
+                    <Dropdown.Item className="text-white">Event List</Dropdown.Item>
+                    {eventList?.map((item) => (
+                      <>
+                        <Dropdown.Divider className="bg-black h-[1px] my-0" />
+                        <Dropdown.Item className="bg-white flex flex-row gap-4" as="p">
+                          <Label className="flex">{item.name}</Label>
+                        </Dropdown.Item>
+                        {item.eventDays.map((rec) => (
+                          <Dropdown.Item
+                            key={rec._id}
+                            className="bg-white flex flex-row gap-4"
+                            onClick={() => {}}
+                            as={Label}
+                          >
+                            <Checkbox
+                              checked={
+                                rec.packages.filter((i) => i.package === package_id).length > 0
+                              }
+                              disabled={rec.status.finalized}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setAddOns({
+                                    open: true,
+                                    eventDayId: rec._id,
+                                    eventId: item._id,
+                                    package: package_id,
+                                    price: 0,
+                                    variant,
+                                    decorItems: decorPackage.decor.map((tempItem) => ({
+                                      quantity: 1,
+                                      unit: tempItem.unit,
+                                      decor: tempItem._id,
+                                      platform: ["Stage", "Photobooth", "Mandap"].includes(
+                                        tempItem.category
+                                      )
+                                        ? undefined
+                                        : false,
+                                      flooring: ["Stage", "Photobooth", "Mandap"].includes(
+                                        tempItem.category
+                                      )
+                                        ? undefined
+                                        : "",
+                                      dimensions: { length: 0, breadth: 0, height: 0 },
+                                      category: tempItem.category,
+                                      baseCost: 0,
+                                    })),
+                                  });
+                                } else {
+                                  RemoveFromEvent({ eventDayId: rec._id, eventId: item._id });
+                                }
+                              }}
+                            />
+                            {rec.name}
+                          </Dropdown.Item>
                         ))}
-                      </ul>
-                    </div>
-                  )}
-                  <div className="flex flex-col px-4 md:px-0 ">
-                    <p className="text-lg flex flex-row justify-between">
-                      Included
-                    </p>
-                    <ul className="list-disc pl-4 flex flex-col gap-1">
-                      {item.productInfo.included.map((rec, index) => (
-                        <li className="" key={index}>
-                          {toProperCase(rec)}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="flex flex-col px-4 md:px-0 ">
-                    <p className="text-lg flex flex-row justify-between">
-                      Sizes:
-                    </p>
-                    <ul className="list-disc pl-4 flex flex-col gap-1">
-                      {item.productInfo.measurements.length > 0 && (
-                        <li>
-                          Length: {item.productInfo.measurements.length} ft.
-                        </li>
-                      )}
-                      {item.productInfo.measurements.width > 0 && (
-                        <li>
-                          Width: {item.productInfo.measurements.width} ft.
-                        </li>
-                      )}
-                      {item.productInfo.measurements.height > 0 && (
-                        <li>
-                          Height: {item.productInfo.measurements.height} ft.
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                </div>
-                <div className="relative md:col-span-2 md:px-12">
-                  <Image
-                    src={item.image}
-                    alt="Decor"
-                    width={0}
-                    height={0}
-                    sizes="100%"
-                    style={{ width: "100%", height: "auto" }}
-                    className="rounded-xl"
-                  />
+                      </>
+                    ))}
+                    <Dropdown.Divider className="bg-black h-[1px] my-0" />
+                    <Dropdown.Item as={Link} href="/event" className="bg-white text-cyan-600">
+                      + Create New Event
+                    </Dropdown.Item>
+                  </Dropdown>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-        <div className="md:w-1/3 mx-auto mt-6">
-          <Table className="border mx-auto">
-            <Table.Body className="divide-y">
-              {decorPackage.decor?.map((item, index) => (
-                <Table.Row
-                  className="bg-white dark:border-gray-700 dark:bg-gray-800"
-                  key={index}
-                >
-                  <Table.Cell>{index + 1}</Table.Cell>
-                  <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                    [{item.category}] {item.name}
-                  </Table.Cell>
-                  <Table.Cell>₹{item.price}</Table.Cell>
-                </Table.Row>
-              ))}
-              <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                <Table.Cell></Table.Cell>
-                <Table.Cell className="text-right whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                  Total
-                </Table.Cell>
-                <Table.Cell>₹</Table.Cell>
-              </Table.Row>
-            </Table.Body>
-          </Table>
+            </section>
+          </div>
         </div>
       </div>
     </>
@@ -1251,13 +1295,25 @@ function DecorListing({
 export async function getServerSideProps(context) {
   try {
     const { package_id } = context.params;
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/decor-package`
-    );
-    const similarDecorPackages = await response.json();
-    const decorPackageResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/decor-package/${package_id}`
-    );
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const category = String(context.query.category || "");
+
+    const response = await fetch(`${apiUrl}/decor-package?${buildQueryString({ limit: 1000 })}`);
+    const allPackagesData = await response.json().catch(() => null);
+    const allPackagesRaw = Array.isArray(allPackagesData?.list) ? allPackagesData.list : [];
+    const allPackages = sortPackagesByNameNumber(allPackagesRaw);
+
+    const packagesForTabs = category
+      ? allPackages.filter((p) => matchesOccasionFilter(p, category))
+      : allPackages;
+
+    const firstPackageIdByCategory = CATEGORY_OPTIONS.reduce((acc, c) => {
+      const list = allPackages.filter((p) => matchesOccasionFilter(p, c));
+      acc[c] = list?.[0]?._id || "";
+      return acc;
+    }, {});
+
+    const decorPackageResponse = await fetch(`${apiUrl}/decor-package/${package_id}`);
     if (decorPackageResponse.status !== 200) {
       return {
         redirect: {
@@ -1277,8 +1333,11 @@ export async function getServerSideProps(context) {
     }
     return {
       props: {
-        similarDecorPackages: similarDecorPackages.list,
+        similarDecorPackages: [],
         decorPackage,
+        packagesForTabs,
+        category,
+        firstPackageIdByCategory,
       },
     };
   } catch (error) {

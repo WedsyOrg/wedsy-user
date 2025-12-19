@@ -1168,12 +1168,12 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* View More */}
             <div className="group w-full h-[60px] md:h-[100px] relative rounded-md overflow-hidden opacity-100 shadow-md bg-black flex items-center justify-center transform transition duration-300 hover:scale-[1.03]">
-              <a href="#" className="block w-full h-full flex items-center justify-center relative">
+              <Link href="/decor/packages" className="block w-full h-full flex items-center justify-center relative">
                 <div className="absolute inset-x-0 bottom-0 h-0 group-hover:h-full transition-all duration-300 opacity-0 group-hover:opacity-70 bg-gradient-to-t from-black to-transparent" />
                 <span className="relative z-10 text-white text-[12px] md:text-[32px] font-normal tracking-[0.5px] md:tracking-[2px] text-shadow-lg uppercase">
                   VIEW MORE
                 </span>
-              </a>
+              </Link>
             </div>
           </div>
         </section>
