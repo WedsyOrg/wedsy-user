@@ -152,7 +152,7 @@ export default function DecorItemsList({
                             <Image
                               src={
                                 platformPrice.image ||
-                                "/assets/images/platform.png"
+                                "/assets/images/platform.webp"
                               }
                               alt="Platform"
                               width={221}
@@ -180,12 +180,12 @@ export default function DecorItemsList({
                                       (i) => i.title === item.flooring
                                     )?.image
                                   : item.flooring === "Carpet"
-                                  ? "/assets/images/carpet.png"
+                                  ? "/assets/images/carpet.webp"
                                   : item.flooring === "Flex"
-                                  ? "/assets/images/flex.png"
+                                  ? "/assets/images/flex.webp"
                                   : item.flooring === "PrintedFlex"
-                                  ? "/assets/images/printedFlex.png"
-                                  : "/assets/images/carpet.png"
+                                  ? "/assets/images/printedFlex.webp"
+                                  : "/assets/images/carpet.webp"
                               }
                               alt="Flooring"
                               width={221}

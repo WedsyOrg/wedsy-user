@@ -15,7 +15,7 @@ function Wishlist() {
             className="bg-white rounded-lg shadow-xl p-3"
           >
             <Image
-              src={`/assets/temp/w1.png`}
+              src={`/assets/temp/w1.webp`}
               alt="Decor"
               width={0}
               height={0}
@@ -29,7 +29,7 @@ function Wishlist() {
             className="bg-white rounded-lg shadow-xl p-3"
           >
             <Image
-              src={`/assets/temp/w2.png`}
+              src={`/assets/temp/w2.webp`}
               alt="Decor"
               width={0}
               height={0}

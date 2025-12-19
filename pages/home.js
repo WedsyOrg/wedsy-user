@@ -58,7 +58,7 @@ function Home({ categoryList }) {
     "name": "Wedsy",
     "description": "India's first online wedding planning platform. Premium wedding decorations, makeup artists, and event planning services in Bangalore.",
     "url": "https://www.wedsy.in",
-    "logo": "https://www.wedsy.in/logo-black.png",
+    "logo": "https://www.wedsy.in/logo-black.webp",
     "contactPoint": {
       "@type": "ContactPoint",
       "telephone": "+91-6364849760",
@@ -94,7 +94,7 @@ function Home({ categoryList }) {
         {/* Open Graph Tags */}
         <meta property="og:title" content="Wedding Planning Made Easy | Premium Wedding Services in Bangalore | Wedsy" />
         <meta property="og:description" content="Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform. Get expert consultation and premium wedding services." />
-        <meta property="og:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta property="og:image" content="https://www.wedsy.in/logo-black.webp" />
         <meta property="og:url" content="https://www.wedsy.in/home" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Wedsy" />
@@ -103,7 +103,7 @@ function Home({ categoryList }) {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Wedding Planning Made Easy | Premium Wedding Services in Bangalore | Wedsy" />
         <meta name="twitter:description" content="Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform." />
-        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
         
         {/* Structured Data */}
         <script
@@ -117,7 +117,7 @@ function Home({ categoryList }) {
       </Head>
       <div className="hidden md:block relative pt-[52.6%]">
         <Image
-          src={"/assets/background/bg-weddings_made_easy-new.png"}
+          src={"/assets/background/bg-weddings_made_easy-new.webp"}
           alt="Weddings Made Easy"
           sizes="100%"
           layout={"fill"}
@@ -148,7 +148,7 @@ function Home({ categoryList }) {
       </div>
       <img
         className="w-full md:hidden"
-        src={"/assets/background/bg-weddings_made_easy-new-mobile.png"}
+        src={"/assets/background/bg-weddings_made_easy-new-mobile.webp"}
       />
       <div className="bg-white py-20 text-center text-4xl font-medium hidden md:block">
         <p className="font-semibold mb-6">WHY CHOOSE WEDSY</p>
@@ -206,19 +206,19 @@ function Home({ categoryList }) {
       </div>
       <div className="hidden md:flex flex-col gap-6 px-24 py-20">
         <img
-          src="/assets/images/home-img-makeup.png"
+          src="/assets/images/home-img-makeup.webp"
           className="h-24 w-full bg-white"
         />
         <img
-          src="/assets/images/home-img-decor.png"
+          src="/assets/images/home-img-decor.webp"
           className="h-24 w-full bg-white"
         />
         <img
-          src="/assets/images/home-img-photography.png"
+          src="/assets/images/home-img-photography.webp"
           className="h-24 w-full bg-white"
         />
         <img
-          src="/assets/images/home-img-catering.png"
+          src="/assets/images/home-img-catering.webp"
           className="h-24 w-full bg-white"
         />
       </div>
@@ -239,7 +239,7 @@ function Home({ categoryList }) {
           </Button>
         </div>
         <div className="flex md:hidden flex-col gap-4">
-          <img className="w-full" src="/assets/images/home-img-bidding-2.png" />
+          <img className="w-full" src="/assets/images/home-img-bidding-2.webp" />
           <p className="text-xl text-center font-medium">
             Choose the ideal Makeup artist for the best glam for you gram.
           </p>
@@ -249,13 +249,13 @@ function Home({ categoryList }) {
         </div>
         <img
           className="hidden md:block h-full w-full bg-gray-500"
-          src="assets/images/home-img-bidding.png"
+          src="assets/images/home-img-bidding.webp"
         />
       </div>
       <div className="flex flex-col gap-4 px-6 md:px-24 py-8 md:py-20">
         <div className="relative pt-[65.87%] md:pt-[36.7%]">
           <Image
-            src={"/assets/background/bg-home-furniture.png"}
+            src={"/assets/background/bg-home-furniture.webp"}
             alt="Weddings Made Easy"
             sizes="100%"
             layout={"fill"}
@@ -263,7 +263,7 @@ function Home({ categoryList }) {
             className="rounded-xl hidden md:block"
           />
           <Image
-            src={"/assets/background/bg-home-furniture-mobile.png"}
+            src={"/assets/background/bg-home-furniture-mobile.webp"}
             alt="Weddings Made Easy"
             sizes="100%"
             layout={"fill"}
@@ -309,11 +309,11 @@ function Home({ categoryList }) {
           Discover our customers experiences.
         </p>
         <img
-          src="assets/images/home-img-customer.png"
+          src="assets/images/home-img-customer.webp"
           className="mt-6 hidden md:block w-full"
         />
         <img
-          src="assets/images/home-img-customer-mobile.png"
+          src="assets/images/home-img-customer-mobile.webp"
           className="mt-6 md:hidden w-full"
         />
         <Button className="mx-auto hidden md:block px-8 mt-6 " color="dark">
@@ -329,11 +329,11 @@ function Home({ categoryList }) {
       <div className="px-6 md:px-24 py-8 border-b mt-6">
         <p className="text-center text-4xl font-medium ">Wedsy’s WORK</p>
         <img
-          src="assets/images/home-img-work.png"
+          src="assets/images/home-img-work.webp"
           className="mt-6 hidden md:block w-full"
         />
         <img
-          src="assets/images/home-img-work-mobile.png"
+          src="assets/images/home-img-work-mobile.webp"
           className="mt-6 md:hidden w-full"
         />
         <Button
@@ -345,7 +345,7 @@ function Home({ categoryList }) {
       </div>
       <div className="md:hidden px-6">
         <img
-          src="assets/images/home-img-trending-mobile.png"
+          src="assets/images/home-img-trending-mobile.webp"
           className="w-full"
         />{" "}
         <Button
@@ -363,7 +363,7 @@ function Home({ categoryList }) {
           <div className="bg-gray-300  w-full h-full" />
           <div className="bg-gray-300  w-full h-full" />
           <img
-            src="assets/images/home-img-trending.png"
+            src="assets/images/home-img-trending.webp"
             className="w-full"
           />
         </div>
@@ -378,7 +378,7 @@ function Home({ categoryList }) {
           </span>
         </div>
         <img
-          src="/assets/images/leaf-branch.png"
+          src="/assets/images/leaf-branch.webp"
           className="w-1/4 md:w-auto h-auto absolute top-0 right-6 md:right-24"
         />
         <div className="divide-dashed divide-y-2 divide-black flex flex-col [&>div]:pb-0 [&>div]:mt-0">
@@ -440,20 +440,20 @@ function Home({ categoryList }) {
          {`“ A WEDDING IS NOT JUST A DAY, IT'S A JOURNEY, A STORY, AND A PROMISE OF A LIFETIME “`}
         </p>
         <img
-          src="/assets/images/join-as-user-mobile.png"
+          src="/assets/images/join-as-user-mobile.webp"
           className="md:hidden w-full"
         />
         <img
-          src="/assets/images/join-as-vendor-mobile.png"
+          src="/assets/images/join-as-vendor-mobile.webp"
           className="md:hidden w-full"
         />
         <div className="hidden md:grid grid-cols-2">
           <img
-            src="/assets/images/join-as-vendor-desktop.png"
+            src="/assets/images/join-as-vendor-desktop.webp"
             className="w-full"
           />
           <img
-            src="/assets/images/join-as-user-desktop.png"
+            src="/assets/images/join-as-user-desktop.webp"
             className="w-full"
           />
         </div>

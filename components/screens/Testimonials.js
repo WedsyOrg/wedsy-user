@@ -18,7 +18,7 @@ export default function Testimonials() {
               <span className="text-rose-900 font-bold">LOVE</span>
             </p>
             <Image
-              src={`/assets/images/wedsy-text.png`}
+              src={`/assets/images/wedsy-text.webp`}
               alt="Decor"
               width={0}
               height={0}
@@ -31,7 +31,7 @@ export default function Testimonials() {
               [
                 <Image
                   key={"image-1"}
-                  src={`/assets/images/review_image-1.png`}
+                  src={`/assets/images/review_image-1.webp`}
                   alt="Decor"
                   width={0}
                   height={0}
@@ -41,7 +41,7 @@ export default function Testimonials() {
                 />,
                 <Image
                   key={"image-2"}
-                  src={`/assets/images/review_image-2.png`}
+                  src={`/assets/images/review_image-2.webp`}
                   alt="Decor"
                   width={0}
                   height={0}

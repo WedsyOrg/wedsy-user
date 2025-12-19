@@ -117,7 +117,7 @@ export default function Signup({ CheckLogin }) {
         {/* Left side - Background image area (60% width) */}
         <div className="hidden md:flex md:w-3/5 relative"
           style={{
-            backgroundImage: 'url("/assets/background/bg-newLoginBackground.jpg")',
+            backgroundImage: 'url("/assets/background/bg-newLoginBackground.webp")',
             backgroundSize: "cover",
             backgroundRepeat: "no-repeat",
             backgroundPosition: "center",
@@ -138,7 +138,7 @@ export default function Signup({ CheckLogin }) {
         <div 
           className="flex-1 md:w-2/5 relative"
           style={{
-            backgroundImage: 'url("/assets/background/bg-newSignin.jpg")',
+            backgroundImage: 'url("/assets/background/bg-newSignin.webp")',
             backgroundSize: "cover",
             backgroundRepeat: "no-repeat",
             backgroundPosition: "center center",

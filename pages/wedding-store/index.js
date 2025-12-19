@@ -125,7 +125,7 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
         {/* Open Graph Tags */}
         <meta property="og:title" content="Wedding Store | Premium Wedding Decorations in Bangalore | Wedsy" />
         <meta property="og:description" content="Explore Wedsy's wedding store for premium wedding decorations in Bangalore. Browse stages, mandaps, pathways, and more." />
-        <meta property="og:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta property="og:image" content="https://www.wedsy.in/logo-black.webp" />
         <meta property="og:url" content="https://www.wedsy.in/wedding-store" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Wedsy" />
@@ -134,7 +134,7 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Wedding Store | Premium Wedding Decorations in Bangalore | Wedsy" />
         <meta name="twitter:description" content="Explore Wedsy's wedding store for premium wedding decorations in Bangalore." />
-        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
         
         {/* Structured Data */}
         <script
@@ -149,7 +149,7 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
       <DecorDisclaimer />
       <div className="hidden md:block relative pt-[31%] mb-6">
         <Image
-          src={"/assets/background/bg-wedding-store-text.png"}
+          src={"/assets/background/bg-wedding-store-text.webp"}
           alt="Weddings Store"
           sizes="100%"
           layout={"fill"}
@@ -334,28 +334,28 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
       </div>
       <div className="hidden md:flex flex-row justify-between gap-12 my-4 py-4 border-y mx-24">
         <div className="flex flex-row items-center gap-4">
-          <img src="/assets/icons/stage.png" className="h-12 w-12" />
+          <img src="/assets/icons/stage.webp" className="h-12 w-12" />
           <p className="font-semibold">
             EXCLUSIVE
             <br /> DESIGNS
           </p>
         </div>
         <div className="flex flex-row items-center gap-4">
-          <img src="/assets/icons/customize.png" className="h-12 w-12" />
+          <img src="/assets/icons/customize.webp" className="h-12 w-12" />
           <p className="font-semibold">
             CUSTOMIZATION
             <br /> OPTIONS
           </p>
         </div>
         <div className="flex flex-row items-center gap-4">
-          <img src="/assets/icons/customer-service.png" className="h-12 w-12" />
+          <img src="/assets/icons/customer-service.webp" className="h-12 w-12" />
           <p className="font-semibold">
             EXCEPTIONAL
             <br /> CUSTOMER SERVICE
           </p>
         </div>
         <div className="flex flex-row items-center gap-4">
-          <img src="/assets/icons/offer.png" className="h-12 w-12" />
+          <img src="/assets/icons/offer.webp" className="h-12 w-12" />
           <p className="font-semibold">
             COMPETETIVE
             <br /> PRICING
@@ -421,11 +421,11 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
           }
         </p>
         <img
-          src="/assets/images/instagram-image-desktop.png"
+          src="/assets/images/instagram-image-desktop.webp"
           className="hidden md:block w-full"
         />
         <img
-          src="/assets/images/instagram-image-mobile.png"
+          src="/assets/images/instagram-image-mobile.webp"
           className="md:hidden w-full"
         />
       </div>
@@ -434,20 +434,20 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
           {`“ A WEDDING IS NOT JUST A DAY, IT'S A JOURNEY, A STORY, AND A PROMISE OF A LIFETIME “`}
         </p>
         <img
-          src="/assets/images/join-as-user-mobile.png"
+          src="/assets/images/join-as-user-mobile.webp"
           className="md:hidden w-full"
         />
         <img
-          src="/assets/images/join-as-vendor-mobile.png"
+          src="/assets/images/join-as-vendor-mobile.webp"
           className="md:hidden w-full"
         />
         <div className="hidden md:grid grid-cols-2">
           <img
-            src="/assets/images/join-as-vendor-desktop.png"
+            src="/assets/images/join-as-vendor-desktop.webp"
             className="w-full"
           />
           <img
-            src="/assets/images/join-as-user-desktop.png"
+            src="/assets/images/join-as-user-desktop.webp"
             className="w-full"
           />
         </div>

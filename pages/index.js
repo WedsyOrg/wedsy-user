@@ -63,32 +63,32 @@ function Home({ packages }) {
     {
       id: "Stage",
       text: "Your one-stop shop for affordable and elegant weddings. Simplify planning with fixed-price stage decor, creative entry ideas, stylish furniture rentals, and more. Where affordability meets creativity for your special day.",
-      image: "/assets/images/stage.png",
+      image: "/assets/images/stage.webp",
     },
     {
       id: "Pathway",
       text: "Your one-stop shop for affordable and elegant weddings. Simplify planning with fixed-price stage decor, creative entry ideas, stylish furniture rentals, and more. Where affordability meets creativity for your special day.",
-      image: "/assets/images/pathway.png",
+      image: "/assets/images/pathway.webp",
     },
     {
       id: "Entrance",
       text: "Your one-stop shop for affordable and elegant weddings. Simplify planning with fixed-price stage decor, creative entry ideas, stylish furniture rentals, and more. Where affordability meets creativity for your special day.",
-      image: "/assets/images/entrance.png",
+      image: "/assets/images/entrance.webp",
     },
     {
       id: "Photobooth",
       text: "Your one-stop shop for affordable and elegant weddings. Simplify planning with fixed-price stage decor, creative entry ideas, stylish furniture rentals, and more. Where affordability meets creativity for your special day.",
-      image: "/assets/images/photobooth.png",
+      image: "/assets/images/photobooth.webp",
     },
     {
       id: "Mandap",
       text: "Your one-stop shop for affordable and elegant weddings. Simplify planning with fixed-price stage decor, creative entry ideas, stylish furniture rentals, and more. Where affordability meets creativity for your special day.",
-      image: "/assets/images/mandap.png",
+      image: "/assets/images/mandap.webp",
     },
     {
       id: "Nameboard",
       text: "Your one-stop shop for affordable and elegant weddings. Simplify planning with fixed-price stage decor, creative entry ideas, stylish furniture rentals, and more. Where affordability meets creativity for your special day.",
-      image: "/assets/images/nameboard.png",
+      image: "/assets/images/nameboard.webp",
     },
   ];
   const [tempDecorList, setTempDecorList] = useState([]);
@@ -297,7 +297,7 @@ function Home({ packages }) {
     "name": "Wedsy",
     "description": "India's first online wedding planning platform. Premium wedding decorations, makeup artists, and event planning services in Bangalore.",
     "url": "https://www.wedsy.in",
-    "logo": "https://www.wedsy.in/logo-black.png",
+    "logo": "https://www.wedsy.in/logo-black.webp",
     "contactPoint": {
       "@type": "ContactPoint",
       "telephone": "+91-6364849760",
@@ -348,7 +348,7 @@ function Home({ packages }) {
         {/* Open Graph Tags */}
         <meta property="og:title" content="Affordable Wedding Packages in Bangalore - Best Planners in Bangalore | Wedsy" />
         <meta property="og:description" content="Find affordable wedding planners in Bangalore. Explore budget-friendly wedding, event, and destination packages in India. Tailored solutions for your perfect day!" />
-        <meta property="og:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta property="og:image" content="https://www.wedsy.in/logo-black.webp" />
         <meta property="og:url" content="https://www.wedsy.in/" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Wedsy" />
@@ -357,7 +357,7 @@ function Home({ packages }) {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Affordable Wedding Packages in Bangalore - Best Planners in Bangalore | Wedsy" />
         <meta name="twitter:description" content="Find affordable wedding planners in Bangalore. Explore budget-friendly wedding, event, and destination packages in India." />
-        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
         
         {/* Structured Data */}
         <script
@@ -490,7 +490,7 @@ function Home({ packages }) {
           </div>
         </div>
         <Image
-          src="/assets/images/home_image_mobile.png"
+          src="/assets/images/home_image_mobile.webp"
           alt="Decor"
           width={0}
           height={0}
@@ -562,23 +562,23 @@ function Home({ packages }) {
           <div className="grid grid-cols-2 md:grid-cols-6 md:px-40 gap-1">
 
             <div className="relative overflow-hidden bg-[#3C3C3C] h-[200px] rounded-md md:h-auto md:row-span-2 md:col-span-3 md:rounded-none group">
-              <Image src="/assets/landing/img-1-s2.jpeg" alt="Grid image 1" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
+              <Image src="/assets/landing/img-1-s2.webp" alt="Grid image 1" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
             </div>
 
             <div className="relative overflow-hidden bg-[#3C3C3C] h-[200px] rounded-md md:col-span-1 md:rounded-none group">
-              <Image src="/assets/landing/img-2-s2.jpg" alt="Grid image 2" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
+              <Image src="/assets/landing/img-2-s2.webp" alt="Grid image 2" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
             </div>
 
             <div className="relative overflow-hidden bg-[#3C3C3C] h-[200px] rounded-md md:col-span-1 md:rounded-none group">
-              <Image src="/assets/landing/img-3-s2.jpg" alt="Grid image 3" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
+              <Image src="/assets/landing/img-3-s2.webp" alt="Grid image 3" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
             </div>
 
             <div className="relative overflow-hidden bg-[#3C3C3C]  h-[200px] rounded-md md:col-span-1 md:rounded-none group">
-              <Image src="/assets/landing/img-4-s2.jpg" alt="Grid image 4" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
+              <Image src="/assets/landing/img-4-s2.webp" alt="Grid image 4" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
             </div>
 
             <div className="relative overflow-hidden bg-[#3C3C3C] h-[200px] rounded-md md:col-span-1 md:rounded-none group">
-              <Image src="/assets/landing/img-5-s2.jpg" alt="Grid image 5" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
+              <Image src="/assets/landing/img-5-s2.webp" alt="Grid image 5" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
             </div>
 
             
@@ -589,12 +589,12 @@ function Home({ packages }) {
                 </button>
               </Link>
               
-              <Image src="/assets/landing/img-6-s2.jpg" alt="Grid image 7" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105 hidden md:block" />
+              <Image src="/assets/landing/img-6-s2.webp" alt="Grid image 7" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105 hidden md:block" />
             </div>
 
             
             <div className="relative overflow-hidden bg-[#D9D9D9] h-[200px] rounded-md md:col-span-1 hidden md:block md:rounded-none group">
-              <Image src="/assets/landing/img-7-s2.jpg" alt="Grid image 8" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
+              <Image src="/assets/landing/img-7-s2.webp" alt="Grid image 8" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
             </div>
           </div>
 
@@ -671,7 +671,7 @@ function Home({ packages }) {
               col-start-8 row-start-1
             ">
               <Image
-                src="/assets/images/3_buttom_4.png"
+                src="/assets/images/3_buttom_4.webp"
                 alt="Tropical wedding venue"
                 layout="fill"
                 objectFit="cover"
@@ -686,7 +686,7 @@ function Home({ packages }) {
               col-start-1 row-start-4
             ">
               <Image
-                src="/assets/images/3_buttom_1.png"
+                src="/assets/images/3_buttom_1.webp"
                 alt="Indoor wedding reception"
                 layout="fill"
                 objectFit="cover"
@@ -701,7 +701,7 @@ function Home({ packages }) {
               col-start-5 row-start-4
             ">
               <Image
-                src="/assets/images/3_buttom_2.png"
+                src="/assets/images/3_buttom_2.webp"
                 alt="Outdoor wedding setup"
                 layout="fill"
                 objectFit="cover"
@@ -716,7 +716,7 @@ function Home({ packages }) {
               col-start-5 row-start-6
             ">
               <Image
-                src="/assets/images/3_buttom_3.png"
+                src="/assets/images/3_buttom_3.webp"
                 alt="Wedding chairs"
                 layout="fill"
                 objectFit="cover"
@@ -732,7 +732,7 @@ function Home({ packages }) {
               flex items-center justify-center
             ">
               <Image
-                src="/assets/images/3_buttom_3.png"
+                src="/assets/images/3_buttom_3.webp"
                 alt="Discover button background"
                 layout="fill"
                 objectFit="cover"
@@ -802,7 +802,7 @@ function Home({ packages }) {
             <div className="relative flex items-center overflow-hidden h-24 md:h-32 group cursor-pointer mb-4 md:mb-6 last:mb-0">
               <div className="absolute inset-0">
                 <Image
-                  src="/assets/images/artist-1.png"
+                  src="/assets/images/artist-1.webp"
                   alt="Makeup Artists"
                   layout="fill"
                   objectFit="cover"
@@ -825,7 +825,7 @@ function Home({ packages }) {
             <div className="relative flex items-center overflow-hidden h-24 md:h-32 group cursor-pointer mb-4 md:mb-6 last:mb-0">
               <div className="absolute inset-0">
                 <Image
-                  src="/assets/images/artist-2.png"
+                  src="/assets/images/artist-2.webp"
                   alt="Decor"
                   layout="fill"
                   objectFit="cover"
@@ -847,7 +847,7 @@ function Home({ packages }) {
           <div className="relative flex items-center overflow-hidden h-24 md:h-32 group cursor-default mb-4 md:mb-6 last:mb-0">
             <div className="absolute inset-0">
               <Image
-                src="/assets/images/artist-3.png"
+                src="/assets/images/artist-3.webp"
                 alt="Photography"
                 layout="fill"
                 objectFit="cover"
@@ -871,7 +871,7 @@ function Home({ packages }) {
           <div className="relative flex items-center overflow-hidden h-24 md:h-32 group cursor-default mb-4 md:mb-6 last:mb-0">
             <div className="absolute inset-0">
               <Image
-                src="/assets/images/artist-4.png"
+                src="/assets/images/artist-4.webp"
                 alt="Wedding Venues"
                 layout="fill"
                 objectFit="cover"
@@ -1049,7 +1049,7 @@ function Home({ packages }) {
         
           <div className="relative w-full overflow-hidden h-96 md:h-[400px]">
             <Image
-              src="/assets/images/furniture_img.png"
+              src="/assets/images/furniture_img.webp"
               layout="fill"
               objectFit="cover"
             />
@@ -1138,7 +1138,7 @@ function Home({ packages }) {
         ">
         <Link href="https://hub.wedsy.in/reviews/">
           <Image
-            src="/assets/images/review_9.png"
+            src="/assets/images/review_9.webp"
             alt="Grid Item 9"
             layout="fill"
             objectFit="cover"
@@ -1156,7 +1156,7 @@ function Home({ packages }) {
           hidden md:block
         ">
           <Image
-            src="/assets/images/review_10.png"
+            src="/assets/images/review_10.webp"
             alt="Grid Item 10"
             layout="fill"
             className="rounded-lg transition-transform duration-300 group-hover:scale-105"
@@ -1172,7 +1172,7 @@ function Home({ packages }) {
           hidden md:block
         ">
           <Image
-            src="/assets/images/review_11.png"
+            src="/assets/images/review_11.webp"
             alt="Grid Item 11"
             layout="fill"
             className="rounded-lg transition-transform duration-300 group-hover:scale-105"
@@ -1188,7 +1188,7 @@ function Home({ packages }) {
           hidden md:block
         ">
           <Image
-            src="/assets/images/review_7.png"
+            src="/assets/images/review_7.webp"
             alt="Grid Item 13"
             layout="fill"
             className="rounded-lg transition-transform duration-300 group-hover:scale-105"
@@ -1204,7 +1204,7 @@ function Home({ packages }) {
           hidden md:block
         ">
           <Image
-            src="/assets/images/review_8.png"
+            src="/assets/images/review_8.webp"
             alt="Grid Item 14"
             layout="fill"
             className="rounded-lg transition-transform duration-300 group-hover:scale-105"
@@ -1220,7 +1220,7 @@ function Home({ packages }) {
           hidden md:block
         ">
           <Image
-            src="/assets/images/review_5.png"
+            src="/assets/images/review_5.webp"
             alt="Grid Item 15"
             layout="fill"
             objectFit="cover"
@@ -1237,7 +1237,7 @@ function Home({ packages }) {
           hidden md:block
         ">
           <Image
-            src="/assets/images/review_4.png"
+            src="/assets/images/review_4.webp"
             alt="Grid Item 16"
             layout="fill"
             objectFit="cover"
@@ -1254,7 +1254,7 @@ function Home({ packages }) {
           hidden md:block
         ">
           <Image
-            src="/assets/images/review_1.png"
+            src="/assets/images/review_1.webp"
             alt="Grid Item 17"
             layout="fill"
             objectFit="cover"
@@ -1271,7 +1271,7 @@ function Home({ packages }) {
           hidden md:block
         ">
           <Image
-            src="/assets/images/review_2.png"
+            src="/assets/images/review_2.webp"
             alt="Grid Item 18"
             layout="fill"
             objectFit="cover"
@@ -1288,7 +1288,7 @@ function Home({ packages }) {
           hidden md:block
         ">
           <Image
-            src="/assets/images/review_3.png"
+            src="/assets/images/review_3.webp"
             alt="Grid Item 19"
             layout="fill"
             className="rounded-lg transition-transform duration-300 group-hover:scale-105"
@@ -1304,7 +1304,7 @@ function Home({ packages }) {
           hidden md:block
         ">
           <Image
-            src="/assets/images/review_6.png"
+            src="/assets/images/review_6.webp"
             alt="Grid Item 20"
             layout="fill"
             className="rounded-lg transition-transform duration-300 group-hover:scale-105"
@@ -1346,28 +1346,28 @@ function Home({ packages }) {
             
             <div className="flex flex-col gap-4">
               <div className="relative overflow-hidden h-40 md:h-48 bg-gray-300 shadow-md group">
-                <Image src="/assets/landing/img-1-s8.jpg" alt="Desktop Grid 1" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
+                <Image src="/assets/landing/img-1-s8.webp" alt="Desktop Grid 1" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
               <div className="relative overflow-hidden flex-grow bg-gray-300 shadow-md h-64 md:h-80 group">
-                <Image src="/assets/landing/img-2-s8.jpg" alt="Desktop Grid 2" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
+                <Image src="/assets/landing/img-2-s8.webp" alt="Desktop Grid 2" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
             </div>
             
             <div className="flex flex-col gap-4">
               <div className="relative overflow-hidden h-40 md:h-48 bg-gray-300 shadow-md group">
-                <Image src="/assets/landing/img-3-s8.jpg" alt="Desktop Grid 3" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
+                <Image src="/assets/landing/img-3-s8.webp" alt="Desktop Grid 3" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
               <div className="relative overflow-hidden flex-grow bg-gray-300 shadow-md h-64 md:h-80 group">
-                <Image src="/assets/landing/img-5-s8.jpg" alt="Desktop Grid 4" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
+                <Image src="/assets/landing/img-5-s8.webp" alt="Desktop Grid 4" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
             </div>
             
             <div className="flex flex-col gap-4">
               <div className="relative overflow-hidden flex-grow bg-gray-300 shadow-md h-64 md:h-80 group">
-                <Image src="/assets/landing/img-6-s8.jpg" alt="Desktop Grid 5" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
+                <Image src="/assets/landing/img-6-s8.webp" alt="Desktop Grid 5" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
               <div className="relative overflow-hidden h-40 md:h-48 bg-gray-300 shadow-md group">
-                <Image src="/assets/landing/img-4-s8.jpg" alt="Desktop Grid 6" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
+                <Image src="/assets/landing/img-4-s8.webp" alt="Desktop Grid 6" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
             </div>
           </div>
@@ -1375,20 +1375,20 @@ function Home({ packages }) {
           {/* Mobile Layout - Hidden on desktop */}
           <div className="block md:hidden flex flex-col gap-4 max-w-6xl mx-auto">
             <div className="relative overflow-hidden w-full h-80 bg-gray-300 shadow-md rounded-md group">
-              <Image src="/assets/landing/img-1-s8.jpg" alt="Mobile Grid 1" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
+              <Image src="/assets/landing/img-1-s8.webp" alt="Mobile Grid 1" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
             </div>
             <div className="flex flex-row gap-2 justify-between">
               <div className="relative overflow-hidden w-1/4 h-24 bg-gray-300 shadow-md rounded-md group">
-                <Image src="/assets/landing/img-2-s8.jpg" alt="Mobile Grid 2" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
+                <Image src="/assets/landing/img-2-s8.webp" alt="Mobile Grid 2" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
               </div>
               <div className="relative overflow-hidden w-1/4 h-24 bg-gray-300 shadow-md rounded-md group">
-                <Image src="/assets/landing/img-3-s8.jpg" alt="Mobile Grid 3" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
+                <Image src="/assets/landing/img-3-s8.webp" alt="Mobile Grid 3" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
               </div>
               <div className="relative overflow-hidden w-1/4 h-24 bg-gray-300 shadow-md rounded-md group">
-                <Image src="/assets/landing/img-4-s8.jpg" alt="Mobile Grid 4" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
+                <Image src="/assets/landing/img-4-s8.webp" alt="Mobile Grid 4" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
               </div>
               <div className="relative overflow-hidden w-1/4 h-24 bg-gray-300 shadow-md rounded-md group">
-                <Image src="/assets/landing/img-5-s8.jpg" alt="Mobile Grid 5" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
+                <Image src="/assets/landing/img-5-s8.webp" alt="Mobile Grid 5" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
               </div>
             </div>
           </div>
@@ -1423,7 +1423,7 @@ function Home({ packages }) {
             
             <div className="relative flex-1 h-64 md:h-80 bg-gray-300 overflow-hidden group">
               <Image
-                src="/assets/landing/img-1-s9.jpg"
+                src="/assets/landing/img-1-s9.webp"
                 alt="Trending Image 1"
                 layout="fill"
                 objectFit="cover"
@@ -1434,7 +1434,7 @@ function Home({ packages }) {
             
             <div className="relative flex-1 h-64 md:h-80 bg-gray-300 overflow-hidden  group">
               <Image
-                src="/assets/landing/img-2-s9.jpg"
+                src="/assets/landing/img-2-s9.webp"
                 alt="Trending Image 2"
                 layout="fill"
                 objectFit="cover"
@@ -1506,7 +1506,7 @@ function Home({ packages }) {
           <div className="relative w-full h-auto" style={{ paddingTop: '56.25%' }}>
           
             <Image
-              src="/assets/images/Most_asked.png"
+              src="/assets/images/Most_asked.webp"
               alt="Most Frequently Asked Questions"
               layout="fill"
               objectFit="cover"
@@ -1522,7 +1522,7 @@ function Home({ packages }) {
       {/* say i do */}
       {/* <section className={`${styles.section__1} flex flex-col md:py-16 gap-6`}>
         <Image
-          src="/assets/background/bg-section-1-mobile.png"
+          src="/assets/background/bg-section-1-mobile.webp"
           alt="Decor"
           width={0}
           height={0}
@@ -1642,25 +1642,25 @@ function Home({ packages }) {
         <div className="grid grid-cols-2 md:flex md:flex-row gap-4 md:gap-12 mx-auto">
           <div className="text-center flex flex-col items-center gap-3">
             <div className="bg-[#FFB8C0] flex justify-center rounded-3xl w-32 h-32">
-              <img className="m-auto" src="/assets/icons/easy.png" />
+              <img className="m-auto" src="/assets/icons/easy.webp" />
             </div>
             <span>Easy</span>
           </div>
           <div className="text-center flex flex-col items-center gap-3">
             <div className="bg-[#D6FF79] flex justify-center rounded-3xl w-32 h-32">
-              <img className="m-auto" src="/assets/icons/price.png" />
+              <img className="m-auto" src="/assets/icons/price.webp" />
             </div>
             <span>Unbeatable Pricing</span>
           </div>
           <div className="text-center flex flex-col items-center gap-3">
             <div className="bg-[#F19A3E] flex justify-center rounded-3xl w-32 h-32">
-              <img className="m-auto" src="/assets/icons/quality.png" />
+              <img className="m-auto" src="/assets/icons/quality.webp" />
             </div>
             <span>Superior Quality</span>
           </div>
           <div className="text-center flex flex-col items-center gap-3">
             <div className="bg-[#70D6FF] flex justify-center rounded-3xl w-32 h-32">
-              <img className="m-auto" src="/assets/icons/solutions.png" />
+              <img className="m-auto" src="/assets/icons/solutions.webp" />
             </div>
             <span>Innovative Solutions</span>
           </div>
@@ -1760,7 +1760,7 @@ function Home({ packages }) {
             }
           </p>
           <Image
-            src="/assets/images/couple.png"
+            src="/assets/images/couple.webp"
             alt="flower"
             width={0}
             height={0}
@@ -1769,7 +1769,7 @@ function Home({ packages }) {
             style={{ height: "20em", width: "auto" }}
           />
           <Image
-            src="/assets/images/couple.png"
+            src="/assets/images/couple.webp"
             alt="flower"
             width={0}
             height={0}
@@ -1779,7 +1779,7 @@ function Home({ packages }) {
           />
           <div className="w-2/3 md:w-1/2 bg-gradient-to-t from-rose-900 to-transparent rounded-bl-3xl p-6 px-8 ml-auto md:ml-0 md:translate-x-full relative">
             <Image
-              src="/assets/images/flowers-1.png"
+              src="/assets/images/flowers-1.webp"
               alt="flower"
               width={0}
               height={0}

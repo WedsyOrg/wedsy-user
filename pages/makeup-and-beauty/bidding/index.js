@@ -443,7 +443,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         <>
           <div className="md:hidden relative">
             <img
-              src="/assets/images/bidding-mobile.png"
+              src="/assets/images/bidding-mobile.webp"
               className="w-full h-full"
             />
             <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-full px-12 flex flex-row">
@@ -464,7 +464,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           </div>
           <div className="hidden md:block relative">
             <img
-              src="/assets/images/bidding-desktop.png"
+              src="/assets/images/bidding-desktop.webp"
               className="w-full h-full"
             />
             <button
@@ -1563,7 +1563,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         <>
           <div className="md:hidden relative">
             <img
-              src="/assets/images/bidding-mobile-success.png"
+              src="/assets/images/bidding-mobile-success.webp"
               className="w-full h-full"
             />
             <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-full px-12 flex flex-row">
@@ -1579,7 +1579,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           </div>
           <div className="hidden md:block relative">
             <img
-              src="/assets/images/bidding-desktop-success.png"
+              src="/assets/images/bidding-desktop-success.webp"
               className="w-full h-full"
             />
             <button

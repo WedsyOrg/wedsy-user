@@ -6,7 +6,7 @@ import { MdOutlinePlayCircle } from "react-icons/md";
 
 function ProductImageGallery({ images = [], video }) {
   // Use the first image as the default, or a placeholder
-  const [mainDisplay, setMainDisplay] = useState({ type: 'image', src: images[0] || '/placeholder.jpg' });
+  const [mainDisplay, setMainDisplay] = useState({ type: 'image', src: images[0] || '/placeholder.webp' });
 
   // Combine all images for the thumbnail gallery
   const thumbnailSources = [...images];
@@ -64,7 +64,7 @@ function ProductImageGallery({ images = [], video }) {
             onClick={() => setMainDisplay({ type: 'video', src: video })}
           >
             <Image
-              src={images[0] || '/placeholder.jpg'} // Use first image as video thumbnail
+              src={images[0] || '/placeholder.webp'} // Use first image as video thumbnail
               alt="Video thumbnail"
               fill
               sizes="10vw"

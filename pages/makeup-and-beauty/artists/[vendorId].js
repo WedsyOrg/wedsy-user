@@ -519,7 +519,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   const pageTitle = vendor?.name ? `${vendor.name} | ${vendor.speciality || "Makeup Artist"} in ${vendor.businessAddress?.city || "Bangalore"} | Wedsy` : "Makeup Artist | Wedsy";
   const pageDescription = vendor?.about || `${vendor?.name || "Professional Makeup Artist"} - ${vendor?.speciality || "Makeup Artist"} in ${vendor?.businessAddress?.city || "Bangalore"}. ${vendor?.rating ? `Rated ${vendor.rating}/5. ` : ""}Book now for your special day.`;
   const pageKeywords = `${vendor?.name || ""}, ${vendor?.speciality || "makeup artist"}, makeup artist ${vendor?.businessAddress?.city || "bangalore"}, bridal makeup, wedding makeup, makeup artist near me`.trim();
-  const ogImage = vendor?.gallery?.coverPhoto || "https://www.wedsy.in/logo-black.png";
+  const ogImage = vendor?.gallery?.coverPhoto || "https://www.wedsy.in/logo-black.webp";
 
   return (
     <>
@@ -681,7 +681,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               }
             }}
           >
-            <img src="/assets/icons/icon-message.png" className="h-5 w-5 md:h-6 md:w-6" />
+            <img src="/assets/icons/icon-message.webp" className="h-5 w-5 md:h-6 md:w-6" />
             <span className="font-semibold text-sm md:text-base">CHAT</span>
           </div>
           <div
@@ -690,7 +690,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               router.push("#gallery");
             }}
           >
-            <img src="/assets/icons/icon-image.png" className="h-5 w-5 md:h-6 md:w-6" />
+            <img src="/assets/icons/icon-image.webp" className="h-5 w-5 md:h-6 md:w-6" />
             <span className="font-semibold text-sm md:text-base">100 PHOTOS</span>
           </div>
           <div
@@ -699,7 +699,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               router.push("#about");
             }}
           >
-            <img src="/assets/icons/icon-info.png" className="h-5 w-5 md:h-6 md:w-6" />
+            <img src="/assets/icons/icon-info.webp" className="h-5 w-5 md:h-6 md:w-6" />
             <span className="font-semibold text-sm md:text-base">ABOUT</span>
           </div>
           <div
@@ -708,7 +708,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               router.push("#reviews");
             }}
           >
-            <img src="/assets/icons/icon-review.png" className="h-5 w-5 md:h-6 md:w-6" />
+            <img src="/assets/icons/icon-review.webp" className="h-5 w-5 md:h-6 md:w-6" />
             <span className="font-semibold text-sm md:text-base">REVIEWS</span>
           </div>
           <div
@@ -724,7 +724,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               }
             }}
           >
-            <img src="/assets/icons/icon-call.png" className="h-5 w-5 md:h-6 md:w-6" />
+            <img src="/assets/icons/icon-call.webp" className="h-5 w-5 md:h-6 md:w-6" />
             <span className="font-semibold text-sm md:text-base">CONTACT</span>
           </div>
         </div>
@@ -756,7 +756,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               {vendor?.gallery?.coverPhoto && (
                 <img
                   // src={vendor?.gallery?.coverPhoto}
-                  src="/assets/images/makeup-artist-cover.png"
+                  src="/assets/images/makeup-artist-cover.webp"
                   className="w-full h-full object-cover"
                 />
               )}
@@ -892,7 +892,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           <div className="bg-[#f4f4f4] absolute -bottom-12 left-0 rounded-t-2xl w-full py-6 flex flex-row gap-4 items-center justify-center">
             <div className="bg-white p-2 rounded-lg">
               <img
-                src="/assets/icons/icon-image.png"
+                src="/assets/icons/icon-image.webp"
                 className="h-6 w-6"
                 onClick={() => {
                   router.push("#gallery");
@@ -902,7 +902,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
 
             <div className="bg-white p-2 rounded-lg">
               <img
-                src="/assets/icons/icon-review.png"
+                src="/assets/icons/icon-review.webp"
                 className="h-6 w-6"
                 onClick={() => {
                   router.push("#reviews");
@@ -911,7 +911,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
             </div>
             <div className="bg-white p-2 rounded-lg">
               <img
-                src="/assets/icons/icon-info.png"
+                src="/assets/icons/icon-info.webp"
                 className="h-6 w-6"
                 onClick={() => {
                   router.push("#about");
@@ -946,7 +946,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                 }
               }}
             >
-              <img src="/assets/icons/icon-message-2.png" className="h-6 w-6" />
+              <img src="/assets/icons/icon-message-2.webp" className="h-6 w-6" />
               <span className="font-semibold">CHAT NOW</span>
             </div>
             <div
@@ -962,7 +962,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                 }
               }}
             >
-              <img src="/assets/icons/icon-call-3.png" className="h-6 w-6" />
+              <img src="/assets/icons/icon-call-3.webp" className="h-6 w-6" />
               <span className="font-semibold text-white">CALL NOW</span>
             </div>
           </div>

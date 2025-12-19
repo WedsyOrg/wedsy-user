@@ -85,7 +85,7 @@ export default function HomePage({}) {
     "name": "Wedsy",
     "description": "India's first online wedding planning platform. Premium wedding decorations, makeup artists, and event planning services in Bangalore.",
     "url": "https://www.wedsy.in",
-    "logo": "https://www.wedsy.in/logo-black.png",
+    "logo": "https://www.wedsy.in/logo-black.webp",
     "contactPoint": {
       "@type": "ContactPoint",
       "telephone": "+91-6364849760",
@@ -137,7 +137,7 @@ export default function HomePage({}) {
         {/* Open Graph Tags */}
         <meta property="og:title" content="Weddings Made Easy | India's First Online Wedding Planning Platform | Wedsy" />
         <meta property="og:description" content="Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform. Get free quotes and expert consultation." />
-        <meta property="og:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta property="og:image" content="https://www.wedsy.in/logo-black.webp" />
         <meta property="og:url" content="https://www.wedsy.in/weddings-made-easy" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Wedsy" />
@@ -146,7 +146,7 @@ export default function HomePage({}) {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Weddings Made Easy | India's First Online Wedding Planning Platform | Wedsy" />
         <meta name="twitter:description" content="Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform." />
-        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
         
         {/* Structured Data */}
         <script
@@ -358,7 +358,7 @@ export default function HomePage({}) {
         <div className="grid md:grid-cols-2 gap-8 md:gap-16">
           <div className="bg-[#FFE4EE] p-3 md:p-6 rounded-3xl flex flex-col items-center gap-3 text-center">
             <Image
-              src={`/assets/images/service_wedding_decorations.png`}
+              src={`/assets/images/service_wedding_decorations.webp`}
               alt="Decor"
               width={0}
               height={0}
@@ -379,7 +379,7 @@ export default function HomePage({}) {
           </div>
           <div className="bg-[#D1E3FF] p-3 md:p-6 rounded-3xl flex flex-col items-center gap-3 text-center">
             <Image
-              src={`/assets/images/service_wedding_photography.png`}
+              src={`/assets/images/service_wedding_photography.webp`}
               alt="Decor"
               width={0}
               height={0}
@@ -400,7 +400,7 @@ export default function HomePage({}) {
           </div>
           <div className="bg-[#FFC9CB] p-3 md:p-6 rounded-3xl flex flex-col items-center gap-3 text-center">
             <Image
-              src={`/assets/images/service_makeup_assistance.png`}
+              src={`/assets/images/service_makeup_assistance.webp`}
               alt="Decor"
               width={0}
               height={0}
@@ -421,7 +421,7 @@ export default function HomePage({}) {
           </div>
           <div className="bg-[#FFDCC6] p-3 md:p-6 rounded-3xl flex flex-col items-center gap-3 text-center">
             <Image
-              src={`/assets/images/service_venue_consultation.png`}
+              src={`/assets/images/service_venue_consultation.webp`}
               alt="Decor"
               width={0}
               height={0}
@@ -489,7 +489,7 @@ export default function HomePage({}) {
         </Link>
         <div className="hidden md:flex md:col-start-2 md:row-span-2 p-6 gap-6 flex-col">
           <Image
-            src={`/assets/images/why_choose_wedsy-text.png`}
+            src={`/assets/images/why_choose_wedsy-text.webp`}
             alt="Decor"
             width={0}
             height={0}
@@ -498,7 +498,7 @@ export default function HomePage({}) {
             className="mx-auto"
           />
           <Image
-            src={`/assets/images/choose_customer_safety.png`}
+            src={`/assets/images/choose_customer_safety.webp`}
             alt="Decor"
             width={0}
             height={0}
@@ -518,7 +518,7 @@ export default function HomePage({}) {
         </div>
         <div className="md:p-6 flex flex-col items-center gap-3 text-center md:order-first">
           <Image
-            src={`/assets/images/choose_affordable_elegance.png`}
+            src={`/assets/images/choose_affordable_elegance.webp`}
             alt="Decor"
             width={0}
             height={0}
@@ -534,7 +534,7 @@ export default function HomePage({}) {
         </div>
         <div className="md:p-6 hidden md:flex flex-col items-center gap-3 text-center">
           <Image
-            src={`/assets/images/choose_first_online_decor_store.png`}
+            src={`/assets/images/choose_first_online_decor_store.webp`}
             alt="Decor"
             width={0}
             height={0}
@@ -551,7 +551,7 @@ export default function HomePage({}) {
         <div className="grid md:hidden grid-cols-2 gap-6">
           <div className="md:p-6 flex md:hidden flex-col items-center gap-3 text-center">
             <Image
-              src={`/assets/images/choose_first_online_decor_store-mobile.png`}
+              src={`/assets/images/choose_first_online_decor_store-mobile.webp`}
               alt="Decor"
               width={0}
               height={0}
@@ -567,7 +567,7 @@ export default function HomePage({}) {
           </div>
           <div className="md:p-6 flex md:hidden flex-col items-center gap-3 text-center">
             <Image
-              src={`/assets/images/choose_seamless_planning-mobile.png`}
+              src={`/assets/images/choose_seamless_planning-mobile.webp`}
               alt="Decor"
               width={0}
               height={0}
@@ -584,7 +584,7 @@ export default function HomePage({}) {
         </div>
         <div className="md:p-6 flex flex-col items-center gap-3 text-center">
           <Image
-            src={`/assets/images/choose_ultimate_one-stop_wedding_hub.png`}
+            src={`/assets/images/choose_ultimate_one-stop_wedding_hub.webp`}
             alt="Decor"
             width={0}
             height={0}
@@ -600,7 +600,7 @@ export default function HomePage({}) {
         </div>
         <div className="md:p-6 hidden md:flex flex-col items-center gap-3 text-center">
           <Image
-            src={`/assets/images/choose_seamless_planning.png`}
+            src={`/assets/images/choose_seamless_planning.webp`}
             alt="Decor"
             width={0}
             height={0}
@@ -616,7 +616,7 @@ export default function HomePage({}) {
         </div>
         <div className="flex md:hidden md:p-6 gap-6 flex-col">
           <Image
-            src={`/assets/images/choose_customer_safety-mobile.png`}
+            src={`/assets/images/choose_customer_safety-mobile.webp`}
             alt="Decor"
             width={0}
             height={0}

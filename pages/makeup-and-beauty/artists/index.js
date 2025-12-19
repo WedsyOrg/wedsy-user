@@ -191,14 +191,14 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           {
             _id: 'sample-1',
             name: 'Sample Makeup Artist',
-            gallery: { coverPhoto: '/assets/images/makeup-artists-1.png' },
+            gallery: { coverPhoto: '/assets/images/makeup-artists-1.webp' },
             speciality: 'North Indian',
             prices: { bridal: 15000 }
           },
           {
             _id: 'sample-2', 
             name: 'Test Beauty Studio',
-            gallery: { coverPhoto: '/assets/images/makeup-artists-1.png' },
+            gallery: { coverPhoto: '/assets/images/makeup-artists-1.webp' },
             speciality: 'South Indian',
             prices: { bridal: 12000 }
           }
@@ -305,7 +305,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       <div className="w-full relative hidden md:block pt-[16.2%]">
         <img
           className="absolute top-0 left-0 w-full object-cover"
-          src="/assets/images/makeup-artists-1.png"
+          src="/assets/images/makeup-artists-1.webp"
           alt="Makeup artists banner"
         />
         <div className="absolute top-0 left-0 w-1/2 px-4 lg:px-8 py-2 lg:py-4 h-full flex flex-col justify-around">
@@ -444,7 +444,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
             >
               <div className="bg-gray-500 pt-[100%] w-full relative">
                 <img
-                    src={item?.gallery?.coverPhoto || '/assets/images/makeup-artists-1.png'}
+                    src={item?.gallery?.coverPhoto || '/assets/images/makeup-artists-1.webp'}
                   className="absolute top-0 w-full h-full object-cover rounded-xl"
                   alt={item?.name}
                 />

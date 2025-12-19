@@ -358,7 +358,7 @@ function DecorListing({
         {/* Open Graph Tags */}
         <meta property="og:title" content={seoTitle} />
         <meta property="og:description" content={seoDescription} />
-        <meta property="og:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta property="og:image" content="https://www.wedsy.in/logo-black.webp" />
         <meta
           property="og:url"
           content={`https://www.wedsy.in/decor/view?category=${filters.category || ""}`}
@@ -370,7 +370,7 @@ function DecorListing({
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={seoTitle} />
         <meta name="twitter:description" content={seoDescription} />
-        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
 
         {/* Breadcrumb Schema */}
         <script

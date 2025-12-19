@@ -64,7 +64,7 @@ export default function DecorPackagesList({
                           <div className="flex flex-row md:flex-col gap-4 w-full md:w-auto justify-between items-end">
                             <div>
                               <Image
-                                src={"/assets/images/platform.png"}
+                                src={"/assets/images/platform.webp"}
                                 alt="Platform"
                                 width={0}
                                 height={0}
@@ -84,12 +84,12 @@ export default function DecorPackagesList({
                               <Image
                                 src={
                                   rec.flooring === "Carpet"
-                                    ? "/assets/images/carpet.png"
+                                    ? "/assets/images/carpet.webp"
                                     : rec.flooring === "Flex"
-                                    ? "/assets/images/flex.png"
+                                    ? "/assets/images/flex.webp"
                                     : rec.flooring === "PrintedFlex"
-                                    ? "/assets/images/printedFlex.png"
-                                    : "/assets/images/carpet.png"
+                                    ? "/assets/images/printedFlex.webp"
+                                    : "/assets/images/carpet.webp"
                                 }
                                 alt="Platform"
                                 width={0}

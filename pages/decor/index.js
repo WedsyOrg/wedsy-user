@@ -452,7 +452,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           {/* Open Graph Tags */}
           <meta property="og:title" content="Wedding Decorations | Premium Wedding Decor in Bangalore | Wedsy" />
           <meta property="og:description" content="Transform your wedding with Wedsy's premium decor services. Discover exquisite themes, floral arrangements, and custom setups designed to bring your dream wedding to life." />
-          <meta property="og:image" content="https://www.wedsy.in/logo-black.png" />
+          <meta property="og:image" content="https://www.wedsy.in/logo-black.webp" />
           <meta property="og:url" content="https://www.wedsy.in/decor" />
           <meta property="og:type" content="website" />
           <meta property="og:site_name" content="Wedsy" />
@@ -461,7 +461,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:title" content="Wedding Decorations | Premium Wedding Decor in Bangalore | Wedsy" />
           <meta name="twitter:description" content="Transform your wedding with Wedsy's premium decor services. Discover exquisite themes, floral arrangements, and custom setups." />
-          <meta name="twitter:image" content="https://www.wedsy.in/logo-black.png" />
+          <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
           
           {/* Structured Data */}
           <script
@@ -578,7 +578,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
         {/* MAIN SECTION (Tailwind version) */}
         <div className="w-full relative overflow-hidden hidden  md:block mb-[56px]">
           <img
-            src="/assets/decor/decor-home.png"
+            src="/assets/decor/decor-home.webp"
             alt="Decor Hero"
             className="w-full h-auto block filter brightness-[80%]"
           />
@@ -680,7 +680,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
               >
                 <Link href={`/decor/view?category=${item}`} className="block w-full h-full">
                   <img
-                    src={`/assets/decor/categories-img/${item.toLowerCase()}.jpg`}
+                    src={`/assets/decor/categories-img/${item.toLowerCase()}.webp`}
                     alt={item}
                     className="w-full h-full object-cover brightness-75 transition-transform duration-300 group-hover:scale-105"
                   />
@@ -1130,11 +1130,11 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
           <div className="grid grid-cols-2 gap-3 md:gap-8 mb-6 md:mb-8 w-full max-w-6xl">
             {/* Package Items */}
             {[
-              { label: "NORTH INDIAN", image: "north-indian.jpg" },
-              { label: "SOUTH INDIAN", image: "south indian.jpg" },
-              { label: "MUSLIM", image: "muslim.jpg" },
-              { label: "RECEPTION", image: "reception.jpg" },
-              { label: "ADD ONS", image: "add ons.jpg" },
+              { label: "NORTH INDIAN", image: "north-indian.webp" },
+              { label: "SOUTH INDIAN", image: "south indian.webp" },
+              { label: "MUSLIM", image: "muslim.webp" },
+              { label: "RECEPTION", image: "reception.webp" },
+              { label: "ADD ONS", image: "add ons.webp" },
             ].map((pkg, index) => (
               <div
                 key={index}
@@ -1175,7 +1175,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
             {/* Exclusive Designs */}
             <div className="flex flex-row items-center gap-2 md:gap-4">
               {/* Rainbow Icon */}
-              <img src="/assets/decor/icons/exclusive designs.png" alt="Rainbow" className="w-8 h-8 md:w-12 md:h-12" />
+              <img src="/assets/decor/icons/exclusive designs.webp" alt="Rainbow" className="w-8 h-8 md:w-12 md:h-12" />
               <div className="flex flex-col text-left">
                 <span className="font-semibold text-sm md:text-lg leading-tight">EXCLUSIVE</span>
                 <span className="font-semibold text-sm md:text-lg leading-tight">DESIGNS</span>
@@ -1184,7 +1184,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
             {/* Customization Options */}
             <div className="flex flex-row items-center gap-2 md:gap-4">
               {/* Sliders Icon */}
-              <img src="/assets/decor/icons/customization options.png" alt="Sliders" className="w-8 h-8 md:w-12 md:h-12" />
+              <img src="/assets/decor/icons/customization options.webp" alt="Sliders" className="w-8 h-8 md:w-12 md:h-12" />
               <div className="flex flex-col text-left">
                 <span className="font-semibold text-sm md:text-lg leading-tight">CUSTOMIZATION</span>
                 <span className="font-semibold text-sm md:text-lg leading-tight">OPTIONS</span>
@@ -1193,7 +1193,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
             {/* Exceptional Customer Service */}
             <div className="flex flex-row items-center gap-2 md:gap-4">
               {/* Headset Icon */}
-              <img src="/assets/decor/icons/exceptional customer service.png" alt="Headset" className="w-8 h-8 md:w-12 md:h-12" />
+              <img src="/assets/decor/icons/exceptional customer service.webp" alt="Headset" className="w-8 h-8 md:w-12 md:h-12" />
               <div className="flex flex-col text-left">
                 <span className="font-semibold text-sm md:text-lg leading-tight">EXCEPTIONAL</span>
                 <span className="font-semibold text-sm md:text-lg leading-tight">CUSTOMER SERVICE</span>
@@ -1202,7 +1202,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
             {/* Competitive Pricing */}
             <div className="flex flex-row items-center gap-2 md:gap-4">
               {/* Badge Icon */}
-              <img src="/assets/decor/icons/competetive pricing.png" alt="Badge" className="w-8 h-8 md:w-12 md:h-12" />
+              <img src="/assets/decor/icons/competetive pricing.webp" alt="Badge" className="w-8 h-8 md:w-12 md:h-12" />
               <div className="flex flex-col text-left">
                 <span className="font-semibold text-sm md:text-lg leading-tight">COMPETETIVE</span>
                 <span className="font-semibold text-sm md:text-lg leading-tight">PRICING</span>
@@ -1561,7 +1561,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
               <div className="col-span-1">
                 <div className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-all duration-300">
                   <img
-                    src="/assets/decor/photobooth-img/pb1.png"
+                    src="/assets/decor/photobooth-img/pb1.webp"
                     alt="Photobooth Design 1"
                     className="w-full h-[400px] object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -1578,7 +1578,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 <div className="grid grid-cols-2 gap-6">
                   <div className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-all duration-300">
                     <img
-                      src="/assets/decor/photobooth-img/pb2.jpg"
+                      src="/assets/decor/photobooth-img/pb2.webp"
                       alt="Photobooth Design 2"
                       className="w-full h-[190px] object-cover group-hover:scale-105 transition-transform duration-300"
                     />
@@ -1591,7 +1591,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
                   <div className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-all duration-300">
                     <img
-                      src="/assets/decor/photobooth-img/pb3.png"
+                      src="/assets/decor/photobooth-img/pb3.webp"
                       alt="Photobooth Design 3"
                       className="w-full h-[190px] object-cover group-hover:scale-105 transition-transform duration-300"
                     />
@@ -1607,7 +1607,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 <div className="grid grid-cols-2 gap-6">
                   <div className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-all duration-300">
                     <img
-                      src="/assets/decor/photobooth-img/pb4.jpg"
+                      src="/assets/decor/photobooth-img/pb4.webp"
                       alt="Photobooth Design 4"
                       className="w-full h-[190px] object-cover group-hover:scale-105 transition-transform duration-300"
                     />
@@ -1620,7 +1620,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
                   <div className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-all duration-300">
                     <img
-                      src="/assets/decor/photobooth-img/pb5.jpg"
+                      src="/assets/decor/photobooth-img/pb5.webp"
                       alt="Photobooth Design 5"
                       className="w-full h-[190px] object-cover group-hover:scale-105 transition-transform duration-300"
                     />
@@ -1640,7 +1640,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
             <div className="grid grid-cols-2 gap-4">
               <div className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg hover:shadow-xl transition-all duration-300">
                 <img
-                  src="/assets/decor/photobooth-img/pb1.png"
+                  src="/assets/decor/photobooth-img/pb1.webp"
                   alt="Photobooth Design 1"
                   className="w-full h-[200px] object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -1652,7 +1652,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
               <div className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg hover:shadow-xl transition-all duration-300">
                 <img
-                  src="/assets/decor/photobooth-img/pb2.jpg"
+                  src="/assets/decor/photobooth-img/pb2.webp"
                   alt="Photobooth Design 2"
                   className="w-full h-[200px] object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -1664,7 +1664,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
               <div className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg hover:shadow-xl transition-all duration-300">
                 <img
-                  src="/assets/decor/photobooth-img/pb3.png"
+                  src="/assets/decor/photobooth-img/pb3.webp"
                   alt="Photobooth Design 3"
                   className="w-full h-[200px] object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -1676,7 +1676,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
               <div className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg hover:shadow-xl transition-all duration-300">
                 <img
-                  src="/assets/decor/photobooth-img/pb4.jpg"
+                  src="/assets/decor/photobooth-img/pb4.webp"
                   alt="Photobooth Design 4"
                   className="w-full h-[200px] object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -1688,7 +1688,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
               <div className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg hover:shadow-xl transition-all duration-300 col-span-2">
                 <img
-                  src="/assets/decor/photobooth-img/pb5.jpg"
+                  src="/assets/decor/photobooth-img/pb5.webp"
                   alt="Photobooth Design 5"
                   className="w-full h-[200px] object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -1869,7 +1869,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                     className="hover:z-40 transition-all"
                   >
                     <Image
-                      src={`/assets/images/${item.toLowerCase()}.png`}
+                      src={`/assets/images/${item.toLowerCase()}.webp`}
                       alt="Decor"
                       width={0}
                       height={0}
@@ -1878,7 +1878,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                       className="hover:scale-125 transition-all duration-500 hidden md:inline"
                     />
                     <Image
-                      src={`/assets/images/${item.toLowerCase()}-mobile-text.png`}
+                      src={`/assets/images/${item.toLowerCase()}-mobile-text.webp`}
                       alt="Decor"
                       width={0}
                       height={0}
@@ -1904,7 +1904,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                     className="rounded-lg hover:overflow-hidden hover:z-40 transition-all"
                   >
                     <Image
-                      src={`/assets/images/${item.toLowerCase()}.png`}
+                      src={`/assets/images/${item.toLowerCase()}.webp`}
                       alt="Decor"
                       width={0}
                       height={0}
@@ -1913,7 +1913,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                       className="hover:scale-125 transition-all duration-500 hidden md:inline"
                     />
                     <Image
-                      src={`/assets/images/${item.toLowerCase()}-mobile-text.png`}
+                      src={`/assets/images/${item.toLowerCase()}-mobile-text.webp`}
                       alt="Decor"
                       width={0}
                       height={0}
@@ -1952,7 +1952,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
         </div> */}
         {/* <div className="py-6 md:py-12 px-4 md:px-24 flex flex-col gap-6 bg-gradient-to-b from-white to-[#CEA15B]">
           <Image
-            src="/assets/images/decor-faq-img.png"
+            src="/assets/images/decor-faq-img.webp"
             alt="Decor"
             width={0}
             height={0}

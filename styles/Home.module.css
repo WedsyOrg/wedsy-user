@@ -1,5 +1,5 @@
 .main__div {
-  background-image: url("/assets/background/Home_wedding_first_section 2.png ");
+  background-image: url("/assets/background/Home_wedding_first_section 2.webp ");
   background-size: cover;
   background-repeat: no-repeat;
   width: 100%;
@@ -15,7 +15,7 @@
 }
 .main__div__2 {
   /* background-image: linear-gradient(0deg, #fff 53.22%, rgba(0, 0, 0, 0) 153.22%),
-    url("/assets/background/bg-image-2.png"); */
+    url("/assets/background/bg-image-2.webp"); */
   background-size: cover;
   /* background-repeat: no-repeat; */
   width: 100%;
@@ -32,7 +32,7 @@
         rgba(255, 255, 255, 0.6) 0%,
         rgba(255, 255, 255, 0.6) 100%
       ),
-      /* url("/assets/background/bg-image-2.png"); */
+      /* url("/assets/background/bg-image-2.webp"); */
   }
 }
 
@@ -44,7 +44,7 @@
       rgba(255, 255, 255, 0.2) 80%,
       rgba(255, 255, 255, 0) 100%
     ),
-    url("/assets/background/bg-section-1.png");
+    url("/assets/background/bg-section-1.webp");
   background-size: cover;
   background-repeat: no-repeat;
   width: calc(100vw-8em);
@@ -63,7 +63,7 @@
 }
 
 .section__2 {
-  background-image: url("/assets/background/bg-section-2.png");
+  background-image: url("/assets/background/bg-section-2.webp");
   background-size: cover;
   background-repeat: no-repeat;
   width: 100%;
@@ -74,13 +74,13 @@
 
 @media only screen and (max-width: 600px) {
   .section__2 {
-    background-image: url("/assets/background/bg-section-2-mobile.png");
+    background-image: url("/assets/background/bg-section-2-mobile.webp");
     height: auto !important ;
   }
 }
 
 .packages_section {
-  background-image: url("/assets/background/bg-packages.png");
+  background-image: url("/assets/background/bg-packages.webp");
   background-size: cover;
   background-repeat: no-repeat;
   width: 100%;
@@ -91,7 +91,7 @@
 
 @media only screen and (max-width: 600px) {
   .packages_section {
-    background-image: url("/assets/background/bg-packages.png");
+    background-image: url("/assets/background/bg-packages.webp");
     height: auto !important ;
   }
 }

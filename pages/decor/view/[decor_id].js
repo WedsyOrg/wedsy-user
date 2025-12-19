@@ -615,7 +615,7 @@ function DecorListing({
   const pageTitle = decor?.seoTags?.title || `${decor.name} | Wedding ${decor.category || "Decoration"} | Wedsy`;
   const pageDescription = decor?.seoTags?.description || `${decor.name} - ${decor.description?.substring(0, 150) || "Premium wedding decoration item"} | Starting at ₹${decor?.productTypes?.[0]?.sellingPrice || "0"}. Book now for your special day in Bangalore.`;
   const pageKeywords = decor?.seoTags?.keywords || `${decor.name}, ${decor.category || "wedding decoration"}, wedding decor bangalore, ${decor.category?.toLowerCase()} decoration, wedding planning bangalore`;
-  const ogImage = decor?.seoTags?.image || decor.image || "https://www.wedsy.in/logo-black.png";
+  const ogImage = decor?.seoTags?.image || decor.image || "https://www.wedsy.in/logo-black.webp";
 
   return (
     <>
@@ -914,7 +914,7 @@ function DecorListing({
             {cart.flooring === undefined ? (
               <>
                 <Image
-                  src="/assets/images/platform.png"
+                  src="/assets/images/platform.webp"
                   alt="Platform"
                   width={0}
                   height={0}

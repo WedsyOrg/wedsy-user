@@ -158,7 +158,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         {/* Open Graph Tags */}
         <meta property="og:title" content="Makeup & Beauty Packages in Bangalore | Wedding Packages | Wedsy" />
         <meta property="og:description" content="Browse professional makeup and beauty packages in Bangalore for your wedding. Compare prices and book the perfect package." />
-        <meta property="og:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta property="og:image" content="https://www.wedsy.in/logo-black.webp" />
         <meta property="og:url" content="https://www.wedsy.in/makeup-and-beauty/wedsy-packages" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Wedsy" />
@@ -167,7 +167,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Makeup & Beauty Packages in Bangalore | Wedding Packages | Wedsy" />
         <meta name="twitter:description" content="Browse professional makeup and beauty packages in Bangalore for your wedding." />
-        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
         
         {/* Structured Data */}
         <script
@@ -225,19 +225,19 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       </div>
       <div className="bg-[#f4f4f4] py-4 px-6 grid grid-cols-2 gap-4 md:hidden">
         <img
-          src="/assets/images/makeup-landing-page-4.png"
+          src="/assets/images/makeup-landing-page-4.webp"
           className="w-full"
         />
         <img
-          src="/assets/images/makeup-landing-page-5.png"
+          src="/assets/images/makeup-landing-page-5.webp"
           className="w-full"
         />
         <img
-          src="/assets/images/makeup-landing-page-6.png"
+          src="/assets/images/makeup-landing-page-6.webp"
           className="w-full"
         />
         <img
-          src="/assets/images/makeup-landing-page-7.png"
+          src="/assets/images/makeup-landing-page-7.webp"
           className="w-full"
         />
       </div>
@@ -274,7 +274,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                       <div className="bg-white rounded-lg p-4 flex flex-col gap-2 items-center">
                         <div className="aspect-w-1 aspect-h-1">
                           <img
-                            src="/assets/icons/icon-cosmetics.png"
+                            src="/assets/icons/icon-cosmetics.webp"
                             alt="Image"
                             className="object-cover w-full h-full"
                           />
@@ -286,7 +286,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                       <div className="bg-white rounded-lg p-4 flex flex-col gap-2 items-center">
                         <div className="aspect-w-1 aspect-h-1">
                           <img
-                            src="/assets/icons/icon-clean.png"
+                            src="/assets/icons/icon-clean.webp"
                             alt="Image"
                             className="object-cover w-full h-full"
                           />
@@ -298,7 +298,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                       <div className="bg-white rounded-lg p-4 flex flex-col gap-2 items-center">
                         <div className="aspect-w-1 aspect-h-1">
                           <img
-                            src="/assets/icons/icon-investment.png"
+                            src="/assets/icons/icon-investment.webp"
                             alt="Image"
                             className="object-cover w-full h-full"
                           />
@@ -310,7 +310,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                       <div className="bg-white rounded-lg p-4 flex flex-col gap-2 items-center">
                         <div className="aspect-w-1 aspect-h-1">
                           <img
-                            src="/assets/icons/icon-user-2.png"
+                            src="/assets/icons/icon-user-2.webp"
                             alt="Image"
                             className="object-cover w-full h-full"
                           />
@@ -454,7 +454,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
             ))}
           </select>
           <div className="flex items-center gap-1">
-            <img src="/assets/icons/location-pin.png" className="h-[18px] pr-2"/>
+            <img src="/assets/icons/location-pin.webp" className="h-[18px] pr-2"/>
             <h2 className="text-2xl font-medium text-[#880E4F]">
               Bangalore,<span className="text-2xl font-bold text-[#880E4F]"> IN</span> 
             </h2>
@@ -599,7 +599,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                       </div>
                       <div className="aspect-w-1 aspect-h-1">
                         <img
-                          src="/assets/icons/icon-cosmetics.png"
+                          src="/assets/icons/icon-cosmetics.webp"
                           alt="Image"
                           className="object-cover w-full h-full"
                         />
@@ -611,7 +611,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                       </div>
                       <div className="aspect-w-1 aspect-h-1">
                         <img
-                          src="/assets/icons/icon-clean.png"
+                          src="/assets/icons/icon-clean.webp"
                           alt="Image"
                           className="object-cover w-full h-full"
                         />
@@ -623,7 +623,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                       </div>
                       <div className="aspect-w-1 aspect-h-1">
                         <img
-                          src="/assets/icons/icon-investment.png"
+                          src="/assets/icons/icon-investment.webp"
                           alt="Image"
                           className="object-cover w-full h-full"
                         />
@@ -635,7 +635,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                       </div>
                       <div className="aspect-w-1 aspect-h-1">
                         <img
-                          src="/assets/icons/icon-user-2.png"
+                          src="/assets/icons/icon-user-2.webp"
                           alt="Image"
                           className="object-cover w-full h-full"
                         />

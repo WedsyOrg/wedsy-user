@@ -57,13 +57,13 @@ body {
 /* Backround Image */
 .decor-bg-image {
   background-repeat: repeat;
-  /* background-image: url("../public/assets/background/bg.jpg"); */
-  background-image: url("/assets/background/bg.jpg");
+  /* background-image: url("../public/assets/background/bg.webp"); */
+  background-image: url("/assets/background/bg.webp");
 }
 .events-mobile-bg-image {
   background-repeat: no-repeat;
   background-attachment: fixed;
-  background-image: url("../public/assets/background/events-mobile.png");
+  background-image: url("../public/assets/background/events-mobile.webp");
 }
 
 /* Strike */

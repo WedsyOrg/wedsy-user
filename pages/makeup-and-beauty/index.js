@@ -188,7 +188,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         {/* Open Graph Tags */}
         <meta property="og:title" content="Makeup Artists & Beauty Services in Bangalore | Wedsy" />
         <meta property="og:description" content="Find the best makeup artists and beauty services in Bangalore for your wedding. Browse professional bridal makeup artists and book your perfect look." />
-        <meta property="og:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta property="og:image" content="https://www.wedsy.in/logo-black.webp" />
         <meta property="og:url" content="https://www.wedsy.in/makeup-and-beauty" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Wedsy" />
@@ -197,7 +197,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Makeup Artists & Beauty Services in Bangalore | Wedsy" />
         <meta name="twitter:description" content="Find the best makeup artists and beauty services in Bangalore for your wedding." />
-        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.png" />
+        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
         
         {/* Structured Data */}
         <script
@@ -273,29 +273,29 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
 
       <div className="bg-[#f4f4f4] py-4 px-6 grid grid-cols-2 gap-4 md:hidden">
         <img
-          src="/assets/images/makeup-landing-page-4.png"
+          src="/assets/images/makeup-landing-page-4.webp"
           className="w-full"
           onClick={() => router.push("/makeup-and-beauty/wedsy-packages")}
         />
         <img
-          src="/assets/images/makeup-landing-page-5.png"
+          src="/assets/images/makeup-landing-page-5.webp"
           className="w-full"
           onClick={() => router.push("/makeup-and-beauty/artists")}
         />
         <img
-          src="/assets/images/makeup-landing-page-6.png"
+          src="/assets/images/makeup-landing-page-6.webp"
           className="w-full"
           onClick={() => router.push("/makeup-and-beauty/bidding")}
         />
         <img
-          src="/assets/images/makeup-landing-page-7.png"
+          src="/assets/images/makeup-landing-page-7.webp"
           className="w-full"
           onClick={() => router.push("/makeup-and-beauty/artists")}
         />
       </div>
 
       <img
-        src="/assets/images/makeup-landing-page-8.png"
+        src="/assets/images/makeup-landing-page-8.webp"
         className="w-full md:hidden"
       />
 
@@ -333,7 +333,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         </div>
         <img
           className="w-full col-span-3"
-          src="/assets/images/makeup-landing-page-1.png"
+          src="/assets/images/makeup-landing-page-1.webp"
           alt="Makeup and Beauty Landing Image"
         />
       </div>
@@ -643,7 +643,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
             </Link>
           </div>
           <img
-            src="/assets/images/makeup-landing-page-2.png"
+            src="/assets/images/makeup-landing-page-2.webp"
             className="w-full"
             alt="Makeup artist working on a model"
           />
@@ -652,7 +652,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
 
       {/* wedsy Promises section */}
       <img
-        src="/assets/images/makeup-landing-page-3.png"
+        src="/assets/images/makeup-landing-page-3.webp"
         className="w-full hidden md:block"
       />
 
@@ -753,11 +753,11 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       {/* FAQ section */}
       <div className="bg-[#f4f4f4] py-12 px-6 md:px-24">
         <img
-          src="/assets/images/faq-title-1.png"
+          src="/assets/images/faq-title-1.webp"
           className="border-t w-full hidden md:block"
         />
         <img
-          src="/assets/images/faq-title-2.png"
+          src="/assets/images/faq-title-2.webp"
           className="border-t w-full md:hidden"
         />
         <div className="divide-dashed divide-y-2 divide-black flex flex-col [&>div]:pb-0 [&>div]:mt-0 px-0 md:px-12 mt-4 md:mt-8 md:text-xl">

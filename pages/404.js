@@ -18,7 +18,7 @@ export default function Custom404() {
           {/* Illustration Section */}
           <div className="relative mb-8">
             <Image
-              src="/assets/404/404.png"
+              src="/assets/404/404.webp"
               alt="404 Error Illustration"
               width={800}
               height={600}

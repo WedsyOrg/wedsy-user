@@ -1,5 +1,5 @@
 .bg_div_top {
-  background-image: url("/assets/background/bg-planyourevent-1.png");
+  background-image: url("/assets/background/bg-planyourevent-1.webp");
   background-size: cover;
   background-repeat: no-repeat;
   width: 100%;
@@ -10,11 +10,11 @@
 }
 @media only screen and (max-width: 600px) {
   .bg_div_top {
-    background-image: url("/assets/background/bg-planyourevent-mobile.png");
+    background-image: url("/assets/background/bg-planyourevent-mobile.webp");
   }
 }
 .bg_div_bottom {
-  background-image: url("/assets/background/bg-planyourevent-2.png");
+  background-image: url("/assets/background/bg-planyourevent-2.webp");
   background-size: cover;
   background-repeat: no-repeat;
   width: 100%;

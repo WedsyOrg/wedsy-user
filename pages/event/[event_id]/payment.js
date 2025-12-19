@@ -237,7 +237,7 @@ export default function EventTool({ user }) {
       <div className="relative flex flex-col gap-8 px-6 md:px-24 py-6 md:py-12 min-h-screen">
         <div className="flex flex-row justify-between">
           <Image
-            src={"/assets/images/buyer_protection.png"}
+            src={"/assets/images/buyer_protection.webp"}
             alt="Decor"
             width={0}
             height={0}
@@ -245,7 +245,7 @@ export default function EventTool({ user }) {
             className="h-12 md:h-20 w-auto"
           />
           <Image
-            src={"/logo-black.png"}
+            src={"/logo-black.webp"}
             alt="Decor"
             width={0}
             height={0}

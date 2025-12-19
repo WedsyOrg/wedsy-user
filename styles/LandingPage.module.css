@@ -1,5 +1,5 @@
 .main__div {
-  background-image: url("/assets/background/bg-weddings_made_easy.png");
+  background-image: url("/assets/background/bg-weddings_made_easy.webp");
   background-size: cover;
   background-repeat: no-repeat;
   width: 100%;
@@ -10,7 +10,7 @@
 }
 @media only screen and (max-width: 600px) {
   .main__div {
-    background-image: url("/assets/background/bg-weddings_made_easy-mobile.png");
+    background-image: url("/assets/background/bg-weddings_made_easy-mobile.webp");
     height: auto !important ;
     /* background-attachment: scroll; */
     background-size: auto 100vh;

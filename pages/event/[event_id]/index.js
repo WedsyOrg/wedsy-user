@@ -8,7 +8,7 @@ import { BsArrowRight } from "react-icons/bs";
 const ClipboardVisual = React.memo(() => (
   <div className="relative flex justify-center items-center h-full">
     <Image
-      src="/assets/event_tools/event/clipboard2.png"
+      src="/assets/event_tools/event/clipboard2.webp"
       alt="Clipboard"
       width={450}
       height={600}

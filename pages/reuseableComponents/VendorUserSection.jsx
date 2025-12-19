@@ -8,7 +8,7 @@ const VendorUserSection = () => {
       <div className="w-full flex flex-col md:flex-row">
         <div className="relative flex-1 h-96 md:h-[450px] overflow-hidden shadow-lg flex flex-col items-center justify-center p-6 md:p-10">
           <Image
-            src="/assets/images/vendor_landing.png"
+            src="/assets/images/vendor_landing.webp"
             alt="People collaborating at a table"
             layout="fill"
             objectFit="cover"
@@ -35,7 +35,7 @@ const VendorUserSection = () => {
 
         <div className="relative flex-1 md:h-[450px] overflow-hidden shadow-lg flex flex-col items-center justify-center p-6 md:p-100">
           <Image
-            src="/assets/images/user_landing.png"
+            src="/assets/images/user_landing.webp"
             alt="Couple celebrating"
             layout="fill"
             objectFit="cover"

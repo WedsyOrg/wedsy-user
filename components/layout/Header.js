@@ -128,7 +128,7 @@ export default function Header({ userLoggedIn, user, Logout }) {
           <img
             alt="Wedsy Logo"
             className="object-contain w-[140px] h-[35.49px]"
-            src={variant === "dark" ? "/logo-black.png" : "/logo-black.png"}
+            src={variant === "dark" ? "/logo-black.webp" : "/logo-black.webp"}
           />
         </Link>
         {/* Icons */}
@@ -213,7 +213,7 @@ export default function Header({ userLoggedIn, user, Logout }) {
           {/* Center: Logo */}
           <Link href="/" className="flex items-center justify-center">
             <img
-              src="/logo-black.png"
+              src="/logo-black.webp"
               alt="Wedsy Logo"
               className="w-[140px] h-[35px] object-contain"
             />

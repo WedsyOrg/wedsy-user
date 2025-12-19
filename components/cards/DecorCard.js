@@ -38,14 +38,14 @@ export default function DecorCard({ decor = {}, size = "normal" }) {
         className={`relative w-full ${imageHeightClass} overflow-hidden rounded-2xl`}
       >
         <Image
-          src={thumbnail || "/placeholder.jpg"}
+          src={thumbnail || "/placeholder.webp"}
           alt={name}
           fill
           sizes="(max-width: 768px) 50vw, 33vw"
           style={{ objectFit: "cover" }}
           className="transition-transform duration-500 ease-in-out md:group-hover:scale-110"
           placeholder="blur"
-          blurDataURL="/placeholder.jpg"
+          blurDataURL="/placeholder.webp"
         />
 
         {/* DESKTOP: Dark overlay on hover */}

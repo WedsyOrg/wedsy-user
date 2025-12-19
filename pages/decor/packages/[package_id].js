@@ -328,7 +328,7 @@ function DecorListing({
   const pageTitle = decorPackage?.seoTags?.title || `${decorPackage.name} | Wedding Decoration Package | Wedsy`;
   const pageDescription = decorPackage?.seoTags?.description || `${decorPackage.name} - ${decorPackage.description?.substring(0, 150) || "Complete wedding decoration package"} | Starting at ₹${packagePrice}. Book now for your special day in Bangalore.`;
   const pageKeywords = decorPackage?.seoTags?.keywords || `${decorPackage.name}, wedding decoration package, wedding decor bangalore, decoration package, wedding planning bangalore`;
-  const ogImage = decorPackage?.seoTags?.image || decorPackage.image || "https://www.wedsy.in/logo-black.png";
+  const ogImage = decorPackage?.seoTags?.image || decorPackage.image || "https://www.wedsy.in/logo-black.webp";
 
   const [selectedByCategory, setSelectedByCategory] = useState({});
 
@@ -497,7 +497,7 @@ function DecorListing({
                           {addOns.decorItems.find((i) => i.decor === item._id)
                             ?.platform === undefined && (
                             <Image
-                              src="/assets/images/platform.png"
+                              src="/assets/images/platform.webp"
                               alt="Platform"
                               width={0}
                               height={0}
@@ -794,7 +794,7 @@ function DecorListing({
                         <div className="flex flex-col gap-4">
                           <div className="font-medium flex flex-row gap-4 items-center justify-between">
                             <Image
-                              src="/assets/images/carpet.png"
+                              src="/assets/images/carpet.webp"
                               alt="Platform"
                               width={0}
                               height={0}
@@ -847,7 +847,7 @@ function DecorListing({
                           </div>
                           <div className="font-medium flex flex-row gap-4 items-center justify-between">
                             <Image
-                              src="/assets/images/flex.png"
+                              src="/assets/images/flex.webp"
                               alt="Platform"
                               width={0}
                               height={0}
@@ -900,7 +900,7 @@ function DecorListing({
                           </div>
                           <div className="font-medium flex flex-row gap-4 items-center justify-between">
                             <Image
-                              src="/assets/images/printedFlex.png"
+                              src="/assets/images/printedFlex.webp"
                               alt="Platform"
                               width={0}
                               height={0}
