@@ -1,21 +1,13 @@
-import FAQAccordion from "@/components/accordion/FAQAccordion";
 import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import { toPriceString } from "@/utils/text";
 import { Modal } from "flowbite-react";
-import Link from "next/link";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import {
-  FaArrowLeft,
-  FaArrowRight,
-  FaChevronLeft,
-  FaChevronRight,
-  FaMapMarkerAlt,
-  FaSearch,
-  FaStar,
+  FaStar
 } from "react-icons/fa";
-import { MdChevronRight, MdClear } from "react-icons/md";
+import { MdClear } from "react-icons/md";
 
 function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   const router = useRouter();

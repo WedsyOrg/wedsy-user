@@ -1,11 +1,11 @@
 // File: components/product/ProductInfoPanel.js
 
-import { useState } from "react";
+import { Button, Checkbox, Dropdown, Label, Rating, Select } from "flowbite-react";
+import Link from "next/link";
 import { useRouter } from "next/router";
-import { Button, Checkbox, Dropdown, Label, Modal, Rating, Select, TextInput } from "flowbite-react";
+import { useState } from "react";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { BsChevronDown } from "react-icons/bs";
-import Link from "next/link";
 
 function ProductInfoPanel({
   decor,

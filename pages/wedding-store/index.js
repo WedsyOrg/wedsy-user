@@ -1,9 +1,8 @@
 import DecorCard from "@/components/cards/DecorCard";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
-import { Dropdown } from "flowbite-react";
+import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import { BsInstagram } from "react-icons/bs";
 

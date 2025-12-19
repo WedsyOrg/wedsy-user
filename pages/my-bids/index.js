@@ -1,15 +1,11 @@
-import UserProfileHeader from "@/components/layout/UserProfileHeader";
 import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
+import { Spinner } from "flowbite-react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { Spinner } from "flowbite-react";
 import {
-  MdChevronRight,
-  MdExpandLess,
-  MdExpandMore,
-  MdOutlineChevronRight,
+  MdOutlineChevronRight
 } from "react-icons/md";
-import Link from "next/link";
 
 export default function Orders({ user }) {
   const router = useRouter();

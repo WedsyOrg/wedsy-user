@@ -1,9 +1,7 @@
 import { useState } from "react";
 import {
   BsCaretDownFill,
-  BsCaretUpFill,
-  BsChevronDown,
-  BsChevronUp,
+  BsCaretUpFill
 } from "react-icons/bs";
 
 const FAQAccordion = ({ question, answer }) => {

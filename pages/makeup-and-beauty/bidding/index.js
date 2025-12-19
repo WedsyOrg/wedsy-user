@@ -1,7 +1,6 @@
 import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
 import { Label, Select, TextInput, Textarea } from "flowbite-react";
-import Link from "next/link";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";

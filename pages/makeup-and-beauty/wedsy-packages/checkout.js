@@ -1,22 +1,15 @@
-import FAQAccordion from "@/components/accordion/FAQAccordion";
 import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
 import { toPriceString, toProperCase } from "@/utils/text";
-import { Button, Label, Modal, Select, TextInput } from "flowbite-react";
-import Link from "next/link";
-import Image from "next/image";
+import { Button, Label, Select, TextInput } from "flowbite-react";
 import Head from "next/head";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import {
   FaArrowLeft,
-  FaArrowRight,
-  FaChevronLeft,
-  FaChevronRight,
-  FaSearch,
-  FaStar,
+  FaArrowRight
 } from "react-icons/fa";
-import { MdChevronRight, MdClear } from "react-icons/md";
 
 function MakeupAndBeauty({ user }) {
   const router = useRouter();

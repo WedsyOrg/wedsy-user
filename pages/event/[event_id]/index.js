@@ -1,10 +1,8 @@
-import React from "react";
 import Image from "next/image";
-import {BsArrowLeft, BsArrowRight} from "react-icons/bs";
-import {BiMap, BiSolidEditAlt, BiTrashAlt} from "react-icons/bi";
-import {useEffect, useState, useCallback, useMemo} from "react";
 import Link from "next/link";
-import {useRouter} from "next/router";
+import { useRouter } from "next/router";
+import React, { useCallback, useEffect, useState } from "react";
+import { BsArrowRight } from "react-icons/bs";
 
 // Clipboard Visual Component
 const ClipboardVisual = React.memo(() => (

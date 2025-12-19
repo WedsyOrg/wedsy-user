@@ -2,12 +2,12 @@ import Testimonials from "@/components/screens/Testimonials";
 import styles from "@/styles/LandingPage.module.css";
 import { processMobileNumber } from "@/utils/phoneNumber";
 import { Checkbox, Footer, Label, Select, TextInput } from "flowbite-react";
+import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import Head from "next/head";
 import Script from "next/script";
 import { useState } from "react";
-import { BsFacebook, BsInstagram, BsTwitter, BsGoogle } from "react-icons/bs";
+import { BsFacebook, BsGoogle, BsInstagram, BsTwitter } from "react-icons/bs";
 
 export default function HomePage({}) {
   const [loading, setLoading] = useState(false);

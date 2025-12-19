@@ -1,25 +1,12 @@
+import PlanYourEvent from "@/components/screens/PlanYourEvent";
+import { LandingPageSkeleton } from "@/components/skeletons/landing_page";
+import VendorUserSection from "@/pages/reuseableComponents/VendorUserSection";
 import styles from "@/styles/Home.module.css";
-import { Rating } from "flowbite-react";
+import { processMobileNumber } from "@/utils/phoneNumber";
+import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {
-  BsArrowLeftShort,
-  BsArrowRightShort,
-  BsFillBalloonHeartFill,
-} from "react-icons/bs";
-import { FcGoogle } from "react-icons/fc";
-import pinkBgGif from "@/public/assets/gif/pink-bg.gif";
-import heartGif from "@/public/assets/gif/heart.gif";
-import tickGif from "@/public/assets/gif/tick.gif";
-import { processMobileNumber } from "@/utils/phoneNumber";
-import { FaHeart } from "react-icons/fa";
-import PlanYourEvent from "@/components/screens/PlanYourEvent";
-import DecorPackageCard from "@/components/cards/DecorPackageCard";
-import Head from "next/head";
-import Testimonials from "@/components/screens/Testimonials";
-import VendorUserSection from "@/pages/reuseableComponents/VendorUserSection";
-import { LandingPageSkeleton } from "@/components/skeletons/landing_page";
 
 function Home({ packages }) {
   const [isLoading, setIsLoading] = useState(true);

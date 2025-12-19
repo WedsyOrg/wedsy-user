@@ -1,14 +1,14 @@
-import React, {useEffect, useState, useCallback, useMemo, useRef} from "react";
-import Image from "next/image";
-import {BsArrowRight} from "react-icons/bs";
-import Link from "next/link";
-import {useRouter} from "next/router";
-import Head from "next/head";
-import EventHowItWorks from "@/components/screens/EventHowItWorks";
 import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
-import {EventPageSkeleton} from "@/components/skeletons/event";
-import {loadGoogleMaps} from "@/utils/loadGoogleMaps";
-import {formatDate, sortEventsByDate} from "@/utils/common";
+import EventHowItWorks from "@/components/screens/EventHowItWorks";
+import { EventPageSkeleton } from "@/components/skeletons/event";
+import { formatDate, sortEventsByDate } from "@/utils/common";
+import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
+import Head from "next/head";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BsArrowRight } from "react-icons/bs";
 
 // Step 1
 const EventFormStep1 = React.memo(function EventFormStep1({

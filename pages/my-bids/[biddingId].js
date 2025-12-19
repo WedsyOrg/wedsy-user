@@ -1,20 +1,17 @@
-import UserProfileHeader from "@/components/layout/UserProfileHeader";
+import DesktopSubHeader from "@/components/layout/DesktopSubHeader";
 import { toPriceString } from "@/utils/text";
 import { Button, Label } from "flowbite-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import DesktopSubHeader from "@/components/layout/DesktopSubHeader";
 import {
   MdChevronRight,
   MdClear,
   MdEdit,
-  MdExpandLess,
-  MdExpandMore,
   MdOutlineChevronRight,
   MdOutlineKeyboardArrowDown,
   MdOutlineKeyboardArrowUp,
   MdOutlineLocationOn,
-  MdPersonOutline,
+  MdPersonOutline
 } from "react-icons/md";
 import { RxDashboard } from "react-icons/rx";
 

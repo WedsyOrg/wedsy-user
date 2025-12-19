@@ -1,12 +1,11 @@
-import { Dropdown, Navbar } from "flowbite-react";
-import { FaRegUserCircle } from "react-icons/fa";
-import { useEffect, useMemo, useRef, useState } from "react";
-import styles from "./Header.module.css";
-import Link from "next/link";
-import { BiLogIn, BiLogOut } from "react-icons/bi";
-import { useRouter } from "next/router";
-import { FiSearch } from "react-icons/fi";
 import SearchBar from "@/components/searchBar/SearchBar";
+import { Dropdown } from "flowbite-react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { BiLogIn, BiLogOut } from "react-icons/bi";
+import { FaRegUserCircle } from "react-icons/fa";
+import { FiSearch } from "react-icons/fi";
 
 export default function Header({ userLoggedIn, user, Logout }) {
   const router = useRouter();

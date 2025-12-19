@@ -1,11 +1,10 @@
-import { Dropdown, Select, Checkbox, Label } from "flowbite-react";
+import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
+import SearchBar from "@/components/searchBar/SearchBar";
+import { toPriceString } from "@/utils/text";
+import { Checkbox, Dropdown, Label, Select } from "flowbite-react";
 import { useRouter } from "next/router";
-import Head from "next/head";
 import { useEffect, useState } from "react";
 import { FaMapMarkerAlt, FaStar } from "react-icons/fa";
-import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
-import { toPriceString } from "@/utils/text";
-import SearchBar from "@/components/searchBar/SearchBar";
 
 function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   const router = useRouter();

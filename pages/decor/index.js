@@ -1,19 +1,9 @@
 import DecorCard from "@/components/cards/DecorCard";
-import DecorQuotation from "@/components/screens/DecorQuotation";
-import PlanYourEvent from "@/components/screens/PlanYourEvent";
 import { processMobileNumber } from "@/utils/phoneNumber";
-import { toProperCase } from "@/utils/text";
-import { Spinner } from "flowbite-react";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { AiOutlinePlus } from "react-icons/ai";
-import { BsArrowLeftShort, BsArrowRightShort } from "react-icons/bs";
-import { FaInfinity } from "react-icons/fa";
-import styles from "@/styles/DecorPage.module.css";
-import FAQAccordion from "@/components/accordion/FAQAccordion";
-import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
 
 function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightList = [] }) {
   const [spotlightIndex, setSpotlightIndex] = useState(0);

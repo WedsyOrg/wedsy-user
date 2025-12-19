@@ -1,12 +1,8 @@
-import UserProfileHeader from "@/components/layout/UserProfileHeader";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import {
-  MdChevronRight,
-  MdExpandLess,
-  MdExpandMore,
   MdOutlineChevronRight,
-  MdOutlineKeyboardBackspace,
+  MdOutlineKeyboardBackspace
 } from "react-icons/md";
 
 export default function Orders({ user }) {

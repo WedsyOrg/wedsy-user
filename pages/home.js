@@ -1,9 +1,9 @@
 import FAQAccordion from "@/components/accordion/FAQAccordion";
 import PlanYourEvent from "@/components/screens/PlanYourEvent";
 import { Button } from "flowbite-react";
-import Image from "next/image";
 import Head from "next/head";
-import { MdArrowRight, MdArrowRightAlt } from "react-icons/md";
+import Image from "next/image";
+import { MdArrowRightAlt } from "react-icons/md";
 
 function Home({ categoryList }) {
   // Generate FAQ Schema

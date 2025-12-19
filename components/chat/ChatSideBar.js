@@ -1,9 +1,9 @@
+import SearchBar from "@/components/searchBar/SearchBar";
 import { formatMessageTime } from "@/utils/chat";
 import { Avatar } from "flowbite-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
-import SearchBar from "@/components/searchBar/SearchBar";
 
 export default function ChatSideBar({}) {
   const [chats, setChats] = useState([]);

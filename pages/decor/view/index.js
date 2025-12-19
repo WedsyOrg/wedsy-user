@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/router";
-import Head from "next/head";
-import { Checkbox, Label, Dropdown } from "flowbite-react";
 import DecorCard from "@/components/cards/DecorCard";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
-import Masonry from "react-masonry-css";
 import { SpecificCategorySkeleton } from "@/components/skeletons/wedding-store/specific-category";
+import { Dropdown } from "flowbite-react";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { useEffect, useRef, useState } from "react";
+import Masonry from "react-masonry-css";
 
 // SEO Configuration for Different Categories
 const CATEGORY_SEO_MAP = {

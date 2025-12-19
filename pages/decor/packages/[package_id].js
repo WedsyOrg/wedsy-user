@@ -1,31 +1,18 @@
-import { AiFillHeart } from "react-icons/ai";
+import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
 import {
-  Button,
   Checkbox,
   Dropdown,
   Label,
   Modal,
-  Rating,
   Select,
-  Table,
-  TextInput,
-  Tooltip,
+  TextInput
 } from "flowbite-react";
-import Image from "next/image";
-import SearchBar from "@/components/searchBar/SearchBar";
-import { useEffect, useState } from "react";
-import {
-  BsArrowLeftShort,
-  BsArrowRightShort,
-  BsChevronDown,
-  BsInfoCircle,
-} from "react-icons/bs";
-import { useRouter } from "next/router";
-import Link from "next/link";
-import { toProperCase } from "@/utils/text";
 import Head from "next/head";
-import DecorPackageCard from "@/components/cards/DecorPackageCard";
-import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { AiFillHeart } from "react-icons/ai";
 
 const CATEGORY_OPTIONS = [
   "Reception",

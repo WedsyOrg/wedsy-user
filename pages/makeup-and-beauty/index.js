@@ -1,22 +1,19 @@
-import React,{Suspense} from "react";
 import FAQAccordion from "@/components/accordion/FAQAccordion";
 import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
+import SearchBar from "@/components/searchBar/SearchBar";
 import { MakeupAndBeautyPageSkeleton } from "@/components/skeletons/makeup-store";
 import { toPriceString } from "@/utils/text";
-import Link from "next/link";
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaArrowLeft,
   FaArrowRight,
-  FaChevronLeft,
-  FaChevronRight,
   FaMapMarkerAlt,
-  FaStar,
+  FaStar
 } from "react-icons/fa";
 import { MdChevronRight } from "react-icons/md";
-import SearchBar from "@/components/searchBar/SearchBar";
 const VendorUserSection = React.lazy(() => import("@/pages/reuseableComponents/VendorUserSection"));
 
 

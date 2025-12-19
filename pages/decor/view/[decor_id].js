@@ -1,4 +1,8 @@
-import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import ImageFillCard from "@/components/cards/ImageFillCard";
+import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
+import CreateEventModal from "@/components/modal/CreateEventModal";
+import SimilarDecor from "@/components/screens/SimilarDecor";
+import { toProperCase } from "@/utils/text";
 import {
   Button,
   Checkbox,
@@ -10,17 +14,13 @@ import {
   TextInput,
   Tooltip,
 } from "flowbite-react";
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { BsChevronDown, BsInfoCircle } from "react-icons/bs";
-import { useRouter } from "next/router";
-import { toProperCase } from "@/utils/text";
 import Head from "next/head";
-import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
-import ImageFillCard from "@/components/cards/ImageFillCard";
-import SimilarDecor from "@/components/screens/SimilarDecor";
-import CreateEventModal from "@/components/modal/CreateEventModal";
+import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import { BsChevronDown, BsInfoCircle } from "react-icons/bs";
 import { MdOutlinePlayCircle } from "react-icons/md";
 
 function DecorListing({

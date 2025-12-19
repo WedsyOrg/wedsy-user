@@ -1,16 +1,16 @@
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
+import LoginModal from "@/components/layout/LoginModal";
+import LoginModalv2 from "@/components/layout/LoginModalv2";
+import { EventPageSkeleton } from "@/components/skeletons/event";
+import { BiddingPageSkeleton, MakeupAndBeautyPageSkeleton, MakeupArtistsPageSkeleton, WedsyPackagesPageSkeleton } from "@/components/skeletons/makeup-store";
+import { DecorPageSkeleton } from "@/components/skeletons/wedding-store";
 import "@/styles/globals.css";
 import { Spinner } from "flowbite-react";
-import { useRouter } from "next/router";
-import { MakeupAndBeautyPageSkeleton, WedsyPackagesPageSkeleton, MakeupArtistsPageSkeleton, BiddingPageSkeleton } from "@/components/skeletons/makeup-store";
-import { EventPageSkeleton } from "@/components/skeletons/event";
-import { DecorPageSkeleton } from "@/components/skeletons/wedding-store";
-import { useEffect, useState } from "react";
-import Script from "next/script";
-import LoginModal from "@/components/layout/LoginModal";
 import Head from "next/head";
-import LoginModalv2 from "@/components/layout/LoginModalv2";
+import { useRouter } from "next/router";
+import Script from "next/script";
+import { useEffect, useState } from "react";
 
 function App({ Component, pageProps }) {
   const router = useRouter();

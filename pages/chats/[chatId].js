@@ -1,24 +1,9 @@
-import FAQAccordion from "@/components/accordion/FAQAccordion";
 import ChatSideBar from "@/components/chat/ChatSideBar";
 import ChatWindow from "@/components/chat/ChatWindow";
-import { toPriceString } from "@/utils/text";
-import { Modal } from "flowbite-react";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import {
-  FaArrowLeft,
-  FaArrowRight,
-  FaChevronLeft,
-  FaChevronRight,
-  FaMapMarkerAlt,
-  FaSearch,
-  FaStar,
-} from "react-icons/fa";
-import {
-  MdChevronRight,
-  MdClear,
-  MdOutlineKeyboardBackspace,
+  MdOutlineKeyboardBackspace
 } from "react-icons/md";
 
 function Chat({ user }) {

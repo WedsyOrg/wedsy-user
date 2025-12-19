@@ -1,17 +1,12 @@
-import UserProfileHeader from "@/components/layout/UserProfileHeader";
 import { toPriceString } from "@/utils/text";
 import { Button, Label, TextInput } from "flowbite-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import {
-  MdChevronRight,
-  MdExpandLess,
-  MdExpandMore,
-  MdOutlineChevronRight,
   MdOutlineKeyboardBackspace,
   MdOutlineLocationOn,
-  MdPersonOutline,
+  MdPersonOutline
 } from "react-icons/md";
 import { RxDashboard } from "react-icons/rx";
 

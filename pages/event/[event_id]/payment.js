@@ -1,11 +1,11 @@
+import paymentFailureGif from "@/public/assets/gif/payment-failure.gif";
+import paymentSuccessGif from "@/public/assets/gif/payment-success.gif";
 import { checkValidEmail } from "@/utils/email";
 import { Label, Modal, Radio, TextInput } from "flowbite-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import paymentSuccessGif from "@/public/assets/gif/payment-success.gif";
-import paymentFailureGif from "@/public/assets/gif/payment-failure.gif";
-import Link from "next/link";
 
 export default function EventTool({ user }) {
   const router = useRouter();

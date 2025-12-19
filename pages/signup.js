@@ -1,9 +1,8 @@
-import { Spinner } from "flowbite-react";
-import Image from "next/image";
-import { useState } from "react";
-import { useRouter } from "next/router";
 import { processMobileNumber } from "@/utils/phoneNumber";
+import { Spinner } from "flowbite-react";
 import Head from "next/head";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
 export default function Signup({ CheckLogin }) {
   const router = useRouter();

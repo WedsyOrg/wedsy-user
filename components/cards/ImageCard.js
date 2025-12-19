@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 export default function ImageCard({ src, className }) {
   const [isEnlarged, setIsEnlarged] = useState(false);
   useEffect(() => {

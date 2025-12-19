@@ -1,12 +1,11 @@
-import UserSidebar from "@/components/layout/UserSidebar";
 import { checkValidEmail } from "@/utils/email";
 import { uploadFile } from "@/utils/file";
 import { processMobileNumber } from "@/utils/phoneNumber";
-import { Avatar, Button, TextInput } from "flowbite-react";
-import Image from "next/image";
+import { Button, TextInput } from "flowbite-react";
 import Head from "next/head";
-import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/router";
+import { useEffect, useRef, useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
 import { BiEditAlt } from "react-icons/bi";
 

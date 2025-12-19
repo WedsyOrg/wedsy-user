@@ -1,8 +1,5 @@
 import DecorCard from "@/components/cards/DecorCard";
-import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { AiOutlinePlusSquare } from "react-icons/ai";
 
 function Wishlist() {
   const [list, setList] = useState([]);

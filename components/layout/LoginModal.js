@@ -1,12 +1,8 @@
 "use client";
 
 import {
-  Button,
-  Checkbox,
-  Label,
   Modal,
-  Spinner,
-  TextInput,
+  Spinner
 } from "flowbite-react";
 import { useState } from "react";
 

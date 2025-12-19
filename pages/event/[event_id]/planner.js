@@ -3,18 +3,18 @@ import CustomItemsTable from "@/components/event-tool/CustomItemsTable";
 import DecorItemsList from "@/components/event-tool/DecorItemsList";
 import DecorPackagesList from "@/components/event-tool/DecorPackagesList";
 import EventDayInfo from "@/components/event-tool/EventDayInfo";
+import EventEditModal from "@/components/event-tool/EventEditModal";
 import EventSummaryTable from "@/components/event-tool/EventSummaryTable";
 import EventToolHeader from "@/components/event-tool/EventToolHeader";
-import EventEditModal from "@/components/event-tool/EventEditModal";
 import EventToolSidebar from "@/components/event-tool/EventToolSidebar";
 import MandatoryItemsList from "@/components/event-tool/MandatoryItemsList";
 import NotesModal from "@/components/event-tool/NotesModal";
 import SetupLocationImageModal from "@/components/event-tool/SetupLocationImageModal";
 import TotalSummaryTable from "@/components/event-tool/TotalSummaryTable";
-import {toPriceString} from "@/utils/text";
+import { toPriceString } from "@/utils/text";
 import Link from "next/link";
-import {useRouter} from "next/router";
-import React, {useEffect, useRef, useState} from "react";
+import { useRouter } from "next/router";
+import React, { useEffect, useRef, useState } from "react";
 
 export default function EventTool({user}) {
   const divRef = useRef(null);

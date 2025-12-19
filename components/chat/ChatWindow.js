@@ -1,8 +1,8 @@
+import { toPriceString } from "@/utils/text";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { VscSend } from "react-icons/vsc";
 import ChatMessage from "./ChatMessage";
-import { toPriceString } from "@/utils/text";
 
 export default function ChatWindow({ user }) {
   const [chat, setChat] = useState([]);

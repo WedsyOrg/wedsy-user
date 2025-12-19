@@ -1,9 +1,8 @@
-import UserSidebar from "@/components/layout/UserSidebar";
 import { toProperCase } from "@/utils/text";
-import { Button, Pagination, Select, Table } from "flowbite-react";
+import { Pagination, Select, Table } from "flowbite-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { BsBell } from "react-icons/bs";
 
 export default function Payments({ user }) {

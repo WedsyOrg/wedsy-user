@@ -10,17 +10,13 @@ import { BsShareFill } from "react-icons/bs";
 import {
   FaArrowLeft,
   FaArrowRight,
-  FaChevronLeft,
-  FaChevronRight,
   FaHeart,
   FaMapMarkerAlt,
   FaRegHeart,
   FaRegStar,
-  FaSearch,
-  FaShareAlt,
-  FaStar,
+  FaStar
 } from "react-icons/fa";
-import { MdChevronRight, MdClear } from "react-icons/md";
+import { MdClear } from "react-icons/md";
 import { RWebShare } from "react-web-share";
 
 function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {

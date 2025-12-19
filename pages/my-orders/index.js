@@ -1,4 +1,3 @@
-import UserProfileHeader from "@/components/layout/UserProfileHeader";
 import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
