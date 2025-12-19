@@ -1,18 +1,69 @@
 import { Dropdown, Navbar } from "flowbite-react";
 import { FaRegUserCircle } from "react-icons/fa";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./Header.module.css";
 import Link from "next/link";
 import { BiLogIn, BiLogOut } from "react-icons/bi";
 import { useRouter } from "next/router";
 import { FiSearch } from "react-icons/fi";
+import SearchBar from "@/components/searchBar/SearchBar";
 
 export default function Header({ userLoggedIn, user, Logout }) {
   const router = useRouter();
   const [variant, setVariant] = useState("light");
   const [displayHeaderLinks, setDisplayHeaderLinks] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+  const searchWrapRef = useRef(null);
   const navbarRef = useRef();
+
+  const SEARCH_ITEMS = useMemo(
+    () => [
+      { label: "Wedding Store (Decor)", href: "/decor", keywords: ["decor", "wedding store", "wedding", "store"] },
+      { label: "Decor Packages", href: "/decor/packages", keywords: ["decor", "packages", "package"] },
+      { label: "Makeup Artist Store", href: "/makeup-and-beauty", keywords: ["makeup", "artist", "beauty", "mua"] },
+      { label: "Makeup Artists", href: "/makeup-and-beauty/artists", keywords: ["makeup", "artist", "artists", "beauty"] },
+      { label: "My Account", href: "/my-account", keywords: ["my", "account", "profile"] },
+      { label: "My Orders", href: "/my-orders", keywords: ["my", "orders", "order"] },
+      { label: "My Bids", href: "/my-bids", keywords: ["my", "bids", "bid"] },
+      { label: "My Payments", href: "/my-payments", keywords: ["my", "payments", "payment", "invoice"] },
+      { label: "Wishlist", href: "/wishlist", keywords: ["my", "wishlist", "saved", "favorites", "favourites"] },
+      { label: "Events", href: "/event", keywords: ["event", "events", "planner"] },
+      { label: "Chats", href: "/chats", keywords: ["chat", "chats", "messages"] },
+      { label: "Login", href: "/login", keywords: ["login", "sign in", "signin"] },
+      { label: "Signup", href: "/signup", keywords: ["signup", "sign up", "register"] },
+    ],
+    []
+  );
+
+  const suggestions = useMemo(() => {
+    const q = searchValue.trim().toLowerCase();
+    if (!q) return [];
+
+    const scored = SEARCH_ITEMS.map((item) => {
+      const hay = [item.label, ...(item.keywords || [])].join(" ").toLowerCase();
+      let score = 0;
+      if (item.label.toLowerCase().startsWith(q)) score += 3;
+      if (hay.startsWith(q)) score += 2;
+      if (hay.includes(q)) score += 1;
+      return { item, score };
+    })
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8)
+      .map((x) => x.item);
+
+    return scored;
+  }, [SEARCH_ITEMS, searchValue]);
+
+  const goToFirstSuggestion = () => {
+    if (!suggestions.length) return;
+    const first = suggestions[0];
+    setShowSearchSuggestions(false);
+    setSearchValue("");
+    router.push(first.href);
+  };
   useEffect(() => {
     const myElement = document.getElementById("mainDiv");
     const isElementVisible = () => {
@@ -50,9 +101,16 @@ export default function Header({ userLoggedIn, user, Logout }) {
         document.getElementById("nav-div").classList.add("hidden");
         setIsExpanded(false);
       }
+      if (searchWrapRef.current && !searchWrapRef.current.contains(event.target)) {
+        setShowSearchSuggestions(false);
+      }
     };
 
     if (isExpanded) {
+      document.body.addEventListener("click", handleClickOutside);
+      document.body.addEventListener("touchstart", handleClickOutside);
+    }
+    if (showSearchSuggestions) {
       document.body.addEventListener("click", handleClickOutside);
       document.body.addEventListener("touchstart", handleClickOutside);
     }
@@ -60,7 +118,7 @@ export default function Header({ userLoggedIn, user, Logout }) {
       document.body.removeEventListener("click", handleClickOutside);
       document.body.removeEventListener("touchstart", handleClickOutside);
     };
-  }, [isExpanded]);
+  }, [isExpanded, showSearchSuggestions]);
 
   return router?.pathname === `/my-payments/[paymentId]/invoice` ? null : (
     <>
@@ -100,6 +158,9 @@ export default function Header({ userLoggedIn, user, Logout }) {
                 </Dropdown.Item>
                 <Dropdown.Item as={Link} href="/my-orders">
                   Orders
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} href="/wishlist">
+                  Wishlist
                 </Dropdown.Item>
                 <Dropdown.Item as={Link} href="/event">
                   Events
@@ -162,16 +223,54 @@ export default function Header({ userLoggedIn, user, Logout }) {
           {/* Right: Search & User Icon */}
           <div className="flex items-center gap-32">
             {/* Search Bar */}
-            <div className="relative w-[320px] h-[34px] hidden lg:block">
-              <FiSearch className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400" size={18} />
-              <input
-                type="text"
-                placeholder="Looking for something specific ?"
-                className="w-full h-full pl-10 pr-4 rounded-full border border-gray-200 bg-white shadow-sm text-sm placeholder:text-xs placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#840032] font-light"
-                style={{
-                  fontFamily: 'Montserrat, sans-serif',
+            <div ref={searchWrapRef} className="hidden lg:block w-[320px] relative">
+              <SearchBar
+                value={searchValue}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setSearchValue(v);
+                  setShowSearchSuggestions(!!v.trim());
                 }}
+                onFocus={() => {
+                  if (searchValue.trim()) setShowSearchSuggestions(true);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    goToFirstSuggestion();
+                  }
+                  if (e.key === "Escape") {
+                    setShowSearchSuggestions(false);
+                  }
+                }}
+                placeholder="Search..."
+                inputClassName="text-sm"
               />
+              {/* keyboard handling */}
+              <div className="hidden">
+                {/* placeholder for future a11y combobox wiring */}
+              </div>
+
+              {showSearchSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
+                  {suggestions.map((sug) => (
+                    <button
+                      key={sug.href}
+                      type="button"
+                      className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50"
+                      style={{ fontFamily: "Montserrat, sans-serif" }}
+                      onClick={() => {
+                        setShowSearchSuggestions(false);
+                        setSearchValue("");
+                        router.push(sug.href);
+                      }}
+                    >
+                      {sug.label}
+                      <span className="text-gray-400 ml-2">{sug.href}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             {/* User Icon */}
             <Dropdown
@@ -193,6 +292,7 @@ export default function Header({ userLoggedIn, user, Logout }) {
                     My Bids
                   </Dropdown.Item>
                   <Dropdown.Item as={Link} href="/my-orders" className="hover:bg-gray-50 hover:cursor-pointer">Orders</Dropdown.Item>
+                  <Dropdown.Item as={Link} href="/wishlist" className="hover:bg-gray-50 hover:cursor-pointer">Wishlist</Dropdown.Item>
                   <Dropdown.Item as={Link} href="/event" className="hover:bg-gray-50 hover:cursor-pointer">Events</Dropdown.Item>
                   <Dropdown.Divider />
                   <Dropdown.Item className="flex gap-2 hover:bg-gray-50 hover:cursor-pointer" onClick={Logout}>

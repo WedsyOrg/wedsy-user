@@ -2,9 +2,10 @@ import { Dropdown, Select, Checkbox, Label } from "flowbite-react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { useEffect, useState } from "react";
-import { FaMapMarkerAlt, FaSearch, FaStar } from "react-icons/fa";
+import { FaMapMarkerAlt, FaStar } from "react-icons/fa";
 import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import { toPriceString } from "@/utils/text";
+import SearchBar from "@/components/searchBar/SearchBar";
 
 function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   const router = useRouter();
@@ -412,19 +413,13 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           <p className="font-medium text-base lg:text-lg">In Bangalore</p>
         </div>
         <div className="flex flex-col items-end gap-3 col-span-2 md:col-span-1">
-          <div className="relative w-full">
-            <button
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 p-2 rounded-full text-gray-500"
-              aria-label="Search"
-            >
-              <FaSearch size={14} className="sm:size-4" />
-            </button>
-            <input
-              type="text"
+          <div className="w-full">
+            <SearchBar
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search for makeup artist..."
-              className="w-full py-2 px-4 text-gray-700 rounded-full border-0 focus:ring-2 focus:ring-[#880E4F] focus:outline-none pl-10 sm:pl-12 shadow-md text-sm sm:text-base"
+              rounded="full"
+              inputClassName="border-0 shadow-md focus:ring-[#880E4F]"
             />
           </div>
           </div>

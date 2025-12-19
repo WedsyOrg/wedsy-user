@@ -13,10 +13,10 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaMapMarkerAlt,
-  FaSearch,
   FaStar,
 } from "react-icons/fa";
 import { MdChevronRight } from "react-icons/md";
+import SearchBar from "@/components/searchBar/SearchBar";
 const VendorUserSection = React.lazy(() => import("@/pages/reuseableComponents/VendorUserSection"));
 
 
@@ -680,39 +680,23 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               Bangalore, IN
             </h2>
           </div>
-          <div className="md:hidden relative w-full">
-            <button
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 p-2 rounded-full text-gray-500"
-              aria-label="Search"
-            >
-              <FaSearch size={16} />
-            </button>
-            <input
-              type="text"
+          <div className="md:hidden w-full">
+            <SearchBar
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-              }}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name..."
-              className="w-full py-2 px-4 text-gray-700 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#880E4F] focus:outline-none pl-12"
+              rounded="md"
+              inputClassName="focus:ring-[#880E4F]"
             />
           </div>
-          <div className="hidden md:block relative w-full max-w-sm">
-            <input
-              type="text"
+          <div className="hidden md:block w-full max-w-sm">
+            <SearchBar
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-              }}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name..."
-              className="w-full py-2 px-4 text-gray-700 rounded-full border border-gray-300 focus:ring-2 focus:ring-[#880E4F] focus:outline-none"
+              rounded="full"
+              inputClassName="focus:ring-[#880E4F]"
             />
-            <button
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#880E4F] p-2 rounded-full text-white hover:bg-[#6d0b3a]"
-              aria-label="Search"
-            >
-              <FaSearch size={16} />
-            </button>
           </div>
         </div>
       </div>

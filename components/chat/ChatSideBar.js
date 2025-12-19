@@ -2,7 +2,8 @@ import { formatMessageTime } from "@/utils/chat";
 import { Avatar } from "flowbite-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { FaSearch, FaWhatsapp } from "react-icons/fa";
+import { FaWhatsapp } from "react-icons/fa";
+import SearchBar from "@/components/searchBar/SearchBar";
 
 export default function ChatSideBar({}) {
   const [chats, setChats] = useState([]);
@@ -39,20 +40,11 @@ export default function ChatSideBar({}) {
         } flex-col bg-[#f4f4f4] relative`}
       >
         <div className="relative flex flex-row m-6">
-          <button
-            className="absolute left-2 top-1/2 transform -translate-y-1/2 p-2 rounded-full text-gray-500"
-            aria-label="Search"
-          >
-            <FaSearch size={16} />
-          </button>
-          <input
-            type="text"
+          <SearchBar
             value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-            }}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name..."
-            className="grow w-full py-2 px-4 text-gray-700 rounded-full border border-gray-300 focus:ring-0 focus:outline-none pl-12"
+            inputClassName="focus:ring-0"
           />
         </div>
         {chats
