@@ -42,9 +42,22 @@ export default function Orders({ user }) {
 
   const getStatus = (item) => {
     const s = item?.status || {};
-    if (s.lost) return { text: "BOOKING CANCELLED", color: "text-[#A20000]" };
-    if (s.completed) return { text: "COMPLETED", color: "text-[#2C7300]" };
-    if (s.finalized && !s.completed) return { text: "UPCOMING", color: "text-[#CE8C35]" };
+    // BOOKING CANCELLED (red)
+    if (s.lost === true || s.active === false) {
+      return { text: "BOOKING CANCELLED", color: "text-[#A20000]" };
+    }
+
+    // COMPLETED (green)
+    if (s.completed === true) {
+      return { text: "COMPLETED", color: "text-[#2C7300]" };
+    }
+
+    // UPCOMING (yellow)
+    if (s.finalized === true) {
+      return { text: "UPCOMING", color: "text-[#CE8C35]" };
+    }
+
+    // Default
     return { text: "BIDDING", color: "text-[#2B3F6C]" };
   };
 
