@@ -283,7 +283,8 @@ export default function Payments({ user }) {
                         ₹{item.amount / 100}
                       </Table.Cell>{" "}
                       <Table.Cell className="font-medium py-1 px-2 md:px-6 md:py-4  md:hidden">
-                        {item.status === "paid" ? (
+                        {item.status === "paid" &&
+                        (item.paymentFor === "event" || item.paymentFor === "makeup-and-beauty") ? (
                           <Link
                             href={`/my-payments/${item._id}/invoice`}
                             className="text-black font-medium hover:text-blue-500"
@@ -310,7 +311,9 @@ export default function Payments({ user }) {
                         {toProperCase(item.status.split("_").join(" "))}
                       </Table.Cell>
                       <Table.Cell className="py-1 px-2 md:px-6 md:py-4 hidden md:table-cell">
-                        {item.status === "paid" && (
+                        {item.status === "paid" &&
+                          (item.paymentFor === "event" ||
+                            item.paymentFor === "makeup-and-beauty") && (
                           <Link
                             href={`/my-payments/${item._id}/invoice`}
                             className="text-black font-medium hover:text-blue-500"
