@@ -1,4 +1,3 @@
-import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { MdChevronRight, MdExpandLess, MdExpandMore } from "react-icons/md";
@@ -82,7 +81,6 @@ export default function Orders({ user }) {
   }, [eventId]);
   return (
     <>
-    <MobileStickyFooter />
       <div className="flex flex-col bg-gray-100 min-h-[100vh]">
         {/* <UserProfileHeader display={"my-orders"} /> */}
         <div className="flex flex-row justify-around items-center bg-[#2B2B2BE5] px-4 md:px-24 py-4 text-white">

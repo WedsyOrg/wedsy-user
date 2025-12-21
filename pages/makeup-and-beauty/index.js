@@ -1,5 +1,4 @@
 import FAQAccordion from "@/components/accordion/FAQAccordion";
-import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import SearchBar from "@/components/searchBar/SearchBar";
 import { MakeupAndBeautyPageSkeleton } from "@/components/skeletons/makeup-store";
 import { toPriceString } from "@/utils/text";
@@ -209,7 +208,6 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       </Head>
-      <MobileStickyFooter />
       {selectedPackages?.reduce((accumulator, item) => {
         return accumulator + item.quantity;
       }, 0) > 0 && (

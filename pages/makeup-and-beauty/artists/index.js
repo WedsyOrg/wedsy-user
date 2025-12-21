@@ -1,4 +1,3 @@
-import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import SearchBar from "@/components/searchBar/SearchBar";
 import { toPriceString } from "@/utils/text";
 import { Checkbox, Dropdown, Label, Select } from "flowbite-react";
@@ -298,10 +297,6 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
 
   return (
     <>
-      <div className="md:hidden">
-      <MobileStickyFooter />
-      </div>
-
       <div className="w-full relative hidden md:block pt-[16.2%]">
         <img
           className="absolute top-0 left-0 w-full object-cover"

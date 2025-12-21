@@ -1,4 +1,3 @@
-import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
 import { toPriceString, toProperCase } from "@/utils/text";
 import { Button, Label, Select, TextInput } from "flowbite-react";
@@ -421,7 +420,6 @@ function MakeupAndBeauty({ user }) {
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://www.wedsy.in/makeup-and-beauty/wedsy-packages/checkout" />
       </Head>
-      <MobileStickyFooter />
       <div className="md:hidden flex flex-col bg-[#F4F4F4]">
         <div className="grid grid-cols-3 divide-x bg-white">
           <div

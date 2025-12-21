@@ -2,6 +2,7 @@ import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import LoginModal from "@/components/layout/LoginModal";
 import LoginModalv2 from "@/components/layout/LoginModalv2";
+import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import { EventPageSkeleton } from "@/components/skeletons/event";
 import { BiddingPageSkeleton, MakeupAndBeautyPageSkeleton, MakeupArtistsPageSkeleton, WedsyPackagesPageSkeleton } from "@/components/skeletons/makeup-store";
 import { DecorPageSkeleton } from "@/components/skeletons/wedding-store";
@@ -223,6 +224,7 @@ function App({ Component, pageProps }) {
             )}
           </main>
           <Footer />
+          <MobileStickyFooter />
         </div>
     </>
   );

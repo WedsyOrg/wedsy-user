@@ -1,4 +1,3 @@
-import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
 import { Label, Select, TextInput, Textarea } from "flowbite-react";
 import Head from "next/head";
@@ -438,7 +437,6 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://www.wedsy.in/makeup-and-beauty/bidding" />
       </Head>
-      <MobileStickyFooter />
       {display === "HowItWorks" && (
         <>
           <div className="md:hidden relative">

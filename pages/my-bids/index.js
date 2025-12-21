@@ -1,4 +1,3 @@
-import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import { Spinner } from "flowbite-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -63,7 +62,6 @@ export default function Orders({ user }) {
 
   return (
     <>
-      <MobileStickyFooter />
       <div className="flex flex-col bg-gray-100 min-h-[100vh]">
         <div className="flex flex-row justify-around items-center bg-[#2B2B2BE5] px-4 md:px-24 py-4 text-white">
           <p

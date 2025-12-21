@@ -1,4 +1,3 @@
-import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
 import { toPriceString } from "@/utils/text";
 import { Label, Modal, TextInput } from "flowbite-react";
@@ -554,7 +553,6 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       </Head>
-      <MobileStickyFooter />
       {selectedPackages?.reduce((accumulator, item) => {
         return accumulator + item.quantity;
       }, 0) > 0 && (

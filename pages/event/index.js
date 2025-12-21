@@ -1,4 +1,3 @@
-import MobileStickyFooter from "@/components/layout/MobileStickyFooter";
 import EventHowItWorks from "@/components/screens/EventHowItWorks";
 import { EventPageSkeleton } from "@/components/skeletons/event";
 import { formatDate, sortEventsByDate } from "@/utils/common";
@@ -838,7 +837,6 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
     return (
       <>
         <EventPageSkeleton formStep={formStep} />
-        <MobileStickyFooter />
       </>
     );
   }
@@ -1099,7 +1097,6 @@ Utilize the tool to shortlist and choose your decorations effortlessly - all in 
           )}
         </div>
 
-        <MobileStickyFooter />
       </div>
       <div className="mb-20">
         <EventHowItWorks />
