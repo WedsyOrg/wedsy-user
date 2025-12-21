@@ -18,6 +18,9 @@ module.exports = {
         marquee2: "marquee2 25s linear infinite",
         slideIn: "slideIn 2s ease-in-out infinite",
         shimmer: "shimmer 2s infinite",
+        heartFill: "heartFill 0.6s ease-out forwards",
+        heartEmpty: "heartEmpty 0.6s ease-out forwards",
+        heartBeat: "heartBeat 0.8s ease-in-out",
       },
       keyframes: {
         marquee: {
@@ -35,6 +38,21 @@ module.exports = {
         shimmer: {
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(100%)" },
+        },
+        heartFill: {
+          "0%": { opacity: 0, transform: "scale(0)" },
+          "50%": { transform: "scale(1.3)" },
+          "100%": { opacity: 1, transform: "scale(1)" },
+        },
+        heartEmpty: {
+          "0%": { opacity: 1, transform: "scale(1)" },
+          "50%": { transform: "scale(0.7)" },
+          "100%": { opacity: 0, transform: "scale(0)" },
+        },
+        heartBeat: {
+          "0%, 100%": { transform: "scale(1)" },
+          "25%": { transform: "scale(1.1)" },
+          "50%": { transform: "scale(1)" },
         },
       },
     },

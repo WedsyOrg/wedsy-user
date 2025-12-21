@@ -2,6 +2,7 @@ import ImageFillCard from "@/components/cards/ImageFillCard";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
 import CreateEventModal from "@/components/modal/CreateEventModal";
 import SimilarDecor from "@/components/screens/SimilarDecor";
+import Toast from "@/components/other/Toast";
 import { toProperCase } from "@/utils/text";
 import {
   Button,
@@ -83,6 +84,10 @@ function DecorListing({
   const [showEventModal, setShowEventModal] = useState(false);
   const [platformPrice, setPlatformPrice] = useState({ price: 0, image: "" });
   const [flooringPrice, setFlooringPrice] = useState([]);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [heartAnimating, setHeartAnimating] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
 
   const fetchPlatformInfo = () => {
     setLoading(true);
@@ -146,6 +151,9 @@ function DecorListing({
       });
   };
   const AddToWishlist = () => {
+    // Trigger heart animation immediately for smooth UX
+    setHeartAnimating(true);
+    
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/wishlist/decor`, {
       method: "POST",
       headers: {
@@ -158,14 +166,24 @@ function DecorListing({
       .then((response) => {
         if (response.message === "success") {
           setIsAddedToWishlist(true);
-          alert("Decor added to wishlist!");
+          setToastMessage("Added to Wishlist");
+          setShowToast(true);
+          // Stop animation after transition completes
+          setTimeout(() => setHeartAnimating(false), 600);
+        } else {
+          setHeartAnimating(false);
         }
       })
       .catch((error) => {
         console.error("There was a problem with the fetch operation:", error);
+        setHeartAnimating(false);
       });
   };
   const RemoveFromWishList = () => {
+    // Trigger reverse heart animation
+    setIsRemoving(true);
+    setHeartAnimating(true);
+    
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/wishlist/decor`, {
       method: "DELETE",
       headers: {
@@ -177,12 +195,23 @@ function DecorListing({
       .then((response) => (response.ok ? response.json() : null))
       .then((response) => {
         if (response.message === "success") {
-          setIsAddedToWishlist(false);
-          alert("Decor removed from wishlist!");
+          setToastMessage("Removed from Wishlist");
+          setShowToast(true);
+          // Wait for animation to complete before updating state
+          setTimeout(() => {
+            setIsAddedToWishlist(false);
+            setHeartAnimating(false);
+            setIsRemoving(false);
+          }, 600);
+        } else {
+          setHeartAnimating(false);
+          setIsRemoving(false);
         }
       })
       .catch((error) => {
         console.error("There was a problem with the fetch operation:", error);
+        setHeartAnimating(false);
+        setIsRemoving(false);
       });
   };
   const AddToEvent = ({
@@ -521,7 +550,7 @@ function DecorListing({
   function WishlistButton({}) {
     return (
       <Button
-        className={`focus:outline-none focus:ring-0 outline-none bg-white enabled:hover:bg-white text-black shadow-md`}
+        className={`focus:outline-none focus:ring-0 outline-none bg-white enabled:hover:bg-white text-black shadow-md transition-all duration-200`}
         onClick={() => {
           if (userLoggedIn) {
             isAddedToWishlist ? RemoveFromWishList() : AddToWishlist();
@@ -533,11 +562,39 @@ function DecorListing({
       >
         {isAddedToWishlist ? "REMOVE FROM FAVORITES" : "ADD TO FAVOURITES"}
         &nbsp;
-        {isAddedToWishlist ? (
-          <AiFillHeart size={20} className="text-rose-900" />
-        ) : (
-          <AiOutlineHeart size={20} className="text-rose-900" />
-        )}
+        <span className="relative inline-flex items-center justify-center w-5 h-5">
+          {isAddedToWishlist ? (
+            <>
+              <AiFillHeart 
+                size={20} 
+                className={`text-rose-900 absolute transition-all duration-300 ${
+                  heartAnimating && isRemoving ? "opacity-0 scale-0 animate-heartEmpty" : "opacity-100 scale-100"
+                }`}
+              />
+              {heartAnimating && isRemoving && (
+                <AiOutlineHeart 
+                  size={20} 
+                  className="text-rose-900 absolute animate-heartFill"
+                />
+              )}
+            </>
+          ) : (
+            <>
+              <AiOutlineHeart 
+                size={20} 
+                className={`text-rose-900 absolute transition-all duration-300 ${
+                  heartAnimating ? "opacity-0 scale-0" : "opacity-100 scale-100"
+                }`} 
+              />
+              {heartAnimating && (
+                <AiFillHeart 
+                  size={20} 
+                  className="text-rose-900 absolute animate-heartFill"
+                />
+              )}
+            </>
+          )}
+        </span>
       </Button>
     );
   }
@@ -656,6 +713,12 @@ function DecorListing({
         userLoggedIn={userLoggedIn}
         setOpenLoginModal={setOpenLoginModal}
         fetchEvents={fetchEvents}
+      />
+      <Toast
+        message={toastMessage}
+        show={showToast}
+        onClose={() => setShowToast(false)}
+        isRemoved={toastMessage === "Removed from Wishlist"}
       />
       <DecorDisclaimer />
       <Modal
