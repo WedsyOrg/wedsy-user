@@ -704,14 +704,17 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           )
           .slice(0, 9)
           ?.map((item, index) => (
-            <div
-              className="bg-white p-4 rounded-lg flex flex-col gap-4"
-              key={index}
+            <Link
+              key={item?._id || index}
+              href={`/makeup-and-beauty/artists/${item?._id}`}
+              className="bg-white p-4 rounded-lg flex flex-col gap-4 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#880E4F]/40"
+              aria-label={`View ${item?.name || "artist"}`}
             >
-              <div className="bg-gray-500 pt-[100%] w-full relative">
+              <div className="bg-gray-500 pt-[100%] w-full relative rounded-xl overflow-hidden">
                 <img
                   src={item?.gallery?.coverPhoto}
-                  className="absolute top-0 w-full h-full object-cover rounded-xl"
+                  className="absolute top-0 w-full h-full object-cover"
+                  alt={item?.name || "Makeup artist"}
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -733,7 +736,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                   {toPriceString(item?.prices?.bridal || 0)}
                 </p>
               </div>
-            </div>
+            </Link>
           ))}
         <div className="flex flex-row justify-center col-span-3">
           <button

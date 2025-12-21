@@ -519,6 +519,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   const pageDescription = vendor?.about || `${vendor?.name || "Professional Makeup Artist"} - ${vendor?.speciality || "Makeup Artist"} in ${vendor?.businessAddress?.city || "Bangalore"}. ${vendor?.rating ? `Rated ${vendor.rating}/5. ` : ""}Book now for your special day.`;
   const pageKeywords = `${vendor?.name || ""}, ${vendor?.speciality || "makeup artist"}, makeup artist ${vendor?.businessAddress?.city || "bangalore"}, bridal makeup, wedding makeup, makeup artist near me`.trim();
   const ogImage = vendor?.gallery?.coverPhoto || "https://www.wedsy.in/logo-black.webp";
+  const coverPhoto = vendor?.gallery?.coverPhoto || "/assets/images/makeup-artist-cover.webp";
 
   return (
     <>
@@ -751,13 +752,15 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               <p className="text-2xl font-bold">{toPriceString(vendor?.prices?.bridal)}</p>
             </div>
             <div className="w-[450px] h-[580px] rounded-t-[195px] overflow-hidden bg-[#D9D9D9] opacity-100">
-              {vendor?.gallery?.coverPhoto && (
-                <img
-                  // src={vendor?.gallery?.coverPhoto}
-                  src="/assets/images/makeup-artist-cover.webp"
-                  className="w-full h-full object-cover"
-                />
-              )}
+              <img
+                src={coverPhoto}
+                className="w-full h-full object-cover"
+                alt={vendor?.name ? `${vendor.name} cover` : "Makeup artist cover"}
+                onError={(e) => {
+                  // Fallback if remote image fails to load
+                  e.currentTarget.src = "/assets/images/makeup-artist-cover.webp";
+                }}
+              />
             </div>
           </div>
         </div>
@@ -917,7 +920,14 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               />
             </div>
           </div>
-          <img src={vendor?.gallery?.coverPhoto} className="-mt-4" />
+          <img
+            src={coverPhoto}
+            className="-mt-4 w-full h-auto object-cover"
+            alt={vendor?.name ? `${vendor.name} cover` : "Makeup artist cover"}
+            onError={(e) => {
+              e.currentTarget.src = "/assets/images/makeup-artist-cover.webp";
+            }}
+          />
         </div>
         <div className="bg-[#f4f4f4] py-6 mt-10 px-6">
           <div className="uppercase font-medium text-center">
@@ -977,8 +987,8 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           {personalPackages.length > 0 &&
             personalPackages.slice(0, 2).map((pkg, index) => {
               const colorSet = MobileColors[index] || MobileColors[0];
-              const isSelected = selectedPackages?.find((i) => i._id === pkg._id)?.quantity > 0;
-              const quantity = isSelected ? selectedPackages?.find((i) => i._id === pkg._id)?.quantity : 0;
+              const isSelected = selectedPackages?.find((i) => i._id === pkg?._id)?.quantity > 0;
+              const quantity = isSelected ? selectedPackages?.find((i) => i._id === pkg?._id)?.quantity : 0;
               const originalPrice = pkg?.price || 0;
               const discountedPrice = (pkg?.price || 0) * personalPackageTaxMultiply;
 
@@ -1124,11 +1134,11 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           personalPackages[displayPersonalPackages[1]],
           personalPackages[displayPersonalPackages[2]],
           personalPackages[displayPersonalPackages[3]],
-        ].map((pkg, index) => {
+        ].filter(Boolean).map((pkg, index) => {
           const colorSet = colors[index] || colors[0];
           const originalPrice = pkg?.price || 0;
           const discountedPrice = originalPrice * personalPackageTaxMultiply;
-          const selected = selectedPackages?.find((i) => i._id === pkg._id);
+          const selected = selectedPackages?.find((i) => i._id === pkg?._id);
           const quantity = selected?.quantity || 0;
 
           return (
@@ -1816,19 +1826,39 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
             Browse similar Makeup Artists
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
-            {vendor?.similarVendors?.map((item, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-2xl shadow-[4px_4px_10px_rgba(0,0,0,0.3)] border border-gray-100 p-4 flex flex-col"
-                style={{ fontFamily: 'Montserrat' }}
-                onClick={() => {
-                  router.push(`/makeup-and-beauty/artists/${item?._id}`);
-                }}
+            {(Array.isArray(vendor?.similarVendors) ? vendor.similarVendors : []).map((item, index) => {
+              const href = `/makeup-and-beauty/artists/${item?._id}`;
+              const imgSrc = item?.gallery?.coverPhoto || "/assets/images/makeup-artist-cover.webp";
+              const locationText =
+                item?.businessAddress?.locality && item?.businessAddress?.city
+                  ? `${item.businessAddress.locality}, ${item.businessAddress.city}`
+                  : item?.businessAddress?.city || item?.businessAddress?.locality || "Bangalore";
+              const ratingText =
+                item?.rating !== undefined && item?.rating !== null && item?.rating !== ""
+                  ? String(item.rating)
+                  : "4.5";
+              const specialityList = Array.isArray(item?.speciality)
+                ? item.speciality
+                : item?.speciality
+                ? String(item.speciality).split(",")
+                : [];
+
+              return (
+              <Link
+                key={item?._id || index}
+                href={href}
+                className="bg-white rounded-2xl shadow-[4px_4px_10px_rgba(0,0,0,0.3)] border border-gray-100 p-4 flex flex-col cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[6px_6px_16px_rgba(0,0,0,0.25)] focus:outline-none focus:ring-2 focus:ring-[#880E4F]/40"
+                style={{ fontFamily: "Montserrat" }}
+                aria-label={`View ${item?.name || "makeup artist"}`}
               >
                 <div className="relative w-full pt-[100%] rounded-xl overflow-hidden bg-gray-200">
                   <img
-                    src={item?.gallery?.coverPhoto}
+                    src={imgSrc}
                     className="absolute inset-0 w-full h-full object-cover"
+                    alt={item?.name ? `${item.name} cover` : "Similar makeup artist"}
+                    onError={(e) => {
+                      e.currentTarget.src = "/assets/images/makeup-artist-cover.webp";
+                    }}
                   />
                 </div>
 
@@ -1839,21 +1869,18 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                 <div className="mt-3 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-[#880E4F]">
                     <FaStar size={18} />
-                    <span className="text-2xl text-black font-semibold">{item?.rating}</span>
+                    <span className="text-2xl text-black font-semibold">{ratingText}</span>
                   </div>
                   <div className="flex items-center gap-2 text-[#2F6AA8]">
                     <FaMapMarkerAlt size={18} className="text-gray-500" />
-                    {/* <span className="text-base text-gray-500 font-semibold">{item?.businessAddress?.locality}, {item?.businessAddress?.city}</span> */}
-                    <span className="text-base text-gray-500 font-semibold">RT Nagar, Bangalore</span>
+                    <span className="text-base text-gray-500 font-semibold">{locationText}</span>
                   </div>
                 </div>
 
                 <div className="mt-2">
                   <p className="text-base text-black">Specialist In</p>
                   <ul className="list-disc pl-5 text-base text-black">
-                    {(
-                      (item?.speciality ? item.speciality.split(',') : [])
-                    )
+                    {(specialityList || [])
                       .slice(0, 2)
                       .map((svc, i) => (
                         <li key={i}>{(svc || '').toString().trim()}</li>
@@ -1867,8 +1894,9 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                   </div>
                   <div className="text-xs font-semibold text-gray-500">onwards</div>
                 </div>
-              </div>
-            ))}
+              </Link>
+              );
+            })}
           </div>
         </div>
 
