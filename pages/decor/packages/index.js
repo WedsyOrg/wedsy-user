@@ -138,9 +138,9 @@ export default function DecorPackagesIndex({
 
           <div className="mt-8 grid grid-cols-1 md:grid-cols-[240px_1fr] gap-8">
             {/* Left sidebar */}
-            <aside className="relative">
+            <aside className="relative px-1">
               <div className="hidden md:block absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
-              <div className="flex md:flex-col gap-3 md:gap-4 md:pr-8 overflow-x-auto md:overflow-visible py-1">
+              <div className="flex md:flex-col gap-3 md:gap-4 md:pr-8 overflow-x-auto md:overflow-visible py-1 scrollbar-hide">
                 {CATEGORY_OPTIONS.map((c) => {
                   const active = c === category;
                   return (

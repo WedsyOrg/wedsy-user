@@ -1000,7 +1000,7 @@ function DecorListing({
             {/* Left filters */}
             <aside className="relative">
               <div className="hidden md:block absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
-              <div className="flex md:flex-col gap-3 md:gap-4 md:pr-8 overflow-x-auto md:overflow-visible py-1">
+              <div className="flex md:flex-col gap-3 md:gap-4 md:pr-8 overflow-x-auto md:overflow-visible py-1 scrollbar-hide">
                 {CATEGORY_OPTIONS.map((c) => {
                   const active = c === category;
                   const targetId = firstPackageIdByCategory?.[c] || package_id;
@@ -1030,7 +1030,7 @@ function DecorListing({
             <section>
               {/* Top package tabs */}
               {Array.isArray(packagesForTabs) && packagesForTabs.length > 0 && (
-                <div className="flex gap-2 overflow-x-auto pb-3">
+                <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
                   {packagesForTabs.map((p) => {
                     const active = p?._id === package_id;
                     return (
