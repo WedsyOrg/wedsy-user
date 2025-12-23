@@ -2,7 +2,7 @@ import SearchBar from "@/components/searchBar/SearchBar";
 import { toPriceString } from "@/utils/text";
 import { Checkbox, Dropdown, Label, Select } from "flowbite-react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FaMapMarkerAlt, FaStar } from "react-icons/fa";
 
 function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
@@ -12,6 +12,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   const [vendors, setVendors] = useState([]);
   const [taxationData, setTaxationData] = useState({});
   const [loading, setLoading] = useState(false);
+  const [sortOption, setSortOption] = useState("");
   
   const [selectedFilters, setSelectedFilters] = useState({
     Locality: [],
@@ -179,6 +180,55 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   useEffect(() => {
     fetchVendors();
   }, [selectedFilters]);
+
+  // Reset pagination when controls change
+  useEffect(() => {
+    setPage(0);
+  }, [search, selectedFilters, sortOption]);
+
+  const normalizedVendors = useMemo(() => {
+    return Array.isArray(vendors) ? vendors : [];
+  }, [vendors]);
+
+  const filteredSortedVendors = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let list = normalizedVendors;
+    if (q) {
+      list = list.filter((v) => (v?.name || "").toLowerCase().includes(q));
+    }
+
+    if (sortOption === "price_asc" || sortOption === "price_desc") {
+      const dir = sortOption === "price_asc" ? 1 : -1;
+      list = [...list].sort((a, b) => {
+        const aPriceRaw = a?.prices?.bridal;
+        const bPriceRaw = b?.prices?.bridal;
+
+        // Put vendors without a bridal price at the end for both sorts
+        const aMissing = aPriceRaw === undefined || aPriceRaw === null || aPriceRaw === "";
+        const bMissing = bPriceRaw === undefined || bPriceRaw === null || bPriceRaw === "";
+        if (aMissing && bMissing) return 0;
+        if (aMissing) return 1;
+        if (bMissing) return -1;
+
+        const aPrice = Number(aPriceRaw);
+        const bPrice = Number(bPriceRaw);
+        if (!Number.isFinite(aPrice) && !Number.isFinite(bPrice)) return 0;
+        if (!Number.isFinite(aPrice)) return 1;
+        if (!Number.isFinite(bPrice)) return -1;
+        return (aPrice - bPrice) * dir;
+      });
+    }
+
+    return list;
+  }, [normalizedVendors, search, sortOption]);
+
+  const pagedVendors = useMemo(() => {
+    return filteredSortedVendors.slice(page * 12, (page + 1) * 12);
+  }, [filteredSortedVendors, page]);
+
+  const totalPages = useMemo(() => {
+    return Math.ceil((filteredSortedVendors.length || 0) / 12);
+  }, [filteredSortedVendors.length]);
 
   // Add fallback data for testing if API fails
   useEffect(() => {
@@ -418,18 +468,23 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           </div>
           </div>
         <div className="hidden md:block">
-          <Select theme={customTheme} color={"light"} className="w-32 lg:w-40 ml-auto shadow-md text-sm lg:text-base">
-            <option>Sort</option>
+          <Select
+            theme={customTheme}
+            color={"light"}
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+            className="w-44 lg:w-56 ml-auto shadow-md text-sm lg:text-base"
+          >
+            <option value="">Sort</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
           </Select>
         </div>
       </div>
 
       <div className="bg-[#f4f4f4] pb-6 md:pb-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8 xl:gap-12 px-4 sm:px-6 md:px-12 lg:px-24">
-        {vendors && vendors.length > 0 ? (
-          vendors
-            ?.filter((i) => search ? i.name.toLowerCase().includes(search.toLowerCase()) : true)
-            .slice(page * 12, (page + 1) * 12)
-          ?.map((item, index) => (
+        {filteredSortedVendors.length > 0 ? (
+          pagedVendors?.map((item, index) => (
             <div
                 className="bg-white p-2 sm:p-3 md:p-4 rounded-lg flex flex-col gap-1 sm:gap-2 md:gap-3 lg:gap-4 cursor-pointer shadow-md"
               key={index}
@@ -480,7 +535,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           </div>
         )}
 
-        {page < Math.ceil((vendors?.length || 0) / 12) && vendors && vendors.length > 0 && (
+        {page < totalPages - 1 && filteredSortedVendors.length > 0 && (
           <div className="col-span-2 flex md:hidden flex-row gap-3 items-center justify-center my-4">
           <button
               className="bg-white rounded-full px-4 py-1 text-sm"
@@ -491,9 +546,9 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         </div>
         )}
 
-        {vendors && vendors.length > 0 && (
+        {filteredSortedVendors.length > 0 && (
           <div className="col-span-2 md:col-span-3 lg:col-span-4 flex flex-row gap-2 lg:gap-3 items-center justify-center">
-            {new Array(Math.ceil(vendors.length / 12))
+            {new Array(totalPages)
               .fill("-")
               ?.map((_, index) => (
                 <div
