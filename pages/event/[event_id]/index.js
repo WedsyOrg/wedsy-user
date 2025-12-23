@@ -1,8 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useCallback, useEffect, useState } from "react";
-import { BsArrowRight } from "react-icons/bs";
+import React, { useCallback, useEffect, useState, useRef } from "react";
+import { IoClose } from "react-icons/io5";
+import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
+import Head from "next/head";
 
 // Clipboard Visual Component
 const ClipboardVisual = React.memo(() => (
@@ -17,21 +19,111 @@ const ClipboardVisual = React.memo(() => (
   </div>
 ));
 
-export default function EventTool() {
+// Add Event Day Modal Component
+const AddEventDayModal = React.memo(function AddEventDayModal({
+  isOpen,
+  onClose,
+  data,
+  setData,
+  onSubmit,
+  isSubmitting,
+  venueInputRef,
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+        >
+          <IoClose size={24} />
+        </button>
+        
+        <h2 className="text-xl font-semibold mb-6">Add Event Day</h2>
+        
+        <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Event Day</label>
+              <input
+                type="text"
+                className="w-full rounded-lg p-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                placeholder="Event Name"
+                name="name"
+                value={data.name}
+                onChange={(e) => setData({...data, name: e.target.value})}
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Date</label>
+              <input
+                type="date"
+                className="w-full rounded-lg p-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                name="date"
+                value={data.date}
+                onChange={(e) => setData({...data, date: e.target.value})}
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Time</label>
+              <input
+                type="time"
+                className="w-full rounded-lg p-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                name="time"
+                value={data.time}
+                onChange={(e) => setData({...data, time: e.target.value})}
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Venue</label>
+              <input
+                type="text"
+                className="w-full rounded-lg p-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                placeholder="Event Venue"
+                name="venue"
+                value={data.venue}
+                onChange={(e) => setData({...data, venue: e.target.value})}
+                ref={venueInputRef}
+              />
+            </div>
+          </div>
+          
+          <button
+            className="mt-4 bg-[#1a1a1a] text-white rounded-lg py-3 px-6 w-full font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+            disabled={!data.name || !data.date || !data.time || !data.venue || isSubmitting}
+            onClick={onSubmit}
+          >
+            {isSubmitting ? "Adding..." : "Add Event Day"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+export default function EventDetailsPage() {
   const router = useRouter();
-  const [event, setEvent] = useState({});
-  const [events, setEvents] = useState([]);
-  const [displayForm, setDisplayForm] = useState(false);
-  const [data, setData] = useState({
+  const { event_id } = router.query;
+  
+  const [event, setEvent] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showAddDayModal, setShowAddDayModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [eventDayData, setEventDayData] = useState({
     name: "",
     time: "",
     date: "",
     venue: "",
-    _id: "",
   });
-  const {event_id} = router.query;
+  
+  const venueInputRef = useRef(null);
 
-  // Helpers: determine the correct event date to display and sort by
+  // Format date helper
   const formatDisplayDate = useCallback((isoLike) => {
     if (!isoLike) return "";
     const d = new Date(isoLike);
@@ -43,168 +135,167 @@ export default function EventTool() {
     });
   }, []);
 
-  const getEventSortDate = useCallback((e) => {
-    const candidates = [];
-    if (e?.eventDays?.length && e.eventDays[0]?.date)
-      candidates.push(new Date(e.eventDays[0].date));
-    if (e?.eventDate) candidates.push(new Date(e.eventDate));
-    if (e?.date && e?.createdAt && e.date !== e.createdAt)
-      candidates.push(new Date(e.date));
-    if (e?.createdAt) candidates.push(new Date(e.createdAt));
-    const valid = candidates.find((d) => !Number.isNaN(d.getTime()));
-    return valid || new Date(0);
+  // Format time helper
+  const formatDisplayTime = useCallback((time) => {
+    if (!time) return "";
+    try {
+      const [hours, minutes] = time.split(":");
+      const hour = parseInt(hours, 10);
+      const ampm = hour >= 12 ? "pm" : "am";
+      const hour12 = hour % 12 || 12;
+      return `${hour12}:${minutes}${ampm}`;
+    } catch {
+      return time;
+    }
   }, []);
 
-  const getEventDisplayDate = useCallback(
-    (e) => {
-      if (e?.eventDays?.length && e.eventDays[0]?.date)
-        return formatDisplayDate(e.eventDays[0].date);
-      if (e?.eventDate) return formatDisplayDate(e.eventDate);
-      if (e?.date && e?.createdAt && e.date !== e.createdAt)
-        return formatDisplayDate(e.date);
-      if (e?.createdAt) return formatDisplayDate(e.createdAt);
-      return "";
-    },
-    [formatDisplayDate]
-  );
-
-  const fetchEvents = useCallback(async () => {
+  // Fetch the specific event
+  const fetchEvent = useCallback(async () => {
+    if (!event_id) return;
+    
+    setIsLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/event`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      const result = await response.json();
-      const enriched = (Array.isArray(result) ? result : [])
-        .map((e) => ({
-          ...e,
-          _displayDate: getEventDisplayDate(e),
-          _sortTs: getEventSortDate(e).getTime(),
-        }))
-        .sort((a, b) => a._sortTs - b._sortTs); // FIFO by actual event date
-      setEvents(enriched);
-    } catch (error) {
-      console.error("Error fetching events:", error);
-    }
-  }, [getEventDisplayDate, getEventSortDate]);
-
-  const fetchEvent = () => {
-    if (!event_id) return; // Don't fetch if no event_id
-
-    // Only fetch if we're on the current event details page, not planner
-    if (router.pathname !== `/event/[event_id]`) return;
-
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/event/${event_id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        if (response.message !== "error") {
-          setEvent(response);
-        } else {
-          console.warn("Event not found, but staying on current page");
-          // Don't redirect - just log the warning
-        }
-      })
-      .catch((error) => {
-        console.error("There was a problem with the fetch operation:", error);
-        // Don't redirect on error - just log it
-      });
-  };
-
-  const deleteEventDay = (dayId) => {
-    fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/event/${event_id}/eventDay/${dayId}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    )
-      .then((response) => response.json())
-      .then((response) => {
-        if (response.message !== "error") {
-          fetchEvent();
-        }
-      })
-      .catch((error) => {
-        console.error("There was a problem with the fetch operation:", error);
-        // Don't redirect on error - just log it
-      });
-  };
-
-  const handleEventDay = () => {
-    if (data._id) {
-      fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/event/${event_id}/eventDay/${data._id}`,
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/event/${event_id}?populate=true`,
         {
-          method: "PUT",
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
             authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify(data),
         }
-      )
-        .then((response) => response.json())
-        .then((response) => {
-          const {_id} = data;
-          fetchEvent();
-          setData({name: "", time: "", date: "", venue: "", _id: ""});
-          console.log(response);
-          router.push(`/event/${event_id}/planner?eventDay=${_id}`);
-        })
-        .catch((error) => {
-          console.error("There was a problem with the fetch operation:", error);
-        });
-    } else {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/event/${event_id}/eventDay`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(data),
-      })
-        .then((response) => response.json())
-        .then((response) => {
-          fetchEvent();
-          setData({name: "", time: "", date: "", venue: "", _id: ""});
-        })
-        .catch((error) => {
-          console.error("There was a problem with the fetch operation:", error);
-        });
+      );
+      const result = await response.json();
+      
+      if (result && result._id) {
+        setEvent(result);
+      } else {
+        console.error("Event not found");
+        router.push("/event");
+      }
+    } catch (error) {
+      console.error("Error fetching event:", error);
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [event_id, router]);
+
+  // Add event day
+  const handleAddEventDay = useCallback(async () => {
+    if (!event_id) return;
+    
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/event/${event_id}/eventDay`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(eventDayData),
+        }
+      );
+      const result = await response.json();
+      
+      if (result) {
+        // Reset form and close modal
+        setEventDayData({ name: "", time: "", date: "", venue: "" });
+        setShowAddDayModal(false);
+        // Refresh event data
+        fetchEvent();
+      }
+    } catch (error) {
+      console.error("Error adding event day:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [event_id, eventDayData, fetchEvent]);
+
+  // Initialize Google Maps for venue autocomplete in modal
+  useEffect(() => {
+    if (showAddDayModal && venueInputRef.current) {
+      const initAutocomplete = async () => {
+        try {
+          const google = await loadGoogleMaps();
+          if (!google?.maps?.places) return;
+
+          const bengaluruBounds = new google.maps.LatLngBounds(
+            new google.maps.LatLng(12.8236, 77.3832),
+            new google.maps.LatLng(13.1721, 77.8369)
+          );
+
+          const autocomplete = new google.maps.places.Autocomplete(
+            venueInputRef.current,
+            {
+              types: ["geocode", "establishment"],
+              componentRestrictions: { country: "in" },
+              bounds: bengaluruBounds,
+              strictBounds: true,
+            }
+          );
+
+          autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
+            if (place?.formatted_address) {
+              setEventDayData((prev) => ({
+                ...prev,
+                venue: place.formatted_address,
+              }));
+            }
+          });
+        } catch (error) {
+          console.error("Error initializing Google Maps:", error);
+        }
+      };
+
+      initAutocomplete();
+    }
+  }, [showAddDayModal]);
 
   useEffect(() => {
     if (event_id) {
       fetchEvent();
     }
-    fetchEvents();
-  }, [event_id, fetchEvents]);
+  }, [event_id, fetchEvent]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#F4F4F4] flex items-center justify-center">
+        <div className="animate-pulse text-gray-500">Loading event...</div>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="min-h-screen bg-[#F4F4F4] flex items-center justify-center">
+        <div className="text-gray-500">Event not found</div>
+      </div>
+    );
+  }
 
   return (
     <>
-      {/* Invisible Scrollbar Styles */}
-      <style jsx>{`
-        .scrollbar-hide {
-          -ms-overflow-style: none; /* Internet Explorer 10+ */
-          scrollbar-width: none; /* Firefox */
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none; /* Safari and Chrome */
-        }
-      `}</style>
+      <Head>
+        <title>{event?.name || "Event"} | Wedsy</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Head>
+
+      {/* Add Event Day Modal */}
+      <AddEventDayModal
+        isOpen={showAddDayModal}
+        onClose={() => {
+          setShowAddDayModal(false);
+          setEventDayData({ name: "", time: "", date: "", venue: "" });
+        }}
+        data={eventDayData}
+        setData={setEventDayData}
+        onSubmit={handleAddEventDay}
+        isSubmitting={isSubmitting}
+        venueInputRef={venueInputRef}
+      />
 
       {/* Desktop View */}
       <div className="hidden md:block bg-[#F4F4F4] min-h-screen">
@@ -213,7 +304,7 @@ export default function EventTool() {
           <div className="px-24 py-8">
             <div
               className="text-black text-[30px] font-medium tracking-[0.1em]"
-              style={{fontFamily: "Montserrat"}}
+              style={{ fontFamily: "Montserrat" }}
             >
               MY EVENT
             </div>
@@ -233,143 +324,98 @@ export default function EventTool() {
               Congratulations! Your event has been successfully created! You can{" "}
               <br /> now begin adding your requirements from the Wedding Store.
             </div>
+            <Link
+              href="/decor"
+              className="text-black underline mt-2 inline-block"
+              style={{ fontFamily: "Montserrat" }}
+            >
+              Visit Store
+            </Link>
           </div>
         </div>
 
         {/* Main Content Grid */}
         <div className="px-24 pb-16">
           <div className="grid grid-cols-5 gap-8 items-start">
-            {/* Events List Section - Takes 3 columns (moved to left) */}
+            {/* Event Details Section - Takes 3 columns */}
             <div className="col-span-3 mt-10">
               <div className="bg-[#F4DBD5] rounded-2xl p-8 h-fit">
                 <div className="flex flex-col gap-6">
-                  {/* Title - matching StepForm1 dimensions */}
-                  <div className="text-center text-[20px] md:text-2xl font-medium text-black">
-                    YOUR EVENTS
-                  </div>
-
-                  {/* Events List with Invisible Scroll */}
-                  <div className="mb-8">
-                    <div className="max-h-[235px] overflow-y-auto scrollbar-hide">
-                      {events.length > 0 ? (
-                        <div className="flex flex-col gap-2">
-                          {events.map((eventItem, index) => (
-                            <Link
-                              href={`/event/${eventItem._id}/planner`}
-                              key={eventItem._id}
-                              className="flex flex-row justify-between items-center py-2 hover:text-pink-600 transition-colors"
-                            >
-                              <div className="flex items-center gap-4">
-                                <span
-                                  className="text-lg font-medium text-black"
-                                  style={{fontFamily: "Montserrat"}}
-                                >
-                                  {index + 1}.
-                                </span>
-                                <span
-                                  className="text-lg font-medium text-black"
-                                  style={{fontFamily: "Montserrat"}}
-                                >
-                                  {eventItem.name}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-4 text-sm text-gray-600">
-                                <span style={{fontFamily: "Montserrat"}}>
-                                  {eventItem._displayDate}
-                                </span>
-                                <BsArrowRight
-                                  size={16}
-                                  className="text-gray-400"
-                                />
-                              </div>
-                            </Link>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-12">
-                          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span className="text-2xl">🎉</span>
-                          </div>
-                          <p
-                            className="text-gray-500 text-lg mb-2"
-                            style={{fontFamily: "Montserrat"}}
-                          >
-                            No events yet
-                          </p>
-                          <p className="text-gray-400 text-sm">
-                            Create your first event to get started!
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Create New Event Button - matching StepForm1 button styling */}
-                  <Link
-                    href="/event"
-                    className="bg-[#000000] rounded-2xl p-4 px-12 text-white w-max mx-auto transition-colors duration-200 text-lg font-medium hover:cursor-pointer"
+                  {/* Event Name */}
+                  <div
+                    className="text-center text-[20px] md:text-2xl font-medium text-black tracking-wider"
+                    style={{ fontFamily: "Montserrat" }}
                   >
-                    CREATE NEW EVENT
-                  </Link>
+                    {event?.name?.toUpperCase()}
+                  </div>
+
+                  {/* Event Days List */}
+                  <div className="flex flex-col gap-3 mb-4">
+                    {event?.eventDays && event.eventDays.length > 0 ? (
+                      event.eventDays.map((day, index) => (
+                        <div
+                          key={day._id || index}
+                          className="flex justify-between items-center py-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="text-lg font-medium text-black"
+                              style={{ fontFamily: "Montserrat" }}
+                            >
+                              {index + 1}. {day.name}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-6">
+                            <span
+                              className="text-gray-600"
+                              style={{ fontFamily: "Montserrat" }}
+                            >
+                              {formatDisplayDate(day.date)}
+                            </span>
+                            <span
+                              className="text-gray-600"
+                              style={{ fontFamily: "Montserrat" }}
+                            >
+                              {formatDisplayTime(day.time)}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-6 text-gray-500">
+                        No event days added yet. Click below to add your first event day.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-row gap-4 justify-center">
+                    <button
+                      onClick={() => setShowAddDayModal(true)}
+                      className="bg-black text-white rounded-2xl py-3 px-8 font-medium transition-colors duration-200 hover:bg-gray-800"
+                      style={{ fontFamily: "Montserrat" }}
+                    >
+                      + Add more days
+                    </button>
+                    <Link
+                      href={`/event/${event_id}/planner`}
+                      className="bg-[#840032] text-white rounded-2xl py-3 px-8 font-medium transition-colors duration-200 hover:bg-[#6a0029] text-center"
+                      style={{ fontFamily: "Montserrat" }}
+                    >
+                      VIEW EVENT
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Clipboard Image Section - Takes 2 columns (moved to right) */}
+            {/* Clipboard Image Section - Takes 2 columns */}
             <div className="col-span-2 flex justify-center items-center">
-              <div className="h-[450px] flex items-center justify-center -mt:30">
+              <div className="h-[450px] flex items-center justify-center">
                 <ClipboardVisual />
               </div>
             </div>
           </div>
-          {displayForm && (
-            <div className="relative bg-red-200 bg-opacity-40 rounded-3xl flex flex-col gap-6 p-8 py-12">
-              <div className="text-center text-3xl">
-                TELL US ABOUT YOUR EVENT
-              </div>
-              <input
-                type="text"
-                className="rounded-full p-2 text-center border-0"
-                placeholder="EVENT DAY (eg: Reception)"
-                name="name"
-                value={data.name}
-                onChange={(e) => setData({...data, name: e.target.value})}
-              />
-              <div className="grid grid-cols-2 gap-8 w-full">
-                <input
-                  type="date"
-                  className="rounded-full p-2 text-center border-0"
-                  placeholder="DATE"
-                  name="date"
-                  value={data.date}
-                  onChange={(e) => setData({...data, date: e.target.value})}
-                />
-                <input
-                  type="time"
-                  className="rounded-full p-2 text-center border-0"
-                  placeholder="START TIME"
-                  name="time"
-                  value={data.time}
-                  onChange={(e) => setData({...data, time: e.target.value})}
-                />
-              </div>
-              <input
-                type="text"
-                className="rounded-full p-2 text-center border-0"
-                placeholder="VENUE"
-                name="venue"
-                value={data.venue}
-                onChange={(e) => setData({...data, venue: e.target.value})}
-              />
-              <button
-                className="bg-black disabled:bg-neutral-700 rounded-full p-2 px-12 text-white w-max mx-auto"
-                disabled={!data.name || !data.time || !data.date || !data.venue}
-                onClick={handleEventDay}
-              >
-                {data._id ? "UPDATE" : "SUBMIT"}
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -378,18 +424,14 @@ export default function EventTool() {
         {/* Header */}
         <div className="bg-[#F4F4F4]">
           <div className="px-6 py-4">
-            <Link href={"/event"} className="flex items-center gap-2 mb-4">
-              {/* <BsArrowLeft size={20} /> */}
-              {/* <span className="text-lg font-medium">Back to Events</span> */}
-            </Link>
             <div
               className="text-black text-[24px] font-medium tracking-[0.1em]"
-              style={{fontFamily: "Montserrat"}}
+              style={{ fontFamily: "Montserrat" }}
             >
               MY EVENT
             </div>
           </div>
-          <div className="w-full h-[2px] bg-white mx-6"></div>
+          <div className="w-full h-[2px] bg-white"></div>
 
           {/* Description Paragraph */}
           <div className="px-6 py-4">
@@ -404,6 +446,13 @@ export default function EventTool() {
               Congratulations! Your event has been successfully created! You can
               now begin adding your requirements from the Wedding Store.
             </div>
+            <Link
+              href="/decor"
+              className="text-black underline mt-2 inline-block text-sm"
+              style={{ fontFamily: "Montserrat" }}
+            >
+              Visit Store
+            </Link>
           </div>
         </div>
 
@@ -411,77 +460,70 @@ export default function EventTool() {
         <div className="px-6 py-4">
           <div className="bg-[#F4DBD5] rounded-3xl p-6 mb-6">
             <div className="flex flex-col gap-6">
-              {/* Title - matching StepForm1 dimensions */}
-              <div className="text-center text-[20px] md:text-2xl font-medium text-black">
-                YOUR EVENTS
-              </div>
-
-              {/* Events List with Invisible Scroll */}
-              <div className="mb-6">
-                <div
-                  className="text-base font-semibold mb-3 text-gray-700"
-                  style={{fontFamily: "Montserrat"}}
-                >
-                  Your Events
-                </div>
-                <div className="max-h-[200px] overflow-y-auto scrollbar-hide">
-                  {events.length > 0 ? (
-                    <div className="flex flex-col gap-2">
-                      {events.map((eventItem, index) => (
-                        <Link
-                          href={`/event/${eventItem._id}/planner`}
-                          key={eventItem._id}
-                          className="flex flex-row justify-between items-center py-2 hover:text-pink-600 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <span
-                              className="text-base font-medium text-black"
-                              style={{fontFamily: "Montserrat"}}
-                            >
-                              {index + 1}.
-                            </span>
-                            <span
-                              className="text-base font-medium text-black"
-                              style={{fontFamily: "Montserrat"}}
-                            >
-                              {eventItem.name}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3 text-xs text-gray-600">
-                            <span style={{fontFamily: "Montserrat"}}>
-                              {eventItem._displayDate}
-                            </span>
-                            <BsArrowRight size={14} className="text-gray-400" />
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span className="text-xl">🎉</span>
-                      </div>
-                      <p
-                        className="text-gray-500 text-base mb-1"
-                        style={{fontFamily: "Montserrat"}}
-                      >
-                        No events yet
-                      </p>
-                      <p className="text-gray-400 text-sm">
-                        Create your first event to get started!
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Create New Event Button - matching StepForm1 button styling */}
-              <Link
-                href="/event"
-                className="bg-[#840032] rounded-2xl p-4 px-12 text-white w-max mx-auto transition-colors duration-200 text-lg font-medium hover:cursor-pointer"
+              {/* Event Name */}
+              <div
+                className="text-center text-[18px] font-medium text-black tracking-wider"
+                style={{ fontFamily: "Montserrat" }}
               >
-                CREATE NEW EVENT
-              </Link>
+                {event?.name?.toUpperCase()}
+              </div>
+
+              {/* Event Days List */}
+              <div className="flex flex-col gap-2 mb-4">
+                {event?.eventDays && event.eventDays.length > 0 ? (
+                  event.eventDays.map((day, index) => (
+                    <div
+                      key={day._id || index}
+                      className="flex justify-between items-center py-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="text-base font-medium text-black"
+                          style={{ fontFamily: "Montserrat" }}
+                        >
+                          {index + 1}. {day.name}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm">
+                        <span
+                          className="text-gray-600"
+                          style={{ fontFamily: "Montserrat" }}
+                        >
+                          {formatDisplayDate(day.date)}
+                        </span>
+                        <span
+                          className="text-gray-600"
+                          style={{ fontFamily: "Montserrat" }}
+                        >
+                          {formatDisplayTime(day.time)}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-gray-500 text-sm">
+                    No event days added yet. Click below to add your first event day.
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => setShowAddDayModal(true)}
+                  className="bg-black text-white rounded-2xl py-3 px-6 font-medium transition-colors duration-200 hover:bg-gray-800 text-center"
+                  style={{ fontFamily: "Montserrat" }}
+                >
+                  + Add more days
+                </button>
+                <Link
+                  href={`/event/${event_id}/planner`}
+                  className="bg-[#840032] text-white rounded-2xl py-3 px-6 font-medium transition-colors duration-200 hover:bg-[#6a0029] text-center"
+                  style={{ fontFamily: "Montserrat" }}
+                >
+                  VIEW EVENT
+                </Link>
+              </div>
             </div>
           </div>
 

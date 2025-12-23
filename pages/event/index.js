@@ -301,6 +301,7 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
   const [previousFormStep, setPreviousFormStep] = useState(1);
   const [lastCompletedDay, setLastCompletedDay] = useState(null);
   const [isAddingAdditionalDay, setIsAddingAdditionalDay] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const [data, setData] = useState({
     name: "",
     community: "",
@@ -314,6 +315,13 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Check for ?new=true query parameter to show creation form
+  useEffect(() => {
+    if (router.query.new === "true") {
+      setShowCreateForm(true);
+    }
+  }, [router.query]);
 
   // Simple function to get the correct event date
   const getEventDisplayDate = (event) => {
@@ -546,8 +554,9 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
       // Refresh the events list to show the new event with correct date
       await fetchEvents();
 
-      // Reset form to step 1
+      // Reset form to step 1 and hide create form
       setFormStep(1);
+      setShowCreateForm(false);
       setData({
         name: "",
         community: "",
@@ -609,10 +618,17 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
         setFormStep(formStep - 1);
       }
     } else if (formStep === 1) {
-      // If we're on the first step, go back to the previous page in history
-      router.back();
+      // If user has events and is creating a new one, go back to events list
+      if (events.length > 0 && showCreateForm) {
+        setShowCreateForm(false);
+        // Remove ?new=true from URL
+        router.replace("/event", undefined, { shallow: true });
+      } else {
+        // Otherwise go back to the previous page in history
+        router.back();
+      }
     }
-  }, [formStep, previousFormStep, isAddingAdditionalDay, lastCompletedDay, router]);
+  }, [formStep, previousFormStep, isAddingAdditionalDay, lastCompletedDay, router, events.length, showCreateForm]);
 
   const handleAddMoreDays = useCallback(() => {
     setData((prev) => ({
@@ -884,102 +900,129 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
                 fontWeight: "500",
               }}
             >
-              Explore the ease of planning with our event tool at Wedsy. <br />
-              Utilize the tool to shortlist and choose your decorations
-              effortlessly - <br /> all in one place, at Wedsy.
+              {events.length > 0 && !showCreateForm ? (
+                <>
+                  Congratulations! Your event has been successfully created! You can{" "}
+                  <br /> now begin adding your requirements from the Wedding Store.
+                </>
+              ) : (
+                <>
+                  Explore the ease of planning with our event tool at Wedsy. <br />
+                  Utilize the tool to shortlist and choose your decorations
+                  effortlessly - <br /> all in one place, at Wedsy.
+                </>
+              )}
             </div>
+            {events.length > 0 && !showCreateForm && (
+              <Link
+                href="/decor"
+                className="text-black underline mt-2 inline-block"
+                style={{ fontFamily: "Montserrat" }}
+              >
+                Visit Store
+              </Link>
+            )}
           </div>
         </div>
 
         {/* Main Content Grid */}
         <div className="px-24 pb-16">
           <div className="grid grid-cols-5 gap-8 items-start">
-            {/* Form Section - Takes 2 columns */}
+            {/* Content Section - Takes 3 columns */}
             <div className="col-span-3 mt-10">
-              <div className="bg-[#F4DBD5] rounded-2xl p-8 h-fit">
-                {formStep === 1 && (
-                  <EventFormStep1
-                    data={data}
-                    errors={validationErrors}
-                    onChange={handleDataChange}
-                    onSubmit={handleNextStep}
-                    onPrevStep={handlePrevStep}
-                  />
-                )}
-                {formStep === 2 && (
-                  <EventFormStep2
-                    data={data}
-                    errors={validationErrors}
-                    onChange={handleDataChange}
-                    onSubmit={handleNextStep}
-                    onPrevStep={handlePrevStep}
-                    eventName={data.name}
-                    venueInputRef={venueInputRefDesktop}
-                  />
-                )}
-                {formStep === 3 && (
-                  <EventFormStep3
-                    data={data}
-                    eventName={data.name}
-                    onAddMoreDays={handleAddMoreDays}
-                    onViewEvent={handleViewEvent}
-                    onPrevStep={handlePrevStep}
-                  />
-                )}
-              </div>
+              {events.length === 0 || showCreateForm ? (
+                /* Form Section - Only show when no events */
+                <div className="bg-[#F4DBD5] rounded-2xl p-8 h-fit">
+                  {formStep === 1 && (
+                    <EventFormStep1
+                      data={data}
+                      errors={validationErrors}
+                      onChange={handleDataChange}
+                      onSubmit={handleNextStep}
+                      onPrevStep={handlePrevStep}
+                    />
+                  )}
+                  {formStep === 2 && (
+                    <EventFormStep2
+                      data={data}
+                      errors={validationErrors}
+                      onChange={handleDataChange}
+                      onSubmit={handleNextStep}
+                      onPrevStep={handlePrevStep}
+                      eventName={data.name}
+                      venueInputRef={venueInputRefDesktop}
+                    />
+                  )}
+                  {formStep === 3 && (
+                    <EventFormStep3
+                      data={data}
+                      eventName={data.name}
+                      onAddMoreDays={handleAddMoreDays}
+                      onViewEvent={handleViewEvent}
+                      onPrevStep={handlePrevStep}
+                    />
+                  )}
+                </div>
+              ) : (
+                /* Events List Section - Only show when has events */
+                <div className="bg-[#F4DBD5] rounded-2xl p-8 h-fit">
+                  <div className="flex flex-col gap-6">
+                    {/* Title */}
+                    <div className="text-center text-[20px] md:text-2xl font-medium text-black">
+                      YOUR EVENTS
+                    </div>
+
+                    {/* Events List with Scroll */}
+                    <div className="max-h-[235px] overflow-y-auto scrollbar-hide mb-4">
+                      <div className="flex flex-col gap-2" key={`events-${refreshKey}`}>
+                        {events.map((item, index) => {
+                          const displayName = deriveEventDisplayName(item);
+                          return (
+                            <Link
+                              href={`/event/${item._id}`}
+                              key={`desktop-${item._id}-${index}-${refreshKey}`}
+                              className="flex flex-row justify-between items-center py-2 hover:text-pink-600 transition-colors"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className="text-lg font-medium text-black"
+                                  style={{ fontFamily: "Montserrat" }}
+                                >
+                                  {index + 1}. {displayName}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <span className="text-gray-600" style={{ fontFamily: "Montserrat" }}>
+                                  {getEventDisplayDate(item)}
+                                </span>
+                                <BsArrowRight size={16} className="text-gray-400" />
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Create New Event Button */}
+                    <Link
+                      href="/event?new=true"
+                      className="bg-[#000000] rounded-2xl p-4 px-12 text-white w-max mx-auto transition-colors duration-200 text-lg font-medium hover:bg-gray-800"
+                    >
+                      CREATE NEW EVENT
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Visual Section - Takes 3 columns for more height */}
-            <div className="col-span-2 flex justify-center ">
-              <div className="h-[650px] flex items-center justify-center -mt-40">
+            {/* Clipboard Image Section - Takes 2 columns */}
+            <div className="col-span-2 flex justify-center items-center">
+              <div className="h-[450px] flex items-center justify-center">
                 <ClipboardVisual />
               </div>
             </div>
           </div>
         </div>
-
-        {/* Existing Events List */}
-        {events.length > 0 && (
-          <div className="px-24 pb-12">
-            <div className="bg-white rounded-3xl p-8 shadow-md">
-              <div className="text-3xl font-medium border-b-2 border-b-black h-max pb-4 flex flex-row items-end gap-4 max-w-max mb-6">
-                <span>
-                  Start making <br />
-                  your event now
-                </span>
-                <BsArrowRight size={24} />
-                <button
-                  onClick={forceRefreshEvents}
-                  className="ml-4 text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "..." : "↻"}
-                </button>
-              </div>
-              <div className="flex flex-col gap-2" key={`events-${refreshKey}`}>
-                {events.map((item, index) => {
-                  const displayName = deriveEventDisplayName(item);
-                  return (
-                    <div
-                      className="flex flex-row justify-between items-center"
-                      key={`desktop-${item._id}-${index}-${refreshKey}`}
-                    >
-                      <Link
-                        href={`/event/${item._id}`}
-                        className="text-lg hover:text-pink-600 transition-colors"
-                      >
-                        {index + 1}. {displayName}
-                      </Link>
-                      <div className="text-gray-500">
-                        {getEventDisplayDate(item)}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Mobile View */}
@@ -988,9 +1031,7 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
         <div className="bg-[#F4F4F4]">
           <div className="px-6 py-4">
             <div
-              className="text-black text-[20px] Explore the ease of planning with our 
-event tool at Wedsy.
-Utilize the tool to shortlist and choose your decorations effortlessly - all in one place, at Wedsy.px] font-medium tracking-[0.1em] text-center"
+              className="text-black text-[20px] font-medium tracking-[0.1em] text-center"
               style={{fontFamily: "Montserrat"}}
             >
               MY EVENT
@@ -1006,95 +1047,121 @@ Utilize the tool to shortlist and choose your decorations effortlessly - all in 
                 fontWeight: "500",
               }}
             >
-              Explore the ease of planning with our event tool at Wedsy. <br />
-              Utilize the tool to shortlist and choose your decorations
-              effortlessly - all in one place, at Wedsy.
+              {events.length > 0 && !showCreateForm ? (
+                <>
+                  Congratulations! Your event has been successfully created! You can
+                  now begin adding your requirements from the Wedding Store.
+                </>
+              ) : (
+                <>
+                  Explore the ease of planning with our event tool at Wedsy. <br />
+                  Utilize the tool to shortlist and choose your decorations
+                  effortlessly - all in one place, at Wedsy.
+                </>
+              )}
             </div>
+            {events.length > 0 && !showCreateForm && (
+              <Link
+                href="/decor"
+                className="text-black underline mt-2 inline-block text-sm"
+                style={{ fontFamily: "Montserrat" }}
+              >
+                Visit Store
+              </Link>
+            )}
           </div>
         </div>
 
         {/* Main Content */}
         <div className="px-6 py-6">
-          <div className="bg-[#F4DBD5] rounded-3xl p-6 mb-6">
-            {formStep === 1 && (
-              <EventFormStep1
-                data={data}
-                errors={validationErrors}
-                onChange={handleDataChange}
-                onSubmit={handleNextStep}
-                onPrevStep={handlePrevStep}
-              />
-            )}
-            {formStep === 2 && (
-              <EventFormStep2
-                data={data}
-                errors={validationErrors}
-                onChange={handleDataChange}
-                onSubmit={handleNextStep}
-                onPrevStep={handlePrevStep}
-                eventName={data.name}
-                venueInputRef={venueInputRefMobile}
-              />
-            )}
-            {formStep === 3 && (
-              <EventFormStep3
-                data={data}
-                eventName={data.name}
-                onAddMoreDays={handleAddMoreDays}
-                onViewEvent={handleViewEvent}
-                onPrevStep={handlePrevStep}
-              />
-            )}
-          </div>
+          {events.length === 0 || showCreateForm ? (
+            /* Form Section - Only show when no events */
+            <div className="bg-[#F4DBD5] rounded-3xl p-6 mb-6">
+              {formStep === 1 && (
+                <EventFormStep1
+                  data={data}
+                  errors={validationErrors}
+                  onChange={handleDataChange}
+                  onSubmit={handleNextStep}
+                  onPrevStep={handlePrevStep}
+                />
+              )}
+              {formStep === 2 && (
+                <EventFormStep2
+                  data={data}
+                  errors={validationErrors}
+                  onChange={handleDataChange}
+                  onSubmit={handleNextStep}
+                  onPrevStep={handlePrevStep}
+                  eventName={data.name}
+                  venueInputRef={venueInputRefMobile}
+                />
+              )}
+              {formStep === 3 && (
+                <EventFormStep3
+                  data={data}
+                  eventName={data.name}
+                  onAddMoreDays={handleAddMoreDays}
+                  onViewEvent={handleViewEvent}
+                  onPrevStep={handlePrevStep}
+                />
+              )}
+            </div>
+          ) : (
+            /* Events List Section - Only show when has events */
+            <div className="bg-[#F4DBD5] rounded-3xl p-6 mb-6">
+              <div className="flex flex-col gap-6">
+                {/* Title */}
+                <div className="text-center text-[18px] font-medium text-black">
+                  YOUR EVENTS
+                </div>
+
+                {/* Events List with Scroll */}
+                <div className="max-h-[200px] overflow-y-auto scrollbar-hide mb-4">
+                  <div className="flex flex-col gap-2" key={`mobile-events-${refreshKey}`}>
+                    {events.map((item, index) => {
+                      const displayName = deriveEventDisplayName(item);
+                      return (
+                        <Link
+                          href={`/event/${item._id}`}
+                          key={`mobile-${item._id}-${index}-${refreshKey}`}
+                          className="flex flex-row justify-between items-center py-2 hover:text-pink-600 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="text-base font-medium text-black"
+                              style={{ fontFamily: "Montserrat" }}
+                            >
+                              {index + 1}. {displayName}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm text-gray-600" style={{ fontFamily: "Montserrat" }}>
+                              {getEventDisplayDate(item)}
+                            </span>
+                            <BsArrowRight size={14} className="text-gray-400" />
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Create New Event Button */}
+                <Link
+                  href="/event?new=true"
+                  className="bg-[#000000] rounded-2xl p-3 px-8 text-white w-max mx-auto transition-colors duration-200 text-base font-medium hover:bg-gray-800"
+                >
+                  CREATE NEW EVENT
+                </Link>
+              </div>
+            </div>
+          )}
 
           {/* Clipboard */}
           <div className="flex justify-center rounded-3xl mb-6">
             <ClipboardVisual />
           </div>
-
-          {/* Existing Events List */}
-          {events.length > 0 && (
-            <div className="bg-white rounded-3xl p-6 md:mb-6">
-              <div className="text-xl font-medium border-b-2 border-b-black h-max pb-4 flex flex-row items-end gap-4 max-w-max mb-4">
-                <span>
-                  Start making <br />
-                  your event now
-                </span>
-                <BsArrowRight size={20} />
-                <button
-                  onClick={forceRefreshEvents}
-                  className="ml-2 text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "..." : "↻"}
-                </button>
-              </div>
-              <div
-                className="flex flex-col gap-2"
-                key={`mobile-events-${refreshKey}`}
-              >
-                {events.map((item, index) => {
-                  const displayName = deriveEventDisplayName(item);
-                  return (
-                    <div
-                      className="flex flex-row justify-between items-center"
-                      key={`mobile-${item._id}-${index}-${refreshKey}`}
-                    >
-                      <Link
-                        href={`/event/${item._id}`}
-                        className="text-sm hover:text-pink-600 transition-colors"
-                      >
-                        {index + 1}. {displayName}
-                      </Link>
-                      <div className="text-xs text-gray-500">
-                        {getEventDisplayDate(item)}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
 
       </div>
