@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { AiFillHeart } from "react-icons/ai";
+import { IoClose } from "react-icons/io5";
 
 const CATEGORY_OPTIONS = [
   "Reception",
@@ -237,7 +238,7 @@ function DecorListing({
       .then((response) => (response.ok ? response.json() : null))
       .then((response) => {
         if (response.message === "success") {
-          setAddOns({ ...addOns, addOnsInitialValues, open: false });
+          setAddOns(addOnsInitialValues);
           fetchEvents();
           alert("Item added to event!");
         }
@@ -331,6 +332,7 @@ function DecorListing({
   const ogImage = decorPackage?.seoTags?.image || decorPackage.image || "https://www.wedsy.in/logo-black.webp";
 
   const [selectedByCategory, setSelectedByCategory] = useState({});
+  const [enlargedImage, setEnlargedImage] = useState(null);
 
   // Group package items by category (Stage, Entrance, Pathway, Mandap, ...)
   const grouped = (Array.isArray(decorPackage?.decor) ? decorPackage.decor : []).reduce(
@@ -400,16 +402,41 @@ function DecorListing({
         />
       </Head>
       <DecorDisclaimer />
+      
+      {/* Image Lightbox */}
+      {enlargedImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 cursor-pointer"
+          onClick={() => setEnlargedImage(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10"
+            onClick={() => setEnlargedImage(null)}
+            aria-label="Close"
+          >
+            <IoClose size={32} />
+          </button>
+          <div 
+            className="relative w-[90vw] h-[90vh] max-w-5xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src={enlargedImage}
+              alt="Enlarged view"
+              fill
+              sizes="90vw"
+              className="object-contain"
+              priority
+            />
+          </div>
+        </div>
+      )}
+
       <Modal
         show={addOns.open}
         size="lg"
         popup
-        onClose={() =>
-          setAddOns({
-            ...addOns,
-            addOnsInitialValues,
-          })
-        }
+        onClose={() => setAddOns(addOnsInitialValues)}
       >
         <Modal.Header>
           <h3 className="text-xl font-medium text-gray-900 dark:text-white px-4">
@@ -968,10 +995,6 @@ function DecorListing({
                 ).length > 0
               }
               onClick={() => {
-                setAddOns({
-                  ...addOns,
-                  addOnsInitialValues,
-                });
                 AddToEvent({
                   eventDayId: addOns.eventDayId,
                   eventId: addOns.eventId,
@@ -1076,15 +1099,21 @@ function DecorListing({
 
                       <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-6">
                         {/* Left image */}
-                        <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-gray-200">
+                        <div 
+                          className="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-gray-200 cursor-pointer group"
+                          onClick={() => selected?.image && setEnlargedImage(selected.image)}
+                        >
                           {selected?.image ? (
-                            <Image
-                              src={selected.image}
-                              alt={selected?.name || cat}
-                              fill
-                              sizes="(min-width: 768px) 320px, 100vw"
-                              className="object-cover"
-                            />
+                            <>
+                              <Image
+                                src={selected.image}
+                                alt={selected?.name || cat}
+                                fill
+                                sizes="(min-width: 768px) 320px, 100vw"
+                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                            </>
                           ) : (
                             <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300" />
                           )}
