@@ -21,6 +21,7 @@ import { RWebShare } from "react-web-share";
 function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   const router = useRouter();
   const { vendorId } = router.query;
+  const share = typeof router?.query?.share === "string" ? router.query.share : "";
   const [loading, setLoading] = useState(false);
   const [personalPackages, setPersonalPackages] = useState([]);
   const [vendor, setVendor] = useState([]);
@@ -44,6 +45,23 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   const reviewInputRef = useRef(null);
   const [shortUrl, setShortUrl] = useState("");
 
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [reviewStats, setReviewStats] = useState({
+    total: 0,
+    avgRating: 0,
+    distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+  });
+  const [showAllReviews, setShowAllReviews] = useState(false);
+  const [reviewForm, setReviewForm] = useState({
+    rating: 5,
+    category: "Makeup",
+    text: "",
+    customerName: "",
+    customerPhone: "",
+  });
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+
   useEffect(() => {
     const generateShortUrl = async () => {
       try {
@@ -61,6 +79,117 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
 
     generateShortUrl();
   }, [vendorId]);
+
+  const fetchReviews = async () => {
+    if (!vendorId) return;
+    setReviewsLoading(true);
+    try {
+      const listRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/vendor-review/public?vendorId=${vendorId}&limit=20&page=1`
+      );
+      const listJson = await listRes.json().catch(() => null);
+      setReviews(Array.isArray(listJson?.list) ? listJson.list : []);
+
+      const statsRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/vendor-review/public/stats?vendorId=${vendorId}`
+      );
+      const statsJson = await statsRes.json().catch(() => null);
+      if (statsJson?.stats) setReviewStats(statsJson.stats);
+      else
+        setReviewStats({
+          total: 0,
+          avgRating: 0,
+          distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+        });
+    } catch (e) {
+      setReviews([]);
+      setReviewStats({
+        total: 0,
+        avgRating: 0,
+        distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      });
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vendorId]);
+
+  const submitReview = async () => {
+    const text = String(reviewForm.text || "").trim();
+    if (!vendorId) return;
+    if (!text) return alert("Please write a review.");
+
+    setReviewSubmitting(true);
+    try {
+      // Share-link flow (guest allowed)
+      if (share) {
+        const resp = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/vendor-review/public?share=${encodeURIComponent(
+            share
+          )}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              review: text,
+              rating: reviewForm.rating,
+              category: reviewForm.category || "Makeup",
+              customerName: reviewForm.customerName,
+              customerPhone: reviewForm.customerPhone,
+              images: [],
+            }),
+          }
+        );
+        const data = await resp.json().catch(() => null);
+        if (!resp.ok || data?.message !== "success") {
+          alert(data?.message || "Failed to submit review.");
+          return;
+        }
+        alert("Review submitted!");
+        setReviewForm((p) => ({ ...p, text: "" }));
+        fetchReviews();
+        return;
+      }
+
+      // Normal flow: must be logged in
+      if (!userLoggedIn) {
+        setSource(`Review for [${vendor?.name || "Makeup Artist"}]`);
+        setOpenLoginModalv2(true);
+        return;
+      }
+
+      const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendor-review`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          vendorId,
+          review: text,
+          rating: reviewForm.rating,
+          category: reviewForm.category || "Makeup",
+          images: [],
+        }),
+      });
+      const data = await resp.json().catch(() => null);
+      if (!resp.ok || data?.message !== "success") {
+        alert(data?.message || "Failed to submit review.");
+        return;
+      }
+      alert("Review submitted!");
+      setReviewForm((p) => ({ ...p, text: "" }));
+      fetchReviews();
+    } catch (e) {
+      alert("Failed to submit review.");
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
 
 
   useEffect(() => {
@@ -686,7 +815,9 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           <div
             className="flex flex-row items-center gap-2 md:gap-3 px-4 md:px-8 lg:px-12 cursor-pointer flex-1 justify-center min-w-0"
             onClick={() => {
-              router.push("#gallery");
+              document
+                .getElementById("gallery")
+                ?.scrollIntoView({ behavior: "smooth", block: "start" });
             }}
           >
             <img src="/assets/icons/icon-image.webp" className="h-5 w-5 md:h-6 md:w-6" />
@@ -695,7 +826,9 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           <div
             className="flex flex-row items-center gap-2 md:gap-3 px-4 md:px-8 lg:px-12 cursor-pointer flex-1 justify-center min-w-0"
             onClick={() => {
-              router.push("#about");
+              document
+                .getElementById("about")
+                ?.scrollIntoView({ behavior: "smooth", block: "start" });
             }}
           >
             <img src="/assets/icons/icon-info.webp" className="h-5 w-5 md:h-6 md:w-6" />
@@ -704,7 +837,9 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           <div
             className="flex flex-row items-center gap-2 md:gap-3 px-4 md:px-8 lg:px-12 cursor-pointer flex-1 justify-center min-w-0"
             onClick={() => {
-              router.push("#reviews");
+              document
+                .getElementById("reviews")
+                ?.scrollIntoView({ behavior: "smooth", block: "start" });
             }}
           >
             <img src="/assets/icons/icon-review.webp" className="h-5 w-5 md:h-6 md:w-6" />
@@ -906,7 +1041,9 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                 src="/assets/icons/icon-review.webp"
                 className="h-6 w-6"
                 onClick={() => {
-                  router.push("#reviews");
+                  document
+                    .getElementById("reviews")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
                 }}
               />
             </div>
@@ -1693,18 +1830,32 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
             <div className="flex flex-col lg:flex-row gap-6">
               <div className="w-full  lg:w-[30%] flex flex-row lg:flex-col gap-6 ">
                 <div className="w-1/2 lg:w-full pr-4 border-r border-gray-500 lg:border-r-0 lg:pb-4">
-                  <div className="text-gray-500 text-sm mb-2 font-semibold">Very Good</div>
+                  <div className="text-gray-500 text-sm mb-2 font-semibold">
+                    {reviewStats.avgRating >= 4.5
+                      ? "Excellent"
+                      : reviewStats.avgRating >= 3.5
+                      ? "Very Good"
+                      : reviewStats.avgRating >= 2.5
+                      ? "Good"
+                      : reviewStats.avgRating > 0
+                      ? "Average"
+                      : "No ratings yet"}
+                  </div>
                   <div className="flex items-center gap-1 mb-2">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <FaStar
                         key={star}
                         size={24}
-                        className={star <= 4 ? "text-[#840032]" : "text-gray-300"}
+                        className={
+                          star <= Math.round(reviewStats.avgRating || 0)
+                            ? "text-[#840032]"
+                            : "text-gray-300"
+                        }
                       />
                     ))}
                   </div>
                   <div className="text-gray-500 text-sm mb-4">
-                    16,464 ratings and 1,620 reviews
+                    {reviewStats.total} reviews
                   </div>
                 </div>
 
@@ -1716,29 +1867,20 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                         <div
                           className="bg-[#840032] h-2 rounded-full"
                           style={{
-                            width: `${rating === 5
-                              ? 65
-                              : rating === 4
-                                ? 22
-                                : rating === 3
-                                  ? 6
-                                  : rating === 2
-                                    ? 2
-                                    : 5
-                              }%`,
+                            width: `${
+                              reviewStats.total > 0
+                                ? Math.round(
+                                    ((reviewStats.distribution?.[rating] || 0) /
+                                      reviewStats.total) *
+                                      100
+                                  )
+                                : 0
+                            }%`,
                           }}
                         ></div>
                       </div>
                       <span className="text-sm text-gray-600 w-16 text-right">
-                        {rating === 5
-                          ? "10,676"
-                          : rating === 4
-                            ? "3,549"
-                            : rating === 3
-                              ? "1,040"
-                              : rating === 2
-                                ? "365"
-                                : "834"}
+                        {reviewStats.distribution?.[rating] || 0}
                       </span>
                     </div>
                   ))}
@@ -1747,59 +1889,63 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
 
               <div className="w-full lg:w-[70%] lg:pl-36">
                 <div className="space-y-6">
-                  <div className="border-b border-gray-200 pb-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <FaStar key={star} size={16} className="text-[#840032]" />
-                        ))}
-                      </div>
-                      <span className="font-bold text-[#840032]">
-                        5.0 • Perfect product!
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-600 mb-2">
-                      by <span className="font-semibold">Riya Sharma</span> • 12 Aug 2025
-                    </div>
-                    <div className="text-gray-500 text-sm mb-2">
-                      Review for: Color Gold, Black
-                    </div>
-                    <div className="text-black text-sm leading-relaxed">
-                      Excellent product from flipkart , Amazing design mouse and size is very
-                      comfortable , This working very smoothly on my laptop and golden colour
-                      mouse is very amazing.......... Thankyou!
-                    </div>
-                  </div>
-
-                  <div className="border-b border-gray-200 pb-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <FaStar key={star} size={16} className="text-[#840032]" />
-                        ))}
-                      </div>
-                      <span className="font-bold text-[#840032]">
-                        5.0 • Perfect product!
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-600 mb-2">
-                      by <span className="font-semibold">Amit Verma</span> • 10 Aug 2025
-                    </div>
-                    <div className="text-gray-500 text-sm mb-2">
-                      Review for: Color Gold, Black
-                    </div>
-                    <div className="text-black text-sm leading-relaxed">
-                      Excellent product from flipkart , Amazing design mouse and size is very
-                      comfortable , This working very smoothly on my laptop and golden colour
-                      mouse is very amazing.......... Thankyou!
-                    </div>
-                  </div>
+                  {reviewsLoading ? (
+                    <div className="text-sm text-gray-500">Loading reviews…</div>
+                  ) : (showAllReviews ? reviews : reviews.slice(0, 3)).length > 0 ? (
+                    (showAllReviews ? reviews : reviews.slice(0, 3)).map((r, idx) => {
+                      const name =
+                        r?.customer?.name ||
+                        r?.user?.name ||
+                        "Customer";
+                      const dateStr = r?.createdAt
+                        ? new Date(r.createdAt).toLocaleDateString()
+                        : "";
+                      return (
+                        <div key={r?._id || idx} className="border-b border-gray-200 pb-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="flex items-center gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <FaStar
+                                  key={star}
+                                  size={16}
+                                  className={
+                                    star <= (r?.rating || 0)
+                                      ? "text-[#840032]"
+                                      : "text-gray-300"
+                                  }
+                                />
+                              ))}
+                            </div>
+                            <span className="font-bold text-[#840032]">
+                              {(r?.rating || 0).toFixed ? r.rating.toFixed(1) : r?.rating} •{" "}
+                              {r?.category || "Review"}
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-600 mb-2">
+                            by <span className="font-semibold">{name}</span>
+                            {dateStr ? ` • ${dateStr}` : ""}
+                          </div>
+                          <div className="text-black text-sm leading-relaxed">
+                            {r?.review}
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-sm text-gray-500">No reviews yet.</div>
+                  )}
                 </div>
 
                 <div className="text-right mt-4">
-                  <button className="text-[#840032] font-medium underline">
-                    SHOW MORE
-                  </button>
+                  {reviews.length > 3 && (
+                    <button
+                      className="text-[#840032] font-medium underline"
+                      onClick={() => setShowAllReviews((v) => !v)}
+                      type="button"
+                    >
+                      {showAllReviews ? "SHOW LESS" : "SHOW MORE"}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -1807,12 +1953,54 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
 
           <div className="bg-[#f4f4f4]  p-6">
             <div className="font-bold text-[#840032] text-lg mb-4">Write a review!</div>
+            <div className="flex items-center gap-2 mb-3">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  className="p-0 m-0 bg-transparent border-none"
+                  onClick={() => setReviewForm((p) => ({ ...p, rating: star }))}
+                  aria-label={`Rate ${star}`}
+                >
+                  <FaStar
+                    size={20}
+                    className={star <= reviewForm.rating ? "text-[#840032]" : "text-gray-300"}
+                  />
+                </button>
+              ))}
+              <span className="text-sm text-gray-600 ml-2">{reviewForm.rating}/5</span>
+            </div>
+
+            {share && !userLoggedIn && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                <input
+                  className="w-full p-3 border border-gray-300 rounded-lg text-black"
+                  placeholder="Your name (optional)"
+                  value={reviewForm.customerName}
+                  onChange={(e) => setReviewForm((p) => ({ ...p, customerName: e.target.value }))}
+                />
+                <input
+                  className="w-full p-3 border border-gray-300 rounded-lg text-black"
+                  placeholder="Phone (optional)"
+                  value={reviewForm.customerPhone}
+                  onChange={(e) => setReviewForm((p) => ({ ...p, customerPhone: e.target.value }))}
+                />
+              </div>
+            )}
+
             <textarea
               className="w-full p-4 border border-gray-300 rounded-lg resize-none h-32 text-black"
               placeholder="Tell us what you feel about the artist!"
               ref={reviewInputRef}
+              value={reviewForm.text}
+              onChange={(e) => setReviewForm((p) => ({ ...p, text: e.target.value }))}
             />
-            <button className="w-[100px] mt-4 bg-[#840032] text-white font-bold uppercase py-3 rounded-lg mx-auto block">
+            <button
+              type="button"
+              onClick={() => submitReview()}
+              disabled={reviewSubmitting}
+              className="w-[120px] mt-4 bg-[#840032] disabled:bg-[#840032]/50 text-white font-bold uppercase py-3 rounded-lg mx-auto block"
+            >
               POST
             </button>
           </div>
