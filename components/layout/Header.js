@@ -2,7 +2,7 @@ import SearchBar from "@/components/searchBar/SearchBar";
 import { Dropdown } from "flowbite-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BiLogIn, BiLogOut } from "react-icons/bi";
 import { FaRegUserCircle } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
@@ -14,55 +14,91 @@ export default function Header({ userLoggedIn, user, Logout }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const searchWrapRef = useRef(null);
   const navbarRef = useRef();
 
-  const SEARCH_ITEMS = useMemo(
-    () => [
-      { label: "Wedding Store (Decor)", href: "/decor", keywords: ["decor", "wedding store", "wedding", "store"] },
-      { label: "Decor Packages", href: "/decor/packages", keywords: ["decor", "packages", "package"] },
-      { label: "Makeup Artist Store", href: "/makeup-and-beauty", keywords: ["makeup", "artist", "beauty", "mua"] },
-      { label: "Makeup Artists", href: "/makeup-and-beauty/artists", keywords: ["makeup", "artist", "artists", "beauty"] },
-      { label: "My Account", href: "/my-account", keywords: ["my", "account", "profile"] },
-      { label: "My Orders", href: "/my-orders", keywords: ["my", "orders", "order"] },
-      { label: "My Bids", href: "/my-bids", keywords: ["my", "bids", "bid"] },
-      { label: "My Payments", href: "/my-payments", keywords: ["my", "payments", "payment", "invoice"] },
-      { label: "Wishlist", href: "/wishlist", keywords: ["my", "wishlist", "saved", "favorites", "favourites"] },
-      { label: "Events", href: "/event", keywords: ["event", "events", "planner"] },
-      { label: "Chats", href: "/chats", keywords: ["chat", "chats", "messages"] },
-      { label: "Login", href: "/login", keywords: ["login", "sign in", "signin"] },
-      { label: "Signup", href: "/signup", keywords: ["signup", "sign up", "register"] },
-    ],
-    []
-  );
+  const getToken = () => {
+    try {
+      return localStorage.getItem("token") || "";
+    } catch (e) {
+      return "";
+    }
+  };
 
-  const suggestions = useMemo(() => {
-    const q = searchValue.trim().toLowerCase();
-    if (!q) return [];
-
-    const scored = SEARCH_ITEMS.map((item) => {
-      const hay = [item.label, ...(item.keywords || [])].join(" ").toLowerCase();
-      let score = 0;
-      if (item.label.toLowerCase().startsWith(q)) score += 3;
-      if (hay.startsWith(q)) score += 2;
-      if (hay.includes(q)) score += 1;
-      return { item, score };
-    })
-      .filter((x) => x.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 8)
-      .map((x) => x.item);
-
-    return scored;
-  }, [SEARCH_ITEMS, searchValue]);
+  const navigateFromResult = (r) => {
+    if (!r) return;
+    setShowSearchSuggestions(false);
+    setMobileSearchOpen(false);
+    setSearchValue("");
+    if (r.type === "decorCategory") {
+      router.push(`/decor/view?category=${encodeURIComponent(r.id)}`);
+      return;
+    }
+    if (r.type === "decorItem") {
+      router.push(`/decor/view/${r.id}`);
+      return;
+    }
+    if (r.type === "decorPackage") {
+      router.push(`/decor/packages/${r.id}`);
+      return;
+    }
+    if (r.type === "vendor") {
+      router.push(`/makeup-and-beauty/artists/${r.id}`);
+      return;
+    }
+    if (r.type === "event") {
+      router.push(`/event/${r.id}`);
+      return;
+    }
+  };
 
   const goToFirstSuggestion = () => {
-    if (!suggestions.length) return;
-    const first = suggestions[0];
-    setShowSearchSuggestions(false);
-    setSearchValue("");
-    router.push(first.href);
+    if (!searchResults.length) return;
+    navigateFromResult(searchResults[0]);
   };
+
+  useEffect(() => {
+    const q = searchValue.trim();
+    if (!q) {
+      setSearchResults([]);
+      setSearchLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setSearchLoading(true);
+
+    const t = setTimeout(async () => {
+      try {
+        const token = getToken();
+        const resp = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/search?q=${encodeURIComponent(q)}&limit=10`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { authorization: `Bearer ${token}` } : {}),
+            },
+          }
+        );
+        const data = await resp.json().catch(() => null);
+        if (cancelled) return;
+        setSearchResults(Array.isArray(data?.results) ? data.results : []);
+      } catch (e) {
+        if (!cancelled) setSearchResults([]);
+      } finally {
+        if (!cancelled) setSearchLoading(false);
+      }
+    }, 220);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [searchValue]);
   useEffect(() => {
     const myElement = document.getElementById("mainDiv");
     const isElementVisible = () => {
@@ -133,7 +169,14 @@ export default function Header({ userLoggedIn, user, Logout }) {
         </Link>
         {/* Icons */}
         <div className="flex items-center gap-6">
-          <button className="p-0 m-0 bg-transparent border-none hover:cursor-pointer">
+          <button
+            type="button"
+            className="p-0 m-0 bg-transparent border-none hover:cursor-pointer"
+            onClick={() => {
+              setMobileSearchOpen((v) => !v);
+              if (searchValue.trim()) setShowSearchSuggestions(true);
+            }}
+          >
             <FiSearch className="w-[28px] h-[28px] text-[#2C365A] hover:text-[#840032] transition-colors duration-200" />
           </button>
           <Dropdown
@@ -182,6 +225,62 @@ export default function Header({ userLoggedIn, user, Logout }) {
           </Dropdown>
         </div>
       </div>
+
+      {/* Mobile Search (dropdown) */}
+      {mobileSearchOpen && (
+        <div className="md:hidden sticky top-[60px] z-50 bg-[#FAFBFF] px-4 pb-3 shadow">
+          <div ref={searchWrapRef} className="relative">
+            <SearchBar
+              value={searchValue}
+              onChange={(e) => {
+                const v = e.target.value;
+                setSearchValue(v);
+                setShowSearchSuggestions(!!v.trim());
+              }}
+              onFocus={() => {
+                if (searchValue.trim()) setShowSearchSuggestions(true);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  goToFirstSuggestion();
+                }
+                if (e.key === "Escape") {
+                  setShowSearchSuggestions(false);
+                  setMobileSearchOpen(false);
+                }
+              }}
+              placeholder="Search decor, packages, artists..."
+              inputClassName="text-sm"
+              autoFocus
+            />
+
+            {showSearchSuggestions && (searchLoading || searchResults.length > 0) && (
+              <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
+                {searchLoading && (
+                  <div className="px-4 py-3 text-sm text-gray-500">Searching…</div>
+                )}
+                {!searchLoading &&
+                  searchResults.map((r) => (
+                    <button
+                      key={`${r.type}:${r.id}`}
+                      type="button"
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50"
+                      style={{ fontFamily: "Montserrat, sans-serif" }}
+                      onClick={() => navigateFromResult(r)}
+                    >
+                      <div className="text-sm text-gray-900">{r.label}</div>
+                      {r.meta ? (
+                        <div className="text-xs text-gray-500 mt-0.5">{r.meta}</div>
+                      ) : null}
+                    </button>
+                  ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Desktop Header */}
       <div ref={navbarRef} className="hidden md:flex sticky top-0 z-50 w-full bg-[#FAFBFF] shadow items-center h-[60px]">
         <div className="w-full max-w-[1550px] mx-auto flex justify-between items-center px-6">
@@ -242,7 +341,7 @@ export default function Header({ userLoggedIn, user, Logout }) {
                     setShowSearchSuggestions(false);
                   }
                 }}
-                placeholder="Search..."
+                placeholder="Search decor, packages, artists..."
                 inputClassName="text-sm"
               />
               {/* keyboard handling */}
@@ -250,24 +349,26 @@ export default function Header({ userLoggedIn, user, Logout }) {
                 {/* placeholder for future a11y combobox wiring */}
               </div>
 
-              {showSearchSuggestions && suggestions.length > 0 && (
+              {showSearchSuggestions && (searchLoading || searchResults.length > 0) && (
                 <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
-                  {suggestions.map((sug) => (
-                    <button
-                      key={sug.href}
-                      type="button"
-                      className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50"
-                      style={{ fontFamily: "Montserrat, sans-serif" }}
-                      onClick={() => {
-                        setShowSearchSuggestions(false);
-                        setSearchValue("");
-                        router.push(sug.href);
-                      }}
-                    >
-                      {sug.label}
-                      <span className="text-gray-400 ml-2">{sug.href}</span>
-                    </button>
-                  ))}
+                  {searchLoading && (
+                    <div className="px-4 py-3 text-sm text-gray-500">Searching…</div>
+                  )}
+                  {!searchLoading &&
+                    searchResults.map((r) => (
+                      <button
+                        key={`${r.type}:${r.id}`}
+                        type="button"
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50"
+                        style={{ fontFamily: "Montserrat, sans-serif" }}
+                        onClick={() => navigateFromResult(r)}
+                      >
+                        <div className="text-sm text-gray-900">{r.label}</div>
+                        {r.meta ? (
+                          <div className="text-xs text-gray-500 mt-0.5">{r.meta}</div>
+                        ) : null}
+                      </button>
+                    ))}
                 </div>
               )}
             </div>
