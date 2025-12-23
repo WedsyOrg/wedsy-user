@@ -109,6 +109,8 @@ const EventFormStep2 = React.memo(function EventFormStep2({
   onPrevStep,
   eventName,
   venueInputRef,
+  eventTypes,
+  isLoadingEventTypes,
 }) {
   return (
     <div className="flex flex-col gap-6">
@@ -124,15 +126,24 @@ const EventFormStep2 = React.memo(function EventFormStep2({
             >
               (Muhurattam, Haldi, Reception etc)
             </div>
-            <input
-              type="text"
+            <select
               className="w-full rounded-full p-3 text-center border-0 bg-white 
-                       focus:outline-none focus:ring-2 focus:ring-pink-300"
-              placeholder="Event day"
+                       focus:outline-none focus:ring-2 focus:ring-pink-300
+                       appearance-none cursor-pointer"
               name="eventDay"
               value={data.eventDay}
               onChange={onChange}
-            />
+              disabled={isLoadingEventTypes}
+            >
+              <option value="">
+                {isLoadingEventTypes ? "Loading..." : "Select Event Day"}
+              </option>
+              {eventTypes.map((type) => (
+                <option key={type._id} value={type.title}>
+                  {type.title}
+                </option>
+              ))}
+            </select>
             {errors.eventDay && (
               <p className="text-red-500 text-sm mt-1 text-center">
                 {errors.eventDay}
@@ -328,6 +339,8 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [communities, setCommunities] = useState([]);
   const [isLoadingCommunities, setIsLoadingCommunities] = useState(false);
+  const [eventTypes, setEventTypes] = useState([]);
+  const [isLoadingEventTypes, setIsLoadingEventTypes] = useState(false);
 
   // Check for ?new=true query parameter to show creation form
   useEffect(() => {
@@ -541,6 +554,30 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
       console.error("Error fetching communities:", error);
     } finally {
       setIsLoadingCommunities(false);
+    }
+  }, []);
+
+  const fetchEventTypes = useCallback(async () => {
+    try {
+      setIsLoadingEventTypes(true);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/event-type/list`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (response.ok) {
+        const result = await response.json();
+        setEventTypes(result);
+      }
+    } catch (error) {
+      console.error("Error fetching event types:", error);
+    } finally {
+      setIsLoadingEventTypes(false);
     }
   }, []);
 
@@ -845,10 +882,11 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
     if (userLoggedIn) {
       fetchEvents();
       fetchCommunities();
+      fetchEventTypes();
     } else {
       setIsLoading(false);
     }
-  }, [userLoggedIn, fetchEvents, fetchCommunities]);
+  }, [userLoggedIn, fetchEvents, fetchCommunities, fetchEventTypes]);
 
   // Refetch events when page becomes visible (user returns from planner)
   useEffect(() => {
@@ -991,6 +1029,8 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
                       onPrevStep={handlePrevStep}
                       eventName={data.name}
                       venueInputRef={venueInputRefDesktop}
+                      eventTypes={eventTypes}
+                      isLoadingEventTypes={isLoadingEventTypes}
                     />
                   )}
                   {formStep === 3 && (
@@ -1137,6 +1177,8 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
                   onPrevStep={handlePrevStep}
                   eventName={data.name}
                   venueInputRef={venueInputRefMobile}
+                  eventTypes={eventTypes}
+                  isLoadingEventTypes={isLoadingEventTypes}
                 />
               )}
               {formStep === 3 && (
