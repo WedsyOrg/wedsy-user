@@ -697,50 +697,132 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       </div>
 
       {/* card section */}
-      <div className="bg-[#f4f4f4] pb-12 grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-16 px-8 md:px-36">
-        {(Array.isArray(vendors) ? vendors : [])
-          ?.filter((i) =>
-            search ? i.name.toLowerCase().includes(search.toLowerCase()) : true
-          )
-          .slice(0, 9)
-          ?.map((item, index) => (
-            <Link
-              key={item?._id || index}
-              href={`/makeup-and-beauty/artists/${item?._id}`}
-              className="bg-white p-4 rounded-lg flex flex-col gap-4 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#880E4F]/40"
-              aria-label={`View ${item?.name || "artist"}`}
-            >
-              <div className="bg-gray-500 pt-[100%] w-full relative rounded-xl overflow-hidden">
-                <img
-                  src={item?.gallery?.coverPhoto}
-                  className="absolute top-0 w-full h-full object-cover"
-                  alt={item?.name || "Makeup artist"}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {item?.name}
-                </h3>
-                <div className="flex items-center gap-1 text-[#880E4F]">
-                  <FaStar size={14} />
-                  <span className="text-sm font-medium">4.5</span>
+      <div className="bg-[#f4f4f4] pb-12 px-4 sm:px-8 md:px-36">
+        {/* Mobile Grid - 2x2, max 6 items */}
+        <div className="grid grid-cols-2 gap-3 md:hidden">
+          {(Array.isArray(vendors) ? vendors : [])
+            ?.filter((i) =>
+              search ? i.name.toLowerCase().includes(search.toLowerCase()) : true
+            )
+            .slice(0, 6)
+            ?.map((item, index) => (
+              <Link
+                key={item?._id || index}
+                href={`/makeup-and-beauty/artists/${item?._id}`}
+                className="bg-white p-3 rounded-xl flex flex-col gap-2 cursor-pointer transition-all duration-200 active:scale-[0.98] shadow-sm"
+                aria-label={`View ${item?.name || "artist"}`}
+              >
+                <div className="bg-gray-200 pt-[100%] w-full relative rounded-lg overflow-hidden">
+                  {item?.gallery?.coverPhoto ? (
+                    <img
+                      src={item?.gallery?.coverPhoto}
+                      className="absolute top-0 left-0 w-full h-full object-cover"
+                      alt={item?.name || "Makeup artist"}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div 
+                    className={`absolute inset-0 bg-gradient-to-br from-[#840032]/20 to-[#840032]/40 ${item?.gallery?.coverPhoto ? 'hidden' : 'flex'} items-center justify-center`}
+                  >
+                    <span className="text-3xl text-white/60">
+                      {item?.name?.charAt(0)?.toUpperCase() || '?'}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 text-gray-500 text-sm">
-                  <FaMapMarkerAlt size={14} />
-                  <span>RT Nagar, Bangalore</span>
+                <div className="flex flex-col gap-0.5">
+                  <h3 className="text-sm font-semibold text-gray-800 truncate">
+                    {item?.name || "Unknown Artist"}
+                  </h3>
+                  <div className="flex items-center gap-1 text-[#880E4F]">
+                    <FaStar size={10} />
+                    <span className="text-xs font-medium">{item?.rating || "4.5"}</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-gray-500 text-xs">
+                    <FaMapMarkerAlt size={10} className="flex-shrink-0" />
+                    <span className="truncate">
+                      {item?.businessAddress?.locality 
+                        ? `${item.businessAddress.locality}`
+                        : "Bangalore"}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-0.5">
+                    Bridal makeup price
+                  </p>
+                  <p className="text-[#880E4F] font-bold text-sm">
+                    {toPriceString(item?.prices?.bridal || 0)}
+                  </p>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">
-                  Bridal makeup price
-                </p>
-                <p className="text-[#880E4F] font-bold text-lg">
-                  {toPriceString(item?.prices?.bridal || 0)}
-                </p>
-              </div>
-            </Link>
-          ))}
-        <div className="flex flex-row justify-center col-span-3">
+              </Link>
+            ))}
+        </div>
+
+        {/* Desktop Grid - 3 columns, max 9 items */}
+        <div className="hidden md:grid md:grid-cols-3 gap-8 lg:gap-16">
+          {(Array.isArray(vendors) ? vendors : [])
+            ?.filter((i) =>
+              search ? i.name.toLowerCase().includes(search.toLowerCase()) : true
+            )
+            .slice(0, 9)
+            ?.map((item, index) => (
+              <Link
+                key={item?._id || index}
+                href={`/makeup-and-beauty/artists/${item?._id}`}
+                className="bg-white p-4 rounded-xl flex flex-col gap-3 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#880E4F]/40 shadow-sm"
+                aria-label={`View ${item?.name || "artist"}`}
+              >
+                <div className="bg-gray-200 pt-[100%] w-full relative rounded-xl overflow-hidden">
+                  {item?.gallery?.coverPhoto ? (
+                    <img
+                      src={item?.gallery?.coverPhoto}
+                      className="absolute top-0 left-0 w-full h-full object-cover"
+                      alt={item?.name || "Makeup artist"}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div 
+                    className={`absolute inset-0 bg-gradient-to-br from-[#840032]/20 to-[#840032]/40 ${item?.gallery?.coverPhoto ? 'hidden' : 'flex'} items-center justify-center`}
+                  >
+                    <span className="text-5xl text-white/60">
+                      {item?.name?.charAt(0)?.toUpperCase() || '?'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-lg font-semibold text-gray-800 truncate">
+                    {item?.name || "Unknown Artist"}
+                  </h3>
+                  <div className="flex items-center gap-1 text-[#880E4F]">
+                    <FaStar size={14} />
+                    <span className="text-sm font-medium">{item?.rating || "4.5"}</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-gray-500 text-sm">
+                    <FaMapMarkerAlt size={14} className="flex-shrink-0" />
+                    <span className="truncate">
+                      {item?.businessAddress?.locality 
+                        ? `${item.businessAddress.locality}, ${item.businessAddress.city || 'Bangalore'}`
+                        : "Bangalore"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Bridal makeup price
+                  </p>
+                  <p className="text-[#880E4F] font-bold text-lg">
+                    {toPriceString(item?.prices?.bridal || 0)}
+                  </p>
+                </div>
+              </Link>
+            ))}
+        </div>
+
+        <div className="flex flex-row justify-center mt-8">
           <button
-            className="rounded-lg md:rounded-full bg-black md:bg-[#840032] text-white py-2 px-12"
+            className="rounded-full bg-black text-white py-2.5 px-8 sm:px-12 text-sm sm:text-base"
             onClick={() => {
               router.push("/makeup-and-beauty/artists");
             }}
