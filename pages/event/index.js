@@ -7,7 +7,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BsArrowRight } from "react-icons/bs";
+import { BsArrowRight, BsTrash } from "react-icons/bs";
+import { IoClose } from "react-icons/io5";
 
 // Step 1
 const EventFormStep1 = React.memo(function EventFormStep1({
@@ -341,6 +342,11 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
   const [isLoadingCommunities, setIsLoadingCommunities] = useState(false);
   const [eventTypes, setEventTypes] = useState([]);
   const [isLoadingEventTypes, setIsLoadingEventTypes] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    eventId: null,
+    eventName: "",
+  });
 
   // Check for ?new=true query parameter to show creation form
   useEffect(() => {
@@ -658,6 +664,51 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
     fetchEvents();
   }, [fetchEvents]);
 
+  const openDeleteModal = useCallback((eventId, eventName) => {
+    setDeleteModal({
+      isOpen: true,
+      eventId,
+      eventName,
+    });
+  }, []);
+
+  const closeDeleteModal = useCallback(() => {
+    setDeleteModal({
+      isOpen: false,
+      eventId: null,
+      eventName: "",
+    });
+  }, []);
+
+  const confirmDeleteEvent = useCallback(async () => {
+    if (!deleteModal.eventId) return;
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/event/${deleteModal.eventId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        // Close modal and refresh the events list
+        closeDeleteModal();
+        await fetchEvents();
+      } else {
+        const result = await response.json();
+        alert(result.message || "Failed to delete event");
+      }
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      alert("Failed to delete event. Please try again.");
+    }
+  }, [deleteModal.eventId, fetchEvents, closeDeleteModal]);
+
   const handleNextStep = useCallback(() => {
     // proceed to next step
 
@@ -952,6 +1003,67 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://www.wedsy.in/event" />
       </Head>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50"
+            onClick={closeDeleteModal}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-2xl p-6 mx-4 max-w-md w-full shadow-xl">
+            {/* Close Button */}
+            <button
+              onClick={closeDeleteModal}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <IoClose size={24} />
+            </button>
+
+            {/* Modal Body */}
+            <div className="text-center pt-4">
+              {/* Warning Icon */}
+              <div className="mx-auto w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                <BsTrash size={28} className="text-red-500" />
+              </div>
+
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Delete Event
+              </h3>
+              
+              <p className="text-gray-600 mb-2">
+                Are you sure you want to delete
+              </p>
+              <p className="text-gray-900 font-medium mb-4">
+                &quot;{deleteModal.eventName}&quot;?
+              </p>
+              <p className="text-sm text-gray-500 mb-6">
+                This action cannot be undone.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={closeDeleteModal}
+                  className="px-6 py-2.5 rounded-full border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDeleteEvent}
+                  className="px-6 py-2.5 rounded-full bg-red-500 text-white font-medium hover:bg-red-600 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Desktop View */}
       <div className="hidden md:block bg-[#F4F4F4] min-h-screen">
         {/* Header */}
@@ -1058,26 +1170,41 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
                         {events.map((item, index) => {
                           const displayName = deriveEventDisplayName(item);
                           return (
-                            <Link
-                              href={`/event/${item._id}`}
+                            <div
                               key={`desktop-${item._id}-${index}-${refreshKey}`}
-                              className="flex flex-row justify-between items-center py-2 hover:text-pink-600 transition-colors"
+                              className="flex flex-row justify-between items-center py-2 group"
                             >
-                              <div className="flex items-center gap-2">
+                              <Link
+                                href={`/event/${item._id}`}
+                                className="flex items-center gap-2 hover:text-pink-600 transition-colors"
+                              >
                                 <span
-                                  className="text-lg font-medium text-black"
+                                  className="text-lg font-medium text-black group-hover:text-pink-600"
                                   style={{ fontFamily: "Montserrat" }}
                                 >
                                   {index + 1}. {displayName}
                                 </span>
-                              </div>
+                              </Link>
                               <div className="flex items-center gap-4">
                                 <span className="text-gray-600" style={{ fontFamily: "Montserrat" }}>
                                   {getEventDisplayDate(item)}
                                 </span>
-                                <BsArrowRight size={16} className="text-gray-400" />
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    openDeleteModal(item._id, displayName);
+                                  }}
+                                  className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                                  title="Delete event"
+                                >
+                                  <BsTrash size={16} />
+                                </button>
+                                <Link href={`/event/${item._id}`}>
+                                  <BsArrowRight size={16} className="text-gray-400 hover:text-pink-600" />
+                                </Link>
                               </div>
-                            </Link>
+                            </div>
                           );
                         })}
                       </div>
@@ -1206,26 +1333,41 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
                     {events.map((item, index) => {
                       const displayName = deriveEventDisplayName(item);
                       return (
-                        <Link
-                          href={`/event/${item._id}`}
+                        <div
                           key={`mobile-${item._id}-${index}-${refreshKey}`}
-                          className="flex flex-row justify-between items-center py-2 hover:text-pink-600 transition-colors"
+                          className="flex flex-row justify-between items-center py-2 group"
                         >
-                          <div className="flex items-center gap-2">
+                          <Link
+                            href={`/event/${item._id}`}
+                            className="flex items-center gap-2 hover:text-pink-600 transition-colors"
+                          >
                             <span
-                              className="text-base font-medium text-black"
+                              className="text-base font-medium text-black group-hover:text-pink-600"
                               style={{ fontFamily: "Montserrat" }}
                             >
                               {index + 1}. {displayName}
                             </span>
-                          </div>
+                          </Link>
                           <div className="flex items-center gap-3">
                             <span className="text-sm text-gray-600" style={{ fontFamily: "Montserrat" }}>
                               {getEventDisplayDate(item)}
                             </span>
-                            <BsArrowRight size={14} className="text-gray-400" />
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                openDeleteModal(item._id, displayName);
+                              }}
+                              className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                              title="Delete event"
+                            >
+                              <BsTrash size={14} />
+                            </button>
+                            <Link href={`/event/${item._id}`}>
+                              <BsArrowRight size={14} className="text-gray-400 hover:text-pink-600" />
+                            </Link>
                           </div>
-                        </Link>
+                        </div>
                       );
                     })}
                   </div>

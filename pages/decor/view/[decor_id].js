@@ -744,133 +744,158 @@ function DecorListing({
           })
         }
       >
-        <Modal.Header>
-          <h3 className="text-xl font-medium text-gray-900 dark:text-white px-4">
-            Add-ons &nbsp;
-            <span className="text-sm">
-              ({productAddOnsCart.displayIndex + 1}/{decor.productAddOns.length}
-              )
+        <Modal.Header className="border-b border-gray-200">
+          <div className="flex items-center justify-between w-full">
+            <h3 className="text-xl font-semibold text-gray-900">
+              Enhance Your Decor
+            </h3>
+            <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+              {productAddOnsCart.displayIndex + 1} of {decor.productAddOns.length}
             </span>
-          </h3>
+          </div>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="p-6">
           {decor.productAddOns[productAddOnsCart.displayIndex]?._id &&
             decor.productAddOns
               ?.filter((_, i) => i === productAddOnsCart.displayIndex)
               ?.map((item, index) => (
-                <div className="space-y-6" key={item._id}>
-                  <p>
-                    {item.name}: &nbsp;{" "}
-                    <span className="text-rose-900">
-                      ₹{" "}
-                      {item.productTypes[0]?.sellingPrice +
+                <div className="space-y-5" key={item._id}>
+                  {/* Product Header */}
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                    <h4 className="text-lg font-medium text-gray-900">
+                      {item.name}
+                    </h4>
+                    <span className="text-lg font-semibold text-[#840032]">
+                      ₹{item.productTypes[0]?.sellingPrice +
                         (productAddOnsCart.productVariant
                           ? item.productVariants.find(
                               (i) => i.name === productAddOnsCart.productVariant
                             )?.priceModifier
                           : 0)}
                     </span>
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <img
-                      src={
-                        productAddOnsCart.productVariant
-                          ? item.productVariants.find(
-                              (i) => i.name === productAddOnsCart.productVariant
-                            )?.image
-                          : item?.image
-                      }
-                    />
-                    <div className="grid grid-cols-2 gap-2">
-                      <p className="text-right">Variant</p>
-                      <Select
-                        value={productAddOnsCart.productVariant}
-                        onChange={(e) =>
-                          setProductAddOnsCart({
-                            ...productAddOnsCart,
-                            productVariant: e.target.value,
-                          })
+                  </div>
+                  
+                  {/* Product Image & Options */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="aspect-square rounded-xl overflow-hidden bg-gray-100">
+                      <img
+                        src={
+                          productAddOnsCart.productVariant
+                            ? item.productVariants.find(
+                                (i) => i.name === productAddOnsCart.productVariant
+                              )?.image
+                            : item?.image
                         }
-                      >
-                        <option value={""}>Select</option>
-                        {item.productVariants.map((item, index) => (
-                          <option key={index} value={item.name}>
-                            {item.name}
-                          </option>
-                        ))}
-                      </Select>
-                      <p className="text-right">Quantity</p>
-                      <Select
-                        value={productAddOnsCart.tempQuantity}
-                        onChange={(e) => {
-                          setProductAddOnsCart({
-                            ...productAddOnsCart,
-                            tempQuantity: e.target.value,
-                          });
-                        }}
-                      >
-                        {item?.productInfo?.minimumOrderQuantity &&
-                        item?.productInfo?.maximumOrderQuantity &&
-                        (item?.productInfo?.minimumOrderQuantity >
-                          productAddOnsCart.tempQuantity ||
-                          item?.productInfo?.maximumOrderQuantity <
-                            productAddOnsCart.tempQuantity) ? (
-                          <option
-                            key={productAddOnsCart.tempQuantity}
-                            value={productAddOnsCart.tempQuantity}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      {/* Variant Selection */}
+                      {item.productVariants.length > 0 && (
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-700">Select Variant</label>
+                          <Select
+                            value={productAddOnsCart.productVariant}
+                            onChange={(e) =>
+                              setProductAddOnsCart({
+                                ...productAddOnsCart,
+                                productVariant: e.target.value,
+                              })
+                            }
+                            className="w-full"
                           >
-                            {productAddOnsCart.tempQuantity}
-                          </option>
-                        ) : (
-                          productAddOnsCart.tempQuantity > 30 && (
+                            <option value={""}>Choose an option</option>
+                            {item.productVariants.map((variant, idx) => (
+                              <option key={idx} value={variant.name}>
+                                {variant.name}
+                              </option>
+                            ))}
+                          </Select>
+                        </div>
+                      )}
+                      
+                      {/* Quantity Selection */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Quantity</label>
+                        <Select
+                          value={productAddOnsCart.tempQuantity}
+                          onChange={(e) => {
+                            setProductAddOnsCart({
+                              ...productAddOnsCart,
+                              tempQuantity: e.target.value,
+                            });
+                          }}
+                          className="w-full"
+                        >
+                          {item?.productInfo?.minimumOrderQuantity &&
+                          item?.productInfo?.maximumOrderQuantity &&
+                          (item?.productInfo?.minimumOrderQuantity >
+                            productAddOnsCart.tempQuantity ||
+                            item?.productInfo?.maximumOrderQuantity <
+                              productAddOnsCart.tempQuantity) ? (
                             <option
                               key={productAddOnsCart.tempQuantity}
                               value={productAddOnsCart.tempQuantity}
                             >
                               {productAddOnsCart.tempQuantity}
                             </option>
-                          )
-                        )}
-                        {item?.productInfo?.minimumOrderQuantity &&
-                        item?.productInfo?.maximumOrderQuantity ? (
-                          <QuantityOptions
-                            max={item?.productInfo?.maximumOrderQuantity}
-                            min={item?.productInfo?.minimumOrderQuantity}
-                          />
-                        ) : (
-                          <>
-                            {Array.from(
-                              { length: 30 },
-                              (_, index) => index + 1
-                            ).map((value) => (
-                              <option key={value} value={value}>
-                                {value}
+                          ) : (
+                            productAddOnsCart.tempQuantity > 30 && (
+                              <option
+                                key={productAddOnsCart.tempQuantity}
+                                value={productAddOnsCart.tempQuantity}
+                              >
+                                {productAddOnsCart.tempQuantity}
                               </option>
-                            ))}
-                          </>
-                        )}
-                      </Select>
-                      <div className="col-span-2 border-t border-t-rose-900 grid grid-cols-2 gap-2">
-                        <p className="text-right">Total</p>
-                        <p className="text-rose-900">
-                          ₹{" "}
-                          {(item.productTypes[0]?.sellingPrice +
-                            (productAddOnsCart.productVariant
-                              ? item.productVariants.find(
-                                  (i) =>
-                                    i.name === productAddOnsCart.productVariant
-                                )?.priceModifier
-                              : 0)) *
-                            productAddOnsCart.tempQuantity}
-                        </p>
+                            )
+                          )}
+                          {item?.productInfo?.minimumOrderQuantity &&
+                          item?.productInfo?.maximumOrderQuantity ? (
+                            <QuantityOptions
+                              max={item?.productInfo?.maximumOrderQuantity}
+                              min={item?.productInfo?.minimumOrderQuantity}
+                            />
+                          ) : (
+                            <>
+                              {Array.from(
+                                { length: 30 },
+                                (_, index) => index + 1
+                              ).map((value) => (
+                                <option key={value} value={value}>
+                                  {value}
+                                </option>
+                              ))}
+                            </>
+                          )}
+                        </Select>
+                      </div>
+                      
+                      {/* Total Price Card */}
+                      <div className="mt-auto p-4 bg-gradient-to-r from-[#840032]/10 to-[#840032]/5 rounded-xl border border-[#840032]/20">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-600">Total Amount</span>
+                          <span className="text-2xl font-bold text-[#840032]">
+                            ₹{(item.productTypes[0]?.sellingPrice +
+                              (productAddOnsCart.productVariant
+                                ? item.productVariants.find(
+                                    (i) =>
+                                      i.name === productAddOnsCart.productVariant
+                                  )?.priceModifier
+                                : 0)) *
+                              productAddOnsCart.tempQuantity}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               ))}
-          <div className="border-t mt-6 pt-3 flex flex-row gap-4 justify-center items-center">
+          
+          {/* Action Buttons */}
+          <div className="flex flex-row gap-3 justify-end items-center mt-6 pt-4 border-t border-gray-200">
             <button
-              className={`text-rose-900 bg-white border border-rose-900 hover:bg-rose-900 hover:text-white font-medium rounded-lg text-sm px-6 py-1 focus:outline-none`}
+              className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300"
               onClick={() => {
                 if (
                   productAddOnsCart.displayIndex + 1 ===
@@ -894,10 +919,10 @@ function DecorListing({
                 }
               }}
             >
-              Skip
+              Skip This Add-on
             </button>
             <button
-              className={`text-white bg-rose-900 border border-rose-900 hover:bg-rose-900 hover:text-white font-medium rounded-lg text-sm px-6 py-1 focus:outline-none`}
+              className="px-6 py-2.5 text-sm font-medium text-white bg-[#840032] rounded-lg hover:bg-[#6d002a] transition-colors focus:outline-none focus:ring-2 focus:ring-[#840032]/50"
               onClick={() => {
                 if (
                   productAddOnsCart.displayIndex + 1 ===
@@ -944,12 +969,12 @@ function DecorListing({
                 }
               }}
             >
-              Add
+              Add to Event
             </button>
           </div>
         </Modal.Body>
       </Modal>
-      {/* Cart Model */}
+      {/* Cart Model - Platform & Flooring */}
       <Modal
         show={cart.open}
         size="lg"
@@ -967,81 +992,94 @@ function DecorListing({
           })
         }
       >
-        <Modal.Header>
-          <h3 className="text-xl font-medium text-gray-900 dark:text-white px-4">
-            Product add-ons
+        <Modal.Header className="border-b border-gray-200">
+          <h3 className="text-xl font-semibold text-gray-900">
+            {cart.flooring === undefined ? "Add Platform" : "Select Flooring"}
           </h3>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="p-6">
           <div className="space-y-6">
             {cart.flooring === undefined ? (
               <>
-                <Image
-                  src="/assets/images/platform.webp"
-                  alt="Platform"
-                  width={0}
-                  height={0}
-                  sizes="100%"
-                  style={{ width: "50%", height: "auto" }}
-                />
-                <div className="flex flex-row items-center gap-2">
-                  <p>Do you want to add a platform?</p>
-                  <button
-                    className={`${
-                      cart.platform
-                        ? "text-white bg-rose-900"
-                        : "bg-white text-rose-900"
-                    }  border border-rose-900 hover:bg-rose-900 hover:text-white font-medium rounded-lg text-sm px-3 py-1.5 focus:outline-none`}
-                    onClick={() => {
-                      setCart({ ...cart, platform: true });
-                    }}
-                  >
-                    Yes
-                  </button>
-                  <button
-                    className={`${
-                      !cart.platform && cart.platform !== undefined
-                        ? "text-white bg-rose-900"
-                        : "bg-white text-rose-900"
-                    } border border-rose-900 hover:bg-rose-900 hover:text-white font-medium rounded-lg text-sm px-3 py-1.5 focus:outline-none`}
-                    onClick={() => {
-                      AddToEvent({
-                        quantity: cart.quantity,
-                        eventDayId: cart.eventDayId,
-                        eventId: cart.eventId,
-                        platform: false,
-                        flooring: "",
-                        dimensions: {
-                          length: 0,
-                          breadth: 0,
-                          height: 0,
-                        },
-                        price:
-                          (decor?.productTypes?.find((i) => i.name === variant)
-                            ?.sellingPrice +
-                            (productVariant
-                              ? decor.productVariants.find(
-                                  (i) => i.name === productVariant
-                                )?.priceModifier
-                              : 0)) *
-                          cart.quantity,
-                      });
-                    }}
-                  >
-                    No
-                  </button>
-                </div>
-                {cart.platform && (
-                  <div className="border-t border-t-black pt-2 flex flex-col gap-2">
-                    <p className="font-medium">
-                      Dimensions for platform (in feet)
+                {/* Platform Section */}
+                <div className="flex flex-col md:flex-row gap-6 items-start">
+                  <div className="w-full md:w-1/3 aspect-square rounded-xl overflow-hidden bg-gray-100">
+                    <Image
+                      src="/assets/images/platform.webp"
+                      alt="Platform"
+                      width={200}
+                      height={200}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-lg font-medium text-gray-900 mb-3">
+                      Would you like to add a platform?
+                    </h4>
+                    <p className="text-sm text-gray-500 mb-4">
+                      A platform elevates your decor setup for better visibility and presentation.
                     </p>
-                    <div className="flex flex-row gap-2 itms-end">
-                      <div className="flex flex-col">
-                        <p>Length</p>
+                    <div className="flex flex-row gap-3">
+                      <button
+                        className={`px-6 py-2.5 text-sm font-medium rounded-lg transition-all ${
+                          cart.platform
+                            ? "text-white bg-[#840032] shadow-md"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                        onClick={() => {
+                          setCart({ ...cart, platform: true });
+                        }}
+                      >
+                        Yes, Add Platform
+                      </button>
+                      <button
+                        className={`px-6 py-2.5 text-sm font-medium rounded-lg transition-all ${
+                          !cart.platform && cart.platform !== undefined
+                            ? "text-white bg-gray-600 shadow-md"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                        onClick={() => {
+                          AddToEvent({
+                            quantity: cart.quantity,
+                            eventDayId: cart.eventDayId,
+                            eventId: cart.eventId,
+                            platform: false,
+                            flooring: "",
+                            dimensions: {
+                              length: 0,
+                              breadth: 0,
+                              height: 0,
+                            },
+                            price:
+                              (decor?.productTypes?.find((i) => i.name === variant)
+                                ?.sellingPrice +
+                                (productVariant
+                                  ? decor.productVariants.find(
+                                      (i) => i.name === productVariant
+                                    )?.priceModifier
+                                  : 0)) *
+                              cart.quantity,
+                          });
+                        }}
+                      >
+                        No, Continue
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Dimensions Input */}
+                {cart.platform && (
+                  <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                    <h5 className="font-medium text-gray-900 mb-4">
+                      Enter Platform Dimensions (in feet)
+                    </h5>
+                    <div className="grid grid-cols-3 gap-4 mb-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-600">Length</label>
                         <TextInput
                           type="number"
-                          placeholder="length"
+                          placeholder="0"
                           required
                           value={cart.dimensions.length}
                           onChange={(e) => {
@@ -1056,11 +1094,11 @@ function DecorListing({
                           disabled={cart.price > 0}
                         />
                       </div>
-                      <div className="flex flex-col">
-                        <p>Breadth</p>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-600">Breadth</label>
                         <TextInput
                           type="number"
-                          placeholder="breadth"
+                          placeholder="0"
                           required
                           value={cart.dimensions.breadth}
                           onChange={(e) => {
@@ -1075,11 +1113,11 @@ function DecorListing({
                           disabled={cart.price > 0}
                         />
                       </div>
-                      <div className="flex flex-col">
-                        <p>Height</p>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-600">Height</label>
                         <TextInput
                           type="number"
-                          placeholder="height"
+                          placeholder="0"
                           required
                           value={cart.dimensions.height}
                           onChange={(e) => {
@@ -1094,182 +1132,193 @@ function DecorListing({
                           disabled={cart.price > 0}
                         />
                       </div>
-                      <div className="flex flex-col">
-                        <button
-                          className={`mt-auto text-white bg-rose-900 border border-rose-900 hover:bg-rose-900 hover:text-white font-medium rounded-lg text-sm px-3 py-2.5 focus:outline-none`}
-                          onClick={() => {
-                            try {
-                              let l = parseFloat(cart.dimensions.length);
-                              let b = parseFloat(cart.dimensions.breadth);
-                              let h = parseFloat(cart.dimensions.height);
-                              if (l > 0 && b > 0 && h > 0) {
-                                let cost = l * b * platformPrice.price;
-                                let baseCost = (l + h) * (b + h);
-                                setCart({
-                                  ...cart,
-                                  dimensions: {
-                                    length: l,
-                                    breadth: b,
-                                    height: h,
-                                  },
-                                  price: cost,
-                                  baseCost,
-                                });
-                              } else {
-                                alert("Enter possible values");
-                              }
-                            } catch (e) {
-                              alert("Error, try again");
-                            }
-                          }}
-                          disabled={
-                            !cart.dimensions.length ||
-                            !cart.dimensions.breadth ||
-                            !cart.dimensions.height
-                          }
-                        >
-                          Calculate
-                        </button>
-                      </div>
                     </div>
+                    <button
+                      className="w-full py-2.5 text-sm font-medium text-white bg-[#840032] rounded-lg hover:bg-[#6d002a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => {
+                        try {
+                          let l = parseFloat(cart.dimensions.length);
+                          let b = parseFloat(cart.dimensions.breadth);
+                          let h = parseFloat(cart.dimensions.height);
+                          if (l > 0 && b > 0 && h > 0) {
+                            let cost = l * b * platformPrice.price;
+                            let baseCost = (l + h) * (b + h);
+                            setCart({
+                              ...cart,
+                              dimensions: {
+                                length: l,
+                                breadth: b,
+                                height: h,
+                              },
+                              price: cost,
+                              baseCost,
+                            });
+                          } else {
+                            alert("Enter possible values");
+                          }
+                        } catch (e) {
+                          alert("Error, try again");
+                        }
+                      }}
+                      disabled={
+                        !cart.dimensions.length ||
+                        !cart.dimensions.breadth ||
+                        !cart.dimensions.height
+                      }
+                    >
+                      Calculate Price
+                    </button>
                   </div>
                 )}
+                
+                {/* Platform Price Result */}
                 {cart.price > 0 && (
-                  <div className="border-t border-t-black pt-2 flex flex-row gap-2">
-                    <p className="font-medium flex flex-col">
-                      <span>Platform Price: </span>
-                      <span className="text-rose-900 font-semibold">
-                        ₹{cart.price}
-                      </span>
-                    </p>
-                    <div className="flex flex-col ml-auto">
+                  <div className="bg-gradient-to-r from-[#840032]/10 to-[#840032]/5 rounded-xl p-5 border border-[#840032]/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Platform Price</p>
+                        <p className="text-2xl font-bold text-[#840032]">₹{cart.price}</p>
+                      </div>
                       <button
-                        className={`mt-auto text-white bg-rose-900 border border-rose-900 hover:bg-rose-900 hover:text-white font-medium rounded-lg text-sm px-3 py-2.5 focus:outline-none`}
+                        className="px-6 py-2.5 text-sm font-medium text-white bg-[#840032] rounded-lg hover:bg-[#6d002a] transition-colors"
                         onClick={() => {
                           setCart({ ...cart, flooring: "" });
                         }}
                       >
-                        Select Flooring Type
+                        Next: Select Flooring
                       </button>
                     </div>
                   </div>
                 )}
               </>
             ) : (
-              <div className="flex flex-col gap-4">
-                {flooringPrice?.map((item) => (
-                  <div
-                    className="font-medium flex flex-row gap-4 items-center justify-between"
-                    key={item.title}
-                  >
-                    {item.image && (
-                      <Image
-                        src={item.image}
-                        alt="Platform"
-                        width={0}
-                        height={0}
-                        sizes="100%"
-                        style={{ width: "30%", height: "auto" }}
-                      />
-                    )}
-                    <p className="font-medium flex flex-col items-center">
-                      <span>{item.title}</span>
-                      <span className="text-rose-900 font-semibold">
-                        ₹{cart.baseCost * item.price}
-                      </span>
-                    </p>
-                    <div className="flex flex-col">
-                      <button
-                        className={`${
-                          cart.flooring === item.title
-                            ? "text-white bg-rose-900"
-                            : "bg-white text-rose-900"
-                        } hover:text-white border border-rose-900 hover:bg-rose-900 hover:text-white font-medium rounded-lg text-sm px-3 py-2.5 focus:outline-none`}
-                        onClick={() => {
-                          setCart({
-                            ...cart,
-                            flooring: item.title,
-                          });
-                        }}
-                      >
-                        {cart.flooring === item.title ? "Selected" : "Select"}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                {cart.flooring && (
-                  <div className="flex flex-row items-center justify-between">
-                    <p className="font-medium flex flex-col">
-                      <span className="flex flex-row gap-2 items-center">
-                        Total Price:{" "}
-                        <Tooltip
-                          content={`${
-                            (decor?.productTypes?.find(
-                              (i) => i.name === variant
-                            )?.sellingPrice +
-                              (productVariant
-                                ? decor.productVariants.find(
-                                    (i) => i.name === productVariant
-                                  )?.priceModifier
-                                : 0)) *
-                            cart.quantity
-                          } + ${cart.price} + ${
-                            cart.baseCost *
-                              flooringPrice.find(
-                                (i) => i.title === cart.flooring
-                              )?.price || 0
-                          }`}
-                          trigger="hover"
-                        >
-                          <BsInfoCircle />
-                        </Tooltip>
-                      </span>
-                      <span className="text-rose-900 font-semibold">
-                        ₹
-                        {(decor?.productTypes?.find((i) => i.name === variant)
-                          ?.sellingPrice +
-                          (productVariant
-                            ? decor.productVariants.find(
-                                (i) => i.name === productVariant
-                              )?.priceModifier
-                            : 0)) *
-                          cart.quantity +
-                          cart.price +
-                          (cart.baseCost *
-                            flooringPrice.find((i) => i.title === cart.flooring)
-                              ?.price || 0)}
-                      </span>
-                    </p>
-                    <button
-                      className={`text-white bg-rose-900 border border-rose-900 hover:bg-rose-900 hover:text-white font-medium rounded-lg text-sm px-3 py-2.5 focus:outline-none`}
+              <div className="space-y-4">
+                <p className="text-sm text-gray-500 mb-2">Choose a flooring type for your platform</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {flooringPrice?.map((item) => (
+                    <div
+                      className={`relative rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                        cart.flooring === item.title
+                          ? "border-[#840032] shadow-lg"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                      key={item.title}
                       onClick={() => {
-                        AddToEvent({
-                          quantity: cart.quantity,
-                          eventDayId: cart.eventDayId,
-                          eventId: cart.eventId,
-                          platform: true,
-                          flooring: cart.flooring,
-                          dimensions: cart.dimensions,
-                          price:
-                            (decor?.productTypes?.find(
-                              (i) => i.name === variant
-                            )?.sellingPrice +
-                              (productVariant
-                                ? decor.productVariants.find(
-                                    (i) => i.name === productVariant
-                                  )?.priceModifier
-                                : 0)) *
-                              cart.quantity +
-                            cart.price +
-                            (cart.baseCost *
-                              flooringPrice.find(
-                                (i) => i.title === cart.flooring
-                              )?.price || 0),
+                        setCart({
+                          ...cart,
+                          flooring: item.title,
                         });
                       }}
                     >
-                      Add to Event
-                    </button>
+                      {item.image && (
+                        <div className="aspect-video bg-gray-100">
+                          <Image
+                            src={item.image}
+                            alt={item.title}
+                            width={300}
+                            height={200}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="p-4 flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-gray-900">{item.title}</p>
+                          <p className="text-lg font-bold text-[#840032]">
+                            ₹{cart.baseCost * item.price}
+                          </p>
+                        </div>
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                          cart.flooring === item.title
+                            ? "border-[#840032] bg-[#840032]"
+                            : "border-gray-300"
+                        }`}>
+                          {cart.flooring === item.title && (
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Total Price & Add Button */}
+                {cart.flooring && (
+                  <div className="mt-6 p-5 bg-gradient-to-r from-[#840032]/10 to-[#840032]/5 rounded-xl border border-[#840032]/20">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm text-gray-600">Total Price</span>
+                          <Tooltip
+                            content={`Decor: ₹${
+                              (decor?.productTypes?.find(
+                                (i) => i.name === variant
+                              )?.sellingPrice +
+                                (productVariant
+                                  ? decor.productVariants.find(
+                                      (i) => i.name === productVariant
+                                    )?.priceModifier
+                                  : 0)) *
+                              cart.quantity
+                            } + Platform: ₹${cart.price} + Flooring: ₹${
+                              cart.baseCost *
+                                flooringPrice.find(
+                                  (i) => i.title === cart.flooring
+                                )?.price || 0
+                            }`}
+                            trigger="hover"
+                          >
+                            <BsInfoCircle className="text-gray-400 hover:text-gray-600 cursor-pointer" />
+                          </Tooltip>
+                        </div>
+                        <p className="text-3xl font-bold text-[#840032]">
+                          ₹{(decor?.productTypes?.find((i) => i.name === variant)
+                            ?.sellingPrice +
+                            (productVariant
+                              ? decor.productVariants.find(
+                                  (i) => i.name === productVariant
+                                )?.priceModifier
+                              : 0)) *
+                            cart.quantity +
+                            cart.price +
+                            (cart.baseCost *
+                              flooringPrice.find((i) => i.title === cart.flooring)
+                                ?.price || 0)}
+                        </p>
+                      </div>
+                      <button
+                        className="w-full md:w-auto px-8 py-3 text-sm font-medium text-white bg-[#840032] rounded-lg hover:bg-[#6d002a] transition-colors shadow-lg"
+                        onClick={() => {
+                          AddToEvent({
+                            quantity: cart.quantity,
+                            eventDayId: cart.eventDayId,
+                            eventId: cart.eventId,
+                            platform: true,
+                            flooring: cart.flooring,
+                            dimensions: cart.dimensions,
+                            price:
+                              (decor?.productTypes?.find(
+                                (i) => i.name === variant
+                              )?.sellingPrice +
+                                (productVariant
+                                  ? decor.productVariants.find(
+                                      (i) => i.name === productVariant
+                                    )?.priceModifier
+                                  : 0)) *
+                                cart.quantity +
+                              cart.price +
+                              (cart.baseCost *
+                                flooringPrice.find(
+                                  (i) => i.title === cart.flooring
+                                )?.price || 0),
+                          });
+                        }}
+                      >
+                        Add to Event
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1279,24 +1328,32 @@ function DecorListing({
       </Modal>
       {category.websiteView === "multiple" && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 py-8 md:pt-3 bg-[#F4F4F4]">
-            <div className="hidden md:flex col-span-5 flex-row gap-4 -mb-8 translate-x-1/2 w-2/3">
-              {categoryList
-                ?.filter((i) => i.name !== category.name)
-                ?.map((item) => (
-                  <div
-                    className="bg-white rounded-full font-medium py-2 px-4 text-sm shadow-lg"
-                    key={item._id}
-                  >
+          {/* Category Navigation - Scrollable */}
+          <div className="w-full bg-white border-b border-gray-200 sticky top-0 z-30">
+            <div className="relative">
+              {/* Scroll container */}
+              <div className="overflow-x-auto scrollbar-hide px-4 py-3">
+                <div className="flex flex-row gap-3 flex-nowrap min-w-max">
+                  {categoryList?.map((item) => (
                     <Link
                       href={`/decor/view?category=${item.name}`}
-                      target="_blank"
+                      key={item._id}
+                      className={`whitespace-nowrap rounded-full font-medium py-2 px-5 text-sm transition-all duration-200 flex-shrink-0 ${
+                        item.name === category.name
+                          ? "bg-[#840032] text-white shadow-md"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm"
+                      }`}
                     >
                       {item.name}
                     </Link>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+              {/* Right fade indicator for scroll */}
+              <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none hidden md:block" />
             </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 py-8 md:pt-6 bg-[#F4F4F4]">
             <div className="hidden md:flex flex-col gap-6">
               <p className="text-xl font-medium text-center">DESCRIPTION</p>
               <div className="rounded-r-3xl bg-white shadow-md flex flex-col gap-2 p-4 px-6">
@@ -1701,7 +1758,7 @@ function DecorListing({
               </p>
             </div>
             <div className="hidden md:flex flex-col gap-6">
-              <div className="rounded-l-3xl bg-white shadow-md flex flex-col gap-2 p-8 my-4 flex flex-col gap-4">
+              <div className="rounded-l-3xl bg-white shadow-md flex flex-col gap-4 p-8 my-4">
                 <div className="border-b-2 border-gray-500 pb-2">
                   <p className="text-xl font-semibold">
                     ₹{" "}
