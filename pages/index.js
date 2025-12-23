@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 
 function Home({ packages }) {
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   const categoryList = [
     "Stage",
@@ -146,6 +147,14 @@ function Home({ packages }) {
       alert("Please enter valid mobile number");
     }
   };
+
+  useEffect(() => {
+    try {
+      setIsLoggedIn(Boolean(localStorage.getItem("token")));
+    } catch (e) {
+      // no-op (SSR / restricted environments)
+    }
+  }, []);
   const handleSecondaryEnquiry = () => {
     setData({
       ...data,
@@ -437,7 +446,10 @@ function Home({ packages }) {
               margin: 0,
               padding: 0,
             }}>YOUR WEDDING VISION,<br/>OUR EXPERTISE</span>
-            {data.main.success ? (
+            {isLoggedIn ? (
+              <>
+              </>
+            ) : data.main.success ? (
               <p>
                 Your Wedsy Wedding Manager will contact you and assist you in
                 choosing the best!
