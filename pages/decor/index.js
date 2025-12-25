@@ -755,53 +755,50 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
           <div
             ref={spotlightRef}
-            className="w-full max-w-[1200px] h-auto md:h-[301px] mt-[30px] md:mt-[65px] mb-[30px] mx-auto relative flex items-center justify-center overflow-hidden"
-            style={{ minHeight: '250px' }}
+            className="w-full max-w-[1200px] mt-[30px] md:mt-[65px] mb-[30px] mx-auto relative overflow-hidden"
           >
             {spotlightList.length > 0 && (
-              <div className="relative w-full h-full">
+              <div className="relative w-full">
                 {spotlightList.map((item, index) => (
                   item._id && (
                     <div
                       key={item._id || index}
-                      className="absolute inset-0 w-full flex items-center justify-center"
+                      className="w-full"
                       style={{
-                        opacity: index === spotlightIndex ? 1 : 0,
-                        transform: `translateX(${index === spotlightIndex ? 0 : index < spotlightIndex ? -30 : 30}px)`,
-                        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        pointerEvents: index === spotlightIndex ? 'auto' : 'none',
-                        willChange: 'opacity, transform',
+                        display: index === spotlightIndex ? 'block' : 'none',
                       }}
                     >
                       <div
-                        className="grid grid-cols-1 md:grid-cols-2 w-full h-full m-4 md:m-6 gap-4 md:gap-8"
+                        className="flex flex-col md:grid md:grid-cols-2 w-full m-0 md:m-6 gap-0 md:gap-8 md:h-[301px]"
                         style={{
-                          backgroundColor: item.spotlightColor,
+                          backgroundColor: item.spotlightColor || '#f5f5f5',
                           borderRadius: 0,
                           boxShadow: '0 2px 24px rgba(0,0,0,0.08)',
                           overflow: 'hidden',
                         }}
                       >
                         {/* Mobile-only thumbnail */}
-                        <div className="relative w-full h-48 sm:h-60 md:hidden">
-                          <Image
-                            src={item.thumbnail}
-                            alt="Decor Image"
-                            layout="fill"
-                            objectFit="cover"
-                            className="brightness-75"
+                        <div className="w-full h-[200px] md:hidden">
+                          <img
+                            src={item.thumbnail || item.image || "/assets/decor/decor-home.webp"}
+                            alt={item.name || "Decor Image"}
+                            className="w-full h-full object-cover brightness-75"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "/assets/decor/decor-home.webp";
+                            }}
                           />
                         </div>
 
                         {/* Text Content */}
-                        <div className="flex flex-col p-4 sm:p-6 justify-between order-last md:order-first gap-2 sm:gap-4">
+                        <div className="flex flex-col p-4 sm:p-6 justify-between gap-2 sm:gap-4">
                           <p className="text-xl md:text-3xl font-semibold">
                             {item.name}
                           </p>
                           <p className="hidden md:block font-medium">
                             {item.description}
                           </p>
-                          <div className="flex justify-between items-center mt-4">
+                          <div className="flex justify-between items-center mt-2 md:mt-4">
                             <p className="text-xl md:text-3xl font-semibold">
                               ₹{' '}
                               {
@@ -821,8 +818,8 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                         {/* Desktop-only thumbnail */}
                         <div className="relative w-full hidden md:block h-full">
                           <Image
-                            src={item.thumbnail}
-                            alt="Decor"
+                            src={item.thumbnail || item.image || "/assets/decor/decor-home.webp"}
+                            alt={item.name || "Decor"}
                             layout="fill"
                             objectFit="cover"
                           />
