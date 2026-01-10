@@ -704,18 +704,19 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
               <div className="flex justify-start md:justify-center w-full sm:px-0">
                 <div
                   onClick={() => setShowAllCategories(!showAllCategories)}
-                  className="w-[calc(50%-0.5rem)] sm:max-w-[calc(50%-1.5rem)] md:max-w-[calc(50%-2rem)] h-[35px] sm:h-[100px] relative rounded-md overflow-hidden opacity-100 shadow-md transform transition duration-300 hover:scale-[1.03] bg-black flex items-center justify-start sm:justify-center cursor-pointer"
+                  className="w-[calc(50%-0.5rem)] sm:max-w-[calc(50%-1.5rem)] md:max-w-[calc(50%-2rem)] h-[35px] sm:h-[100px] relative rounded-md overflow-hidden opacity-100 shadow-md transform transition duration-300 hover:scale-[1.03] bg-[#FFFFFF] flex items-center justify-start sm:justify-center cursor-pointer"
                 >
-                  <div className="flex items-center gap-2 text-white px-3 sm:px-0">
+                  <div className="flex items-center gap-3 text-black px-3 sm:px-0">
                     <span className="text-[10px] sm:text-[24px] md:text-[28px] font-normal tracking-[2px] uppercase">
                       {showAllCategories ? 'VIEW LESS' : 'VIEW MORE'}
                     </span>
                     <svg
-                      className={`w-4 h-4 md:w-6 md:h-6 transition-transform duration-300 ${showAllCategories ? 'rotate-180' : ''}`}
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
+                      className={`w-4 h-4 md:w-5 md:h-5 transition-transform duration-300 ${showAllCategories ? 'rotate-180' : ''}`}
+                      viewBox="0 0 18 11"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
                     >
-                      <path d="M7 14l5-5 5 5z" />
+                      <path d="M1.05469 10.5H16.9453L9 0.789062L1.05469 10.5Z" stroke="currentColor" strokeWidth="1"/>
                     </svg>
                   </div>
                 </div>
@@ -748,7 +749,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
         {/* <div class="w-[1200px] h-[1px] bg-[#D9D9D9] mt-[96px] mx-auto"></div> */}
 
         {/* Spotlight Section  */}
-        <section className="px-6 md:px-24 mt-[60px]" id="spotlight">
+        <section className="px-6 md:px-24 mt-[80px] md:mt-[120px]" id="spotlight">
           <p className="text-black text-[20px] md:text-4xl font-medium font-light leading-normal uppercase text-center mt-6">
             SPOTLIGHT
           </p>
@@ -782,7 +783,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                           <img
                             src={item.thumbnail || item.image || "/assets/decor/decor-home.webp"}
                             alt={item.name || "Decor Image"}
-                            className="w-full h-full object-cover brightness-75"
+                            className="w-full h-full object-contain brightness-75"
                             onError={(e) => {
                               e.target.onerror = null;
                               e.target.src = "/assets/decor/decor-home.webp";
@@ -1742,11 +1743,18 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 className={`aspect-square ${index >= 9 ? 'hidden md:block' : ''}`}
               >
                 {src && (
-                  <img
-                    src={src}
-                    alt={`image-${index}`}
-                    className="w-full h-full object-cover"
-                  />
+                  <a
+                    href="https://www.instagram.com/wedsy.in/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full h-full cursor-pointer"
+                  >
+                    <img
+                      src={src}
+                      alt={`image-${index}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </a>
                 )}
               </div>
             ))}
