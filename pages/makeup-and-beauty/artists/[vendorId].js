@@ -17,6 +17,7 @@ import {
 } from "react-icons/fa";
 import { MdClear } from "react-icons/md";
 import { RWebShare } from "react-web-share";
+import Toast from "@/components/other/Toast";
 
 function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   const router = useRouter();
@@ -44,6 +45,9 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   const [scrollProgress, setScrollProgress] = useState(0);
   const reviewInputRef = useRef(null);
   const [shortUrl, setShortUrl] = useState("");
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [heartAnimating, setHeartAnimating] = useState(false);
 
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviews, setReviews] = useState([]);
@@ -393,6 +397,9 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       });
   };
   const AddToWishlist = () => {
+    setHeartAnimating(true);
+    setTimeout(() => setHeartAnimating(false), 600);
+    
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/wishlist/vendor`, {
       method: "POST",
       headers: {
@@ -405,7 +412,8 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       .then((response) => {
         if (response.message === "success") {
           setIsAddedToWishlist(true);
-          alert("Vendor added to wishlist!");
+          setToastMessage("Added to Favourites");
+          setShowToast(true);
         }
       })
       .catch((error) => {
@@ -413,6 +421,9 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       });
   };
   const RemoveFromWishList = () => {
+    setHeartAnimating(true);
+    setTimeout(() => setHeartAnimating(false), 600);
+    
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/wishlist/vendor`, {
       method: "DELETE",
       headers: {
@@ -425,7 +436,8 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       .then((response) => {
         if (response.message === "success") {
           setIsAddedToWishlist(false);
-          alert("Vendor removed from wishlist!");
+          setToastMessage("Removed from Favourites");
+          setShowToast(true);
         }
       })
       .catch((error) => {
@@ -917,7 +929,9 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               {isAddedToWishlist ? (
                 <FaHeart
                   size={32}
-                  className="text-[#840032]"
+                  className={`text-[#840032] cursor-pointer transition-all duration-300 ease-out hover:scale-110 active:scale-95 ${
+                    heartAnimating ? "animate-heartBeat scale-125" : ""
+                  }`}
                   onClick={() => {
                     if (userLoggedIn) {
                       RemoveFromWishList();
@@ -930,7 +944,9 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               ) : (
                 <FaRegHeart
                   size={32}
-                  className="text-[#840032]"
+                  className={`text-[#840032] cursor-pointer transition-all duration-300 ease-out hover:scale-110 hover:text-[#840032]/80 active:scale-95 ${
+                    heartAnimating ? "animate-heartBeat scale-125" : ""
+                  }`}
                   onClick={() => {
                     if (userLoggedIn) {
                       AddToWishlist();
@@ -999,7 +1015,9 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
             {isAddedToWishlist ? (
               <FaHeart
                 size={32}
-                className="text-[#840032]"
+                className={`text-[#840032] cursor-pointer transition-all duration-300 ease-out hover:scale-110 active:scale-95 ${
+                  heartAnimating ? "animate-[heartBeat_0.6s_ease-in-out] scale-125" : ""
+                }`}
                 onClick={() => {
                   if (userLoggedIn) {
                     RemoveFromWishList();
@@ -1012,7 +1030,9 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
             ) : (
               <FaRegHeart
                 size={32}
-                className="text-[#840032]"
+                className={`text-[#840032] cursor-pointer transition-all duration-300 ease-out hover:scale-110 hover:text-[#840032]/80 active:scale-95 ${
+                  heartAnimating ? "animate-[heartBeat_0.6s_ease-in-out] scale-125" : ""
+                }`}
                 onClick={() => {
                   if (userLoggedIn) {
                     AddToWishlist();
@@ -2117,6 +2137,12 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
             </div>
           </div>
         </div>
+      <Toast
+        message={toastMessage}
+        show={showToast}
+        onClose={() => setShowToast(false)}
+        isRemoved={toastMessage === "Removed from Favourites"}
+      />
       </>
       );
 }

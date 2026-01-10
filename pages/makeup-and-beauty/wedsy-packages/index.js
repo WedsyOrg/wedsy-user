@@ -434,8 +434,8 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
             ))}
       </div>
       {/*desktop view*/}
-      <div className="hidden md:grid grid-cols-2 bg-[#f4f4f4] px-24 py-12 mb-1">
-        <div className="uppercase text-4xl font-medium">Packages</div>
+      <div className="hidden md:grid grid-cols-2 bg-[#f4f4f4] px-24 py-8 mb-1">
+        <div className="uppercase text-3xl font-medium leading-relaxed">Packages</div>
         <div className="flex flex-row justify-around items-center gap-6 px-6">
           <select
             value={selectedWedsyPackageCategory}
@@ -453,8 +453,8 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           </select>
           <div className="flex items-center gap-1">
             <img src="/assets/icons/location-pin.webp" className="h-[18px] pr-2"/>
-            <h2 className="text-2xl font-medium text-[#880E4F]">
-              Bangalore,<span className="text-2xl font-bold text-[#880E4F]"> IN</span> 
+            <h2 className="text-2xl font-normal  text-[#880E4F]">
+              Bangalore,<span className="text-2xl font-semibold text-[#880E4F]"> IN</span> 
             </h2>
           </div>
         </div>
@@ -577,7 +577,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               ?.filter((i, _) => i._id === display)
               ?.map((item, index) => (
                 <>
-                  <p className="font-medium text-3xl">{item?.name}</p>
+                  <p className="font-medium uppercase text-2xl">{item?.name}</p>
                   <ul className="p-6 flex flex-col gap-2 break-words">
                     {item.process?.map((rec, recIndex) => (
                       <li className="" key={recIndex}>
@@ -589,7 +589,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                     ))}
                   </ul>
                   <hr className="border-t-4 border-gray-300 my-4 w-full" />
-                  <p className="font-medium text-3xl">OVERVIEW</p>
+                  <p className="font-medium text-2xl">OVERVIEW</p>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-white rounded-lg p-4 grid grid-cols-3 gap-2 items-center w-72">
                       <div className="uppercase font-semibold text-lg col-span-2">
@@ -641,9 +641,9 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                     </div>
                   </div>
                   <hr className="border-t-4 border-gray-300 my-4 w-full" />
-                  <p className="font-medium text-3xl">REVIEWS</p>
+                  <p className="font-medium text-2xl">REVIEWS</p>
                   <hr className="border-t-4 border-gray-300 my-4 w-full" />
-                  <p className="font-medium text-3xl">ALL REVIEWS</p>
+                  <p className="font-medium text-2xl">ALL REVIEWS</p>
                 </>
               ))}
         </div>
