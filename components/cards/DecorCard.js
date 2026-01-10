@@ -31,6 +31,8 @@ export default function DecorCard({ decor = {}, size = "normal" }) {
     <Link
       href={`/decor/view/${_id}`}
       className="group block h-full w-full flex flex-col"
+      target="_blank"
+      rel="noopener noreferrer"
     >
       {/* IMAGE SECTION */}
       {/* Apply the conditional height class here */}

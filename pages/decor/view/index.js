@@ -6,6 +6,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import Masonry from "react-masonry-css";
+import { Circle, Check } from "lucide-react";
 
 // SEO Configuration for Different Categories
 const CATEGORY_SEO_MAP = {
@@ -99,6 +100,21 @@ function DecorListing({
 
   const typeList = ["Modern", "Traditional"];
 
+  // Helper functions to check if filters/sort are active
+  const hasActiveFilters = () => {
+    return (
+      filters.occasion.length > 0 ||
+      filters.colours.length > 0 ||
+      filters.type.length > 0 ||
+      filters.priceRange[0] !== 0 ||
+      filters.priceRange[1] !== 115000
+    );
+  };
+
+  const hasActiveSort = () => {
+    return filters.sort && filters.sort !== "Sort";
+  };
+
   // Generate dynamic SEO content
   const currentCategory = filters.category || "Stage";
   const seoConfig =
@@ -175,6 +191,10 @@ function DecorListing({
     setFilters((prev) => ({ ...prev, category: category || "Stage" }));
     setPage(parseInt(queryPage) || 1);
   }, [category, queryPage]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [page]);
 
   useEffect(() => {
     if (showFilterModal) {
@@ -436,33 +456,54 @@ function DecorListing({
                     inline
                     arrowIcon={false}
                     label={
-                      <div className="ml-10 md:ml-0 px-4 py-2 flex items-center justify-center text-center gap-2 flex-1 min-h-[44px]">
+                      <div className="ml-10 md:ml-0 px-4 py-2 flex items-center justify-center text-center gap-2 flex-1 min-h-[44px] relative">
                         <img
                           src="/assets/new_icons/sort.svg"
                           alt="sort"
                           className="h-4 w-4"
                         />
                         <span className="text-sm font-medium">Sort</span>
+                        {hasActiveSort() && (
+                          <Circle className="absolute top-1 right-1 h-2 w-2 fill-black text-black" />
+                        )}
                       </div>
                     }
                   >
                     <Dropdown.Item
                       onClick={() => handleSortChange("Price:Low-to-High")}
+                      className="flex items-center justify-between"
                     >
-                      Price: Low to High
+                      <span>Price: Low to High</span>
+                      {filters.sort === "Price:Low-to-High" && (
+                        <Circle className="h-2 w-2 fill-black text-black ml-2" />
+                      )}
                     </Dropdown.Item>
                     <Dropdown.Item
                       onClick={() => handleSortChange("Price:High-to-Low")}
+                      className="flex items-center justify-between"
                     >
-                      Price: High to Low
+                      <span>Price: High to Low</span>
+                      {filters.sort === "Price:High-to-Low" && (
+                        <Circle className="h-2 w-2 fill-black text-black ml-2" />
+                      )}
                     </Dropdown.Item>
                     <Dropdown.Item
                       onClick={() => handleSortChange("New-Arrivals")}
+                      className="flex items-center justify-between"
                     >
-                      New Arrivals
+                      <span>New Arrivals</span>
+                      {filters.sort === "New-Arrivals" && (
+                        <Circle className="h-2 w-2 fill-black text-black ml-2" />
+                      )}
                     </Dropdown.Item>
-                    <Dropdown.Item onClick={() => handleSortChange("Sort")}>
-                      Default
+                    <Dropdown.Item 
+                      onClick={() => handleSortChange("Sort")}
+                      className="flex items-center justify-between"
+                    >
+                      <span>Default</span>
+                      {filters.sort === "Sort" && (
+                        <Circle className="h-2 w-2 fill-black text-black ml-2" />
+                      )}
                     </Dropdown.Item>
                   </Dropdown>
                 </div>
@@ -474,7 +515,7 @@ function DecorListing({
                       setSelectedSection("occasion");
                       setShowFilterModal((prev) => !prev);
                     }}
-                    className="ml-10 md:ml-0 px-4 py-2 flex items-center justify-center text-center gap-2 flex-1 min-h-[44px] w-full"
+                    className="ml-10 md:ml-0 px-4 py-2 flex items-center justify-center text-center gap-2 flex-1 min-h-[44px] w-full relative"
                   >
                     <img
                       src="/assets/new_icons/filter.svg"
@@ -482,6 +523,9 @@ function DecorListing({
                       className="h-4 w-4"
                     />
                     <span className="text-sm font-medium">Filter</span>
+                    {hasActiveFilters() && (
+                      <Circle className="absolute top-1 right-1 h-2 w-2 fill-black text-black" />
+                    )}
                   </button>
 
                   {/* Filter Dropdown */}
@@ -497,43 +541,55 @@ function DecorListing({
                           <div className="p-4 space-y-1">
                             <button
                               onClick={() => setSelectedSection("occasion")}
-                              className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                              className={`w-full text-left px-4 py-3 text-sm rounded transition-colors flex items-center justify-between ${
                                 selectedSection === "occasion"
                                   ? "bg-white shadow-sm font-medium"
                                   : "hover:bg-gray-100"
                               }`}
                             >
-                              Occasion
+                              <span>Occasion</span>
+                              {tempFilters.occasion.length > 0 && (
+                                <Check className="h-4 w-4 text-black" />
+                              )}
                             </button>
                             <button
                               onClick={() => setSelectedSection("colours")}
-                              className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                              className={`w-full text-left px-4 py-3 text-sm rounded transition-colors flex items-center justify-between ${
                                 selectedSection === "colours"
                                   ? "bg-white shadow-sm font-medium"
                                   : "hover:bg-gray-100"
                               }`}
                             >
-                              Colours
+                              <span>Colours</span>
+                              {tempFilters.colours.length > 0 && (
+                                <Check className="h-4 w-4 text-black" />
+                              )}
                             </button>
                             <button
                               onClick={() => setSelectedSection("type")}
-                              className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                              className={`w-full text-left px-4 py-3 text-sm rounded transition-colors flex items-center justify-between ${
                                 selectedSection === "type"
                                   ? "bg-white shadow-sm font-medium"
                                   : "hover:bg-gray-100"
                               }`}
                             >
-                              Type
+                              <span>Type</span>
+                              {tempFilters.type.length > 0 && (
+                                <Check className="h-4 w-4 text-black" />
+                              )}
                             </button>
                             <button
                               onClick={() => setSelectedSection("price-range")}
-                              className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                              className={`w-full text-left px-4 py-3 text-sm rounded transition-colors flex items-center justify-between ${
                                 selectedSection === "price-range"
                                   ? "bg-white shadow-sm font-medium"
                                   : "hover:bg-gray-100"
                               }`}
                             >
-                              Price range
+                              <span>Price range</span>
+                              {(tempFilters.priceRange[0] !== 0 || tempFilters.priceRange[1] !== 115000) && (
+                                <Check className="h-4 w-4 text-black" />
+                              )}
                             </button>
                           </div>
                         </div>
@@ -578,20 +634,25 @@ function DecorListing({
                                       : "hover:bg-gray-50"
                                   }`}
                                 >
-                                  <div className="flex items-center gap-3">
-                                    <input
-                                      type="checkbox"
-                                      checked={tempFilters.colours.includes(colour.name)}
-                                      onChange={() =>
-                                        handleTempFilterChange("colours", colour.name)
-                                      }
-                                      className="w-4 h-4"
-                                    />
-                                    <div
-                                      className="w-4 h-4 rounded-full border border-gray-300"
-                                      style={{ backgroundColor: colour.color }}
-                                    />
-                                    <span>{colour.name}</span>
+                                  <div className="flex items-center justify-between w-full">
+                                    <div className="flex items-center gap-3">
+                                      <input
+                                        type="checkbox"
+                                        checked={tempFilters.colours.includes(colour.name)}
+                                        onChange={() =>
+                                          handleTempFilterChange("colours", colour.name)
+                                        }
+                                        className="w-4 h-4"
+                                      />
+                                      <div
+                                        className="w-4 h-4 rounded-full border border-gray-300"
+                                        style={{ backgroundColor: colour.color }}
+                                      />
+                                      <span>{colour.name}</span>
+                                    </div>
+                                    {tempFilters.colours.includes(colour.name) && (
+                                      <Circle className="h-2 w-2 fill-black text-black" />
+                                    )}
                                   </div>
                                 </button>
                               ))}
@@ -610,14 +671,19 @@ function DecorListing({
                                       : "hover:bg-gray-50"
                                   }`}
                                 >
-                                  <div className="flex items-center gap-2">
-                                    <input
-                                      type="checkbox"
-                                      checked={tempFilters.type.includes(type)}
-                                      onChange={() => handleTempFilterChange("type", type)}
-                                      className="w-4 h-4"
-                                    />
-                                    <span>{type}</span>
+                                  <div className="flex items-center justify-between w-full">
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="checkbox"
+                                        checked={tempFilters.type.includes(type)}
+                                        onChange={() => handleTempFilterChange("type", type)}
+                                        className="w-4 h-4"
+                                      />
+                                      <span>{type}</span>
+                                    </div>
+                                    {tempFilters.type.includes(type) && (
+                                      <Circle className="h-2 w-2 fill-black text-black" />
+                                    )}
                                   </div>
                                 </button>
                               ))}
@@ -625,49 +691,59 @@ function DecorListing({
                           )}
 
                           {selectedSection === "price-range" && (
-                            <div className="space-y-4">
-                              <div className="flex items-center justify-between gap-2">
+                            <div className="space-y-6">
+                              {/* Min Price Slider */}
+                              <div>
+                                <label className="text-sm font-medium text-gray-700">
+                                  Minimum Price
+                                </label>
                                 <input
-                                  type="number"
-                                  min="0"
-                                  max="115000"
+                                  type="range"
+                                  min={0}
+                                  max={115000}
+                                  step={1000}
                                   value={tempFilters.priceRange[0]}
                                   onChange={(e) => {
-                                    const newMin = Math.min(
-                                      Math.max(0, parseInt(e.target.value) || 0),
-                                      tempFilters.priceRange[1]
+                                    const min = Math.min(
+                                      Number(e.target.value),
+                                      tempFilters.priceRange[1] - 1000
                                     );
-                                    handleTempPriceRangeChange([newMin, tempFilters.priceRange[1]]);
+                                    handleTempPriceRangeChange([min, tempFilters.priceRange[1]]);
                                   }}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                                  placeholder="Min"
-                                />
-                                <span className="text-gray-500">-</span>
-                                <input
-                                  type="number"
-                                  min="0"
-                                  max="115000"
-                                  value={tempFilters.priceRange[1]}
-                                  onChange={(e) => {
-                                    const newMax = Math.max(
-                                      Math.min(115000, parseInt(e.target.value) || 115000),
-                                      tempFilters.priceRange[0]
-                                    );
-                                    handleTempPriceRangeChange([
-                                      tempFilters.priceRange[0],
-                                      newMax,
-                                    ]);
-                                  }}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                                  placeholder="Max"
+                                  className="w-full"
                                 />
                               </div>
-                              <div className="text-sm text-gray-600 text-center">
-                                ₹{tempFilters.priceRange[0].toLocaleString()} - ₹
+
+                              {/* Max Price Slider */}
+                              <div>
+                                <label className="text-sm font-medium text-gray-700">
+                                  Maximum Price
+                                </label>
+                                <input
+                                  type="range"
+                                  min={0}
+                                  max={315000}
+                                  step={1000}
+                                  value={tempFilters.priceRange[1]}
+                                  onChange={(e) => {
+                                    const max = Math.max(
+                                      Number(e.target.value),
+                                      tempFilters.priceRange[0] + 1000
+                                    );
+                                    handleTempPriceRangeChange([tempFilters.priceRange[0], max]);
+                                  }}
+                                  className="w-full"
+                                />
+                              </div>
+
+                              {/* Display Selected Range */}
+                              <div className="text-sm text-center font-medium text-gray-700">
+                                ₹{tempFilters.priceRange[0].toLocaleString()} – ₹
                                 {tempFilters.priceRange[1].toLocaleString()}
                               </div>
                             </div>
                           )}
+                          
                         </div>
                       </div>
 
