@@ -3,6 +3,7 @@ import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
 import CreateEventModal from "@/components/modal/CreateEventModal";
 import SimilarDecor from "@/components/screens/SimilarDecor";
 import Toast from "@/components/other/Toast";
+import ImageLightbox from "@/components/lightbox/ImageLightbox";
 import { toProperCase } from "@/utils/text";
 import {
   Button,
@@ -88,6 +89,8 @@ function DecorListing({
   const [toastMessage, setToastMessage] = useState("");
   const [heartAnimating, setHeartAnimating] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const fetchPlatformInfo = () => {
     setLoading(true);
@@ -288,7 +291,16 @@ function DecorListing({
               eventDayId: "",
             });
           }
-          alert("Item added to event!");
+          // Get event name for toast message
+          const event = eventList.find((e) => e._id === eventId);
+          const eventDay = event?.eventDays.find((d) => d._id === eventDayId);
+          const eventName = event?.name || "your event";
+          const dayName = eventDay?.name || "";
+          const message = dayName 
+            ? `Added to ${eventName} - ${dayName}`
+            : `Added to ${eventName}`;
+          setToastMessage(message);
+          setShowToast(true);
         }
       })
       .catch((error) => {
@@ -366,7 +378,16 @@ function DecorListing({
             eventId: "",
             eventDayId: "",
           });
-          alert("Addons added to event!");
+          // Get event name for toast message
+          const event = eventList.find((e) => e._id === tempCart.eventId);
+          const eventDay = event?.eventDays.find((d) => d._id === tempCart.eventDayId);
+          const eventName = event?.name || "your event";
+          const dayName = eventDay?.name || "";
+          const message = dayName 
+            ? `Add-ons added to ${eventName} - ${dayName}`
+            : `Add-ons added to ${eventName}`;
+          setToastMessage(message);
+          setShowToast(true);
         })
         .catch((error) => {
           console.error("There was a problem with the fetch operation:", error);
@@ -391,7 +412,16 @@ function DecorListing({
       .then((response) => {
         if (response.message === "success") {
           fetchEvents();
-          alert("Item remove from event!");
+          // Get event name for toast message
+          const event = eventList.find((e) => e._id === eventId);
+          const eventDay = event?.eventDays.find((d) => d._id === eventDayId);
+          const eventName = event?.name || "your event";
+          const dayName = eventDay?.name || "";
+          const message = dayName 
+            ? `Removed from ${eventName} - ${dayName}`
+            : `Removed from ${eventName}`;
+          setToastMessage(message);
+          setShowToast(true);
         }
       })
       .catch((error) => {
@@ -451,89 +481,91 @@ function DecorListing({
         <Dropdown.Item className="text-white bg-black">
           Event List
         </Dropdown.Item>
-        {eventList?.map((item) => (
-          <>
-            <Dropdown.Divider className="bg-black h-[1px] my-0" />
-            <Dropdown.Item className="bg-white flex flex-row gap-4" as="p">
-              <Label className="flex">{item.name}</Label>
-            </Dropdown.Item>
-            {item.eventDays.map((rec) => (
-              <Dropdown.Item
-                key={rec._id}
-                className="bg-white flex flex-row gap-4"
-                onClick={() => {}}
-                as={Label}
-              >
-                <Checkbox
-                  checked={
-                    rec.decorItems.filter((i) => i.decor === decor_id).length >
-                    0
-                  }
-                  className={item.status.finalized ? "sr-only" : ""}
-                  disabled={item.status.finalized}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      if (
-                        category.websiteView === "single" &&
-                        decor.productVariants.length > 0 &&
-                        !productVariant
-                      ) {
-                        alert("Select Option(variant)");
-                      } else if (
-                        category.flooringAllowed ||
-                        category.platformAllowed
-                      ) {
-                        setCart({
-                          ...cart,
-                          open: true,
-                          platform: undefined,
-                          flooring: undefined,
-                          dimensions: {
-                            length: 0,
-                            breadth: 0,
-                            height: 0,
-                          },
-                          price: 0,
-                          eventDayId: rec._id,
-                          eventId: item._id,
-                        });
+        <div className="max-h-[400px] overflow-y-auto p-1">
+          {eventList?.map((item) => (
+            <>
+              <Dropdown.Divider className="bg-black h-[1px] my-0" />
+              <Dropdown.Item className="bg-white flex flex-row gap-4" as="p">
+                <Label className="flex">{item.name}</Label>
+              </Dropdown.Item>
+              {item.eventDays.map((rec) => (
+                <Dropdown.Item
+                  key={rec._id}
+                  className="bg-white flex flex-row gap-4"
+                  onClick={() => {}}
+                  as={Label}
+                >
+                  <Checkbox
+                    checked={
+                      rec.decorItems.filter((i) => i.decor === decor_id).length >
+                      0
+                    }
+                    className={item.status.finalized ? "sr-only" : ""}
+                    disabled={item.status.finalized}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        if (
+                          category.websiteView === "single" &&
+                          decor.productVariants.length > 0 &&
+                          !productVariant
+                        ) {
+                          alert("Select Option(variant)");
+                        } else if (
+                          category.flooringAllowed ||
+                          category.platformAllowed
+                        ) {
+                          setCart({
+                            ...cart,
+                            open: true,
+                            platform: undefined,
+                            flooring: undefined,
+                            dimensions: {
+                              length: 0,
+                              breadth: 0,
+                              height: 0,
+                            },
+                            price: 0,
+                            eventDayId: rec._id,
+                            eventId: item._id,
+                          });
+                        } else {
+                          AddToEvent({
+                            quantity: cart.quantity,
+                            unit: decor.unit,
+                            eventDayId: rec._id,
+                            eventId: item._id,
+                            platform: false,
+                            flooring: "",
+                            dimensions: {
+                              length: 0,
+                              breadth: 0,
+                              height: 0,
+                            },
+                            price:
+                              (decor.productTypes.find((i) => i.name === variant)
+                                ?.sellingPrice +
+                                (productVariant
+                                  ? decor.productVariants.find(
+                                      (i) => i.name === productVariant
+                                    )?.priceModifier
+                                  : 0)) *
+                              cart.quantity,
+                          });
+                        }
                       } else {
-                        AddToEvent({
-                          quantity: cart.quantity,
-                          unit: decor.unit,
+                        RemoveFromEvent({
                           eventDayId: rec._id,
                           eventId: item._id,
-                          platform: false,
-                          flooring: "",
-                          dimensions: {
-                            length: 0,
-                            breadth: 0,
-                            height: 0,
-                          },
-                          price:
-                            (decor.productTypes.find((i) => i.name === variant)
-                              ?.sellingPrice +
-                              (productVariant
-                                ? decor.productVariants.find(
-                                    (i) => i.name === productVariant
-                                  )?.priceModifier
-                                : 0)) *
-                            cart.quantity,
                         });
                       }
-                    } else {
-                      RemoveFromEvent({
-                        eventDayId: rec._id,
-                        eventId: item._id,
-                      });
-                    }
-                  }}
-                />
-                {rec.name}
-              </Dropdown.Item>
-            ))}
-          </>
-        ))}
+                    }}
+                  />
+                  {rec.name}
+                </Dropdown.Item>
+              ))}
+            </>
+          ))}
+        </div>
         <Dropdown.Divider className="bg-black h-[1px] my-0" />
         <Dropdown.Item
           onClick={() => {
@@ -669,6 +701,35 @@ function DecorListing({
     ]
   };
 
+  // Get all images for lightbox
+  const getAllImages = () => {
+    const images = [decor.image];
+    if (decor.additionalImages && decor.additionalImages.length > 0) {
+      images.push(...decor.additionalImages);
+    }
+    return images;
+  };
+
+  // Lightbox handlers
+  const openLightbox = (index = 0) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+  };
+
+  const nextImage = () => {
+    const images = getAllImages();
+    setLightboxIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    const images = getAllImages();
+    setLightboxIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
   const pageTitle = decor?.seoTags?.title || `${decor.name} | Wedding ${decor.category || "Decoration"} | Wedsy`;
   const pageDescription = decor?.seoTags?.description || `${decor.name} - ${decor.description?.substring(0, 150) || "Premium wedding decoration item"} | Starting at ₹${decor?.productTypes?.[0]?.sellingPrice || "0"}. Book now for your special day in Bangalore.`;
   const pageKeywords = decor?.seoTags?.keywords || `${decor.name}, ${decor.category || "wedding decoration"}, wedding decor bangalore, ${decor.category?.toLowerCase()} decoration, wedding planning bangalore`;
@@ -721,6 +782,15 @@ function DecorListing({
         isRemoved={toastMessage === "Removed from Wishlist"}
       />
       <DecorDisclaimer />
+      {/* Image Lightbox */}
+      <ImageLightbox
+        images={getAllImages()}
+        currentIndex={lightboxIndex}
+        isOpen={lightboxOpen}
+        onClose={closeLightbox}
+        onNext={nextImage}
+        onPrev={prevImage}
+      />
       <Modal
         show={productAddOnsCart.open}
         size="lg"
@@ -1388,12 +1458,22 @@ function DecorListing({
               </p>
               <div className={`relative pt-[56.25%] `}>
                 {displayImage && (
-                  <ImageFillCard
-                    src={displayImage}
-                    objectFit="cover"
-                    className="md:rounded-xl overflow-hidden shadow-lg decor-detail-image"
-                   // imageClassName="rounded-xl"
-                  />
+                  <div
+                    className="md:rounded-xl overflow-hidden shadow-lg decor-detail-image cursor-pointer absolute inset-0 w-full h-full"
+                    onClick={() => {
+                      const images = getAllImages();
+                      const index = images.findIndex((img) => img === displayImage);
+                      openLightbox(index >= 0 ? index : 0);
+                    }}
+                  >
+                    <Image
+                      src={displayImage}
+                      alt={decor.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 60vw"
+                      className="object-cover transition-transform duration-300 hover:scale-105"
+                    />
+                  </div>
                 )}
                 {displayVideo && (
                   <video
@@ -1661,8 +1741,23 @@ function DecorListing({
               <p className="text-2xl font-semibold text-center tracking-wide uppercase">
                 {decor.name} ({decor?.productInfo.id})
               </p>
-              <div className={`relative pt-[75%] mx-8 md:mx-16`}>
-                <ImageFillCard
+              <div 
+                className={`relative pt-[75%] mx-8 md:mx-16 cursor-pointer`}
+                onClick={() => {
+                  const currentImage = productVariant
+                    ? decor.productVariants.find(
+                        (i) => i.name === productVariant
+                      )?.image
+                    : decor?.image;
+                  const images = getAllImages();
+                  // If current image is from variant, use it; otherwise find index
+                  const index = currentImage && images.includes(currentImage)
+                    ? images.findIndex((img) => img === currentImage)
+                    : 0;
+                  openLightbox(index >= 0 ? index : 0);
+                }}
+              >
+                <Image
                   src={
                     productVariant
                       ? decor.productVariants.find(
@@ -1670,9 +1765,10 @@ function DecorListing({
                         )?.image
                       : decor?.image
                   }
-                  objectFit="cover"
-                 className="md:rounded-xl overflow-hidden decor-detail-image shadow-md"
-                 // imageClassName="rounded-xl"
+                  alt={decor.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover md:rounded-xl transition-transform duration-300 hover:scale-105"
                 />
               </div>
             </div>
