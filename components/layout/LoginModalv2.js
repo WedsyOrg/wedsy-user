@@ -17,7 +17,6 @@ export default function LoginModalv2({
 }) {
   const [data, setData] = useState({
     phone: "",
-    name: "",
     loading: false,
     success: false,
     otpSent: false,
@@ -63,7 +62,6 @@ export default function LoginModalv2({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: data.name,
         phone: `+91${data.phone}`,
         Otp: data.Otp,
         ReferenceId: data.ReferenceId,
@@ -76,7 +74,6 @@ export default function LoginModalv2({
           setData({
             ...data,
             phone: "",
-            name: "",
             loading: false,
             success: true,
             otpSent: false,
@@ -116,19 +113,6 @@ export default function LoginModalv2({
             <div className=" gap-6 flex flex-col w-2/3 mx-auto">
               <input
                 type="text"
-                placeholder="NAME (First and Last Name)"
-                value={data.name}
-                onChange={(e) =>
-                  setData({
-                    ...data,
-                    name: e.target.value,
-                  })
-                }
-                name="name"
-                className="focus:ring-0 text-center text-black bg-transparent border-0 border-b border-b-black outline-0 outline-0 placeholder:text-black"
-              />
-              <input
-                type="text"
                 placeholder="PHONE NO."
                 value={data.phone}
                 onChange={(e) =>
@@ -161,7 +145,6 @@ export default function LoginModalv2({
               type="submit"
               className="rounded-full bg-black text-white py-2 block w-3/4 mx-auto disabled:bg-black/50"
               disabled={
-                !data.name ||
                 !data.phone ||
                 !/^\d{10}$/.test(data.phone) ||
                 data.loading ||

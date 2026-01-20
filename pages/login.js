@@ -8,7 +8,6 @@ export default function Login({ CheckLogin }) {
   const router = useRouter();
   const [data, setData] = useState({
     phone: "",
-    name: "",
     loading: false,
     success: false,
     otpSent: false,
@@ -54,7 +53,6 @@ export default function Login({ CheckLogin }) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: data.name,
         phone: processMobileNumber(data.phone),
         Otp: data.Otp,
         ReferenceId: data.ReferenceId,
@@ -66,7 +64,6 @@ export default function Login({ CheckLogin }) {
           setData({
             ...data,
             phone: "",
-            name: "",
             loading: false,
             success: true,
             otpSent: false,
