@@ -1450,9 +1450,18 @@ function DecorListing({
               </div>
             </div>
             <div className="flex flex-col gap-6 md:col-span-3">
-              <p className="hidden md:block text-2xl font-semibold tracking-wide uppercase">
-                {decor.category}
-              </p>
+              <div className="hidden md:flex items-center gap-3">
+                <p className="text-2xl font-semibold tracking-wide uppercase">
+                  {decor.category}
+                </p>
+                {["Stage", "Mandap", "Pathway", "Photobooth", "Entrance", "Nameboard"].some(
+                  cat => cat.toLowerCase() === decor.category?.toLowerCase()
+                ) && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#840032] text-white shadow-md">
+                    Customisable
+                  </span>
+                )}
+              </div>
               <p className="md:hidden text-xl font-semibold mb-2 text-center">
                 {decor.name} ({decor?.productInfo.id})
               </p>

@@ -1,28 +1,46 @@
 import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
 import { toPriceString, toProperCase } from "@/utils/text";
-import { Button, Label, Select, TextInput } from "flowbite-react";
+import { Button, Label, Modal, Select, TextInput } from "flowbite-react";
 import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import {
   FaArrowLeft,
-  FaArrowRight
+  FaArrowRight,
+  FaPencilAlt,
+  FaTrash,
+  FaCalendarAlt
 } from "react-icons/fa";
+import { DayPicker } from "react-day-picker";
+import { format } from "date-fns";
+import "react-day-picker/dist/style.css";
 
 function MakeupAndBeauty({ user }) {
   const router = useRouter();
   const divRef = useRef(null);
   const inputRef = useRef(null); // Reference to the input element
+  const editInputRef = useRef(null); // Reference for edit address input
+  const datePickerRef = useRef(null);
+  const datePickerDesktopRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [bookingInfo, setBookingInfo] = useState({ date: "", time: "" });
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showDatePickerDesktop, setShowDatePickerDesktop] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState("");
   const [addressDetails, setAddressDetails] = useState({
     house_no: "",
     address_type: "",
   });
   const [googleAddressDetails, setGoogleAddressDetails] = useState({});
+  const [editAddressModal, setEditAddressModal] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState(null);
+  const [editAddressDetails, setEditAddressDetails] = useState({
+    house_no: "",
+    address_type: "",
+  });
+  const [editGoogleAddressDetails, setEditGoogleAddressDetails] = useState({});
   const [divSize, setDivSize] = useState({ width: 0, height: 0 });
   const [wedsyPackages, setWedsyPackages] = useState([]);
   const [wedsyPackageCategory, setWedsyPackageCategory] = useState([]);
@@ -136,6 +154,12 @@ function MakeupAndBeauty({ user }) {
                 },
                 address_components: place.address_components,
               }));
+              // Auto-fill pincode and city in addressDetails
+              setAddressDetails((prevDetails) => ({
+                ...prevDetails,
+                postal_code: postal_code || prevDetails.postal_code,
+                city: city || prevDetails.city,
+              }));
             }
           });
         } else {
@@ -151,6 +175,88 @@ function MakeupAndBeauty({ user }) {
     }
     // console.log(inputRef.current);
   }, [addNewAddress]); // Add inputRef.current as a dependency
+
+  useEffect(() => {
+    const initializeEditAutocomplete = async () => {
+      try {
+        const google = await loadGoogleMaps(); // Load Google Maps API
+
+        if (!google?.maps) {
+          throw new Error("Google Maps library is not loaded properly.");
+        }
+
+        // Check if editInputRef.current exists before initializing Autocomplete
+        if (editInputRef.current) {
+          const autocomplete = new google.maps.places.Autocomplete(
+            editInputRef.current,
+            {
+              types: ["geocode"], // Restrict results to addresses only
+              componentRestrictions: { country: "in" }, // Restrict to India
+              bounds: new google.maps.LatLngBounds(
+                new google.maps.LatLng(12.9141, 77.4563), // Southwest corner of Bengaluru
+                new google.maps.LatLng(13.1129, 77.7343)  // Northeast corner of Bengaluru
+              ),
+              strictBounds: true, // Only show results within the bounds
+            }
+          );
+
+          // Listen for place selection
+          autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
+            if (place.geometry) {
+              const { city, postal_code, state, country, locality } =
+                extractAddressComponents(place.address_components);
+              
+              // Validate that the selected location is in Bengaluru
+              const isBengaluru = city.toLowerCase().includes('bengaluru') || 
+                                 city.toLowerCase().includes('bangalore') ||
+                                 locality.toLowerCase().includes('bengaluru') ||
+                                 locality.toLowerCase().includes('bangalore');
+              
+              if (!isBengaluru) {
+                alert("Please select a location within Bengaluru only.");
+                // Clear the input
+                setEditGoogleAddressDetails({});
+                return;
+              }
+              
+              setEditGoogleAddressDetails((prevDetails) => ({
+                ...prevDetails, // Retain existing fields like house_no and address_type
+                city,
+                postal_code,
+                state,
+                country,
+                locality,
+                place_id: place.place_id,
+                formatted_address: place.formatted_address,
+                geometry: {
+                  location: {
+                    lat: place.geometry.location.lat(),
+                    lng: place.geometry.location.lng(),
+                  },
+                },
+                address_components: place.address_components,
+              }));
+              // Auto-fill pincode and city in editAddressDetails
+              setEditAddressDetails((prevDetails) => ({
+                ...prevDetails,
+                postal_code: postal_code || prevDetails.postal_code,
+                city: city || prevDetails.city,
+              }));
+            }
+          });
+        } else {
+          console.warn("Edit input reference is not available yet.");
+        }
+      } catch (error) {
+        console.error("Error loading Google Maps:", error);
+      }
+    };
+
+    if (editAddressModal) {
+      initializeEditAutocomplete();
+    }
+  }, [editAddressModal]);
 
   const fetchTaxationData = () => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/config?code=MUA-Taxation`, {
@@ -237,6 +343,59 @@ function MakeupAndBeauty({ user }) {
       .catch((error) => {
         console.error("There was a problem with the fetch operation:", error);
       });
+  };
+  const updateUserSavedAddress = () => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/saved-address/${editingAddressId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ ...editGoogleAddressDetails, ...editAddressDetails }),
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        if (response.message === "success") {
+          fetchUserSavedAddress();
+          setEditAddressModal(false);
+          setEditingAddressId(null);
+          setEditAddressDetails({
+            house_no: "",
+            address_type: "",
+            postal_code: "",
+            city: "",
+            address_line_1: "",
+          });
+          setEditGoogleAddressDetails({});
+        }
+      })
+      .catch((error) => {
+        console.error("There was a problem with the fetch operation:", error);
+      });
+  };
+  const deleteUserSavedAddress = (addressId) => {
+    if (window.confirm("Are you sure you want to delete this address?")) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/saved-address/${addressId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+        .then((response) => response.json())
+        .then((response) => {
+          if (response.message === "success") {
+            // If the deleted address was selected, clear the selection
+            if (selectedAddress === addressId) {
+              setSelectedAddress("");
+            }
+            fetchUserSavedAddress();
+          }
+        })
+        .catch((error) => {
+          console.error("There was a problem with the fetch operation:", error);
+        });
+    }
   };
   const fetchUserSavedAddress = () => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/saved-address`, {
@@ -413,6 +572,29 @@ function MakeupAndBeauty({ user }) {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  // Close date picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        datePickerRef.current && !datePickerRef.current.contains(event.target) &&
+        datePickerDesktopRef.current && !datePickerDesktopRef.current.contains(event.target) &&
+        !event.target.closest('[data-date-picker-input]')
+      ) {
+        setShowDatePicker(false);
+        setShowDatePickerDesktop(false);
+      }
+    };
+
+    if (showDatePicker || showDatePickerDesktop) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDatePicker, showDatePickerDesktop]);
+
   return (
     <>
       <Head>
@@ -494,8 +676,10 @@ function MakeupAndBeauty({ user }) {
               <p className="text-xl font-semibold uppercase">Saved Address</p>
               {userSavedAddress?.map((item) => (
                 <div
-                  className={`flex items-center gap-4 bg-white p-4 rounded-lg border ${
-                    selectedAddress === item?._id && "border-[#840032]"
+                  className={`flex items-center gap-4 p-4 rounded-lg border ${
+                    selectedAddress === item?._id 
+                      ? "bg-gray-100 border-[#840032]" 
+                      : "bg-white border-gray-300"
                   }`}
                   key={item._id}
                   onClick={() => {
@@ -509,12 +693,50 @@ function MakeupAndBeauty({ user }) {
                     height={20} 
                     className="text-[#840032]"
                   />
-                  <p className="font-normal text-md uppercase">
-                    {item?.address_type}
-                  </p>
-                  <p className="text-gray-600 text-sm">
-                    {item?.house_no}, {item?.formatted_address}
-                  </p>
+                  <div className="flex-1">
+                    <p className="font-normal text-md uppercase">
+                      {item?.address_type}
+                    </p>
+                    <p className="text-gray-600 text-sm">
+                      {item?.house_no}, {item?.formatted_address}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingAddressId(item._id);
+                        setEditAddressDetails({
+                          house_no: item.house_no || "",
+                          address_type: item.address_type || "",
+                          postal_code: item.postal_code || "",
+                          city: item.city || "",
+                          address_line_1: item.address_line_1 || "",
+                        });
+                        setEditGoogleAddressDetails({
+                          formatted_address: item.formatted_address || "",
+                          city: item.city || "",
+                          postal_code: item.postal_code || "",
+                          state: item.state || "",
+                          country: item.country || "",
+                          locality: item.locality || "",
+                        });
+                        setEditAddressModal(true);
+                      }}
+                      className="text-[#840032] hover:text-[#6b0028] transition-colors p-2"
+                    >
+                      <FaPencilAlt size={16} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteUserSavedAddress(item._id);
+                      }}
+                      className="text-[#840028] hover:text-[#6b0028] transition-colors p-2"
+                    >
+                      <FaTrash size={16} />
+                    </button>
+                  </div>
                 </div>
               ))}
               <p
@@ -540,6 +762,7 @@ function MakeupAndBeauty({ user }) {
                         house_no: e.target.value,
                       });
                     }}
+                    className="!border-gray-400 focus:!border-gray-600 focus:!ring-0 focus:!outline-none"
                   />
                 </div>
                 <div>
@@ -560,6 +783,7 @@ function MakeupAndBeauty({ user }) {
                         setGoogleAddressDetails({});
                       }
                     }}
+                    className="!border-gray-400 focus:!border-gray-600 focus:!ring-0 focus:!outline-none"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -568,13 +792,14 @@ function MakeupAndBeauty({ user }) {
                     <TextInput
                       type="text"
                       placeholder="Pincode"
-                      value={addressDetails.postal_code}
+                      value={googleAddressDetails.postal_code || addressDetails.postal_code}
                       onChange={(e) => {
                         setAddressDetails({
                           ...addressDetails,
                           postal_code: e.target.value,
                         });
                       }}
+                      className="!border-gray-400 focus:!border-gray-600 focus:!ring-0 focus:!outline-none"
                     />
                   </div>
                   <div>
@@ -582,13 +807,14 @@ function MakeupAndBeauty({ user }) {
                     <TextInput
                       type="text"
                       placeholder="City"
-                      value={addressDetails.city}
+                      value={googleAddressDetails.city || addressDetails.city}
                       onChange={(e) => {
                         setAddressDetails({
                           ...addressDetails,
                           city: e.target.value,
                         });
                       }}
+                      className="!border-gray-400 focus:!border-gray-600 focus:!ring-0 focus:!outline-none"
                     />
                   </div>
                 </div>
@@ -642,6 +868,8 @@ function MakeupAndBeauty({ user }) {
                     onClick={() => {
                       addUserSavedAddress();
                     }}
+                    className="!bg-[#840032] hover:!bg-[#6b0028] !text-white !focus:ring-0 !focus:outline-none !hover:ring-0 !border-0 focus:!border-0 hover:!border-0 !border-transparent focus:!border-transparent hover:!border-transparent"
+                    style={{ border: 'none', outline: 'none' }}
                   >
                     Save
                   </Button>
@@ -669,58 +897,209 @@ function MakeupAndBeauty({ user }) {
         {displayModule === "Date & Time" && (
           <>
             <div className="bg-white p-6 rounded-lg flex flex-col gap-6">
-              <div>
+              <div className="relative">
                 <Label value="Date" />
-                <TextInput
-                  type="date"
-                  value={bookingInfo.date}
-                  onChange={(e) => {
-                    setBookingInfo({ ...bookingInfo, date: e.target.value });
-                  }}
-                  className="text-lg font-medium"
-                />
+                <div className="relative">
+                  <TextInput
+                    type="text"
+                    readOnly
+                    value={bookingInfo.date ? format(new Date(bookingInfo.date), "dd/MM/yyyy") : ""}
+                    placeholder="Select a date"
+                    onClick={() => setShowDatePicker(!showDatePicker)}
+                    className="text-lg font-medium !border-gray-400 focus:!border-gray-600 focus:!ring-0 focus:!outline-none cursor-pointer"
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <FaCalendarAlt className="text-gray-400" size={18} />
+                  </div>
+                </div>
+                {showDatePicker && (
+                  <div className="absolute z-50 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 p-4">
+                    <style jsx global>{`
+                      .rdp {
+                        --rdp-cell-size: 40px;
+                        --rdp-accent-color: #840032;
+                        --rdp-background-color: #f0f0f0;
+                        --rdp-accent-color-dark: #6b0028;
+                        --rdp-background-color-dark: #180270;
+                        --rdp-outline: 2px solid var(--rdp-accent-color);
+                        --rdp-outline-selected: 3px solid var(--rdp-accent-color);
+                        margin: 0;
+                      }
+                      .rdp-day_selected,
+                      .rdp-day_selected:focus-visible,
+                      .rdp-day_selected:hover {
+                        background-color: #840032;
+                        color: white;
+                      }
+                      .rdp-day:hover:not([disabled]):not(.rdp-day_selected) {
+                        background-color: #84003220;
+                      }
+                      .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+                        background-color: #84003210;
+                      }
+                      .rdp-day_today {
+                        font-weight: bold;
+                        color: #840032;
+                      }
+                    `}</style>
+                    <DayPicker
+                      mode="single"
+                      selected={bookingInfo.date ? new Date(bookingInfo.date) : undefined}
+                      onSelect={(date) => {
+                        if (date) {
+                          setBookingInfo({ ...bookingInfo, date: format(date, "yyyy-MM-dd") });
+                          setShowDatePicker(false);
+                        }
+                      }}
+                      disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                      className="rounded-lg"
+                    />
+                  </div>
+                )}
               </div>
               <div>
                 <Label value="Time" />
                 <span className="text-gray-500 text-sm block mb-4">
-                  *(The artist will arrive at the chosen time slot)
+                  *(The artist will arrive at the chosen time)
                 </span>
                 
-                {/* Time slots grid */}
-                <div className="grid grid-cols-3 gap-x-4 gap-y-3">
-                  {[
-                    "11:00", "12:00", "13:00",
-                    "16:00", "17:30", "18:00", 
-                    "18:30", "19:00", "19:30",
-                    "20:00", "20:30", "21:00"
-                  ].map((time) => (
-                    <button
-                      key={time}
-                      onClick={() => {
-                        setBookingInfo({ ...bookingInfo, time: time });
-                      }}
-                      className={`py-3 px-4 rounded-lg  text-center font-medium transition-all duration-200 ${
-                        bookingInfo.time === time
-                          ? " bg-[#840032]/30 text-[#840032]"
-                          : " bg-[#F4F4F4] text-[#840032] hover:bg-[#840032]/10"
-                      }`}
-                    >
-                      {time === "11:00" ? "11:00 am" :
-                       time === "12:00" ? "12:00 pm" :
-                       time === "13:00" ? "1:00 pm" :
-                       time === "16:00" ? "4:00 pm" :
-                       time === "17:30" ? "5:30 pm" :
-                       time === "18:00" ? "6:00 pm" :
-                       time === "18:30" ? "6:30 pm" :
-                       time === "19:00" ? "7:00 pm" :
-                       time === "19:30" ? "7:30 pm" :
-                       time === "20:00" ? "8:00 pm" :
-                       time === "20:30" ? "8:30 pm" :
-                       time === "21:00" ? "9:00 pm" : time}
-                    </button>
-                  ))}
+                {/* Modern Time Picker */}
+                <div className="bg-white border border-gray-300 rounded-lg p-4">
+                  <div className="flex items-center justify-center gap-4">
+                    {/* Hour Input */}
+                    <div className="flex flex-col items-center">
+                      <label className="text-xs text-gray-500 mb-2 font-medium">HOUR</label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="0"
+                          max="23"
+                          value={bookingInfo.time ? parseInt(bookingInfo.time.split(':')[0]) : ''}
+                          onChange={(e) => {
+                            const hour = e.target.value.padStart(2, '0');
+                            const minute = bookingInfo.time ? bookingInfo.time.split(':')[1] : '00';
+                            if (parseInt(hour) >= 0 && parseInt(hour) <= 23) {
+                              setBookingInfo({ ...bookingInfo, time: `${hour}:${minute}` });
+                            }
+                          }}
+                          onBlur={(e) => {
+                            let hour = e.target.value;
+                            if (hour === '') hour = '00';
+                            if (parseInt(hour) < 0) hour = '00';
+                            if (parseInt(hour) > 23) hour = '23';
+                            hour = hour.padStart(2, '0');
+                            const minute = bookingInfo.time ? bookingInfo.time.split(':')[1] : '00';
+                            setBookingInfo({ ...bookingInfo, time: `${hour}:${minute}` });
+                          }}
+                          className="w-20 text-center text-2xl font-semibold border-2 border-gray-300 rounded-lg py-3 px-2 focus:outline-none focus:border-[#840032] transition-colors"
+                          placeholder="00"
+                        />
+                        <div className="flex flex-col gap-1 absolute -right-8 top-1/2 -translate-y-1/2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentHour = bookingInfo.time ? parseInt(bookingInfo.time.split(':')[0]) : 0;
+                              const newHour = currentHour < 23 ? currentHour + 1 : 0;
+                              const minute = bookingInfo.time ? bookingInfo.time.split(':')[1] : '00';
+                              setBookingInfo({ ...bookingInfo, time: `${String(newHour).padStart(2, '0')}:${minute}` });
+                            }}
+                            className="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-[#840032] hover:text-white rounded text-gray-600 transition-colors"
+                          >
+                            ↑
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentHour = bookingInfo.time ? parseInt(bookingInfo.time.split(':')[0]) : 0;
+                              const newHour = currentHour > 0 ? currentHour - 1 : 23;
+                              const minute = bookingInfo.time ? bookingInfo.time.split(':')[1] : '00';
+                              setBookingInfo({ ...bookingInfo, time: `${String(newHour).padStart(2, '0')}:${minute}` });
+                            }}
+                            className="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-[#840032] hover:text-white rounded text-gray-600 transition-colors"
+                          >
+                            ↓
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <span className="text-3xl font-bold text-[#840032] mt-6">:</span>
+                    
+                    {/* Minute Input */}
+                    <div className="flex flex-col items-center">
+                      <label className="text-xs text-gray-500 mb-2 font-medium">MINUTE</label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="0"
+                          max="59"
+                          value={bookingInfo.time ? parseInt(bookingInfo.time.split(':')[1]) : ''}
+                          onChange={(e) => {
+                            const minute = e.target.value.padStart(2, '0');
+                            const hour = bookingInfo.time ? bookingInfo.time.split(':')[0] : '00';
+                            if (parseInt(minute) >= 0 && parseInt(minute) <= 59) {
+                              setBookingInfo({ ...bookingInfo, time: `${hour}:${minute}` });
+                            }
+                          }}
+                          onBlur={(e) => {
+                            let minute = e.target.value;
+                            if (minute === '') minute = '00';
+                            if (parseInt(minute) < 0) minute = '00';
+                            if (parseInt(minute) > 59) minute = '59';
+                            minute = minute.padStart(2, '0');
+                            const hour = bookingInfo.time ? bookingInfo.time.split(':')[0] : '00';
+                            setBookingInfo({ ...bookingInfo, time: `${hour}:${minute}` });
+                          }}
+                          className="w-20 text-center text-2xl font-semibold border-2 border-gray-300 rounded-lg py-3 px-2 focus:outline-none focus:border-[#840032] transition-colors"
+                          placeholder="00"
+                        />
+                        <div className="flex flex-col gap-1 absolute -right-8 top-1/2 -translate-y-1/2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentMinute = bookingInfo.time ? parseInt(bookingInfo.time.split(':')[1]) : 0;
+                              const newMinute = currentMinute < 59 ? currentMinute + 1 : 0;
+                              const hour = bookingInfo.time ? bookingInfo.time.split(':')[0] : '00';
+                              setBookingInfo({ ...bookingInfo, time: `${hour}:${String(newMinute).padStart(2, '0')}` });
+                            }}
+                            className="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-[#840032] hover:text-white rounded text-gray-600 transition-colors"
+                          >
+                            ↑
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentMinute = bookingInfo.time ? parseInt(bookingInfo.time.split(':')[1]) : 0;
+                              const newMinute = currentMinute > 0 ? currentMinute - 1 : 59;
+                              const hour = bookingInfo.time ? bookingInfo.time.split(':')[0] : '00';
+                              setBookingInfo({ ...bookingInfo, time: `${hour}:${String(newMinute).padStart(2, '0')}` });
+                            }}
+                            className="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-[#840032] hover:text-white rounded text-gray-600 transition-colors"
+                          >
+                            ↓
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Display selected time in readable format */}
+                  {bookingInfo.time && (
+                    <div className="mt-4 pt-4 border-t border-gray-200 text-center">
+                      <p className="text-xs text-gray-500 mb-1">Selected Time</p>
+                      <p className="text-2xl font-bold text-[#840032]">
+                        {(() => {
+                          const [hour, minute] = bookingInfo.time.split(':');
+                          const hourNum = parseInt(hour);
+                          const ampm = hourNum >= 12 ? 'PM' : 'AM';
+                          const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
+                          return `${displayHour}:${minute} ${ampm}`;
+                        })()}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
             </div>
             
             {/* DATE & TIME SECTION - Back and Next buttons */}
@@ -786,6 +1165,7 @@ function MakeupAndBeauty({ user }) {
                   type="date"
                   readOnly={true}
                   value={bookingInfo.date}
+                  className="!border-gray-400 focus:!border-gray-600 focus:!ring-0 focus:!outline-none"
                 />
               </div>
               <div>
@@ -794,6 +1174,7 @@ function MakeupAndBeauty({ user }) {
                   type="time"
                   readOnly={true}
                   value={bookingInfo.time}
+                  className="!border-gray-400 focus:!border-gray-600 focus:!ring-0 focus:!outline-none"
                 />
               </div>
             </div>
@@ -1001,8 +1382,10 @@ function MakeupAndBeauty({ user }) {
                 <p className="text-xl font-semibold uppercase">Saved Address</p>
                 {userSavedAddress?.map((item) => (
                   <div
-                    className={`flex items-center gap-4 bg-white p-4 rounded-xl border ${
-                      selectedAddress === item?._id && "border-[#979797]"
+                    className={`flex items-center gap-4 p-4 rounded-xl border ${
+                      selectedAddress === item?._id 
+                        ? "bg-gray-100 border-[#840032]" 
+                        : "bg-white border-gray-300"
                     }`}
                     key={item._id}
                     onClick={() => {
@@ -1016,12 +1399,50 @@ function MakeupAndBeauty({ user }) {
                       height={20} 
                       className="text-[#840032]"
                     />
-                    <p className="font-normal text-md uppercase">
-                      {item?.address_type}
-                    </p>
-                    <p className="text-gray-600">
-                      {item?.house_no}, {item?.formatted_address}
-                    </p>
+                    <div className="flex-1">
+                      <p className="font-normal text-md uppercase">
+                        {item?.address_type}
+                      </p>
+                      <p className="text-gray-600">
+                        {item?.house_no}, {item?.formatted_address}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingAddressId(item._id);
+                          setEditAddressDetails({
+                            house_no: item.house_no || "",
+                            address_type: item.address_type || "",
+                            postal_code: item.postal_code || "",
+                            city: item.city || "",
+                            address_line_1: item.address_line_1 || "",
+                          });
+                          setEditGoogleAddressDetails({
+                            formatted_address: item.formatted_address || "",
+                            city: item.city || "",
+                            postal_code: item.postal_code || "",
+                            state: item.state || "",
+                            country: item.country || "",
+                            locality: item.locality || "",
+                          });
+                          setEditAddressModal(true);
+                        }}
+                        className="text-[#840032] hover:text-[#6b0028] transition-colors p-2"
+                      >
+                        <FaPencilAlt size={16} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteUserSavedAddress(item._id);
+                        }}
+                        className="text-red-600 hover:text-red-700 transition-colors p-2"
+                      >
+                        <FaTrash size={16} />
+                      </button>
+                    </div>
                   </div>
                 ))}
                 <p
@@ -1057,6 +1478,7 @@ function MakeupAndBeauty({ user }) {
                           house_no: e.target.value,
                         });
                       }}
+                      className="!border-gray-400 focus:!border-gray-600 focus:!ring-0 focus:!outline-none"
                     />
                   </div>
                   <div>
@@ -1077,6 +1499,7 @@ function MakeupAndBeauty({ user }) {
                           setGoogleAddressDetails({});
                         }
                       }}
+                      className="!border-gray-400 focus:!border-gray-600 focus:!ring-0 focus:!outline-none"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -1085,13 +1508,14 @@ function MakeupAndBeauty({ user }) {
                       <TextInput
                         type="text"
                         placeholder="Pincode"
-                        value={addressDetails.postal_code}
+                        value={googleAddressDetails.postal_code || addressDetails.postal_code}
                         onChange={(e) => {
                           setAddressDetails({
                             ...addressDetails,
                             postal_code: e.target.value,
                           });
                         }}
+                        className="!border-gray-400 focus:!border-gray-600 focus:!ring-0 focus:!outline-none"
                       />
                     </div>
                     <div>
@@ -1099,13 +1523,14 @@ function MakeupAndBeauty({ user }) {
                       <TextInput
                         type="text"
                         placeholder="City"
-                        value={addressDetails.city}
+                        value={googleAddressDetails.city || addressDetails.city}
                         onChange={(e) => {
                           setAddressDetails({
                             ...addressDetails,
                             city: e.target.value,
                           });
                         }}
+                        className="!border-gray-400 focus:!border-gray-600 focus:!ring-0 focus:!outline-none"
                       />
                     </div>
                   </div>
@@ -1159,6 +1584,8 @@ function MakeupAndBeauty({ user }) {
                       onClick={() => {
                         addUserSavedAddress();
                       }}
+                      className="!bg-[#840032] hover:!bg-[#6b0028] !text-white !focus:ring-0 !focus:outline-none !hover:ring-0 !border-0 focus:!border-0 hover:!border-0 !border-transparent focus:!border-transparent hover:!border-transparent"
+                      style={{ border: 'none', outline: 'none' }}
                     >
                       Save
                     </Button>
@@ -1170,56 +1597,208 @@ function MakeupAndBeauty({ user }) {
           {displayModule === "Date & Time" && (
             <>
               <div className="bg-white p-6 rounded-lg flex flex-col gap-6">
-                <div>
+                <div className="relative">
                   <Label value="Date" />
-                  <TextInput
-                    type="date"
-                    value={bookingInfo.date}
-                    onChange={(e) => {
-                      setBookingInfo({ ...bookingInfo, date: e.target.value });
-                    }}
-                    className="text-lg font-medium"
-                  />
+                  <div className="relative">
+                    <TextInput
+                      type="text"
+                      readOnly
+                      value={bookingInfo.date ? format(new Date(bookingInfo.date), "dd/MM/yyyy") : ""}
+                      placeholder="Select a date"
+                      onClick={() => setShowDatePickerDesktop(!showDatePickerDesktop)}
+                      className="text-lg font-medium !border-gray-400 focus:!border-gray-600 focus:!ring-0 focus:!outline-none cursor-pointer"
+                      data-date-picker-input
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <FaCalendarAlt className="text-gray-400" size={18} />
+                    </div>
+                  </div>
+                  {showDatePickerDesktop && (
+                    <div ref={datePickerDesktopRef} className="absolute z-50 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 p-4">
+                      <style jsx global>{`
+                        .rdp {
+                          --rdp-cell-size: 40px;
+                          --rdp-accent-color: #840032;
+                          --rdp-background-color: #f0f0f0;
+                          --rdp-accent-color-dark: #6b0028;
+                          --rdp-background-color-dark: #180270;
+                          --rdp-outline: 2px solid var(--rdp-accent-color);
+                          --rdp-outline-selected: 3px solid var(--rdp-accent-color);
+                          margin: 0;
+                        }
+                        .rdp-day_selected,
+                        .rdp-day_selected:focus-visible,
+                        .rdp-day_selected:hover {
+                          background-color: #840032;
+                          color: white;
+                        }
+                        .rdp-day:hover:not([disabled]):not(.rdp-day_selected) {
+                          background-color: #84003220;
+                        }
+                        .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+                          background-color: #84003210;
+                        }
+                        .rdp-day_today {
+                          font-weight: bold;
+                          color: #840032;
+                        }
+                      `}</style>
+                      <DayPicker
+                        mode="single"
+                        selected={bookingInfo.date ? new Date(bookingInfo.date) : undefined}
+                        onSelect={(date) => {
+                          if (date) {
+                            setBookingInfo({ ...bookingInfo, date: format(date, "yyyy-MM-dd") });
+                            setShowDatePickerDesktop(false);
+                          }
+                        }}
+                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                        className="rounded-lg"
+                      />
+                    </div>
+                  )}
                 </div>
                 <div>
                   <Label value="Time" />
                   <span className="text-gray-500 text-sm block mb-4">
-                    *(The artist will arrive at the chosen time slot)
+                    *(The artist will arrive at the chosen time)
                   </span>
                   
-                  {/* Time slots grid */}
-                  <div className="grid grid-cols-3 gap-x-4 gap-y-3">
-                    {[
-                      "11:00", "12:00", "13:00",
-                      "16:00", "17:30", "18:00", 
-                      "18:30", "19:00", "19:30",
-                      "20:00", "20:30", "21:00"
-                    ].map((time) => (
-                      <button
-                        key={time}
-                        onClick={() => {
-                          setBookingInfo({ ...bookingInfo, time: time });
-                        }}
-                        className={`py-3 px-4 rounded-lg border-2 text-center font-medium transition-all duration-200 ${
-                          bookingInfo.time === time
-                            ? "border-[#840032] bg-[#840032] text-white"
-                            : "border-gray-300 bg-white text-[#840032] hover:border-[#840032] hover:bg-[#840032]/10"
-                        }`}
-                      >
-                        {time === "11:00" ? "11:00 am" :
-                         time === "12:00" ? "12:00 pm" :
-                         time === "13:00" ? "1:00 pm" :
-                         time === "16:00" ? "4:00 pm" :
-                         time === "17:30" ? "5:30 pm" :
-                         time === "18:00" ? "6:00 pm" :
-                         time === "18:30" ? "6:30 pm" :
-                         time === "19:00" ? "7:00 pm" :
-                         time === "19:30" ? "7:30 pm" :
-                         time === "20:00" ? "8:00 pm" :
-                         time === "20:30" ? "8:30 pm" :
-                         time === "21:00" ? "9:00 pm" : time}
-                      </button>
-                    ))}
+                  {/* Modern Time Picker */}
+                  <div className="bg-white border border-gray-300 rounded-lg p-6">
+                    <div className="flex items-center justify-center gap-6">
+                      {/* Hour Input */}
+                      <div className="flex flex-col items-center">
+                        <label className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">Hour</label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            min="0"
+                            max="23"
+                            value={bookingInfo.time ? parseInt(bookingInfo.time.split(':')[0]) : ''}
+                            onChange={(e) => {
+                              const hour = e.target.value.padStart(2, '0');
+                              const minute = bookingInfo.time ? bookingInfo.time.split(':')[1] : '00';
+                              if (parseInt(hour) >= 0 && parseInt(hour) <= 23) {
+                                setBookingInfo({ ...bookingInfo, time: `${hour}:${minute}` });
+                              }
+                            }}
+                            onBlur={(e) => {
+                              let hour = e.target.value;
+                              if (hour === '') hour = '00';
+                              if (parseInt(hour) < 0) hour = '00';
+                              if (parseInt(hour) > 23) hour = '23';
+                              hour = hour.padStart(2, '0');
+                              const minute = bookingInfo.time ? bookingInfo.time.split(':')[1] : '00';
+                              setBookingInfo({ ...bookingInfo, time: `${hour}:${minute}` });
+                            }}
+                            className="w-24 text-center text-2xl font-semibold border-2 border-gray-300 rounded-lg py-4 px-3 focus:outline-none focus:border-[#840032] transition-colors"
+                            placeholder="00"
+                          />
+                          <div className="flex flex-col gap-1 absolute -right-10 top-1/2 -translate-y-1/2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentHour = bookingInfo.time ? parseInt(bookingInfo.time.split(':')[0]) : 0;
+                                const newHour = currentHour < 23 ? currentHour + 1 : 0;
+                                const minute = bookingInfo.time ? bookingInfo.time.split(':')[1] : '00';
+                                setBookingInfo({ ...bookingInfo, time: `${String(newHour).padStart(2, '0')}:${minute}` });
+                              }}
+                              className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-[#840032] hover:text-white rounded text-gray-600 transition-colors text-sm font-bold"
+                            >
+                              ↑
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentHour = bookingInfo.time ? parseInt(bookingInfo.time.split(':')[0]) : 0;
+                                const newHour = currentHour > 0 ? currentHour - 1 : 23;
+                                const minute = bookingInfo.time ? bookingInfo.time.split(':')[1] : '00';
+                                setBookingInfo({ ...bookingInfo, time: `${String(newHour).padStart(2, '0')}:${minute}` });
+                              }}
+                              className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-[#840032] hover:text-white rounded text-gray-600 transition-colors text-sm font-bold"
+                            >
+                              ↓
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <span className="text-4xl font-bold text-[#840032] mt-8 "> </span>
+                      
+                      {/* Minute Input */}
+                      <div className="flex flex-col items-center px-7">
+                        <label className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">Minute</label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            min="0"
+                            max="59"
+                            value={bookingInfo.time ? parseInt(bookingInfo.time.split(':')[1]) : ''}
+                            onChange={(e) => {
+                              const minute = e.target.value.padStart(2, '0');
+                              const hour = bookingInfo.time ? bookingInfo.time.split(':')[0] : '00';
+                              if (parseInt(minute) >= 0 && parseInt(minute) <= 59) {
+                                setBookingInfo({ ...bookingInfo, time: `${hour}:${minute}` });
+                              }
+                            }}
+                            onBlur={(e) => {
+                              let minute = e.target.value;
+                              if (minute === '') minute = '00';
+                              if (parseInt(minute) < 0) minute = '00';
+                              if (parseInt(minute) > 59) minute = '59';
+                              minute = minute.padStart(2, '0');
+                              const hour = bookingInfo.time ? bookingInfo.time.split(':')[0] : '00';
+                              setBookingInfo({ ...bookingInfo, time: `${hour}:${minute}` });
+                            }}
+                            className="w-24 text-center text-2xl font-semibold border-2 border-gray-300 rounded-lg py-4 px-3 focus:outline-none focus:border-[#840032] transition-colors"
+                            placeholder="00"
+                          />
+                          <div className="flex flex-col gap-1 absolute -right-10 top-1/2 -translate-y-1/2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentMinute = bookingInfo.time ? parseInt(bookingInfo.time.split(':')[1]) : 0;
+                                const newMinute = currentMinute < 59 ? currentMinute + 1 : 0;
+                                const hour = bookingInfo.time ? bookingInfo.time.split(':')[0] : '00';
+                                setBookingInfo({ ...bookingInfo, time: `${hour}:${String(newMinute).padStart(2, '0')}` });
+                              }}
+                              className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-[#840032] hover:text-white rounded text-gray-600 transition-colors text-sm font-bold"
+                            >
+                              ↑
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentMinute = bookingInfo.time ? parseInt(bookingInfo.time.split(':')[1]) : 0;
+                                const newMinute = currentMinute > 0 ? currentMinute - 1 : 59;
+                                const hour = bookingInfo.time ? bookingInfo.time.split(':')[0] : '00';
+                                setBookingInfo({ ...bookingInfo, time: `${hour}:${String(newMinute).padStart(2, '0')}` });
+                              }}
+                              className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-[#840032] hover:text-white rounded text-gray-600 transition-colors text-sm font-bold"
+                            >
+                              ↓
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Display selected time in readable format */}
+                    {bookingInfo.time && (
+                      <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+                        <p className="text-xs text-gray-500 mb-2 uppercase tracking-wide">Selected Time</p>
+                        <p className="text-2xl font-bold text-[#840032]">
+                          {(() => {
+                            const [hour, minute] = bookingInfo.time.split(':');
+                            const hourNum = parseInt(hour);
+                            const ampm = hourNum >= 12 ? 'PM' : 'AM';
+                            const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
+                            return `${displayHour}:${minute} ${ampm}`;
+                          })()}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
                 {bookingInfo.date && bookingInfo.time && (
@@ -1409,6 +1988,151 @@ function MakeupAndBeauty({ user }) {
           </div>
         </div>
       </div>
+
+      {/* Edit Address Modal */}
+      <Modal
+        show={editAddressModal}
+        size="md"
+        popup
+        onClose={() => {
+          setEditAddressModal(false);
+          setEditingAddressId(null);
+          setEditAddressDetails({
+            house_no: "",
+            address_type: "",
+            postal_code: "",
+            city: "",
+            address_line_1: "",
+          });
+          setEditGoogleAddressDetails({});
+        }}
+      >
+        <Modal.Header>Edit Address</Modal.Header>
+        <Modal.Body>
+          <div className="flex flex-col gap-4">
+            <div>
+              <Label value="House no/Flat no" />
+              <TextInput
+                type="text"
+                placeholder="House no/Flat no"
+                value={editAddressDetails.house_no}
+                onChange={(e) => {
+                  setEditAddressDetails({
+                    ...editAddressDetails,
+                    house_no: e.target.value,
+                  });
+                }}
+                className="!border-gray-400 focus:!border-gray-600 focus:!ring-0 focus:!outline-none"
+              />
+            </div>
+            <div>
+              <Label value="Address line 1" />
+              <TextInput
+                ref={editInputRef}
+                type="text"
+                placeholder="Enter your address"
+                value={editGoogleAddressDetails.formatted_address || editAddressDetails.address_line_1}
+                onChange={(e) => {
+                  setEditAddressDetails({
+                    ...editAddressDetails,
+                    address_line_1: e.target.value,
+                  });
+                  if (!e.target.value) {
+                    setEditGoogleAddressDetails({});
+                  }
+                }}
+                className="!border-gray-400 focus:!border-gray-600 focus:!ring-0 focus:!outline-none"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label value="Pincode" />
+                <TextInput
+                  type="text"
+                  placeholder="Pincode"
+                  value={editAddressDetails.postal_code || editGoogleAddressDetails.postal_code}
+                  onChange={(e) => {
+                    setEditAddressDetails({
+                      ...editAddressDetails,
+                      postal_code: e.target.value,
+                    });
+                  }}
+                  className="!border-gray-400 focus:!border-gray-600 focus:!ring-0 focus:!outline-none"
+                />
+              </div>
+              <div>
+                <Label value="City" />
+                <TextInput
+                  type="text"
+                  placeholder="City"
+                  value={editAddressDetails.city || editGoogleAddressDetails.city}
+                  onChange={(e) => {
+                    setEditAddressDetails({
+                      ...editAddressDetails,
+                      city: e.target.value,
+                    });
+                  }}
+                  className="!border-gray-400 focus:!border-gray-600 focus:!ring-0 focus:!outline-none"
+                />
+              </div>
+            </div>
+            <div>
+              <Label value="Address Type" />
+              <Select
+                value={editAddressDetails.address_type}
+                onChange={(e) => {
+                  setEditAddressDetails({
+                    ...editAddressDetails,
+                    address_type: e.target.value,
+                  });
+                }}
+              >
+                <option value={""}>Select Type</option>
+                {["home", "work", "billing", "other"]?.map((item) => (
+                  <option key={item} value={item}>
+                    {toProperCase(item)}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <Button
+                color="gray"
+                onClick={() => {
+                  setEditAddressModal(false);
+                  setEditingAddressId(null);
+                  setEditAddressDetails({
+                    house_no: "",
+                    address_type: "",
+                    postal_code: "",
+                    city: "",
+                    address_line_1: "",
+                  });
+                  setEditGoogleAddressDetails({});
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={
+                  !editAddressDetails.address_type ||
+                  !editAddressDetails.house_no ||
+                  (!editAddressDetails.postal_code && !editGoogleAddressDetails.postal_code) ||
+                  (!editAddressDetails.city && !editGoogleAddressDetails.city) ||
+                  (!editGoogleAddressDetails.formatted_address && !editAddressDetails.address_line_1)
+                }
+                onClick={() => {
+                  updateUserSavedAddress();
+                }}
+                className="!bg-[#840032] hover:!bg-[#6b0028] !text-white !focus:ring-0 !focus:outline-none !hover:ring-0 !border-0 focus:!border-0 hover:!border-0 !border-transparent focus:!border-transparent hover:!border-transparent"
+                style={{ border: 'none', outline: 'none' }}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
     </>
   );
 }
