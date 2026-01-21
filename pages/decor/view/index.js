@@ -57,6 +57,11 @@ function DecorListing({
     colours: [],
     type: [],
     priceRange: [0, 115000],
+    stageSize: "",
+    mandapSize: "",
+    entranceSize: "",
+    nameboardSize: "",
+    pathwayStyle: "",
   });
 
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -66,6 +71,11 @@ function DecorListing({
     colours: [],
     type: [],
     priceRange: [0, 115000],
+    stageSize: "",
+    mandapSize: "",
+    entranceSize: "",
+    nameboardSize: "",
+    pathwayStyle: "",
   });
   const filterDropdownRef = useRef(null);
   const filterButtonRef = useRef(null);
@@ -100,12 +110,71 @@ function DecorListing({
 
   const typeList = ["Modern", "Traditional"];
 
+  // Stage Size Options (only for Stage category)
+  const stageSizeOptions = [
+    { key: "Small", label: "Small (≤ 16 ft length)", range: { min: 0, max: 16 } },
+    { key: "Medium", label: "Medium (17 – 30 ft length)", range: { min: 17, max: 30 } },
+    { key: "Large", label: "Large (> 30 ft length)", range: { min: 31, max: 9999 } },
+  ];
+
+  // Mandap Size Options (only for Mandap category)
+  const mandapSizeOptions = [
+    { key: "Medium", label: "Medium (17 – 30 ft length)", range: { min: 17, max: 30 } },
+    { key: "Large", label: "Large (> 30 ft length)", range: { min: 31, max: 9999 } },
+  ];
+
+  // Entrance & Nameboard Size Options (Medium-Large only)
+  const entranceNameboardSizeOptions = [
+    { key: "Medium", label: "Medium (17 – 30 ft length)", range: { min: 17, max: 30 } },
+    { key: "Large", label: "Large (> 30 ft length)", range: { min: 31, max: 9999 } },
+  ];
+
+  // Pathway Style Options (based on unit field)
+  const pathwayStyleOptions = [
+    { key: "Single", label: "Single", unit: "pc" },
+    { key: "Running", label: "Running", unit: "running" },
+  ];
+
+  const isStageCategory = (filters.category || "").toLowerCase() === "stage";
+  const isMandapCategory = (filters.category || "").toLowerCase() === "mandap";
+  const isPhotoboothCategory = (filters.category || "").toLowerCase() === "photobooth";
+  const isEntranceCategory = (filters.category || "").toLowerCase() === "entrance";
+  const isPathwayCategory = (filters.category || "").toLowerCase() === "pathway";
+  const isNameboardCategory = (filters.category || "").toLowerCase() === "nameboard";
+  
+  // Categories that show Size filter
+  const showSizeFilter = isStageCategory || isMandapCategory || isEntranceCategory || isNameboardCategory;
+  // Categories that show Occasion filter
+  const showOccasionFilter = !isMandapCategory;
+  // Categories that show Style filter (Pathway specific)
+  const showPathwayStyleFilter = isPathwayCategory;
+
+  const getStageLengthRange = (sizeKey) => {
+    const found = stageSizeOptions.find((o) => o.key === sizeKey);
+    return found ? found.range : null;
+  };
+
+  const getMandapLengthRange = (sizeKey) => {
+    const found = mandapSizeOptions.find((o) => o.key === sizeKey);
+    return found ? found.range : null;
+  };
+
+  const getEntranceNameboardLengthRange = (sizeKey) => {
+    const found = entranceNameboardSizeOptions.find((o) => o.key === sizeKey);
+    return found ? found.range : null;
+  };
+
   // Helper functions to check if filters/sort are active
   const hasActiveFilters = () => {
     return (
-      filters.occasion.length > 0 ||
+      (showOccasionFilter && filters.occasion.length > 0) ||
       filters.colours.length > 0 ||
       filters.type.length > 0 ||
+      (isStageCategory && !!filters.stageSize) ||
+      (isMandapCategory && !!filters.mandapSize) ||
+      (isEntranceCategory && !!filters.entranceSize) ||
+      (isNameboardCategory && !!filters.nameboardSize) ||
+      (isPathwayCategory && !!filters.pathwayStyle) ||
       filters.priceRange[0] !== 0 ||
       filters.priceRange[1] !== 115000
     );
@@ -148,7 +217,8 @@ function DecorListing({
       ) {
         params.append("sort", filters.sort);
       }
-      if (filters.occasion.length > 0) {
+      // Occasion filter - skip for Mandap category
+      if (showOccasionFilter && filters.occasion.length > 0) {
         params.append("occassion", filters.occasion.join("|"));
       }
       if (filters.colours.length > 0) {
@@ -162,6 +232,47 @@ function DecorListing({
         params.append("priceLower", filters.priceRange[0].toString());
         params.append("priceHigher", filters.priceRange[1].toString());
       }
+      // Stage Size filter (only for Stage category)
+      if (isStageCategory && filters.stageSize) {
+        const range = getStageLengthRange(filters.stageSize);
+        if (range) {
+          params.append("stageLengthLower", range.min.toString());
+          params.append("stageLengthHigher", range.max.toString());
+        }
+      }
+      // Mandap Size filter (only for Mandap category)
+      if (isMandapCategory && filters.mandapSize) {
+        const range = getMandapLengthRange(filters.mandapSize);
+        if (range) {
+          params.append("stageLengthLower", range.min.toString());
+          params.append("stageLengthHigher", range.max.toString());
+        }
+      }
+      // Entrance Size filter (only for Entrance category)
+      if (isEntranceCategory && filters.entranceSize) {
+        const range = getEntranceNameboardLengthRange(filters.entranceSize);
+        if (range) {
+          params.append("stageLengthLower", range.min.toString());
+          params.append("stageLengthHigher", range.max.toString());
+        }
+      }
+      // Nameboard Size filter (only for Nameboard category)
+      if (isNameboardCategory && filters.nameboardSize) {
+        const range = getEntranceNameboardLengthRange(filters.nameboardSize);
+        if (range) {
+          params.append("stageLengthLower", range.min.toString());
+          params.append("stageLengthHigher", range.max.toString());
+        }
+      }
+      // Pathway Style filter (filters by unit field: "pc" = Single, else = Running)
+      // Note: Backend may not support unit filtering yet, so we'll filter client-side
+      let pathwayUnitFilter = null;
+      if (isPathwayCategory && filters.pathwayStyle) {
+        const styleOption = pathwayStyleOptions.find((o) => o.key === filters.pathwayStyle);
+        if (styleOption) {
+          pathwayUnitFilter = styleOption.unit;
+        }
+      }
 
       try {
         const response = await fetch(
@@ -170,6 +281,18 @@ function DecorListing({
         const data = await response.json();
 
         let sortedList = data.list || [];
+        
+        // Client-side filtering for Pathway Style (by unit field)
+        if (isPathwayCategory && pathwayUnitFilter) {
+          sortedList = sortedList.filter((item) => {
+            if (pathwayUnitFilter === "pc") {
+              return item.unit === "pc";
+            } else {
+              return item.unit !== "pc";
+            }
+          });
+        }
+        
         if (filters.sort === "New-Arrivals") {
           sortedList = [...sortedList].sort(
             (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
@@ -188,7 +311,18 @@ function DecorListing({
   }, [page, filters]);
 
   useEffect(() => {
-    setFilters((prev) => ({ ...prev, category: category || "Stage" }));
+    const newCategory = category || "Stage";
+    const catLower = newCategory.toLowerCase();
+    setFilters((prev) => ({
+      ...prev,
+      category: newCategory,
+      // Clear size/style filters when switching categories
+      stageSize: catLower === "stage" ? prev.stageSize : "",
+      mandapSize: catLower === "mandap" ? prev.mandapSize : "",
+      entranceSize: catLower === "entrance" ? prev.entranceSize : "",
+      nameboardSize: catLower === "nameboard" ? prev.nameboardSize : "",
+      pathwayStyle: catLower === "pathway" ? prev.pathwayStyle : "",
+    }));
     setPage(parseInt(queryPage) || 1);
   }, [category, queryPage]);
 
@@ -203,6 +337,11 @@ function DecorListing({
         colours: [...filters.colours],
         type: [...filters.type],
         priceRange: [...filters.priceRange],
+        stageSize: filters.stageSize || "",
+        mandapSize: filters.mandapSize || "",
+        entranceSize: filters.entranceSize || "",
+        nameboardSize: filters.nameboardSize || "",
+        pathwayStyle: filters.pathwayStyle || "",
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -268,10 +407,15 @@ function DecorListing({
   const handleApplyFilters = () => {
     setFilters((prev) => ({
       ...prev,
-      occasion: [...tempFilters.occasion],
+      occasion: showOccasionFilter ? [...tempFilters.occasion] : [],
       colours: [...tempFilters.colours],
       type: [...tempFilters.type],
       priceRange: [...tempFilters.priceRange],
+      stageSize: isStageCategory ? (tempFilters.stageSize || "") : "",
+      mandapSize: isMandapCategory ? (tempFilters.mandapSize || "") : "",
+      entranceSize: isEntranceCategory ? (tempFilters.entranceSize || "") : "",
+      nameboardSize: isNameboardCategory ? (tempFilters.nameboardSize || "") : "",
+      pathwayStyle: isPathwayCategory ? (tempFilters.pathwayStyle || "") : "",
     }));
     setShowFilterModal(false);
   };
@@ -282,6 +426,11 @@ function DecorListing({
       colours: [],
       type: [],
       priceRange: [0, 115000],
+      stageSize: "",
+      mandapSize: "",
+      entranceSize: "",
+      nameboardSize: "",
+      pathwayStyle: "",
     };
     setTempFilters(resetFilters);
     setFilters((prev) => ({ ...prev, ...resetFilters }));
@@ -512,7 +661,12 @@ function DecorListing({
                   <button
                     ref={filterButtonRef}
                     onClick={() => {
-                      setSelectedSection("occasion");
+                      // Set default section based on category
+                      if (!showOccasionFilter) {
+                        setSelectedSection("colours");
+                      } else {
+                        setSelectedSection("occasion");
+                      }
                       setShowFilterModal((prev) => !prev);
                     }}
                     className="ml-10 md:ml-0 px-4 py-2 flex items-center justify-center text-center gap-2 flex-1 min-h-[44px] w-full relative"
@@ -539,19 +693,23 @@ function DecorListing({
                         {/* Left Panel - Sections */}
                         <div className="w-1/3 border-r bg-gray-50">
                           <div className="p-4 space-y-1">
-                            <button
-                              onClick={() => setSelectedSection("occasion")}
-                              className={`w-full text-left px-4 py-3 text-sm rounded transition-colors flex items-center justify-between ${
-                                selectedSection === "occasion"
-                                  ? "bg-white shadow-sm font-medium"
-                                  : "hover:bg-gray-100"
-                              }`}
-                            >
-                              <span>Occasion</span>
-                              {tempFilters.occasion.length > 0 && (
-                                <Check className="h-4 w-4 text-black" />
-                              )}
-                            </button>
+                            {/* Occasion - Hidden for Mandap */}
+                            {showOccasionFilter && (
+                              <button
+                                onClick={() => setSelectedSection("occasion")}
+                                className={`w-full text-left px-4 py-3 text-sm rounded transition-colors flex items-center justify-between ${
+                                  selectedSection === "occasion"
+                                    ? "bg-white shadow-sm font-medium"
+                                    : "hover:bg-gray-100"
+                                }`}
+                              >
+                                <span>Occasion</span>
+                                {tempFilters.occasion.length > 0 && (
+                                  <Check className="h-4 w-4 text-black" />
+                                )}
+                              </button>
+                            )}
+                            {/* Colours - Always visible */}
                             <button
                               onClick={() => setSelectedSection("colours")}
                               className={`w-full text-left px-4 py-3 text-sm rounded transition-colors flex items-center justify-between ${
@@ -565,6 +723,7 @@ function DecorListing({
                                 <Check className="h-4 w-4 text-black" />
                               )}
                             </button>
+                            {/* Type - Always visible */}
                             <button
                               onClick={() => setSelectedSection("type")}
                               className={`w-full text-left px-4 py-3 text-sm rounded transition-colors flex items-center justify-between ${
@@ -578,6 +737,39 @@ function DecorListing({
                                 <Check className="h-4 w-4 text-black" />
                               )}
                             </button>
+                            {/* Size - For Stage, Mandap, Entrance, Nameboard */}
+                            {showSizeFilter && (
+                              <button
+                                onClick={() => setSelectedSection("size")}
+                                className={`w-full text-left px-4 py-3 text-sm rounded transition-colors flex items-center justify-between ${
+                                  selectedSection === "size"
+                                    ? "bg-white shadow-sm font-medium"
+                                    : "hover:bg-gray-100"
+                                }`}
+                              >
+                                <span>Size</span>
+                                {(tempFilters.stageSize || tempFilters.mandapSize || tempFilters.entranceSize || tempFilters.nameboardSize) && (
+                                  <Check className="h-4 w-4 text-black" />
+                                )}
+                              </button>
+                            )}
+                            {/* Style - For Pathway only */}
+                            {showPathwayStyleFilter && (
+                              <button
+                                onClick={() => setSelectedSection("pathway-style")}
+                                className={`w-full text-left px-4 py-3 text-sm rounded transition-colors flex items-center justify-between ${
+                                  selectedSection === "pathway-style"
+                                    ? "bg-white shadow-sm font-medium"
+                                    : "hover:bg-gray-100"
+                                }`}
+                              >
+                                <span>Style</span>
+                                {tempFilters.pathwayStyle && (
+                                  <Check className="h-4 w-4 text-black" />
+                                )}
+                              </button>
+                            )}
+                            {/* Price range - Always visible */}
                             <button
                               onClick={() => setSelectedSection("price-range")}
                               className={`w-full text-left px-4 py-3 text-sm rounded transition-colors flex items-center justify-between ${
@@ -596,7 +788,7 @@ function DecorListing({
 
                         {/* Right Panel - Options */}
                         <div className="w-2/3 p-4 overflow-y-auto">
-                          {selectedSection === "occasion" && (
+                          {selectedSection === "occasion" && showOccasionFilter && (
                             <div className="space-y-2">
                               {occasionList.map((o) => (
                                 <button
@@ -741,6 +933,186 @@ function DecorListing({
                                 ₹{tempFilters.priceRange[0].toLocaleString()} – ₹
                                 {tempFilters.priceRange[1].toLocaleString()}
                               </div>
+                            </div>
+                          )}
+
+                          {selectedSection === "size" && isStageCategory && (
+                            <div className="space-y-2">
+                              {stageSizeOptions.map((opt) => (
+                                <button
+                                  key={opt.key}
+                                  onClick={() => setTempFilters((p) => ({ ...p, stageSize: opt.key, mandapSize: "", entranceSize: "", nameboardSize: "" }))}
+                                  className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                                    tempFilters.stageSize === opt.key
+                                      ? "bg-gray-100 font-medium"
+                                      : "hover:bg-gray-50"
+                                  }`}
+                                  type="button"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="radio"
+                                      name="stageSize"
+                                      checked={tempFilters.stageSize === opt.key}
+                                      onChange={() => setTempFilters((p) => ({ ...p, stageSize: opt.key, mandapSize: "", entranceSize: "", nameboardSize: "" }))}
+                                      className="w-4 h-4"
+                                    />
+                                    <span>{opt.label}</span>
+                                  </div>
+                                </button>
+                              ))}
+                              {/* Clear size filter option */}
+                              <button
+                                type="button"
+                                onClick={() => setTempFilters((p) => ({ ...p, stageSize: "", mandapSize: "", entranceSize: "", nameboardSize: "" }))}
+                                className="w-full text-left px-4 py-3 text-sm rounded hover:bg-gray-50 text-gray-700"
+                              >
+                                Clear size filter
+                              </button>
+                            </div>
+                          )}
+
+                          {selectedSection === "size" && isMandapCategory && (
+                            <div className="space-y-2">
+                              {mandapSizeOptions.map((opt) => (
+                                <button
+                                  key={opt.key}
+                                  onClick={() => setTempFilters((p) => ({ ...p, mandapSize: opt.key, stageSize: "", entranceSize: "", nameboardSize: "" }))}
+                                  className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                                    tempFilters.mandapSize === opt.key
+                                      ? "bg-gray-100 font-medium"
+                                      : "hover:bg-gray-50"
+                                  }`}
+                                  type="button"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="radio"
+                                      name="mandapSize"
+                                      checked={tempFilters.mandapSize === opt.key}
+                                      onChange={() => setTempFilters((p) => ({ ...p, mandapSize: opt.key, stageSize: "", entranceSize: "", nameboardSize: "" }))}
+                                      className="w-4 h-4"
+                                    />
+                                    <span>{opt.label}</span>
+                                  </div>
+                                </button>
+                              ))}
+                              {/* Clear size filter option */}
+                              <button
+                                type="button"
+                                onClick={() => setTempFilters((p) => ({ ...p, mandapSize: "", stageSize: "", entranceSize: "", nameboardSize: "" }))}
+                                className="w-full text-left px-4 py-3 text-sm rounded hover:bg-gray-50 text-gray-700"
+                              >
+                                Clear size filter
+                              </button>
+                            </div>
+                          )}
+
+                          {selectedSection === "size" && isEntranceCategory && (
+                            <div className="space-y-2">
+                              {entranceNameboardSizeOptions.map((opt) => (
+                                <button
+                                  key={opt.key}
+                                  onClick={() => setTempFilters((p) => ({ ...p, entranceSize: opt.key, stageSize: "", mandapSize: "", nameboardSize: "" }))}
+                                  className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                                    tempFilters.entranceSize === opt.key
+                                      ? "bg-gray-100 font-medium"
+                                      : "hover:bg-gray-50"
+                                  }`}
+                                  type="button"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="radio"
+                                      name="entranceSize"
+                                      checked={tempFilters.entranceSize === opt.key}
+                                      onChange={() => setTempFilters((p) => ({ ...p, entranceSize: opt.key, stageSize: "", mandapSize: "", nameboardSize: "" }))}
+                                      className="w-4 h-4"
+                                    />
+                                    <span>{opt.label}</span>
+                                  </div>
+                                </button>
+                              ))}
+                              {/* Clear size filter option */}
+                              <button
+                                type="button"
+                                onClick={() => setTempFilters((p) => ({ ...p, entranceSize: "", stageSize: "", mandapSize: "", nameboardSize: "" }))}
+                                className="w-full text-left px-4 py-3 text-sm rounded hover:bg-gray-50 text-gray-700"
+                              >
+                                Clear size filter
+                              </button>
+                            </div>
+                          )}
+
+                          {selectedSection === "size" && isNameboardCategory && (
+                            <div className="space-y-2">
+                              {entranceNameboardSizeOptions.map((opt) => (
+                                <button
+                                  key={opt.key}
+                                  onClick={() => setTempFilters((p) => ({ ...p, nameboardSize: opt.key, stageSize: "", mandapSize: "", entranceSize: "" }))}
+                                  className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                                    tempFilters.nameboardSize === opt.key
+                                      ? "bg-gray-100 font-medium"
+                                      : "hover:bg-gray-50"
+                                  }`}
+                                  type="button"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="radio"
+                                      name="nameboardSize"
+                                      checked={tempFilters.nameboardSize === opt.key}
+                                      onChange={() => setTempFilters((p) => ({ ...p, nameboardSize: opt.key, stageSize: "", mandapSize: "", entranceSize: "" }))}
+                                      className="w-4 h-4"
+                                    />
+                                    <span>{opt.label}</span>
+                                  </div>
+                                </button>
+                              ))}
+                              {/* Clear size filter option */}
+                              <button
+                                type="button"
+                                onClick={() => setTempFilters((p) => ({ ...p, nameboardSize: "", stageSize: "", mandapSize: "", entranceSize: "" }))}
+                                className="w-full text-left px-4 py-3 text-sm rounded hover:bg-gray-50 text-gray-700"
+                              >
+                                Clear size filter
+                              </button>
+                            </div>
+                          )}
+
+                          {selectedSection === "pathway-style" && isPathwayCategory && (
+                            <div className="space-y-2">
+                              {pathwayStyleOptions.map((opt) => (
+                                <button
+                                  key={opt.key}
+                                  onClick={() => setTempFilters((p) => ({ ...p, pathwayStyle: opt.key }))}
+                                  className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                                    tempFilters.pathwayStyle === opt.key
+                                      ? "bg-gray-100 font-medium"
+                                      : "hover:bg-gray-50"
+                                  }`}
+                                  type="button"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="radio"
+                                      name="pathwayStyle"
+                                      checked={tempFilters.pathwayStyle === opt.key}
+                                      onChange={() => setTempFilters((p) => ({ ...p, pathwayStyle: opt.key }))}
+                                      className="w-4 h-4"
+                                    />
+                                    <span>{opt.label}</span>
+                                  </div>
+                                </button>
+                              ))}
+                              {/* Clear style filter option */}
+                              <button
+                                type="button"
+                                onClick={() => setTempFilters((p) => ({ ...p, pathwayStyle: "" }))}
+                                className="w-full text-left px-4 py-3 text-sm rounded hover:bg-gray-50 text-gray-700"
+                              >
+                                Clear style filter
+                              </button>
                             </div>
                           )}
                           
