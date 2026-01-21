@@ -979,9 +979,11 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         <div className="grid bg-black center grid-cols-2 py-6 pb-16 h-[393px]">
           <div className="px-24">
             <div className="flex flex-row gap-4  pr-4 ">
-              <div className="bg-[#EF2471] text-white uppercase w-[180px] h-[35px] rounded-none flex items-center justify-center font-bold">
-                {vendor?.tag}
-              </div>
+              {!!vendor?.tag && (
+                <div className="bg-[#EF2471] text-white uppercase w-[180px] h-[35px] rounded-none flex items-center justify-center font-bold">
+                  {vendor?.tag}
+                </div>
+              )}
               <div className="bg-white rounded-[10px] w-[118px] h-[76px] text-center flex flex-col items-center justify-center">
                 <span className="text-xl font-bold">
                   {vendor?.other?.experience} yr+
@@ -1008,9 +1010,11 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         </div>
 
         <div className="relative">
-          <div className="absolute top-8 left-0 px-4 py-1 bg-[#EF2471] text-white uppercase">
-            {vendor?.tag}
-          </div>
+          {!!vendor?.tag && (
+            <div className="absolute top-8 left-0 px-4 py-1 bg-[#EF2471] text-white uppercase">
+              {vendor?.tag}
+            </div>
+          )}
           <div className="absolute top-8 right-8">
             {isAddedToWishlist ? (
               <FaHeart
@@ -1230,15 +1234,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               );
             })}
         </div>
-        <div className="flex flex-row justify-center ">
-          <Link href="/makeup-and-beauty/wedsy-packages">
-            <button
-              className="rounded-md md:rounded-full bg-black text-white py-2 px-28 mt-4 mb-10"
-            >
-              View More
-            </button>
-          </Link>
-        </div>
+       
       </div>
 
 
@@ -1403,13 +1399,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
 
     
   </div>
-  <div className="flex flex-row justify-center ">
-      <Link href="/makeup-and-beauty/wedsy-packages">
-        <button className="rounded-md md:rounded-full bg-black text-white py-2 px-28 mt-4 mb-10">
-          View More
-        </button>
-      </Link>
-    </div>
+ 
 </div>
 
 

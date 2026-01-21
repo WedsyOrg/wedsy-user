@@ -607,15 +607,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
             )}
           </div>
           
-          <div className="flex flex-row justify-center ">
-            <Link href="/makeup-and-beauty/wedsy-packages">
-              <button
-                className="rounded-md md:rounded-full bg-black text-white py-2 px-12"
-              >
-                View More
-              </button>
-            </Link>
-          </div>
+  
         </div>
 
       
