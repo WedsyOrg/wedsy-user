@@ -1953,14 +1953,13 @@ function DecorListing({
 export async function getServerSideProps(context) {
   try {
     const { decor_id } = context.params;
-    const similarDecorResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/decor?similarDecorFor=${decor_id}`
-    );
-    const similarDecor = await similarDecorResponse.json();
+    
+    // First fetch the decor to get its category
     const decorResponse = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/decor/${decor_id}?populate=productAddOns`
     );
     const decor = await decorResponse.json();
+    
     if (!decor || decorResponse.status !== 200) {
       return {
         redirect: {
@@ -1969,6 +1968,13 @@ export async function getServerSideProps(context) {
         },
       };
     }
+    
+    // Fetch similar decor filtered by the same category
+    const similarDecorResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/decor?similarDecorFor=${decor_id}&category=${encodeURIComponent(decor.category)}`
+    );
+    const similarDecor = await similarDecorResponse.json();
+    
     const categoryResponse = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/category`
     );
