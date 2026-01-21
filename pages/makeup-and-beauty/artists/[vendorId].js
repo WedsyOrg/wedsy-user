@@ -26,6 +26,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   const [loading, setLoading] = useState(false);
   const [personalPackages, setPersonalPackages] = useState([]);
   const [vendor, setVendor] = useState([]);
+  const [similarVendors, setSimilarVendors] = useState([]);
   const [displayPersonalPackages, setDisplayPersonalPackages] = useState([
     0, 1, 2, 3,
   ]);
@@ -543,12 +544,78 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       .then((response) => {
         if (response?._id) {
           setVendor(response);
+          // Fetch similar vendors after vendor is loaded
+          fetchSimilarVendors(response);
         } else {
           router.push("/makeup-and-beauty/artists");
         }
       })
       .catch((error) => {
         console.error("There was a problem with the fetch operation:", error);
+      });
+  };
+
+  const fetchSimilarVendors = (currentVendor) => {
+    if (!currentVendor) return;
+    
+    const queryParams = new URLSearchParams();
+    queryParams.append('applyFilters', 'true');
+    queryParams.append('page', '1');
+    queryParams.append('limit', '10');
+    
+    // Filter by same speciality if available
+    if (currentVendor?.speciality) {
+      const specialityArray = Array.isArray(currentVendor.speciality) 
+        ? currentVendor.speciality 
+        : String(currentVendor.speciality).split(',').map(s => s.trim());
+      if (specialityArray.length > 0) {
+        queryParams.append('speciality', specialityArray.join(','));
+      }
+    }
+    
+    // Filter by same locality if available
+    if (currentVendor?.businessAddress?.locality) {
+      queryParams.append('locality', currentVendor.businessAddress.locality);
+    }
+
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/vendor?${queryParams.toString()}`;
+
+    fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        // Handle different response structures (same as index.js)
+        let vendorsData = [];
+        
+        if (Array.isArray(response)) {
+          vendorsData = response;
+        } else if (response && response.data && Array.isArray(response.data)) {
+          vendorsData = response.data;
+        } else if (response && response.vendors && Array.isArray(response.vendors)) {
+          vendorsData = response.vendors;
+        } else if (response && response.results && Array.isArray(response.results)) {
+          vendorsData = response.results;
+        } else if (response && response.items && Array.isArray(response.items)) {
+          vendorsData = response.items;
+        } else if (response && response.list && Array.isArray(response.list)) {
+          vendorsData = response.list;
+        }
+        
+        // Filter out current vendor and apply profileVisible filter
+        const filtered = vendorsData
+          .filter((item) => item?._id !== vendorId) // Exclude current vendor
+          .filter((item) => item?.profileVisible === true); // Only show visible profiles
+        
+        setSimilarVendors(filtered);
+      })
+      .catch((error) => {
+        console.error("Error fetching similar vendors:", error);
+        setSimilarVendors([]);
       });
   };
   useEffect(() => {
@@ -2024,7 +2091,8 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
             Browse similar Makeup Artists
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
-            {(Array.isArray(vendor?.similarVendors) ? vendor.similarVendors : []).map((item, index) => {
+            {(Array.isArray(similarVendors) ? similarVendors : [])
+              .map((item, index) => {
               const href = `/makeup-and-beauty/artists/${item?._id}`;
               const imgSrc = item?.gallery?.coverPhoto || "/assets/images/makeup-artist-cover.webp";
               const locationText =
