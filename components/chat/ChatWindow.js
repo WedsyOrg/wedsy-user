@@ -54,9 +54,12 @@ export default function ChatWindow({ user }) {
 
     // Check if payment is required
     let paymentRequired = false;
-    
+
     if (!accepted && !rejected) {
-      // Offer not yet accepted or rejected
+      // Offer not yet accepted or rejected - show Accept/Decline buttons
+      paymentRequired = true;
+    } else if (accepted && !other.order) {
+      // Offer accepted but payment not yet made - show Pay Now button
       paymentRequired = true;
     } else if (accepted && other.order) {
       // Offer accepted and order exists - check if payment is done
@@ -136,7 +139,7 @@ export default function ChatWindow({ user }) {
             setPaymentRequired(true);
             setPaymentMessage(
               data?.error ||
-                "Complete the payment for the latest offer to continue chatting."
+              "Complete the payment for the latest offer to continue chatting."
             );
             setSendError(
               data?.error || "Payment required before sending messages."
@@ -360,7 +363,7 @@ export default function ChatWindow({ user }) {
     console.log("Message type:", blockingMessage?.contentType);
     console.log("Events in message:", blockingMessage?.other?.events);
     console.log("============================");
-    
+
     setCtaError("");
     setCtaLoading(true);
     let success = false;
@@ -384,11 +387,11 @@ export default function ChatWindow({ user }) {
               : bidDoc?.bid;
           console.log("Vendor ID:", vendorId);
           console.log("Amount:", amount);
-          
+
           // Use events from message if available, otherwise fall back to bidding events
           const eventsToUse = blockingMessage?.other?.events || bidding?.events;
           console.log("Events to use for order:", eventsToUse);
-          
+
           if (vendorId && amount) {
             success = await createBiddingOrder({
               events: eventsToUse,
