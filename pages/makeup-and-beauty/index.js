@@ -43,7 +43,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           (100 +
             response?.data?.wedsyPackage?.cgst +
             response?.data?.wedsyPackage?.sgst) /
-            100
+          100
         );
       })
       .catch((error) => {
@@ -105,10 +105,10 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           Array.isArray(response)
             ? response
             : Array.isArray(response?.list)
-            ? response.list
-            : response
-            ? [response]
-            : [];
+              ? response.list
+              : response
+                ? [response]
+                : [];
         setVendors(normalized);
       })
       .catch((error) => {
@@ -183,7 +183,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         <meta name="keywords" content="makeup artists bangalore, bridal makeup bangalore, wedding makeup artists, beauty services bangalore, makeup artist near me" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://www.wedsy.in/makeup-and-beauty" />
-        
+
         {/* Open Graph Tags */}
         <meta property="og:title" content="Makeup Artists & Beauty Services in Bangalore | Wedsy" />
         <meta property="og:description" content="Find the best makeup artists and beauty services in Bangalore for your wedding. Browse professional bridal makeup artists and book your perfect look." />
@@ -191,13 +191,13 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         <meta property="og:url" content="https://www.wedsy.in/makeup-and-beauty" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Wedsy" />
-        
+
         {/* Twitter Card Tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Makeup Artists & Beauty Services in Bangalore | Wedsy" />
         <meta name="twitter:description" content="Find the best makeup artists and beauty services in Bangalore for your wedding." />
         <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
-        
+
         {/* Structured Data */}
         <script
           type="application/ld+json"
@@ -211,42 +211,42 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       {selectedPackages?.reduce((accumulator, item) => {
         return accumulator + item.quantity;
       }, 0) > 0 && (
-        <div className="bg-white fixed left-0 bottom-16 md:bottom-0 px-4 md:px-24 py-3 w-full z-50 flex flex-row items-center gap-4 items-center">
-          <button
-            className="py-2 px-6 rounded-md bg-black text-white shadow-md"
-            onClick={() => {
-              localStorage.setItem(
-                "wedsy-package-cart",
-                JSON.stringify(selectedPackages)
-              );
-              if (!userLoggedIn) {
-                setSource("Makeup & Beauty Packages");
-                setOpenLoginModalv2(true);
-              } else {
-                router.push("/makeup-and-beauty/wedsy-packages/checkout");
-              }
-            }}
-          >
-            <span className="hidden md:block">{"CHOOSE DATE & TIME"}</span>
-            <span className="md:hidden">View Cart</span>
-          </button>
-          <div className="hidden md:flex bg-[#840032] text-white rounded-full h-10 w-10 font-medium flex items-center justify-center">
-            {selectedPackages?.reduce((accumulator, item) => {
-              return accumulator + item.quantity;
-            }, 0)}
+          <div className="bg-white fixed left-0 bottom-16 md:bottom-0 px-4 md:px-24 py-3 w-full z-50 flex flex-row items-center gap-4 items-center">
+            <button
+              className="py-2 px-6 rounded-md bg-black text-white shadow-md"
+              onClick={() => {
+                localStorage.setItem(
+                  "wedsy-package-cart",
+                  JSON.stringify(selectedPackages)
+                );
+                if (!userLoggedIn) {
+                  setSource("Makeup & Beauty Packages");
+                  setOpenLoginModalv2(true);
+                } else {
+                  router.push("/makeup-and-beauty/wedsy-packages/checkout");
+                }
+              }}
+            >
+              <span className="hidden md:block">{"CHOOSE DATE & TIME"}</span>
+              <span className="md:hidden">View Cart</span>
+            </button>
+            <div className="hidden md:flex bg-[#840032] text-white rounded-full h-10 w-10 font-medium flex items-center justify-center">
+              {selectedPackages?.reduce((accumulator, item) => {
+                return accumulator + item.quantity;
+              }, 0)}
+            </div>
+            <div className="ml-auto font-semibold text-black text-base md:text-lg">
+              TOTAL:{" "}
+              <span className="ml-4 text-[#840032] text-xl md:text-2xl">
+                {toPriceString(
+                  selectedPackages?.reduce((accumulator, item) => {
+                    return accumulator + item.quantity * item.price;
+                  }, 0) * wedsyPackageTaxMultiply
+                )}
+              </span>
+            </div>
           </div>
-          <div className="ml-auto font-semibold text-black text-base md:text-lg">
-            TOTAL:{" "}
-            <span className="ml-4 text-[#840032] text-xl md:text-2xl">
-              {toPriceString(
-                selectedPackages?.reduce((accumulator, item) => {
-                  return accumulator + item.quantity * item.price;
-                }, 0) * wedsyPackageTaxMultiply
-              )}
-            </span>
-          </div>
-        </div>
-      )}
+        )}
 
       <div className="bg-[#f4f4f4] uppercase px-12 text-center md:text-left md:px-24 py-6 md:py-12 text-2xl md:text-4xl font-semibold md:font-medium mb-1">
         Makeup & Beauty
@@ -298,42 +298,45 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       />
 
       {/* wedsy top-image section */}
-      <div className="bg-[#f4f4f4] py-12 grid-cols-4 gap-4 px-24 mb-1 hidden md:grid">
-        <div className="flex flex-col gap-4 py-12 mr-24">
-          <Link
-            className="flex flex-row justify-between text-2xl items-center"
-            href="/makeup-and-beauty/wedsy-packages"
-          >
-            <span>Makeup Packages</span>
-            <MdChevronRight cursor={"pointer"} />
-          </Link>
-          <Link
-            className="flex flex-row justify-between text-2xl items-center"
-            href="/makeup-and-beauty/artists"
-          >
-            <span>Vendor Packages</span>
-            <MdChevronRight cursor={"pointer"} />
-          </Link>
-          <Link
-            className="flex flex-row justify-between text-2xl items-center"
-            href="/makeup-and-beauty/bidding"
-          >
-            <span>Bidding</span>
-            <MdChevronRight cursor={"pointer"} />
-          </Link>
-          <Link
-            className="flex flex-row justify-between text-2xl items-center"
-            href="/makeup-and-beauty/artists"
-          >
-            <span>Makeup Artists</span>
-            <MdChevronRight cursor={"pointer"} />
-          </Link>
+      <div
+        className="relative py-16 px-24 mb-1 hidden md:block bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url(/assets/background/wedsy-makeup-homepage.png)',
+          minHeight: '500px'
+        }}
+      >
+        <div className="flex flex-col gap-6 max-w-md pt-60 pl-12">
+          <div className="grid grid-cols-2 gap-x-10 gap-y-4 max-w-md">
+            <Link
+              className="px-4 py-3 text-center text-black text-sm font-medium rounded-xl bg-white/90 hover:bg-white transition-all uppercase"
+              href="/makeup-and-beauty/wedsy-packages"
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+            >
+              MAKEUP PACKAGES
+            </Link>
+            <Link
+              className="px-4 py-3 text-center text-black text-sm font-medium rounded-xl bg-white/90 hover:bg-white transition-all uppercase"
+              href="/makeup-and-beauty/artists"
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+            >
+              VENDOR PACKAGES
+            </Link>
+            <Link
+              className="px-4 py-3 text-center text-black text-sm font-medium rounded-xl bg-white/90 hover:bg-white transition-all uppercase"
+              href="/makeup-and-beauty/bidding"
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+            >
+              BIDDING
+            </Link>
+            <Link
+              className="px-4 py-3 text-center text-black text-sm font-medium rounded-xl bg-white/90 hover:bg-white transition-all uppercase"
+              href="/makeup-and-beauty/artists"
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+            >
+              MAKEUP ARTISTS
+            </Link>
+          </div>
         </div>
-        <img
-          className="w-full col-span-3"
-          src="/assets/images/makeup-landing-page-1.webp"
-          alt="Makeup and Beauty Landing Image"
-        />
       </div>
 
 
@@ -341,73 +344,243 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         Packages
       </div>
 
-      
+
       {/* Wedsy Packages bottom section*/}
       {/* MOBILE-ONLY PACKAGE SECTION */}
-        <div className="bg-[#f4f4f4] pt-0 md:hidden mb-1">
-          <div className="px-6 flex flex-col gap-8 md:px-0 w-full mb-8">
-            {wedsyPackages.length > 0 &&
-              wedsyPackages.slice(0, 2).map((pkg, index) => {
-                const colorSet = MobileColors[index] || MobileColors[0];
-                const isSelected = selectedPackages?.find((i) => i._id === pkg._id)?.quantity > 0;
-                const quantity = isSelected ? selectedPackages?.find((i) => i._id === pkg._id)?.quantity : 0;
-                const originalPrice = pkg?.price || 0;
-                const discountedPrice = (pkg?.price || 0) * wedsyPackageTaxMultiply;
+      <div className="bg-[#f4f4f4] pt-0 md:hidden mb-1">
+        <div className="px-6 flex flex-col gap-8 md:px-0 w-full mb-8">
+          {wedsyPackages.length > 0 &&
+            wedsyPackages.slice(0, 2).map((pkg, index) => {
+              const colorSet = MobileColors[index] || MobileColors[0];
+              const isSelected = selectedPackages?.find((i) => i._id === pkg._id)?.quantity > 0;
+              const quantity = isSelected ? selectedPackages?.find((i) => i._id === pkg._id)?.quantity : 0;
+              const originalPrice = pkg?.price || 0;
+              const discountedPrice = (pkg?.price || 0) * wedsyPackageTaxMultiply;
 
+              return (
+                <div
+                  key={pkg?._id}
+                  className="flex flex-col rounded-2xl overflow-hidden shadow-md"
+                >
+                  {/* Package Name Header */}
+                  <div
+                    className="text-center py-4 font-semibold text-xl text-Black uppercase"
+                    style={{ backgroundColor: colorSet.header }}
+                  >
+                    {pkg?.name || "Package"}
+                  </div>
+
+                  {/* Services & Products Section */}
+                  <div className="bg-white flex flex-col p-6 gap-4">
+                    <div className="flex flex-col gap-2">
+                      <h4 className="text-black font-normal uppercase">Services</h4>
+                      <ul className="text-black font-semibold text-xl">
+                        {pkg?.process ? pkg.process.map((i, i1) => (
+                          <li key={i1}>&bull; {i.topic}</li>
+                        )) : <li>No services listed</li>}
+                      </ul>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <h4 className="text-black font-normal uppercase">Products</h4>
+                      <ul className="text-black font-semibold text-xl">
+                        {pkg?.products ? pkg.products.split(",").map((p, pIndex) => (
+                          <li key={pIndex}>&bull; {p.trim()}</li>
+                        )) : <li>No products listed</li>}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div
+                    className="flex flex-row items-center justify-between py-4 px-6"
+                    style={{ backgroundColor: colorSet.priceBg }}
+                  >
+                    <div className="flex items-center gap-2 rounded-lg bg-white overflow-hidden border border-[#C6C6C6]">
+                      {quantity > 0 && (
+                        <button
+                          className="p-2 text-gray-800 font-semibold"
+                          onClick={() => {
+                            setSelectedPackages(
+                              selectedPackages.map((i) =>
+                                i._id === pkg._id
+                                  ? { ...i, quantity: i.quantity - 1 }
+                                  : i
+                              )
+                            );
+                          }}
+                        > - </button>
+                      )}
+                      <span className="p-2 px-4 text-center w-20">
+                        {isSelected ? 'Add' : 'Add'}
+                      </span>
+                      <button
+                        className="p-2 text-gray-800 font-semibold"
+                        onClick={() => {
+                          setSelectedPackages(
+                            selectedPackages.map((i) =>
+                              i._id === pkg._id
+                                ? { ...i, quantity: i.quantity + 1 }
+                                : i
+                            )
+                          );
+                        }}
+                      > + </button>
+                    </div>
+                    {/* Price */}
+                    <div className="text-white text-right">
+                      {originalPrice && (
+                        <p className="text-xs line-through">₹{toPriceString(originalPrice)}</p>
+                      )}
+                      <p className="text-lg font-bold">₹{toPriceString(discountedPrice)}</p>
+                      <p className="text-xs font-normal">Per Person</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+        <div className="flex flex-row justify-center ">
+          <Link href="/makeup-and-beauty/wedsy-packages">
+            <button
+              className="rounded-md md:rounded-full bg-black text-white py-2 px-28 mt-4 mb-10"
+            >
+              View More
+            </button>
+          </Link>
+        </div>
+      </div>
+      {/* Desktop wedsy packages section */}
+      <div className="bg-[#f4f4f4] px-24 py-12 pt-0 mb-1 hidden md:block">
+        <div className="relative flex items-center justify-center">
+          {/* Left Arrow Navigation */}
+          <div className="absolute left-0 w-24 hidden md:flex flex-col justify-center items-center z-10">
+            {displayWedsyPackages[0] > 0 && (
+              <div
+                className="rounded-full border border-black p-2 cursor-pointer"
+                onClick={() => {
+                  setDisplayWedsyPackages((prev) => {
+                    let startIndex = prev[0] - 4;
+                    if (startIndex < 0) {
+                      startIndex = 0;
+                    }
+                    return [
+                      startIndex,
+                      startIndex + 1,
+                      startIndex + 2,
+                      startIndex + 3,
+                    ];
+                  });
+                }}
+              >
+                <FaArrowLeft size={20} />
+              </div>
+            )}
+          </div>
+          {/* Right Arrow Navigation */}
+          <div className="absolute right-0 w-24 hidden md:flex flex-col justify-center items-center z-10">
+            {displayWedsyPackages[3] < wedsyPackages.length - 1 && (
+              <div
+                className="rounded-full border border-black p-2 cursor-pointer"
+                onClick={() => {
+                  setDisplayWedsyPackages((prev) => {
+                    let endIndex = prev[3] + 4;
+                    if (endIndex > wedsyPackages.length - 1)
+                      endIndex = wedsyPackages.length - 1;
+                    return [endIndex - 3, endIndex - 2, endIndex - 1, endIndex];
+                  });
+                }}
+              >
+                <FaArrowRight size={20} />
+              </div>
+            )}
+          </div>
+          {/* Package Grid */}
+          {wedsyPackages.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-0 px-6 md:px-0 w-full mb-8">
+              {[
+                wedsyPackages[displayWedsyPackages[0]],
+                wedsyPackages[displayWedsyPackages[1]],
+                wedsyPackages[displayWedsyPackages[2]],
+                wedsyPackages[displayWedsyPackages[3]],
+              ].map((pkg, index) => {
+                const colorSet = colors[index] || colors[0];
                 return (
                   <div
                     key={pkg?._id}
-                    className="flex flex-col rounded-2xl overflow-hidden shadow-md"
+                    className="flex flex-col rounded-2xl md:rounded-none overflow-hidden shadow-md md:border-2 md:border-white"
                   >
                     {/* Package Name Header */}
                     <div
-                      className="text-center py-4 font-semibold text-xl text-Black uppercase"
-                      style={{ backgroundColor: colorSet.header }}
+                      className="text-center py-4 font-semibold text-black uppercase md:border-b-2 md:border-white"
+                      style={{ backgroundColor: colorSet.header, fontFamily: "Montserrat" }}
                     >
                       {pkg?.name || "Package"}
                     </div>
-                    
-                    {/* Services & Products Section */}
-                    <div className="bg-white flex flex-col p-6 gap-4">
-                      <div className="flex flex-col gap-2">
-                        <h4 className="text-black font-normal uppercase">Services</h4>
-                        <ul className="text-black font-semibold text-xl">
-                          {pkg?.process ? pkg.process.map((i, i1) => (
-                            <li key={i1}>&bull; {i.topic}</li>
-                          )) : <li>No services listed</li>}
-                        </ul>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <h4 className="text-black font-normal uppercase">Products</h4>
-                        <ul className="text-black font-semibold text-xl">
-                          {pkg?.products ? pkg.products.split(",").map((p, pIndex) => (
-                            <li key={pIndex}>&bull; {p.trim()}</li>
-                          )) : <li>No products listed</li>}
-                        </ul>
-                      </div>
-                    </div>
-                    
+
+                    {/* Services Section */}
                     <div
-                      className="flex flex-row items-center justify-between py-4 px-6"
-                      style={{ backgroundColor: colorSet.priceBg }}
+                      className="flex flex-col items-center justify-center py-6 md:py-10"
+                      style={{ backgroundColor: colorSet.services, fontFamily: "Montserrat" }}
                     >
-                      <div className="flex items-center gap-2 rounded-lg bg-white overflow-hidden border border-[#C6C6C6]">
-                        {quantity > 0 && (
-                          <button
-                            className="p-2 text-gray-800 font-semibold"
-                            onClick={() => {
-                              setSelectedPackages(
-                                selectedPackages.map((i) =>
-                                  i._id === pkg._id
-                                    ? { ...i, quantity: i.quantity - 1 }
-                                    : i
-                                )
-                              );
-                            }}
-                          > - </button>
-                        )}
-                        <span className="p-2 px-4 text-center w-20">
-                          {isSelected ? 'Add' : 'Add'}
+                      <h4 className="mb-1 text-black font-normal uppercase">Services</h4>
+                      <p className="hidden md:block text-black font-semibold text-xl text-center px-4">
+                        {pkg?.process ? pkg.process.map((i) => i.topic).join(", ") : "No services listed"}
+                      </p>
+                      <ul className="md:hidden text-center">
+                        {pkg?.process ? pkg.process.map((i, i1) => (
+                          <li key={i1} className="font-medium text-black">
+                            {i.topic}
+                          </li>
+                        )) : <li className="font-medium text-black">No services listed</li>}
+                      </ul>
+                    </div>
+
+                    {/* Products Section */}
+                    <div
+                      className="relative flex flex-col items-center justify-center py-6 md:py-10"
+                      style={{ backgroundColor: colorSet.products, fontFamily: "Montserrat" }}
+                    >
+                      <div className="absolute inset-0 bg-black/20"></div>
+
+                      <h4 className="mb-1 text-black font-normal uppercase relative z-10">Products</h4>
+                      <p className="hidden md:block text-black font-semibold text-xl text-center px-4 relative z-10">
+                        {pkg?.products ? pkg.products.split(",").map((p, pIndex) => (
+                          <React.Fragment key={pIndex}>
+                            {p.trim()}
+                            {pIndex < pkg.products.split(",").length - 1 && <br />}
+                          </React.Fragment>
+                        )) : "No products listed"}
+                      </p>
+                      <p className="md:hidden text-black font-normal text-sm text-center px-4 relative z-10">
+                        {pkg?.products || "No products listed"}
+                      </p>
+                    </div>
+
+                    {/* Bottom Add/Price Section */}
+                    <div
+                      className="flex items-center justify-between py-4 px-6 border-t md:border-b md:border-white"
+                      style={{ backgroundColor: colorSet.priceBg, borderColor: '#C6C6C6' }}
+                    >
+                      <div className="flex items-center gap-1 rounded-lg bg-white overflow-hidden border border-[#C6C6C6]">
+                        {selectedPackages?.find((i) => i._id === pkg._id)
+                          ?.quantity > 0 && (
+                            <button
+                              className="p-2 text-gray-800 font-semibold"
+                              onClick={() => {
+                                setSelectedPackages(
+                                  selectedPackages.map((i) =>
+                                    i._id === pkg._id
+                                      ? { ...i, quantity: i.quantity - 1 }
+                                      : i
+                                  )
+                                );
+                              }}
+                            > - </button>
+                          )}
+                        <span className="p-2">
+                          {selectedPackages?.find((i) => i._id === pkg._id)
+                            ?.quantity > 0
+                            ? selectedPackages?.find((i) => i._id === pkg._id)?.quantity
+                            : "Add"}
                         </span>
                         <button
                           className="p-2 text-gray-800 font-semibold"
@@ -423,196 +596,76 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                         > + </button>
                       </div>
                       {/* Price */}
-                      <div className="text-white text-right">
-                        {originalPrice && (
-                          <p className="text-xs line-through">₹{toPriceString(originalPrice)}</p>
-                        )}
-                        <p className="text-lg font-bold">₹{toPriceString(discountedPrice)}</p>
-                        <p className="text-xs font-normal">Per Person</p>
+                      <div className="text-black font-semibold text-right">
+                        <p className="text-xs font-normal text-black">Per Person</p>
+                        <p className="text-[#840032] font-semibold text-lg">
+                          {toPriceString((pkg?.price || 0) * wedsyPackageTaxMultiply)}
+                        </p>
                       </div>
                     </div>
                   </div>
                 );
               })}
-          </div>
-            <div className="flex flex-row justify-center ">
-            <Link href="/makeup-and-beauty/wedsy-packages">
-            <button
-              className="rounded-md md:rounded-full bg-black text-white py-2 px-28 mt-4 mb-10"
-            >
-              View More
-            </button>
-            </Link>
-          </div>
-        </div>
-       {/* Desktop wedsy packages section */}
-        <div className="bg-[#f4f4f4] px-24 py-12 pt-0 mb-1 hidden md:block">
-          <div className="relative flex items-center justify-center">
-            {/* Left Arrow Navigation */}
-            <div className="absolute left-0 w-24 hidden md:flex flex-col justify-center items-center z-10">
-              {displayWedsyPackages[0] > 0 && (
-                <div
-                  className="rounded-full border border-black p-2 cursor-pointer"
-                  onClick={() => {
-                    setDisplayWedsyPackages((prev) => {
-                      let startIndex = prev[0] - 4;
-                      if (startIndex < 0) {
-                        startIndex = 0;
-                      }
-                      return [
-                        startIndex,
-                        startIndex + 1,
-                        startIndex + 2,
-                        startIndex + 3,
-                      ];
-                    });
-                  }}
-                >
-                  <FaArrowLeft size={20} />
-                </div>
-              )}
             </div>
-            {/* Right Arrow Navigation */}
-            <div className="absolute right-0 w-24 hidden md:flex flex-col justify-center items-center z-10">
-              {displayWedsyPackages[3] < wedsyPackages.length - 1 && (
-                <div
-                  className="rounded-full border border-black p-2 cursor-pointer"
-                  onClick={() => {
-                    setDisplayWedsyPackages((prev) => {
-                      let endIndex = prev[3] + 4;
-                      if (endIndex > wedsyPackages.length - 1)
-                        endIndex = wedsyPackages.length - 1;
-                      return [endIndex - 3, endIndex - 2, endIndex - 1, endIndex];
-                    });
-                  }}
-                >
-                  <FaArrowRight size={20} />
-                </div>
-              )}
-            </div>
-            {/* Package Grid */}
-            {wedsyPackages.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-0 px-6 md:px-0 w-full mb-8">
-                {[
-                  wedsyPackages[displayWedsyPackages[0]],
-                  wedsyPackages[displayWedsyPackages[1]],
-                  wedsyPackages[displayWedsyPackages[2]],
-                  wedsyPackages[displayWedsyPackages[3]],
-                ].map((pkg, index) => {
-                  const colorSet = colors[index] || colors[0];
-                  return (
-                    <div
-                      key={pkg?._id}
-                      className="flex flex-col rounded-2xl md:rounded-none overflow-hidden shadow-md md:border-2 md:border-white"
-                    >
-                      {/* Package Name Header */}
-                      <div
-                        className="text-center py-4 font-semibold text-black uppercase md:border-b-2 md:border-white"
-                        style={{ backgroundColor: colorSet.header,fontFamily: "Montserrat" }}
-                      >
-                        {pkg?.name || "Package"}
-                      </div>
-                      
-                      {/* Services Section */}
-                      <div
-                        className="flex flex-col items-center justify-center py-6 md:py-10"
-                        style={{ backgroundColor: colorSet.services,fontFamily: "Montserrat" }}
-                      >
-                        <h4 className="mb-1 text-black font-normal uppercase">Services</h4>
-                        <p className="hidden md:block text-black font-semibold text-xl text-center px-4">
-                          {pkg?.process ? pkg.process.map((i) => i.topic).join(", ") : "No services listed"}
-                        </p>
-                        <ul className="md:hidden text-center">
-                          {pkg?.process ? pkg.process.map((i, i1) => (
-                            <li key={i1} className="font-medium text-black">
-                              {i.topic}
-                            </li>
-                          )) : <li className="font-medium text-black">No services listed</li>}
-                        </ul>
-                      </div>
-                      
-                      {/* Products Section */}
-                      <div
-                        className="relative flex flex-col items-center justify-center py-6 md:py-10"
-                        style={{ backgroundColor: colorSet.products,fontFamily: "Montserrat" }}
-                      >
-                        <div className="absolute inset-0 bg-black/20"></div>
-                        
-                        <h4 className="mb-1 text-black font-normal uppercase relative z-10">Products</h4>
-                        <p className="hidden md:block text-black font-semibold text-xl text-center px-4 relative z-10">
-                          {pkg?.products ? pkg.products.split(",").map((p, pIndex) => (
-                            <React.Fragment key={pIndex}>
-                              {p.trim()}
-                              {pIndex < pkg.products.split(",").length - 1 && <br />}
-                            </React.Fragment>
-                          )) : "No products listed"}
-                        </p>
-                        <p className="md:hidden text-black font-normal text-sm text-center px-4 relative z-10">
-                          {pkg?.products || "No products listed"}
-                        </p>
-                      </div>
-                      
-                      {/* Bottom Add/Price Section */}
-                      <div
-                        className="flex items-center justify-between py-4 px-6 border-t md:border-b md:border-white"
-                        style={{ backgroundColor: colorSet.priceBg, borderColor: '#C6C6C6' }}
-                      >
-                        <div className="flex items-center gap-1 rounded-lg bg-white overflow-hidden border border-[#C6C6C6]">
-                          {selectedPackages?.find((i) => i._id === pkg._id)
-                            ?.quantity > 0 && (
-                            <button
-                              className="p-2 text-gray-800 font-semibold"
-                              onClick={() => {
-                                setSelectedPackages(
-                                  selectedPackages.map((i) =>
-                                    i._id === pkg._id
-                                      ? { ...i, quantity: i.quantity - 1 }
-                                      : i
-                                  )
-                                );
-                              }}
-                            > - </button>
-                          )}
-                          <span className="p-2">
-                            {selectedPackages?.find((i) => i._id === pkg._id)
-                              ?.quantity > 0
-                              ? selectedPackages?.find((i) => i._id === pkg._id)?.quantity
-                              : "Add"}
-                          </span>
-                          <button
-                            className="p-2 text-gray-800 font-semibold"
-                            onClick={() => {
-                              setSelectedPackages(
-                                selectedPackages.map((i) =>
-                                  i._id === pkg._id
-                                    ? { ...i, quantity: i.quantity + 1 }
-                                    : i
-                                )
-                              );
-                            }}
-                          > + </button>
-                        </div>
-                        {/* Price */}
-                        <div className="text-black font-semibold text-right">
-                          <p className="text-xs font-normal text-black">Per Person</p>
-                          <p className="text-[#840032] font-semibold text-lg">
-                            {toPriceString((pkg?.price || 0) * wedsyPackageTaxMultiply)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-          
-  
+          )}
         </div>
 
-      
+
+      </div>
+
+
+      {/* Bidding Intro Section */}
+      <div className="mb-10">
+        {/* Mobile Bidding Image */}
+        <div className="md:hidden relative">
+          <img
+            src="/assets/images/bidding-mobile.webp"
+            className="w-full h-full"
+            alt="Bidding for Makeup Artists - Mobile"
+          />
+          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-full px-12 flex flex-row">
+            <button
+              className="bg-[#840032] text-white rounded-lg w-full grow text-center px-auto py-2 font-medium"
+              onClick={() => {
+                if (!userLoggedIn) {
+                  setSource("Makeup & Beauty Bidding");
+                  setOpenLoginModalv2(true);
+                } else {
+                  router.push("/makeup-and-beauty/bidding");
+                }
+              }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+
+        {/* Desktop Bidding Image */}
+        <div className="hidden md:block relative">
+          <img
+            src="/assets/images/bidding-desktop.webp"
+            className="w-full h-full"
+            alt="Bidding for Makeup Artists - Desktop"
+          />
+          <button
+            className="bg-[#840032] text-white rounded-lg absolute bottom-8 lg:bottom-12 left-1/2 -translate-x-1/2 px-16 py-2 lg:text-lg font-medium"
+            onClick={() => {
+              if (!userLoggedIn) {
+                setSource("Makeup & Beauty Bidding");
+                setOpenLoginModalv2(true);
+              } else {
+                router.push("/makeup-and-beauty/bidding");
+              }
+            }}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+
+
       {/* BID BOOK SECTION */}
-      <div className="hidden md:block bg-[#EDE5E3] px-24 py-8">
+      {/* <div className="hidden md:block bg-[#EDE5E3] px-24 py-8">
         <p className="uppercase text-[#46646C] text-3xl text-center">
           <span className="font-semibold">
             <span className="text-4xl">B</span>id
@@ -638,7 +691,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
             alt="Makeup artist working on a model"
           />
         </div>
-      </div>
+      </div> */}
 
       {/* wedsy Promises section */}
       <img
@@ -716,7 +769,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                       }}
                     />
                   ) : null}
-                  <div 
+                  <div
                     className={`absolute inset-0 bg-gradient-to-br from-[#840032]/20 to-[#840032]/40 ${item?.gallery?.coverPhoto ? 'hidden' : 'flex'} items-center justify-center`}
                   >
                     <span className="text-3xl text-white/60">
@@ -735,7 +788,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                   <div className="flex items-center gap-1 text-gray-500 text-xs">
                     <FaMapMarkerAlt size={10} className="flex-shrink-0" />
                     <span className="truncate">
-                      {item?.businessAddress?.locality 
+                      {item?.businessAddress?.locality
                         ? `${item.businessAddress.locality}`
                         : "Bangalore"}
                     </span>
@@ -777,7 +830,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                       }}
                     />
                   ) : null}
-                  <div 
+                  <div
                     className={`absolute inset-0 bg-gradient-to-br from-[#840032]/20 to-[#840032]/40 ${item?.gallery?.coverPhoto ? 'hidden' : 'flex'} items-center justify-center`}
                   >
                     <span className="text-5xl text-white/60">
@@ -796,7 +849,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                   <div className="flex items-center gap-1 text-gray-500 text-sm">
                     <FaMapMarkerAlt size={14} className="flex-shrink-0" />
                     <span className="truncate">
-                      {item?.businessAddress?.locality 
+                      {item?.businessAddress?.locality
                         ? `${item.businessAddress.locality}, ${item.businessAddress.city || 'Bangalore'}`
                         : "Bangalore"}
                     </span>

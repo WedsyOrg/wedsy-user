@@ -38,30 +38,26 @@ const MakeupAndBeautyPageSkeleton = () => {
       {/* Mobile Full Width Image */}
       <ShimmerEffect className="w-full h-48 md:hidden bg-gray-300" />
 
-      {/* Desktop Main Layout */}
-      <div className="bg-[#f4f4f4] py-12 grid-cols-4 gap-4 px-24 mb-1 hidden md:grid">
-        {/* Left Sidebar Navigation */}
-        <div className="flex flex-col gap-4 py-12 mr-24">
-          <div className="flex flex-row justify-between text-2xl items-center">
-            <ShimmerEffect className="h-8 bg-gray-300 rounded w-48" />
-            <ShimmerEffect className="h-6 w-6 bg-gray-300 rounded" />
-          </div>
-          <div className="flex flex-row justify-between text-2xl items-center">
-            <ShimmerEffect className="h-8 bg-gray-300 rounded w-48" />
-            <ShimmerEffect className="h-6 w-6 bg-gray-300 rounded" />
-          </div>
-          <div className="flex flex-row justify-between text-2xl items-center">
-            <ShimmerEffect className="h-8 bg-gray-300 rounded w-48" />
-            <ShimmerEffect className="h-6 w-6 bg-gray-300 rounded" />
-          </div>
-          <div className="flex flex-row justify-between text-2xl items-center">
-            <ShimmerEffect className="h-8 bg-gray-300 rounded w-48" />
-            <ShimmerEffect className="h-6 w-6 bg-gray-300 rounded" />
+      {/* Desktop Hero Section with Background Image and Buttons */}
+      <div
+        className="relative w-full mb-1 hidden md:block overflow-hidden"
+        style={{
+          aspectRatio: '16/9',
+          maxHeight: '600px'
+        }}
+      >
+        {/* Background Image Skeleton */}
+        <ShimmerEffect className="absolute inset-0 bg-gray-300" />
+
+        {/* Button Grid Skeleton */}
+        <div className="absolute left-[8%] md:left-[10%] top-[58%] md:top-[62%] flex flex-col gap-3 md:gap-4 w-[32%] md:w-[28%]">
+          <div className="grid grid-cols-2 gap-x-3 md:gap-x-6 lg:gap-x-8 gap-y-2 md:gap-y-3">
+            <ShimmerEffect className="h-10 md:h-11 lg:h-12 bg-gray-200 rounded-lg lg:rounded-xl" />
+            <ShimmerEffect className="h-10 md:h-11 lg:h-12 bg-gray-200 rounded-lg lg:rounded-xl" />
+            <ShimmerEffect className="h-10 md:h-11 lg:h-12 bg-gray-200 rounded-lg lg:rounded-xl" />
+            <ShimmerEffect className="h-10 md:h-11 lg:h-12 bg-gray-200 rounded-lg lg:rounded-xl" />
           </div>
         </div>
-        
-        {/* Main Banner Image */}
-        <ShimmerEffect className="w-full col-span-3 h-96 bg-gray-300 rounded" />
       </div>
 
       {/* Packages Section Title */}
@@ -158,13 +154,32 @@ const MakeupAndBeautyPageSkeleton = () => {
         </div>
       </div>
 
+      {/* Bidding Intro Section Skeleton */}
+      <div className="mb-1">
+        {/* Mobile Bidding Image Skeleton */}
+        <div className="md:hidden relative">
+          <ShimmerEffect className="w-full h-96 bg-gray-300" />
+          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-full px-12">
+            <ShimmerEffect className="h-10 bg-gray-200 rounded-lg w-full" />
+          </div>
+        </div>
+
+        {/* Desktop Bidding Image Skeleton */}
+        <div className="hidden md:block relative">
+          <ShimmerEffect className="w-full h-[500px] bg-gray-300" />
+          <div className="absolute bottom-8 lg:bottom-12 left-1/2 -translate-x-1/2">
+            <ShimmerEffect className="h-10 w-32 bg-gray-200 rounded-lg" />
+          </div>
+        </div>
+      </div>
+
       {/* Vendor Packages Section */}
       <div className="bg-[#f4f4f4] py-12 px-6 md:px-24">
         <div className="mb-8">
           <ShimmerEffect className="h-12 bg-gray-300 rounded w-64 mb-4" />
           <ShimmerEffect className="h-6 bg-gray-300 rounded w-96" />
         </div>
-        
+
         {/* Mobile Vendor Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:hidden">
           {[1, 2, 3, 4, 5, 6].map((index) => (
