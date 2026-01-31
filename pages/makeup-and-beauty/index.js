@@ -616,39 +616,16 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
 
       {/* Bidding Intro Section */}
       <div className="mb-10">
-        {/* Mobile Bidding Image */}
-        <div className="md:hidden relative">
-          <img
-            src="/assets/images/bidding-mobile.webp"
-            className="w-full h-full"
-            alt="Bidding for Makeup Artists - Mobile"
-          />
-          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-full px-12 flex flex-row">
-            <button
-              className="bg-[#840032] text-white rounded-lg w-full grow text-center px-auto py-2 font-medium"
-              onClick={() => {
-                if (!userLoggedIn) {
-                  setSource("Makeup & Beauty Bidding");
-                  setOpenLoginModalv2(true);
-                } else {
-                  router.push("/makeup-and-beauty/bidding");
-                }
-              }}
-            >
-              Next
-            </button>
-          </div>
-        </div>
 
         {/* Desktop Bidding Image */}
-        <div className="hidden md:block relative">
+        <div className="hidden md:block relative flex justify-center">
           <img
-            src="/assets/images/bidding-desktop.webp"
-            className="w-full h-full"
+            src="/assets/background/bg-wedsy-bidding.png"
+            className="w-4/5 h-full mx-auto"
             alt="Bidding for Makeup Artists - Desktop"
           />
           <button
-            className="bg-[#840032] text-white rounded-lg absolute bottom-8 lg:bottom-12 left-1/2 -translate-x-1/2 px-16 py-2 lg:text-lg font-medium"
+            className="bg-[#840032] text-white rounded-lg absolute bottom-3 left-1/2 -translate-x-1/2 px-16 py-2 lg:text-lg font-medium"
             onClick={() => {
               if (!userLoggedIn) {
                 setSource("Makeup & Beauty Bidding");
