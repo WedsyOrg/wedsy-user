@@ -605,7 +605,7 @@ function Home({ packages }) {
           {/* CTA Button */}
           <Link href="/decor">
             <button
-              className="bg-black/30 backdrop-blur-md border-2 border-white text-white py-4 text-lg font-semibold tracking-widest px-16 rounded-2xl
+              className="bg-black/30 backdrop-blur-md border-2 border-white text-white py-4 text-xs md:text-lg lg:text-lg font-semibold tracking-widest px-16 rounded-2xl
                         hover:bg-white/40 transition-all duration-300 ease-in-out"
               style={{
                 fontFamily: "'Montserrat', sans-serif",
