@@ -736,7 +736,7 @@ function Home({ packages }) {
       <section className="w-full relative pb-10">
         <div className="relative w-full">
           <Image
-            src="/assets/landing_v2/makeup_desktop.png"
+            src="/assets/landing_v2/makeup_desktop.webp"
             alt="Book Makeup Artist"
             width={1920}
             height={600}
@@ -745,7 +745,7 @@ function Home({ packages }) {
             className="hidden md:block w-full"
           />
           <Image
-            src="/assets/landing_v2/makeup_mobile.png"
+            src="/assets/landing_v2/makeup_mobile.webp"
             alt="Book Makeup Artist"
             width={768}
             height={600}
@@ -791,7 +791,7 @@ function Home({ packages }) {
           </div>
 
           <Image
-            src="/assets/landing_v2/Whatourlovedonessay.png"
+            src="/assets/landing_v2/Whatourlovedonessay.webp"
             alt="What our loved ones say"
             width={1920}
             height={800}
@@ -800,7 +800,7 @@ function Home({ packages }) {
             className="hidden md:block"
           />
           <Image
-            src="/assets/landing_v2/Whatourlovedonesays_mobile.png"
+            src="/assets/landing_v2/Whatourlovedonesays_mobile.webp"
             alt="What our loved ones say"
             width={768}
             height={600}
@@ -1097,7 +1097,7 @@ function Home({ packages }) {
         {/* Desktop View - md and above */}
         <div className="hidden md:block relative w-full">
           <Image
-            src="/assets/landing_v2/bidding_desktop.png"
+            src="/assets/landing_v2/bidding_desktop.webp"
             alt="Bidding Process"
             width={1920}
             height={800}
@@ -1121,7 +1121,7 @@ function Home({ packages }) {
             </h2>
           </div>
           <Image
-            src="/assets/landing_v2/bidding_mobile.png"
+            src="/assets/landing_v2/bidding_mobile.webp"
             alt="Bidding Process"
             width={768}
             height={600}
@@ -1153,7 +1153,7 @@ function Home({ packages }) {
           {/* Mobile Image */}
           <div className="relative w-full">
             <Image
-              src="/assets/landing_v2/wedding_planning_mobile .png"
+              src="/assets/landing_v2/wedding_planning_mobile .webp"
               alt="Wedding Planning"
               width={768}
               height={900}
@@ -1191,7 +1191,7 @@ function Home({ packages }) {
               {/* Vertical Bar Image */}
               <div className="flex-shrink-0 mr-4" style={{ height: '300px', overflow: 'hidden' }}>
                 <Image
-                  src="/assets/landing_v2/bar.png"
+                  src="/assets/landing_v2/bar.webp"
                   alt="Timeline bar"
                   width={14}
                   height={250}
@@ -1327,7 +1327,7 @@ function Home({ packages }) {
                 {/* Vertical Bar Image */}
                 <div className="flex-shrink-0 mr-6" style={{ height: '400px', overflow: 'hidden' }}>
                   <Image
-                    src="/assets/landing_v2/bar.png"
+                    src="/assets/landing_v2/bar.webp"
                     alt="Timeline bar"
                     width={16}
                     height={350}
@@ -1418,7 +1418,7 @@ function Home({ packages }) {
               {/* Wedding Image */}
               <div className="relative w-full">
                 <Image
-                  src="/assets/landing_v2/wedding_planning.png"
+                  src="/assets/landing_v2/wedding_planning.webp"
                   alt="Wedding Planning"
                   width={600}
                   height={750}
@@ -2054,7 +2054,7 @@ function Home({ packages }) {
           {/* Left Section - Image (2/3 width) */}
           <div className="w-2/3 relative">
             <Image
-              src="/assets/landing_v2/wedding.png"
+              src="/assets/landing_v2/wedding.webp"
               alt="Wedding couple"
               layout="fill"
               objectFit="cover"
@@ -2069,7 +2069,7 @@ function Home({ packages }) {
               <div className="flex flex-col items-center justify-center">
                 <div className="flex items-center justify-center mb-4">
                   <Image
-                    src="/assets/landing_v2/left_bar.png"
+                    src="/assets/landing_v2/left_bar.webp"
                     alt="decoration"
                     width={123}
                     height={5}
@@ -2085,7 +2085,7 @@ function Home({ packages }) {
                    WEDSY
                   </h1>
                   <Image
-                    src="/assets/landing_v2/right_bar.png"
+                    src="/assets/landing_v2/right_bar.webp"
                     alt="decoration"
                     width={123}
                     height={5}
@@ -2308,7 +2308,7 @@ function Home({ packages }) {
           {/* Background Image */}
           <div className="absolute inset-0">
             <Image
-              src="/assets/landing_v2/wedding.png"
+              src="/assets/landing_v2/wedding.webp"
               alt="Wedding couple"
               layout="fill"
               objectFit="cover"
@@ -2324,7 +2324,7 @@ function Home({ packages }) {
             <div className="pt-8 pb-4 px-4">
               <div className="flex items-center justify-center mb-2">
                 <Image
-                  src="/assets/landing_v2/left_bar.png"
+                  src="/assets/landing_v2/left_bar.webp"
                   alt="decoration"
                   width={103}
                   height={3}
@@ -2340,7 +2340,7 @@ function Home({ packages }) {
                   WEDSY
                 </h1>
                 <Image
-                  src="/assets/landing_v2/right_bar.png"
+                  src="/assets/landing_v2/right_bar.webp"
                   alt="decoration"
                   width={103}
                   height={3}
@@ -2549,7 +2549,7 @@ Tell us about your Wedding
         <div className="relative w-full">
           {/* Desktop Image */}
           <Image
-            src="/assets/landing_v2/FAQ_Desktop.png"
+            src="/assets/landing_v2/FAQ_Desktop.webp"
             alt="Frequently Asked Questions"
             width={1920}
             height={800}
@@ -2559,7 +2559,7 @@ Tell us about your Wedding
           />
           {/* Mobile Image */}
           <Image
-            src="/assets/landing_v2/FAQ_mobile.png"
+            src="/assets/landing_v2/FAQ_mobile.webp"
             alt="Frequently Asked Questions"
             width={768}
             height={600}
