@@ -27,7 +27,7 @@ const VendorUserSection = () => {
                 className="bg-white text-[#2B3F6C] px-8 py-3 rounded-md font-bold shadow-md hover:bg-gray-100 transition-colors duration-300"
                 style={{ fontFamily: 'Montserrat', fontWeight: 'bold' }}
               >
-                JOIN AS VENDOR
+                JOIN AS PARTNER
               </button>
             </Link>
           </div>

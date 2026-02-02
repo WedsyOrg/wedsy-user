@@ -6,11 +6,13 @@ import { processMobileNumber } from "@/utils/phoneNumber";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 function Home({ packages }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const videoRef = useRef(null);
+  const mobileVideoRef = useRef(null);
   
   const categoryList = [
     "Stage",
@@ -24,32 +26,68 @@ function Home({ packages }) {
     {/* faq section */}
     const faqsData = [
       {
-        question: "What services do Wedsy's event planners in Bangalore offer?",
-        answer: "Our team at Wedsy offers comprehensive event planning services in Bangalore, including venue selection, thematic decoration, catering, photography, makeup artists, mehendi artists, DJ, Emcee, and personalized event itineraries. We ensure your celebration in Bangalore is flawless from start to finish."
+        question: "Why should I choose Wedsy for my wedding planning in Bangalore?",
+        answer: "Planning a wedding is one of the most exciting yet overwhelming experiences in life. At Wedsy, we're here to make it beautiful, seamless, and truly yours. As one of the top wedding planners in Bangalore, our goal is simple — to bring your vision to life with creativity, care, and absolute attention to detail. Whether you're planning a grand celebration or an intimate gathering, Wedsy ensures your special day feels magical from start to finish."
       },
       {
-        question: "How do Wedsy's wedding planners in Bangalore personalize weddings?",
-        answer: "At Wedsy, we ensure that every wedding reflects the couple's personality. Our wedding planners in Bangalore collaborate closely with you to understand your vision and preferences, crafting a celebration as unique as your love story. From the color of cloth to flowers, flooring type to lighting, every detail is fully customizable. Your designated wedding planner will discuss these details with you and document them in the notes on the event tool for clear communication and reference."
+        question: "What makes Wedsy different from other wedding planners?",
+        answer: "At Wedsy, we understand that no two weddings are the same. From traditional South Indian ceremonies to modern fusion weddings, our team designs events that feel personal and unforgettable. Our services include: End-to-End Planning, Customized Wedding Packages, Budget-Friendly Solutions, Creative Vision, and an Experienced Vendor Network."
       },
       {
-        question: "What sets Wedsy's event decorators in Bangalore apart?",
-        answer: "Wedsy's event decorators stand out for their creativity and versatility. We lead in staying ahead of trends, utilizing innovative design techniques and technology to craft stunning visual experiences tailored to your event's theme and ambiance. Being India's first online store with transparent pricing, you can conveniently select and customize all decor online. We pride ourselves as a one-stop-shop for all your wedding needs."
+        question: "Do you offer wedding packages in Bangalore?",
+        answer: "Yes, we offer a variety of wedding packages in Bangalore to suit every size, style, and setting. From classic indoor weddings to outdoor garden ceremonies, our packages are fully managed to simplify your planning journey."
       },
       {
-        question: "What budget range does Wedsy cater to for weddings and events?",
-        answer: "Being among the top wedding planners in Bangalore, Wedsy caters to a diverse range of budgets. We collaborate closely with our clients to tailor custom packages that align with their financial considerations, ensuring a high-quality execution of their special day. From as low as 10,000 INR to 10 lakhs and beyond, we accommodate a wide spectrum of budgets."
+        question: "What are your affordable wedding packages?",
+        answer: "Our affordable wedding packages include venue styling, guest management, photography, entertainment, rituals, and more — all customized to your needs. We ensure quality while keeping the budget in mind."
       },
       {
-        question: "Does Wedsy have packages for decorators in Bangalore?",
-        answer: "Yes, Wedsy offers a range of packages for wedding decorations that can be tailored to fit your specific needs and budget. Our packages include a variety of décor options curated by the best decorators in Bangalore to make your wedding truly exceptional."
+        question: "Can you help with low budget wedding planning in Bangalore?",
+        answer: "Absolutely. Even with a limited budget, you deserve a celebration to remember. We specialize in elegant, cost-effective solutions for couples looking for low budget wedding planners in Bangalore."
       },
       {
-        question: "How do I book Wedsy's services for my upcoming wedding or event?",
-        answer: "Booking with Wedsy is easy. Reach out to us through our website, phone, or email. Your designated planner, your single point of contact for all wedding needs, will guide you through the entire process. We recommend scheduling a consultation with our team to discuss event details and secure our services well in advance, especially for peak seasons in Bangalore."
+        question: "Do you plan destination weddings in India?",
+        answer: "Yes, Wedsy specializes in stunning destination weddings across India. Whether you want a beachside wedding in Goa, hill station like Coorg, Ooty, a regal palace in Rajasthan, or a hilltop ceremony, we make it happen smoothly and affordably."
       },
       {
-        question: "What is the event tool?",
-        answer: "The event tool is a specially designed organizational tool for your events. Simply create an event, such as a Haldi wedding, and add multiple event days like Haldi, sangeet, and the wedding ceremony. Once set, you easily add your selected decor to the respective event days. This tool ensures your event stays well-organized and hassle-free."
+        question: "What's included in your affordable destination wedding packages?",
+        answer: "Our affordable destination wedding packages in India include: Complete travel and accommodation coordination, Culturally sensitive planning for any location, On-site vendor and logistics management. We take care of everything so you can focus on celebrating your love."
+      },
+      {
+        question: "Are destination weddings really affordable with Wedsy?",
+        answer: "Yes. At Wedsy, we believe your dream wedding should never feel out of budget. Our affordable destination wedding packages balance style, value, and experience — with every detail handled for you."
+      },
+      {
+        question: "Why do couples trust Wedsy for wedding event planning?",
+        answer: "We're not just planners — we're partners in your journey. From your first consultation to the final dance, we make sure every detail is perfect. Choosing Wedsy means peace of mind, knowing your wedding will be exactly as planned — or even better."
+      },
+      {
+        question: "What is the Event Tool?",
+        answer: "The Event Tool is a specially designed organizational feature for your events. Simply create an event, such as \"Rahul's Wedding,\" and add multiple event days like haldi, sangeet, and the wedding ceremony. Once set up, you can easily add your selected décor from our Décor Store to the respective event days. This tool ensures your event stays well-organized and hassle-free."
+      },
+      {
+        question: "Do you offer discounts?",
+        answer: "Yes. Wedsy provides discounts on the overall list of requirements for your wedding. Don't forget to ask your wedding planner for the best available offers."
+      },
+      {
+        question: "Who is the best wedding planner in Bangalore?",
+        answer: "Wedsy is a full service wedding planner in Bangalore offering end to end wedding planning, decor execution, and makeup services. With verified vendors, transparent pricing, and managed execution, Wedsy helps couples plan stress free weddings across Bangalore and nearby destinations."
+      },
+      {
+        question: "What wedding planning services does Wedsy offer in Bangalore?",
+        answer: "Wedsy offers complete wedding planning services in Bangalore including venue selection, wedding decor, bridal and groom makeup, vendor coordination, and on ground execution for all wedding events."
+      },
+      {
+        question: "Can I book wedding decor and makeup separately in Bangalore?",
+        answer: "Yes. Wedsy allows couples to book wedding decor and makeup services separately in Bangalore without opting for full wedding planning."
+      },
+      {
+        question: "Does Wedsy handle complete wedding execution in Bangalore?",
+        answer: "Yes. From planning to on ground execution, Wedsy takes full responsibility for timelines, vendors, service quality, and coordination across all wedding events in Bangalore."
+      },
+      {
+        question: "Why should I choose Wedsy as my wedding planner in Bangalore?",
+        answer: "Wedsy combines structured planning, verified vendors, transparent pricing, and single point accountability, making it one of the most reliable wedding planners in Bangalore."
       },
     ];
 
@@ -113,6 +151,88 @@ function Home({ packages }) {
   };
   const handleMouseLeave = () => {
     setIsHovered(false);
+  };
+
+  // Wedding Requirement Form State
+  const [selectedBudget, setSelectedBudget] = useState("5-10");
+  const [weddingFormData, setWeddingFormData] = useState({
+    name: "",
+    date: "",
+    phone: "",
+  });
+  const [isWeddingSubmitting, setIsWeddingSubmitting] = useState(false);
+  const [isWeddingSubmitted, setIsWeddingSubmitted] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
+  const [isDateDropdownOpen, setIsDateDropdownOpen] = useState(false);
+
+  const dateOptions = [
+    "Before 3 months",
+    "Between 3-6 months",
+    "Beyond 6 months",
+  ];
+
+  const handleWeddingInputChange = (field, value) => {
+    setWeddingFormData((prev) => ({ ...prev, [field]: value }));
+    if (field === 'phone' && phoneError) {
+      setPhoneError("");
+    }
+  };
+
+  const validateWeddingPhone = (phone) => {
+    const cleanPhone = phone.replace(/\D/g, '');
+    return cleanPhone.length === 10 && /^\d{10}$/.test(cleanPhone);
+  };
+
+  const handleWeddingSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!weddingFormData.name.trim() || !weddingFormData.phone.trim()) {
+      alert("Please fill in all required fields (Name and Phone)");
+      return;
+    }
+    
+    if (weddingFormData.phone && !validateWeddingPhone(weddingFormData.phone)) {
+      setPhoneError("Phone number must be exactly 10 digits");
+      return;
+    }
+    
+    setIsWeddingSubmitting(true);
+
+    try {
+      const budgetMap = {
+        "5-10": 750000,
+        "10-15": 1250000,
+        "20+": 2000000,
+      };
+
+      const budgetValue = budgetMap[selectedBudget] || 750000;
+
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', weddingFormData.name || '');
+      formDataToSend.append('phone', weddingFormData.phone || '');
+      formDataToSend.append('budget', budgetValue.toString());
+      formDataToSend.append('date', weddingFormData.date || '');
+      formDataToSend.append('formType', 'wedding-requirements');
+
+      await fetch(
+        `${process.env.NEXT_PUBLIC_SHEET_URL}`,
+        {
+          method: 'POST',
+          mode: 'no-cors',
+          body: formDataToSend
+        }
+      );
+
+      setIsWeddingSubmitted(true);
+      setWeddingFormData({ name: "", date: "", phone: "" });
+      setSelectedBudget("5-10");
+      setPhoneError("");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("Error submitting form. Please try again.");
+    } finally {
+      setIsWeddingSubmitting(false);
+    }
   };
   const handleMainEnquiry = async () => {
     if (await processMobileNumber(data.main.phone)) {
@@ -285,6 +405,21 @@ function Home({ packages }) {
     };
   }, [decorIndex, isHovered]);
 
+  // Ensure video loops continuously
+  const handleVideoEnded = () => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play();
+    }
+  };
+
+  const handleMobileVideoEnded = () => {
+    if (mobileVideoRef.current) {
+      mobileVideoRef.current.currentTime = 0;
+      mobileVideoRef.current.play();
+    }
+  };
+
   // Generate FAQ Schema
   const faqSchema = {
     "@context": "https://schema.org",
@@ -383,195 +518,173 @@ function Home({ packages }) {
         <h2>Best Budget-Friendly Wedding & Destination Packages in India</h2>
       </div>
       <main
-        className={`${styles.main__div} flex flex-col justify-around gap-6 md:gap-12 `}
+        className="relative flex flex-col justify-around gap-6 md:gap-12 min-h-screen w-full overflow-hidden"
         id="mainDiv"
       >
-      
-        <div
-          className="
-            block
-            absolute
-            top-20 right-4 md:top-24 md:left-20 md:right-auto
-            text-[120px] md:text-[175px]
-            text-right md:text-left
-            text-white md:text-black
-            leading-[0.45]
-            px-4 md:px-0
-          "
-          style={{
-            fontFamily: "'Lovers Quarrel', cursive",
-            margin: 0,
-            padding: 0,
-          }}
+        {/* Video Background - Desktop (lg and above) */}
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          onEnded={handleVideoEnded}
+          className="hidden lg:block absolute inset-0 w-full h-full object-cover z-0"
+          preload="auto"
         >
-          weddings<br />made<br />easy
-        </div>
+          {/* MP4 format for cross-browser compatibility (Chrome, Firefox, Edge, Safari) */}
+          <source
+            src="/assets/landing_v2/hero.mp4"
+            type="video/mp4"
+          />
+          {/* Fallback MOV for Safari */}
+          <source
+            src="/assets/landing_v2/hero.MOV"
+            type="video/quicktime"
+          />
+          {/* Fallback message */}
+          Your browser does not support the video tag.
+        </video>
 
-        
+        {/* Video Background - Mobile (below lg) */}
+        <video
+          ref={mobileVideoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          onEnded={handleMobileVideoEnded}
+          className="block lg:hidden absolute inset-0 w-full h-full object-cover z-0"
+          preload="auto"
+        >
+          {/* MP4 format for cross-browser compatibility (Chrome, Firefox, Edge, Safari) */}
+          <source
+            src="/assets/landing_v2/hero_mobile.mp4"
+            type="video/mp4"
+          />
+          {/* Fallback MOV for Safari */}
+          <source
+            src="/assets/landing_v2/hero_mobile.MOV"
+            type="video/quicktime"
+          />
+          {/* Fallback message */}
+          Your browser does not support the video tag.
+        </video>
 
-        {/* Mobile Wedding Store Section page starting part */}
-        <div className="block md:hidden  absolute bottom-72 left-1/2 transform -translate-x-1/2 text-center text-white mb-40">
-          <p className="text-lg mb-4 font-small leading-relaxed w-80 max-w-[90vw]" style={{
-            fontFamily: "'Montserrat', sans-serif",
-            fontWeight: 500,
-          }}>
-            Unveil the epitome of wedding<br />planning at our store.
+        {/* Dark overlay on top of video */}
+        <div className="absolute inset-0 bg-black/50 z-[1]"></div>
+
+        {/* Content Overlay */}
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 text-center">
+          {/* Main Heading */}
+          <h1
+            className="text-4xl md:text-6xl lg:text-7xl text-white mb-3"
+            style={{
+              fontFamily: "'Dream Avenue', serif",
+              fontWeight: 400,
+              fontStyle: "normal",
+            }}
+          >
+            Luxury weddings, seamlessly planned.
+          </h1>
+
+          {/* Subtext */}
+          <p
+            className="text-md md:text-xl lg:text-3xl text-white mb-8"
+            style={{
+              fontFamily: "'Montserrat', sans-serif",
+              fontWeight: 400,
+              fontStyle: "normal",
+            }}
+          >
+            Complete wedding planning, from start to celebration.<br />
+    
+            <span className="hidden sm:block lg:hidden">Tech Enabled</span>
           </p>
 
+          {/* CTA Button */}
           <Link href="/decor">
             <button
-              className="bg-white/10 border-2 border-white text-white px-8 py-3 text-lg font-semibold tracking-wide "
+              className="bg-black/30 backdrop-blur-md border-2 border-white text-white py-4 text-lg font-semibold tracking-widest px-16 rounded-2xl
+                        hover:bg-white/40 transition-all duration-300 ease-in-out"
               style={{
                 fontFamily: "'Montserrat', sans-serif",
                 fontWeight: 600,
-                fontSize: "15px"
               }}
-              
             >
-              WEDDING STORE
+              START PLANNING
             </button>
           </Link>
         </div>
-
-
-        <div className="hidden md:flex h-screen w-full p-6 md:px-8 flex-row justify-end items-end mb-28 text-black">
-          <div className="hidden md:flex flex-col w-[25%] text-center gap-6 justify-center pr-5" style={{
-              fontFamily: "'Montserrat', sans-serif",
-              fontWeight: 600,
-          }}>
-            <span className="text-3xl" style={{ 
-              fontFamily: "'Montserrat', sans-serif",
-              fontWeight: 600,
-              lineHeight: 1.4,
-              margin: 0,
-              padding: 0,
-            }}>YOUR WEDDING VISION,<br/>OUR EXPERTISE</span>
-            {isLoggedIn ? (
-              <>
-              </>
-            ) : data.main.success ? (
-              <p>
-                Your Wedsy Wedding Manager will contact you and assist you in
-                choosing the best!
-              </p>
-            ) : (
-              <>
-                <input
-                  type="text"
-                  placeholder="NAME"
-                  value={data.main.name}
-                  onChange={(e) =>
-                    setData({
-                      ...data,
-                      main: { ...data.main, name: e.target.value },
-                    })
-                  }
-                  name="name"
-                  className="text-black text-center bg-transparent border-0 border-b-black outline-0 focus:outline-none focus:border-0 border-b focus:border-b focus:border-b-black focus:ring-0 placeholder:text-black"
-                />
-                <input
-                  type="text"
-                  placeholder="PHONE NO."
-                  value={data.main.phone}
-                  onChange={(e) =>
-                    setData({
-                      ...data,
-                      main: { ...data.main, phone: e.target.value },
-                    })
-                  }
-                  name="phone"
-                  className="text-black text-center bg-transparent border-0 border-b-black outline-0 focus:outline-none focus:border-0 border-b focus:border-b focus:border-b-black focus:ring-0 placeholder:text-black"
-                />
-                <button
-                  type="submit"
-                  className="bg-black text-white py-2 disabled:bg-black cursor-pointer
-                            hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 ease-in-out"
-                  disabled={
-                    !data.main.name ||
-                    !data.main.phone ||
-                    // !/^\d{10}$/.test(data.main.phone) ||
-                    // !processMobileNumber(data.main.phone) ||
-                    data.main.loading
-                  }
-                  onClick={handleMainEnquiry}
-                >
-                  ENTER WITH WEDSY
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-        <Image
-          src="/assets/images/home_image_mobile.webp"
-          alt="Decor"
-          width={0}
-          height={0}
-          sizes="100vw"
-          className="block md:hidden"
-          style={{ height: "auto", width: "100vw" }}
-        />
       </main>
 
 
       {/* why choose wedsy section */}
-      <main className={`${styles.main__div__2} md:mt-20 py-16 px-6`}>
-        <div className="text-center flex flex-col h-full relative">
-          <span className="hidden md:block text-center text-[36px] md:text-[36px] font-semibold text-blackpy-3 md:py-0 mt-auto block" style={{
-                fontFamily: 'Montserrat, sans-serif', 
-              }}>
-              WHY CHOOSE WEDSY
-          </span>
+      <main className={`${styles.main__div__2} md:mt-20 py-1 px-1`}>
+        <div className="flex flex-col h-full relative">
+          {/* Mobile View */}
+          <div className="block md:hidden px-4 pb-8 mt-16">
+            <h1 className="text-lg font-semibold text-black" style={{
+              fontFamily: 'Montserrat, sans-serif',
+            }}>
+              THE WEDDING STORE
+            </h1>
+            
+            <p className="text-lg text-black" style={{
+              fontFamily: 'Montserrat, sans-serif',
+              fontStyle: 'normal',
+            }}>
+              Everything You Need.
+            </p>
+            <p className="text-lg mb-4" style={{
+              fontFamily: 'Montserrat, sans-serif',
+              fontStyle: 'normal',
+              color: '#840032',
+              fontWeight: 'bold',
+            }}>
+              With Pricing.
+            </p>
 
-          <span className="hidden md:block text-[36px] md:text-[36px] font-medium"
-                style={{
-                  fontFamily: 'Montserrat, sans-serif',
-                  letterSpacing: '5%',
-                }}>
-            “BECAUSE WE’RE JUST <span style={{
-                            color: '#840032',
-                          }}>BL**DY</span> GOOD AT OUR JOB”
-          </span>
+            <p className="text-sm text-black" style={{
+              fontFamily: 'Montserrat, sans-serif',
+              fontStyle: 'normal',
+            }}>
+              One place to discover, price, and plan your entire wedding setup.
+            </p>
+          </div>
 
-          <div
-            className="flex flex-col md:flex-row items-start py-12 px-18 md:px-40 h-full justify-between"
-            style={{ fontFamily: "'Montserrat', sans-serif" }}
-          >
-            <div className="w-full md:w-auto flex justify-start items-center text-left md:justify-center md:items-center md:text-center h-full mb-8 md:mb-0">
-              <h2 className="text-[28px] md:text-[36px] font-normal tracking-wide text-black">
-                NEW ARRIVALS
-              </h2>
-            </div>
+          {/* Desktop View */}
+          <div className="hidden md:block px-18 md:px-20 pb-12">
+            <h1 className="text-lg md:text-lg lg:text-3xl font-semibold text-black mb-4" style={{
+              fontFamily: 'Montserrat, sans-serif',
+            }}>
+              THE WEDDING STORE
+            </h1>
+            
+            <p className="text-[20px] md:text-[24px] text-black mb-6" style={{
+              fontFamily: 'Montserrat, sans-serif',
+            }}>
+              Everything You Need. <span style={{ color: '#840032', fontWeight: 'bold' }}>With Pricing.</span>
+            </p>
 
-            <div className="flex-1 flex flex-col items-center md:items-start text-left max-w-2xl self-center">
-              <p className="text-[15px] text-black font-normal mb-4 w-full text-left">
-                Whether you're planning an intimate ceremony or a grand celebration, our newly
-                <br/> added items will help you create the perfect ambiance for your special day.
-              </p>
-
-              <div className="w-full flex flex-col items-start hidden md:block">
-                <div className="flex flex-wrap justify-end text-left gap-x-12 gap-y-2 font-semibold text-black text-[17px]">
-                  <span>STAGE</span>
-                  <span>•</span>
-                  <span>MANDAP</span>
-                  <span>•</span>
-                  <span>NAMEBOARD</span>
-                  <span>•</span>
-                  <span>PATHWAY</span>
-                </div>
-
-                <div className="w-full flex flex-wrap justify-center text-left gap-x-12 gap-y-2 mt-2 font-semibold text-black text-[17px]">
-                  <span>FURNITURE</span>
-                  <span>•</span>
-                  <span>PHOTO BOOTH</span>
-                  <span>•</span>
-                  <span>LIGHTING</span>
-                </div>
-              </div>
-
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-black font-semibold text-sm md:text-md lg:text-sm" style={{
+              fontFamily: 'Montserrat, sans-serif',
+            }}>
+              <span>DECOR & STYLING</span>
+              <span>•</span>
+              <span>FURNITURE & SEATING</span>
+              <span>•</span>
+              <span>WEDDING ENTRIES</span>
+              <span>•</span>
+              <span>FLORALS & GARLANDS</span>
+              <span>•</span>
+              <span>LIGHTING & AMBIENCE</span>
+              <span>•</span>
+              <span>PHOTO & EXPERIENCE</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-6 md:px-40 gap-1">
+          <div className="grid grid-cols-2 md:grid-cols-6 px-4 md:px-20 gap-1">
 
             <div className="relative overflow-hidden bg-[#3C3C3C] h-[200px] rounded-md md:h-auto md:row-span-2 md:col-span-3 md:rounded-none group">
               <Image src="/assets/landing/img-1-s2.webp" alt="Grid image 1" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
@@ -594,14 +707,8 @@ function Home({ packages }) {
             </div>
 
             
-            <div className="relative overflow-hidden bg-[#3C3C3C] h-[200px] rounded-md md:col-span-1 flex justify-center items-center text-center md:bg-[#D9D9D9] md:h-[200px] group">
-              <Link href="/decor">
-                <button className=" text-white font-semibold text-base px-6 py-3 rounded-md md:hidden" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                  Explore our Wedding Store
-                </button>
-              </Link>
-              
-              <Image src="/assets/landing/img-6-s2.webp" alt="Grid image 7" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105 hidden md:block" />
+            <div className="relative overflow-hidden bg-[#3C3C3C] h-[200px] rounded-md md:col-span-1 md:bg-[#D9D9D9] md:h-[200px] group">
+              <Image src="/assets/landing/img-6-s2.webp" alt="Grid image 6" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
             </div>
 
             
@@ -610,14 +717,14 @@ function Home({ packages }) {
             </div>
           </div>
 
-            <div className="w-full flex justify-center items-center py-10 mt-10 md:mt-10 hidden md:flex">
+            <div className="w-full flex justify-center items-center py-8 mt-6 md:py-10 md:mt-10">
               <Link href="/decor">
                 <button
-                  className="bg-[#3C3C3C] text-white font-semibold text-base px-6 py-3 rounded-md md:rounded-none
-                  hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 ease-in-out"
-                  style={{ fontFamily: "'Montserrat', sans-serif" }}
+                  className="bg-[#840032] text-white text-sm md:text-lg px-10 md:px-16 shadow-xl py-3 rounded-2xl tracking-wider
+                  hover:bg-[#6a0029] hover:shadow-lg transition-all duration-300 ease-in-out"
+                  style={{ fontFamily: "'Cinzel', serif" }}
                 >
-                  Explore our Wedding Store
+                  Explore The Wedding Store
                 </button>
               </Link>
             </div>
@@ -625,10 +732,89 @@ function Home({ packages }) {
         </div>
       </main>
 
+      {/* Makeup Artist Section */}
+      <section className="w-full relative pb-10">
+        <div className="relative w-full">
+          <Image
+            src="/assets/landing_v2/makeup_desktop.png"
+            alt="Book Makeup Artist"
+            width={1920}
+            height={600}
+            layout="responsive"
+            objectFit="cover"
+            className="hidden md:block w-full"
+          />
+          <Image
+            src="/assets/landing_v2/makeup_mobile.png"
+            alt="Book Makeup Artist"
+            width={768}
+            height={600}
+            layout="responsive"
+            objectFit="cover"
+            className="block md:hidden w-full"
+          />
+          {/* Button Overlay - Positioned based on image design */}
+          {/* Mobile: Centered at bottom, Desktop: Left side middle */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 md:bottom-auto md:left-16 md:translate-x-0 md:top-1/2 md:-translate-y-1/2 lg:ml-38  lg:mt-28 xl:left-32">
+            <Link href="/makeup-and-beauty/artists">
+              <button
+                className="bg-white border-0  text-[#840032] px-6 md:px-10 py-2 md:py-3 rounded-lg text-xs md:text-sm font-semibold uppercase tracking-wider
+                          hover:bg-[#840032] hover:text-white transition-all duration-300 ease-in-out shadow-lg"
+                style={{
+                  fontFamily: "'Montserrat', sans-serif",
+                  fontWeight: 600,
+                }}
+              >
+                BOOK NOW
+              </button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* What our loved ones say section */}
+      <section className="w-full" style={{ backgroundColor: '#F9F8F6' }}>
+        <div className="relative w-full">
+          {/* Desktop Title Overlay */}
+          <div className="hidden md:flex absolute top-20 left-10 lg:left-20 z-10 items-center">
+            <h2 
+              className="text-3xl lg:text-4xl xl:text-5xl"
+              style={{ 
+                fontFamily: "'Dream Avenue', serif",
+                color: '#8B6914',
+                fontWeight: 'normal'
+              }}
+            >
+              What our loved ones say
+            </h2>
+            
+          </div>
+
+          <Image
+            src="/assets/landing_v2/Whatourlovedonessay.png"
+            alt="What our loved ones say"
+            width={1920}
+            height={800}
+            layout="responsive"
+            objectFit="cover"
+            className="hidden md:block"
+          />
+          <Image
+            src="/assets/landing_v2/Whatourlovedonesays_mobile.png"
+            alt="What our loved ones say"
+            width={768}
+            height={600}
+            layout="responsive"
+            objectFit="cover"
+            className="block md:hidden"
+          />
+        </div>
+      </section>
+
       
       {/* wedding venue section */}
 
-      <section className="w-full py-6 md:py-24 px-6 md:px-40  md:mt-32">
+      <section className="w-full py-6 md:py-24 px-6 md:px-40  md:mt-10">
         <div className="mt-6 md:mt-18 max-w-7xl mx-auto">
           <div
             className="
@@ -905,6 +1091,360 @@ function Home({ packages }) {
           </div>
         </div>
       </div>
+
+      {/* Bidding Section */}
+      <section className="w-full px-6 py-16">
+        {/* Desktop View - md and above */}
+        <div className="hidden md:block relative w-full">
+          <Image
+            src="/assets/landing_v2/bidding_desktop.png"
+            alt="Bidding Process"
+            width={1920}
+            height={800}
+            layout="responsive"
+            objectFit="contain"
+          />
+        </div>
+
+        {/* Mobile View - below md */}
+        <div className="block md:hidden relative w-full">
+          {/* Mobile Title */}
+          <div className="text-center mb-6">
+            <h2
+              className="text-md md:text-2xl text-black font-semibold"
+              style={{
+                fontFamily: "'Montserrat', sans-serif",
+                fontWeight: 600,
+              }}
+            >
+              Booking a makeup artist should not feel like gambling.
+            </h2>
+          </div>
+          <Image
+            src="/assets/landing_v2/bidding_mobile.png"
+            alt="Bidding Process"
+            width={768}
+            height={600}
+            layout="responsive"
+            objectFit="contain"
+          />
+        </div>
+
+        {/* Get Quote Button */}
+        <div className="w-full flex justify-center items-center mt-8 md:mt-12">
+          <Link href="/makeup-and-beauty/artists">
+            <button
+              className="bg-[#840032] hover:bg-[#6a0029] text-white px-12  md:px-16 py-2 rounded-xl text-base md:text-lg font-semibold tracking-wider shadow-lg transition-all duration-300 ease-in-out"
+              style={{
+                fontFamily: "'Montserrat', sans-serif",
+                fontWeight: 600,
+              }}
+            >
+              Get Quote !
+            </button>
+          </Link>
+        </div>
+      </section>
+
+      {/* Wedding Planning Section */}
+      <section className="w-full">
+        {/* Mobile View */}
+        <div className="block lg:hidden">
+          {/* Mobile Image */}
+          <div className="relative w-full">
+            <Image
+              src="/assets/landing_v2/wedding_planning_mobile .png"
+              alt="Wedding Planning"
+              width={768}
+              height={900}
+              layout="responsive"
+              objectFit="contain"
+            />
+          </div>
+
+          {/* Mobile Content */}
+          <div className="px-8 py-10">
+            {/* Heading - Centered */}
+            <div className="text-center mb-10">
+              <h2
+                className="text-4xl text-black leading-tight"
+                style={{
+                  fontFamily: "'Dream Avenue', serif",
+                  fontWeight: 400,
+                }}
+              >
+                Wedding planning
+              </h2>
+              <p
+                className="text-3xl text-black mt-1"
+                style={{
+                  fontFamily: "'Dream Avenue', serif",
+                  fontWeight: 400,
+                }}
+              >
+                tailored for you
+              </p>
+            </div>
+
+            {/* Points with Timeline */}
+            <div className="relative mb-12 flex flex-row">
+              {/* Vertical Bar Image */}
+              <div className="flex-shrink-0 mr-4" style={{ height: '300px', overflow: 'hidden' }}>
+                <Image
+                  src="/assets/landing_v2/bar.png"
+                  alt="Timeline bar"
+                  width={14}
+                  height={250}
+                  className="h-full w-auto object-contain"
+                  style={{ width: '14px' }}
+                />
+              </div>
+
+              {/* Points */}
+              <div className="flex flex-col space-y-4 py-4">
+                {/* Point 1 */}
+                <div className="relative flex flex-col">
+                  {/* Horizontal Line */}
+                  <div className="absolute left-[-20px] top-3 w-5 h-[1.5px] bg-black"></div>
+                  <h3
+                    className="text-xl text-black mb-2"
+                    style={{
+                      fontFamily: "'Spartan', sans-serif",
+                      fontWeight: 400,
+                    }}
+                  >
+                    Exclusive Wedding planner
+                  </h3>
+                  <p
+                    className="text-sm text-black leading-relaxed"
+                    style={{
+                      fontFamily: "'Montserrat', sans-serif",
+                      fontWeight: 400,
+                    }}
+                  >
+                    Your story and your style guide us in creating a wedding that reflects who you are
+                  </p>
+                </div>
+
+                {/* Point 2 */}
+                <div className="relative flex flex-col">
+                  {/* Horizontal Line */}
+                  <div className="absolute left-[-20px] top-3 w-5 h-[1.5px] bg-black"></div>
+                  <h3
+                    className="text-xl text-black mb-2"
+                    style={{
+                      fontFamily: "'Spartan', sans-serif",
+                      fontWeight: 400,
+                    }}
+                  >
+                    Budget Optimisation
+                  </h3>
+                  <p
+                    className="text-sm text-black leading-relaxed"
+                    style={{
+                      fontFamily: "'Montserrat', sans-serif",
+                      fontWeight: 400,
+                    }}
+                  >
+                    We design celebrations that reflect your vision while optimising costs without compromising quality
+                  </p>
+                </div>
+
+                {/* Point 3 */}
+                <div className="relative flex flex-col">
+                  {/* Horizontal Line */}
+                  <div className="absolute left-[-20px] top-3 w-5 h-[1.5px] bg-black"></div>
+                  <h3
+                    className="text-xl text-black mb-2"
+                    style={{
+                      fontFamily: "'Spartan', sans-serif",
+                      fontWeight: 400,
+                    }}
+                  >
+                    Seamless Coordination
+                  </h3>
+                  <p
+                    className="text-sm text-black leading-relaxed"
+                    style={{
+                      fontFamily: "'Montserrat', sans-serif",
+                      fontWeight: 400,
+                    }}
+                  >
+                    Every detail is managed with precision, from concept to execution, ensuring a seamless and stress free experience
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Button - Full Width */}
+            <div className="px-2">
+              <Link href="/contact">
+                <button
+                  className="w-full bg-black text-white py-4 px-8 rounded-2xl tracking-widest text-sm
+                            hover:bg-gray-800 transition-all duration-300 ease-in-out"
+                  style={{
+                    fontFamily: "'Cinzel', serif",
+                    fontWeight: 400,
+                    letterSpacing: '0.12em',
+                  }}
+                >
+                  CONNECT WITH AN EXPERT
+                </button>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop View */}
+        <div className="hidden lg:flex container mx-auto px-8 lg:px-16 xl:px-24 py-16 xl:py-24">
+          <div className="flex flex-row items-start justify-between w-full gap-12 xl:gap-20">
+            {/* Left Content */}
+            <div className="flex flex-col w-1/2 xl:w-[48%]">
+              {/* Heading */}
+              <div className="mb-10">
+                <h2
+                  className="text-5xl xl:text-6xl text-black leading-tight"
+                  style={{
+                    fontFamily: "'Dream Avenue', serif",
+                    fontWeight: 400,
+                  }}
+                >
+                  Wedding planning
+                </h2>
+                <p
+                  className="text-4xl xl:text-5xl text-black mt-1"
+                  style={{
+                    fontFamily: "'Dream Avenue', serif",
+                    fontWeight: 400,
+                  }}
+                >
+                  tailored for you
+                </p>
+              </div>
+
+              {/* Points with Timeline */}
+              <div className="relative flex flex-row">
+                {/* Vertical Bar Image */}
+                <div className="flex-shrink-0 mr-6" style={{ height: '400px', overflow: 'hidden' }}>
+                  <Image
+                    src="/assets/landing_v2/bar.png"
+                    alt="Timeline bar"
+                    width={16}
+                    height={350}
+                    className="h-full w-auto object-contain"
+                    style={{ width: '16px' }}
+                  />
+                </div>
+
+                {/* Points */}
+                <div className="flex flex-col space-y-14 py-4">
+                  {/* Point 1 */}
+                  <div className="relative flex flex-col">
+                    {/* Horizontal Line */}
+                    <div className="absolute left-[-30px] top-4 w-7 h-[1.5px] bg-black"></div>
+                    <h3
+                      className="text-2xl xl:text-3xl text-black mb-2"
+                      style={{
+                        fontFamily: "'Spartan', sans-serif",
+                        fontWeight: 400,
+                      }}
+                    >
+                      Exclusive Wedding planner
+                    </h3>
+                    <p
+                      className="text-sm xl:text-base text-black leading-relaxed max-w-md"
+                      style={{
+                        fontFamily: "'Montserrat', sans-serif",
+                        fontWeight: 400,
+                      }}
+                    >
+                      Your story and your style guide us in creating a wedding that reflects who you are
+                    </p>
+                  </div>
+
+                  {/* Point 2 */}
+                  <div className="relative flex flex-col">
+                    {/* Horizontal Line */}
+                    <div className="absolute left-[-30px] top-4 w-7 h-[1.5px] bg-black"></div>
+                    <h3
+                      className="text-2xl xl:text-3xl text-black mb-2"
+                      style={{
+                        fontFamily: "'Spartan', sans-serif",
+                        fontWeight: 400,
+                      }}
+                    >
+                      Budget Optimisation
+                    </h3>
+                    <p
+                      className="text-sm xl:text-base text-black leading-relaxed max-w-md"
+                      style={{
+                        fontFamily: "'Montserrat', sans-serif",
+                        fontWeight: 400,
+                      }}
+                    >
+                      We design celebrations that reflect your vision while optimising costs without compromising quality
+                    </p>
+                  </div>
+
+                  {/* Point 3 */}
+                  <div className="relative flex flex-col">
+                    {/* Horizontal Line */}
+                    <div className="absolute left-[-30px] top-4 w-7 h-[1.5px] bg-black"></div>
+                    <h3
+                      className="text-2xl xl:text-3xl text-black mb-2"
+                      style={{
+                        fontFamily: "'Spartan', sans-serif",
+                        fontWeight: 400,
+                      }}
+                    >
+                      Seamless Coordination
+                    </h3>
+                    <p
+                      className="text-sm xl:text-base text-black leading-relaxed max-w-md"
+                      style={{
+                        fontFamily: "'Montserrat', sans-serif",
+                        fontWeight: 400,
+                      }}
+                    >
+                      Every detail is managed with precision, from concept to execution, ensuring a seamless and stress free experience
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side - Image and Button */}
+            <div className="flex flex-col items-center w-1/2 xl:w-[48%]">
+              {/* Wedding Image */}
+              <div className="relative w-full">
+                <Image
+                  src="/assets/landing_v2/wedding_planning.png"
+                  alt="Wedding Planning"
+                  width={600}
+                  height={750}
+                  layout="responsive"
+                  objectFit="contain"
+                />
+              </div>
+
+              {/* Button - Below Image */}
+              <Link href="/contact">
+                <button
+                  className="mt-10 bg-black text-white py-4 px-12 rounded-xl tracking-widest text-sm
+                            hover:bg-gray-800 transition-all duration-300 ease-in-out"
+                  style={{
+                    fontFamily: "'Cinzel', serif",
+                    fontWeight: 400,
+                    letterSpacing: '0.12em',
+                  }}
+                >
+                  CONNECT WITH AN EXPERT
+                </button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
       
       {/* bueaty section */}
@@ -1507,13 +2047,587 @@ function Home({ packages }) {
         </div>
       </div>
 
+      {/* Wedding Requirement Section */}
+      <section className="relative min-h-screen bg-[#3C2415]">
+        {/* Desktop Layout - Side by Side */}
+        <div className="hidden lg:flex min-h-screen mt-20">
+          {/* Left Section - Image (2/3 width) */}
+          <div className="w-2/3 relative">
+            <Image
+              src="/assets/landing_v2/wedding.png"
+              alt="Wedding couple"
+              layout="fill"
+              objectFit="cover"
+              priority
+            />
+            {/* Black transparent overlay */}
+            <div className="absolute inset-0 bg-black/40" />
+
+            {/* Branding Overlay */}
+            <div className="absolute inset-0 flex flex-col justify-between p-12">
+              {/* Top Branding - ALISHAAN */}
+              <div className="flex flex-col items-center justify-center">
+                <div className="flex items-center justify-center mb-4">
+                  <Image
+                    src="/assets/landing_v2/left_bar.png"
+                    alt="decoration"
+                    width={123}
+                    height={5}
+                    className="mr-4"
+                  />
+                  <h1
+                    className="text-6xl font-serif text-white mx-4"
+                    style={{
+                      fontFamily: "'Montserrat', sans-serif",
+                      fontWeight: 300,
+                    }}
+                  >
+                   WEDSY
+                  </h1>
+                  <Image
+                    src="/assets/landing_v2/right_bar.png"
+                    alt="decoration"
+                    width={123}
+                    height={5}
+                    className="ml-4"
+                  />
+                </div>
+                <h2
+                  className="text-white text-lg font-medium"
+                  style={{
+                    fontFamily: "'Montserrat', sans-serif",
+                    fontWeight: 100,
+                  }}
+                >
+                  WEDDINGS MADE EASY
+                </h2>
+              </div>
+
+              {/* Bottom Elements */}
+              <div>
+                <p
+                  className="text-white text-2xl text-center"
+                  style={{
+                    fontFamily: "'Montserrat', sans-serif",
+                    fontWeight: 300,
+                  }}
+                >
+                  CURATED FOR PERFECTION
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Section - Form Panel (1/3 width) */}
+          <div className="w-2/3 bg-[#523329] flex items-center justify-center rounded-2xl p-8 px-25 ">
+            <div className="w-full max-w-3xl border border-[#523329] p-16 rounded-2xl bg-white/75  rounded-4xl">
+              {!isWeddingSubmitted ? (
+                <>
+                  {/* Form Header */}
+                  <div className="mb-4">
+                    <p
+                      className="text-[#523329] text-xl mb-2"
+                      style={{
+                        fontFamily: "'Spartan', sans-serif",
+                        fontWeight: 350,
+                      }}
+                    >
+                      Let’s personalize your experience
+                    </p>
+                    <h3
+                      className="text-xl font-bold text-[#3C2415]"
+                      style={{
+                        fontFamily: "'Spartan', sans-serif",
+                        fontWeight: 400,
+                      }}
+                    >
+                      Tell us about your Wedding
+                    </h3>
+                  </div>
+
+                  <form onSubmit={handleWeddingSubmit} className="space-y-6 ">
+                    {/* Name Field */}
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Name"
+                        value={weddingFormData.name}
+                        onChange={(e) =>
+                          handleWeddingInputChange("name", e.target.value)
+                        }
+                        className="w-full bg-transparent border-0 border-b-2 py-3 text-[#523329] placeholder-[#523329] focus:border-[#523329] focus:outline-none focus:ring-0 transition-all duration-300 hover:border-[#523329]"
+                        style={{
+                          fontFamily: "'Spartan', sans-serif",
+                          fontWeight: 350,
+                        }}
+                      />
+                    </div>
+
+                    {/* Date Field */}
+                    <div className="relative">
+                      <div
+                        onClick={() => setIsDateDropdownOpen(!isDateDropdownOpen)}
+                        className="w-full bg-transparent border-b-2 border-[#523329] py-3 text-[#523329] cursor-pointer transition-all duration-300 hover:border-[#6B3A1A]"
+                        style={{
+                          fontFamily: "'Spartan', sans-serif",
+                          fontWeight: 350,
+                        }}
+                      >
+                        {weddingFormData.date || "When is your special day ?"}
+                      </div>
+                      {isDateDropdownOpen && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-[#523329] rounded-lg shadow-lg overflow-hidden">
+                          {dateOptions.map((option) => (
+                            <div
+                              key={option}
+                              onClick={() => {
+                                handleWeddingInputChange("date", option);
+                                setIsDateDropdownOpen(false);
+                              }}
+                              className="px-4 py-3 hover:bg-[#523329]/10 cursor-pointer transition-colors duration-200 text-[#523329]"
+                              style={{
+                                fontFamily: "'Spartan', sans-serif",
+                                fontWeight: 350,
+                              }}
+                            >
+                              {option}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Budget Selection */}
+                    <div>
+                      <p
+                        className="text-[#000000] text-md lg:text-md mb-3 "
+                        style={{
+                          fontFamily: "'Spartan', sans-serif",
+                          fontWeight: 500,
+                        }}
+                      >
+                       Please share your estimated budget for the event
+                      </p>
+                      <div className="grid grid-cols-3 gap-4">
+                        {[
+                          { value: "5-10", label: "5-10 Lakhs" },
+                          { value: "10-15", label: "10-15 Lakhs" },
+                          { value: "20+", label: "Above 20 Lakhs" },
+                        ].map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setSelectedBudget(option.value)}
+                            className={`p-3 rounded-lg text-center transition-all duration-300 hover:scale-105 ${
+                              selectedBudget === option.value
+                                ? "bg-[#523329] text-white shadow-lg"
+                                : "bg-white text-[#523329] hover:bg-gray-50 hover:shadow-md"
+                            }`}
+                            style={{
+                              fontFamily: "'Spartan', sans-serif",
+                              fontWeight: 300,
+                            }}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Phone Field */}
+                    <div>
+                      <input
+                        type="tel"
+                        placeholder="Phone number"
+                        value={weddingFormData.phone}
+                        onChange={(e) =>
+                          handleWeddingInputChange("phone", e.target.value)
+                        }
+                        className={`w-full bg-transparent border-0 border-b-2 py-3 text-[#523329] placeholder-[#523329] focus:outline-none focus:ring-0 transition-all duration-300 ${
+                          phoneError ? 'border-red-500' : 'border-[#523329] focus:border-[#523329] hover:border-[#523329]'
+                        }`}
+                        style={{
+                          fontFamily: "'Spartan', sans-serif",
+                          fontWeight: 350,
+                        }}
+                      />
+                      {phoneError && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {phoneError}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="mt-8 text-left">
+                      <button
+                        type="submit"
+                        disabled={isWeddingSubmitting}
+                        className="bg-[#840032] hover:bg-[#70022c] px-16 py-4 text-sm font-bold uppercase tracking-wide text-white rounded-xl transition-all duration-300 disabled:opacity-50 mt-4"
+                        style={{
+                          fontFamily: "'Cinzel', serif",
+                          fontWeight: 300,
+                        }}
+                      >
+                      
+                        {isWeddingSubmitting ? "Submitting..." : "Can’t  Wait to Start"}
+                      </button>
+                    </div>
+                  </form>
+                </>
+              ) : (
+                /* Success Message */
+                <div className="text-center">
+                  <div className="flex items-center justify-center">
+                    <Image
+                      src="/assets/landing_v2/thank_you.gif"
+                      alt="success"
+                      width={300}
+                      height={100}
+                      unoptimized={true}
+                    />
+                  </div>
+                  <p
+                    className="text-lg text-[#523329] pt-3"
+                    style={{
+                      fontFamily: "'Spartan', sans-serif",
+                      fontWeight: 350,
+                    }}
+                  >
+                    A member of our team will reach out shortly to begin your
+                    experience.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Layout - Form Over Image */}
+        <div className="lg:hidden relative min-h-screen">
+          {/* Background Image */}
+          <div className="absolute inset-0">
+            <Image
+              src="/assets/landing_v2/wedding.png"
+              alt="Wedding couple"
+              layout="fill"
+              objectFit="cover"
+              priority
+            />
+            {/* Black transparent overlay */}
+            <div className="absolute inset-0 bg-black/40" />
+          </div>
+
+          {/* Content Overlay */}
+          <div className="relative z-10 min-h-screen flex flex-col">
+            {/* Top Branding */}
+            <div className="pt-8 pb-4 px-4">
+              <div className="flex items-center justify-center mb-2">
+                <Image
+                  src="/assets/landing_v2/left_bar.png"
+                  alt="decoration"
+                  width={103}
+                  height={3}
+                  className="mr-2"
+                />
+                <h1
+                  className="text-4xl font-serif text-white mx-2"
+                  style={{
+                    fontFamily: "'Montserrat', sans-serif",
+                    fontWeight: 300,
+                  }}
+                >
+                  WEDSY
+                </h1>
+                <Image
+                  src="/assets/landing_v2/right_bar.png"
+                  alt="decoration"
+                  width={103}
+                  height={3}
+                  className="ml-2"
+                />
+              </div>
+              <h2
+                className="text-white text-sm text-center"
+                style={{
+                  fontFamily: "'Montserrat', sans-serif",
+                  fontWeight: 100,
+                }}
+              >
+               WEDDINGS MADE EASY
+              </h2>
+            </div>
+
+            {/* Form Card - Centered */}
+            <div className="flex-1 flex items-center justify-center px-4">
+              <div className="w-full max-w-lg bg-white/70 rounded-2xl px-4 min-h-[600px] flex flex-col justify-center">
+                {/* Form Header */}
+                {!isWeddingSubmitted ? (
+                  <>
+                    <div className="mb-6 text-center">
+                      <p
+                        className="text-[#523329] text-lg mb-1"
+                        style={{
+                          fontFamily: "'Spartan', sans-serif",
+                          fontWeight: 350,
+                        }}
+                      >
+                       Let’s personalize your experience
+                      </p>
+                      <h3
+                        className="text-lg text-[#523329]"
+                        style={{
+                          fontFamily: "'Spartan', sans-serif",
+                          fontWeight: 500,
+                        }}
+                      >
+Tell us about your Wedding
+                      </h3>
+                    </div>
+
+                    <form onSubmit={handleWeddingSubmit} className="space-y-8 px-4">
+                      {/* Name Field */}
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="Name"
+                          value={weddingFormData.name}
+                          onChange={(e) =>
+                            handleWeddingInputChange("name", e.target.value)
+                          }
+                          className="w-full bg-transparent border-0 border-b-2 border-[#000000] py-2 text-[#000000] placeholder-[#000000] text-md text-center focus:border-[#000000] focus:outline-none focus:ring-0 transition-all duration-300 hover:border-[#000000]"
+                          style={{
+                            fontFamily: "'Spartan', sans-serif",
+                            fontWeight: 350,
+                          }}
+                        />
+                      </div>
+
+                      {/* Date Field */}
+                      <div className="relative">
+                        <div
+                          onClick={() => setIsDateDropdownOpen(!isDateDropdownOpen)}
+                          className="w-full bg-transparent border-b-2 border-[#000000] py-2 text-[#000000] text-md text-center cursor-pointer transition-all duration-300 hover:border-[#000000]"
+                          style={{
+                            fontFamily: "'Spartan', sans-serif",
+                            fontWeight: 350,
+                          }}
+                        >
+                          {weddingFormData.date || "When is your special day ?"}
+                        </div>
+                        {isDateDropdownOpen && (
+                          <div className="absolute z-10 w-full mt-1 bg-white border border-[#000000] rounded-lg shadow-lg overflow-hidden">
+                            {dateOptions.map((option) => (
+                              <div
+                                key={option}
+                                onClick={() => {
+                                  handleWeddingInputChange("date", option);
+                                  setIsDateDropdownOpen(false);
+                                }}
+                                className="px-4 py-3 hover:bg-[#000000]/10 cursor-pointer transition-colors duration-200 text-[#000000] text-center"
+                                style={{
+                                  fontFamily: "'Spartan', sans-serif",
+                                  fontWeight: 350,
+                                }}
+                              >
+                                {option}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Budget Selection */}
+                      <div>
+                        <p
+                          className="text-[#000000] text-md mb-2 text-center whitespace-pre-line"
+                          style={{
+                            fontFamily: "'Spartan', sans-serif",
+                            fontWeight: 500,
+                          }}
+                        >
+                          What is your budget?
+                        </p>
+                        <div className="grid grid-cols-3 gap-2 ">
+                          {[
+                            { value: "5-10", label: "5-10 Lakhs" },
+                            { value: "10-15", label: "10-15 Lakhs" },
+                            { value: "20+", label: "Above 20 Lakhs" },
+                          ].map((option) => (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => setSelectedBudget(option.value)}
+                              className={`p-2 rounded-lg text-center transition-all duration-300 text-xs hover:scale-105 ${
+                                selectedBudget === option.value
+                                  ? "bg-[#523329] text-white shadow-lg"
+                                  : "bg-white text-[#523329] hover:bg-gray-50 hover:shadow-md"
+                              }`}
+                              style={{
+                                fontFamily: "'Spartan', sans-serif",
+                                fontWeight: 350,
+                              }}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Phone Field */}
+                      <div>
+                        <input
+                          type="tel"
+                          placeholder="Phone number"
+                          value={weddingFormData.phone}
+                          onChange={(e) =>
+                            handleWeddingInputChange("phone", e.target.value)
+                          }
+                          className={`w-full bg-transparent border-0 border-b-2 py-2 text-[#000000] placeholder-[#000000] text-lg text-center focus:outline-none focus:ring-0 transition-all duration-300 ${
+                            phoneError ? 'border-red-500' : 'border-[#000000] focus:border-[#000000] hover:border-[#000000]'
+                          }`}
+                          style={{
+                            fontFamily: "'Spartan', sans-serif",
+                            fontWeight: 350,
+                          }}
+                        />
+                        {phoneError && (
+                          <p className="text-red-500 text-xs mt-1 text-center">
+                            {phoneError}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Submit Button */}
+                      <div className="mt-8 text-center">
+                        <button
+                          type="submit"
+                          disabled={isWeddingSubmitting}
+                          className="w-full bg-[#840032] hover:bg-[#70022c] px-4 py-3 text-sm md:text-xl font-bold uppercase tracking-wide text-white rounded-xl transition-all duration-300 disabled:opacity-50"
+                          style={{
+                            fontFamily: "'Cinzel', serif",
+                            fontWeight: 300,
+                          }}
+                        >
+                          {isWeddingSubmitting ? "Submitting..." : "Can’t Wait to Start"}
+                        </button>
+                      </div>
+                    </form>
+                  </>
+                ) : (
+                  /* Success Message */
+                  <div className="text-center px-4">
+                    <div className="flex items-center justify-center">
+                      <Image
+                        src="/assets/landing_v2/thank_you.gif"
+                        alt="success"
+                        width={300}
+                        height={100}
+                        unoptimized={true}
+                      />
+                    </div>
+                    <p
+                      className="text-lg text-[#523329]"
+                      style={{
+                        fontFamily: "'Spartan', sans-serif",
+                        fontWeight: 350,
+                      }}
+                    >
+                      A member of our team will reach out shortly to begin your
+                      experience.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="w-full" style={{ backgroundColor: '#F9F8F6' }}>
+        <div className="relative w-full">
+          {/* Desktop Image */}
+          <Image
+            src="/assets/landing_v2/FAQ_Desktop.png"
+            alt="Frequently Asked Questions"
+            width={1920}
+            height={800}
+            layout="responsive"
+            objectFit="cover"
+            className="hidden md:block w-full px-4 "
+          />
+          {/* Mobile Image */}
+          <Image
+            src="/assets/landing_v2/FAQ_mobile.png"
+            alt="Frequently Asked Questions"
+            width={768}
+            height={600}
+            layout="responsive"
+            objectFit="cover"
+            className="block md:hidden w-full"
+          />
+        </div>
+        
+        {/* FAQ Accordion - Show only 5 FAQs */}
+        <div className="px-6 md:px-40 py-8 md:py-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col">
+              {faqsData.slice(0, 5).map((faq, index) => (
+                <div key={index} className="flex flex-col">
+                  <button
+                    className="w-full text-left py-4 md:py-6 focus:outline-none flex justify-between items-center"
+                    onClick={() => toggleFAQ(index)}
+                  >
+                    <p className="text-black text-base md:text-lg font-semibold pr-4" style={{ fontFamily: 'Montserrat', letterSpacing: '0.01em' }}>
+                      {faq.question}
+                    </p>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className={`h-6 w-6 flex-shrink-0 transition-transform duration-300 ${openIndex === index ? 'rotate-45' : ''}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                  </button>
+                  <div
+                    className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                      openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <p className="text-gray-700 text-sm md:text-base mb-4 md:mb-6" style={{ fontFamily: 'Montserrat', letterSpacing: '0.01em' }}>
+                      {faq.answer}
+                    </p>
+                  </div>
+                  <div className="w-full border-b border-dashed border-gray-400"></div>
+                </div>
+              ))}
+            </div>
+            
+            {/* View More Button */}
+            <div className="flex justify-center mt-8 md:mt-12">
+              <Link href="/faq">
+                <button
+                  className="bg-[#840032] text-white px-10 md:px-16 py-3 md:py-4 rounded-xl text-sm md:text-base font-semibold uppercase tracking-wider hover:bg-[#6a0029] transition-all duration-300 ease-in-out shadow-lg"
+                  style={{ fontFamily: "'Montserrat', sans-serif" }}
+                >
+                  View More
+                </button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Most */}
       
-      <section className="py-16 md:py-24 px-6 md:px-40">
+      {/* <section className="py-16 md:py-24 px-6 md:px-40">
         <div className="max-w-7xl mx-auto  overflow-hidden">
           <div className="w-full flex justify-center">
-            <div className="h-px bg-[#D6D6D6] w-full max-w-7xl px-4 md:px-10 lg:px-20"></div> {/* Line matching the width of content areas */}
+            <div className="h-px bg-[#D6D6D6] w-full max-w-7xl px-4 md:px-10 lg:px-20"></div>
           </div>
           <div className="relative w-full h-auto" style={{ paddingTop: '56.25%' }}>
           
@@ -1526,7 +2640,7 @@ function Home({ packages }) {
             />
           </div>
         </div>
-      </section>
+      </section> */}
       
 
 
@@ -1712,10 +2826,10 @@ function Home({ packages }) {
 
 
       {/* faq section */}
-
+      {/* 
       <section className="py-16 md:py-24 px-6 md:px-40 hidden md:block">
         <div className="max-w-7xl mx-auto">
-          {/* <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 md:mb-16 relative">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 md:mb-16 relative">
             
             <h2 className="text-2xl md:text-3xl lg:text-4xl text-gray-800 leading-tight" style={{ fontFamily: 'Montserrat', letterSpacing: '0.01em' }}>
               <span className="font-extrabold text-transparent relative inline-block mr-2" style={{ WebkitTextStroke: '2px black', textStroke: '2px black' }}>MOST</span>
@@ -1723,7 +2837,7 @@ function Home({ packages }) {
               <br className="md:hidden" />
               <span className="font-semibold">BY OUR CUSTOMERS</span>
             </h2>
-          </div> */}
+          </div>
 
           
           <div className="flex flex-col">
@@ -1762,6 +2876,7 @@ function Home({ packages }) {
           </div>
         </div>
       </section>
+      */}
 
       {/* <Testimonials /> */}
       {/* <section className="mt-4 mb-8">
