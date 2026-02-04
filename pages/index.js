@@ -1,18 +1,78 @@
+import ExpertConsultModal from "@/components/modal/ExpertConsultModal";
 import PlanYourEvent from "@/components/screens/PlanYourEvent";
 import { LandingPageSkeleton } from "@/components/skeletons/landing_page";
 import VendorUserSection from "@/pages/reuseableComponents/VendorUserSection";
 import styles from "@/styles/Home.module.css";
 import { processMobileNumber } from "@/utils/phoneNumber";
+import { motion, AnimatePresence } from "framer-motion";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useEffect, useState, useRef } from "react";
 
-function Home({ packages }) {
+// Animation variants for fade-in on scroll
+const fadeInUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" }
+  }
+};
+
+const fadeIn = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1,
+    transition: { duration: 0.6, ease: "easeOut" }
+  }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.1
+    }
+  }
+};
+
+const staggerItem = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" }
+  }
+};
+
+function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [openExpertModal, setOpenExpertModal] = useState(false);
+  const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const videoRef = useRef(null);
   const mobileVideoRef = useRef(null);
+
+  // Reviews data
+  const reviews = [
+    "The creative execution by Wedsy was truly commendable. His suggestions added depth and character to the setup. The final result looked classy and cohesive. Both families were very impressed.",
+    "The Wedsy team were responsible for my Wedding reception decoration at Chancery Pavilion - Bangalore. They provide really good decor designs at a reasonable cost. Thank you for the Wedsy team for your hardwork and for making our day even more wonderful.",
+    "The whole team was very professional and they ensured that they completely understood my needs and budget for my event during the initial stages and later executed it perfectly. Kudos to the great work Wedsy is doing"
+  ];
+
+  // Auto-change reviews every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentReviewIndex((prevIndex) => (prevIndex + 1) % reviews.length);
+    }, 5000); // Change every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [reviews.length]);
   
   const categoryList = [
     "Stage",
@@ -172,27 +232,74 @@ function Home({ packages }) {
   ];
 
   const handleWeddingInputChange = (field, value) => {
-    setWeddingFormData((prev) => ({ ...prev, [field]: value }));
-    if (field === 'phone' && phoneError) {
-      setPhoneError("");
+    if (field === 'phone') {
+      // Only allow digits, limit to 10 digits
+      const numericValue = value.replace(/\D/g, '').slice(0, 10);
+      setWeddingFormData((prev) => ({ ...prev, [field]: numericValue }));
+      
+      // Real-time validation
+      if (numericValue.length > 0) {
+        validateWeddingPhone(numericValue);
+      } else {
+        setPhoneError("");
+      }
+    } else {
+      setWeddingFormData((prev) => ({ ...prev, [field]: value }));
     }
   };
 
   const validateWeddingPhone = (phone) => {
     const cleanPhone = phone.replace(/\D/g, '');
-    return cleanPhone.length === 10 && /^\d{10}$/.test(cleanPhone);
+    
+    if (cleanPhone.length === 0) {
+      setPhoneError("");
+      return false;
+    }
+    
+    if (cleanPhone.length < 10) {
+      setPhoneError("Phone number must be 10 digits");
+      return false;
+    }
+    
+    if (cleanPhone.length > 10) {
+      setPhoneError("Phone number cannot exceed 10 digits");
+      return false;
+    }
+    
+    // Validate Indian phone number (should start with 6, 7, 8, or 9)
+    if (!/^[6-9]/.test(cleanPhone)) {
+      setPhoneError("Phone number must start with 6, 7, 8, or 9");
+      return false;
+    }
+    
+    // Final validation - must be exactly 10 digits and start with 6-9
+    if (cleanPhone.length === 10 && /^[6-9]\d{9}$/.test(cleanPhone)) {
+      setPhoneError("");
+      return true;
+    }
+    
+    setPhoneError("Please enter a valid 10-digit phone number");
+    return false;
   };
 
   const handleWeddingSubmit = async (e) => {
     e.preventDefault();
     
-    if (!weddingFormData.name.trim() || !weddingFormData.phone.trim()) {
-      alert("Please fill in all required fields (Name and Phone)");
+    // Validate name
+    if (!weddingFormData.name.trim()) {
+      alert("Please enter your name");
       return;
     }
     
-    if (weddingFormData.phone && !validateWeddingPhone(weddingFormData.phone)) {
-      setPhoneError("Phone number must be exactly 10 digits");
+    // Validate phone
+    if (!weddingFormData.phone.trim()) {
+      setPhoneError("Phone number is required");
+      return;
+    }
+    
+    // Validate phone format
+    if (!validateWeddingPhone(weddingFormData.phone)) {
+      // Error message is already set by validateWeddingPhone
       return;
     }
     
@@ -577,44 +684,60 @@ function Home({ packages }) {
         {/* Content Overlay */}
         <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 text-center">
           {/* Main Heading */}
-          <h1
+          <motion.h1
             className="text-4xl md:text-6xl lg:text-7xl text-white mb-3"
             style={{
               fontFamily: "'Dream Avenue', serif",
               fontWeight: 400,
               fontStyle: "normal",
             }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.6 }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           >
             Luxury weddings, seamlessly planned.
-          </h1>
+          </motion.h1>
 
           {/* Subtext */}
-          <p
+          <motion.p
             className="text-md md:text-xl lg:text-3xl text-white mb-8"
             style={{
               fontFamily: "'Montserrat', sans-serif",
               fontWeight: 400,
               fontStyle: "normal",
             }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.6 }}
+            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
           >
             Complete wedding planning, from start to celebration.<br />
     
             <span className="hidden sm:block lg:hidden">Tech Enabled</span>
-          </p>
+          </motion.p>
 
           {/* CTA Button */}
-          <Link href="/decor">
-            <button
-              className="bg-black/30 backdrop-blur-md border-2 border-white text-white py-4 text-xs md:text-lg lg:text-lg font-semibold tracking-widest px-16 rounded-2xl
-                        hover:bg-white/40 transition-all duration-300 ease-in-out"
-              style={{
-                fontFamily: "'Montserrat', sans-serif",
-                fontWeight: 600,
-              }}
-            >
-              START PLANNING
-            </button>
-          </Link>
+          <motion.button
+            onClick={() => {
+              const element = document.getElementById('wedding-requirement-section');
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }}
+            className="bg-black/30 backdrop-blur-md border-2 border-white text-white py-4 text-xs md:text-lg lg:text-lg font-semibold tracking-widest px-16 rounded-2xl
+                      hover:bg-white/40 transition-all duration-300 ease-in-out cursor-pointer"
+            style={{
+              fontFamily: "'Cinzel', serif",
+              fontWeight: 600,
+            }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: false, amount: 0.5 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+          >
+            START PLANNING
+          </motion.button>
         </div>
       </main>
 
@@ -623,53 +746,100 @@ function Home({ packages }) {
       <main className={`${styles.main__div__2} md:mt-20 py-1 px-1`}>
         <div className="flex flex-col h-full relative">
           {/* Mobile View */}
-          <div className="block md:hidden px-4 pb-8 mt-16">
-            <h1 className="text-lg font-semibold text-black" style={{
-              fontFamily: 'Montserrat, sans-serif',
-            }}>
+          <motion.div 
+            className="block md:hidden px-4 pb-8 mt-16"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.6 }}
+            variants={staggerContainer}
+          >
+            <motion.h1 
+              className="text-lg font-semibold text-black" 
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.6 }}
+              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+            >
               THE WEDDING STORE
-            </h1>
+            </motion.h1>
             
-            <p className="text-lg text-black" style={{
-              fontFamily: 'Montserrat, sans-serif',
-              fontStyle: 'normal',
-            }}>
+            <motion.p 
+              className="text-lg text-black" 
+              style={{ fontFamily: 'Montserrat, sans-serif', fontStyle: 'normal' }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.6 }}
+              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+            >
               Everything You Need.
-            </p>
-            <p className="text-lg mb-4" style={{
-              fontFamily: 'Montserrat, sans-serif',
-              fontStyle: 'normal',
-              color: '#840032',
-              fontWeight: 'bold',
-            }}>
+            </motion.p>
+            <motion.p 
+              className="text-lg mb-4" 
+              style={{
+                fontFamily: 'Montserrat, sans-serif',
+                fontStyle: 'normal',
+                color: '#840032',
+                fontWeight: 'bold',
+              }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.6 }}
+              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+            >
               With Pricing.
-            </p>
+            </motion.p>
 
-            <p className="text-sm text-black" style={{
-              fontFamily: 'Montserrat, sans-serif',
-              fontStyle: 'normal',
-            }}>
+            <motion.p 
+              className="text-sm text-black" 
+              style={{ fontFamily: 'Montserrat, sans-serif', fontStyle: 'normal' }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.6 }}
+              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+            >
               One place to discover, price, and plan your entire wedding setup.
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
 
           {/* Desktop View */}
-          <div className="hidden md:block px-18 md:px-20 pb-12">
-            <h1 className="text-lg md:text-lg lg:text-3xl font-semibold text-black mb-4" style={{
-              fontFamily: 'Montserrat, sans-serif',
-            }}>
+          <motion.div 
+            className="hidden md:block px-18 md:px-20 pb-12"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.6 }}
+            variants={staggerContainer}
+          >
+            <motion.h1 
+              className="text-lg md:text-lg lg:text-3xl font-semibold text-black mb-4" 
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.6 }}
+              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+            >
               THE WEDDING STORE
-            </h1>
+            </motion.h1>
             
-            <p className="text-[20px] md:text-[24px] text-black mb-6" style={{
-              fontFamily: 'Montserrat, sans-serif',
-            }}>
+            <motion.p 
+              className="text-[20px] md:text-[24px] text-black mb-6" 
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.6 }}
+              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+            >
               Everything You Need. <span style={{ color: '#840032', fontWeight: 'bold' }}>With Pricing.</span>
-            </p>
+            </motion.p>
 
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-black font-semibold text-sm md:text-md lg:text-sm" style={{
-              fontFamily: 'Montserrat, sans-serif',
-            }}>
+            <motion.div 
+              className="flex flex-wrap items-center gap-x-4 gap-y-2 text-black font-semibold text-sm md:text-md lg:text-sm" 
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.6 }}
+              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+            >
               <span>DECOR & STYLING</span>
               <span>•</span>
               <span>FURNITURE & SEATING</span>
@@ -681,10 +851,16 @@ function Home({ packages }) {
               <span>LIGHTING & AMBIENCE</span>
               <span>•</span>
               <span>PHOTO & EXPERIENCE</span>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-6 px-4 md:px-20 gap-1">
+          <motion.div 
+            className="grid grid-cols-2 md:grid-cols-6 px-4 md:px-20 gap-1"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: false, amount: 0.5 }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.8 }}
+          >
 
             <div className="relative overflow-hidden bg-[#3C3C3C] h-[200px] rounded-md md:h-auto md:row-span-2 md:col-span-3 md:rounded-none group">
               <Image src="/assets/landing/img-1-s2.webp" alt="Grid image 1" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
@@ -715,9 +891,15 @@ function Home({ packages }) {
             <div className="relative overflow-hidden bg-[#D9D9D9] h-[200px] rounded-md md:col-span-1 hidden md:block md:rounded-none group">
               <Image src="/assets/landing/img-7-s2.webp" alt="Grid image 8" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
             </div>
-          </div>
+          </motion.div>
 
-            <div className="w-full flex justify-center items-center py-8 mt-6 md:py-10 md:mt-10">
+            <motion.div 
+              className="w-full flex justify-center items-center py-8 mt-6 md:py-10 md:mt-10"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.5 }}
+              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 1.0 }}
+            >
               <Link href="/decor">
                 <button
                   className="bg-[#840032] text-white text-sm md:text-lg px-10 md:px-16 shadow-xl py-3 rounded-2xl tracking-wider
@@ -727,7 +909,7 @@ function Home({ packages }) {
                   Explore The Wedding Store
                 </button>
               </Link>
-            </div>
+            </motion.div>
                     
         </div>
       </main>
@@ -761,7 +943,7 @@ function Home({ packages }) {
                 className="bg-white border-0  text-[#840032] px-6 md:px-10 py-2 md:py-3 rounded-lg text-xs md:text-sm font-semibold uppercase tracking-wider
                           hover:bg-[#840032] hover:text-white transition-all duration-300 ease-in-out shadow-lg"
                 style={{
-                  fontFamily: "'Montserrat', sans-serif",
+                  fontFamily: "'Cinzel', serif",
                   fontWeight: 600,
                 }}
               >
@@ -790,30 +972,119 @@ function Home({ packages }) {
             
           </div>
 
-          <Image
-            src="/assets/landing_v2/Whatourlovedonessay.webp"
-            alt="What our loved ones say"
-            width={1920}
-            height={800}
-            layout="responsive"
-            objectFit="cover"
-            className="hidden md:block"
-          />
-          <Image
-            src="/assets/landing_v2/Whatourlovedonesays_mobile.webp"
-            alt="What our loved ones say"
-            width={768}
-            height={600}
-            layout="responsive"
-            objectFit="cover"
-            className="block md:hidden"
-          />
+          {/* Desktop View */}
+          <div className="hidden md:block relative">
+            <Image
+              src="/assets/landing_v2/Whatourlovedonessay.webp"
+              alt="What our loved ones say"
+              width={1920}
+              height={800}
+              layout="responsive"
+              objectFit="cover"
+            />
+            
+            {/* Review Text Overlay - Desktop */}
+            <div className="absolute inset-0 flex items-center justify-start z-20 pl-10 lg:pl-16 xl:pl-20 pr-20 lg:pr-32 xl:pr-40">
+              <div className="max-w-2xl min-w-[400px] text-left">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentReviewIndex}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                  >
+                    <p
+                      className="text-sm lg:text-base xl:text-lg text-[#8B6914] leading-relaxed"
+                      style={{
+                        fontFamily: "'Montserrat', sans-serif",
+                        fontWeight: 400,
+                        fontStyle: 'italic'
+                      }}
+                    >
+                      "{reviews[currentReviewIndex]}"
+                    </p>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* Review Indicators - Desktop */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex gap-2">
+              {reviews.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentReviewIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    index === currentReviewIndex 
+                      ? 'bg-[#8B6914] w-8' 
+                      : 'bg-[#8B6914]/40 hover:bg-[#8B6914]/60'
+                  }`}
+                  aria-label={`Go to review ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Mobile View */}
+          <div className="block md:hidden relative">
+            <Image
+              src="/assets/landing_v2/Whatourlovedonesays_mobile.webp"
+              alt="What our loved ones say"
+              width={768}
+              height={600}
+              layout="responsive"
+              objectFit="cover"
+            />
+            
+            {/* Review Text Overlay - Mobile */}
+            <div className="absolute inset-0 flex items-end justify-start z-20 pl-8 pr-10 sm:pl-12 sm:pr-14 pb-16 sm:pb-20 mb-8 sm:mb-12">
+              <div className="min-w-[280px] sm:min-w-[320px] text-left mb-4 sm:mb-6">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentReviewIndex}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                  >
+                    <p
+                      className="text-xs sm:text-xs text-[#8B6914] leading-relaxed"
+                      style={{
+                        fontFamily: "'Montserrat', sans-serif",
+                        fontWeight: 400,
+                        fontStyle: 'italic'
+                      }}
+                    >
+                      "{reviews[currentReviewIndex]}"
+                    </p>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* Review Indicators - Mobile */}
+            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20 flex gap-2">
+              {reviews.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentReviewIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    index === currentReviewIndex 
+                      ? 'bg-[#8B6914] w-6' 
+                      : 'bg-[#8B6914]/40 hover:bg-[#8B6914]/60'
+                  }`}
+                  aria-label={`Go to review ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
       
       {/* wedding venue section */}
-
+{/* 
       <section className="w-full py-6 md:py-24 px-6 md:px-40  md:mt-10">
         <div className="mt-6 md:mt-18 max-w-7xl mx-auto">
           <div
@@ -857,7 +1128,7 @@ function Home({ packages }) {
                   className="text-xs md:text-base text-black" 
                   style={{ fontFamily: 'Montserrat', fontWeight: 'normal' }}
                 >
-                  We’ve got you covered with Wedsy’s wedding venue packages!
+                  We've got you covered with Wedsy's wedding venue packages!
                 </p>
               </div>
             </div>
@@ -961,32 +1232,47 @@ function Home({ packages }) {
           </div>
         </div>
       </section>
+*/}
 
       
       {/* triangle section */}
       <section className="relative w-full flex justify-between items-center mt-12 md:mt-20">
         <div className="hidden md:block w-80 h-16 bg-[#840032] clip-left-triangle" />
 
-        <div className="flex flex-col text-center mx-auto px-6">
-          <h2
+        <motion.div 
+          className="flex flex-col text-center mx-auto px-6"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, amount: 0.6 }}
+          variants={staggerContainer}
+        >
+          <motion.h2
             className="text-base md:text-lg lg:text-xl font-semibold text-black"
             style={{
               fontFamily: "'Montserrat', sans-serif",
               fontWeight: 600,
             }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.6 }}
+            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
           >
             YOUR ULTIMATE WEDDING PLANNING DESTINATION IS HERE
-          </h2>
-          <p
+          </motion.h2>
+          <motion.p
             className="text-sm md:text-base mt-2 text-black"
             style={{
               fontFamily: "'Montserrat', sans-serif",
               fontWeight: 500,
             }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.6 }}
+            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
           >
-            We’ve got you covered with everything you need for your big day!
-          </p>
-        </div>
+            We've got you covered with everything you need for your big day!
+          </motion.p>
+        </motion.div>
         <div className="hidden md:block w-80 h-16 bg-[#840032] clip-right-triangle" />
       </section>
 
@@ -995,105 +1281,84 @@ function Home({ packages }) {
       {/* makeup banner section */}
       <div className="py-16 md:py-24 px-6 md:px-40 mt-6 md:mt-20 hidden md:block">
         <div className="container mx-auto flex flex-col space-y-4 md:space-y-6">
-
-          <Link href="/makeup-and-beauty/artists">
-            <div className="relative flex items-center overflow-hidden h-24 md:h-32 group cursor-pointer mb-4 md:mb-6 last:mb-0">
-              <div className="absolute inset-0">
-                <Image
-                  src="/assets/images/artist-1.webp"
-                  alt="Makeup Artists"
-                  layout="fill"
-                  objectFit="cover"
-                  className="transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="relative z-10 w-full h-full flex items-center">
-                <div className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-white to-transparent transition-all duration-300 group-hover:w-full group-hover:from-white group-hover:to-white/70"></div>
-                <div
-                  className="relative z-20 text-black text-xl md:text-2xl font-semibold ml-4"
-                  style={{ fontFamily: 'Montserrat', letterSpacing: '0.1em' }}
-                >
-                  MAKEUP ARTISTS
-                </div>
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/decor">
-            <div className="relative flex items-center overflow-hidden h-24 md:h-32 group cursor-pointer mb-4 md:mb-6 last:mb-0">
-              <div className="absolute inset-0">
-                <Image
-                  src="/assets/images/artist-2.webp"
-                  alt="Decor"
-                  layout="fill"
-                  objectFit="cover"
-                  className="transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="relative z-10 w-full h-full flex items-center justify-end">
-                <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-white to-transparent transition-all duration-300 group-hover:w-full group-hover:from-white group-hover:to-white/70"></div>
-                <div
-                  className="relative z-20 text-black text-xl md:text-2xl font-semibold mr-4"
-                  style={{ fontFamily: 'Montserrat', letterSpacing: '0.1em' }}
-                >
-                  DECOR
-                </div>
-              </div>
-            </div>
-          </Link>
-
-          <div className="relative flex items-center overflow-hidden h-24 md:h-32 group cursor-default mb-4 md:mb-6 last:mb-0">
-            <div className="absolute inset-0">
-              <Image
-                src="/assets/images/artist-3.webp"
-                alt="Photography"
-                layout="fill"
-                objectFit="cover"
-                className="transition-transform duration-300 group-hover:scale-105"
-              />
-            </div>
-            <div className="relative z-10 w-full h-full flex items-center">
-              <div className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-white to-transparent transition-all duration-300 group-hover:w-full group-hover:from-white group-hover:to-white/70"></div>
-              <div
-                className="relative z-20 text-black text-xl md:text-2xl font-semibold ml-4"
-                style={{ fontFamily: 'Montserrat', letterSpacing: '0.1em' }}
+          {[
+            { href: "/makeup-and-beauty/artists", image: "/assets/images/artist-1.webp", alt: "Makeup Artists", text: "MAKEUP ARTISTS", align: "left", isLink: true },
+            { href: "/decor", image: "/assets/images/artist-2.webp", alt: "Decor", text: "DECOR", align: "right", isLink: true },
+            { href: null, image: "/assets/images/artist-3.webp", alt: "Photography", text: "PHOTOGRAPHY", align: "left", isLink: false },
+            { href: null, image: "/assets/images/artist-4.webp", alt: "Wedding Venues", text: "WEDDING VENUES", align: "right", isLink: false }
+          ].map((item, index) => {
+            const content = (
+              <motion.div
+                key={index}
+                className="relative flex items-center overflow-hidden h-24 md:h-32 group cursor-pointer mb-4 md:mb-6 last:mb-0"
+                initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: false, amount: 0.5 }}
+                transition={{ 
+                  duration: 0.8, 
+                  ease: [0.16, 1, 0.3, 1], 
+                  delay: index * 0.15 
+                }}
               >
-                PHOTOGRAPHY
-              </div>
-            </div>
-            <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-white text-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-              Coming Soon
-            </div>
-          </div>
+                <div className="absolute inset-0">
+                  <Image
+                    src={item.image}
+                    alt={item.alt}
+                    layout="fill"
+                    objectFit="cover"
+                    className="transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+                <div className={`relative z-10 w-full h-full flex items-center ${item.align === "right" ? "justify-end" : ""}`}>
+                  {item.align === "right" ? (
+                    <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-white to-transparent transition-all duration-300 group-hover:w-full group-hover:from-white group-hover:to-white/70"></div>
+                  ) : (
+                    <div className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-white to-transparent transition-all duration-300 group-hover:w-full group-hover:from-white group-hover:to-white/70"></div>
+                  )}
+                  <motion.div
+                    className={`relative z-20 text-black text-xl md:text-2xl font-semibold ${item.align === "right" ? "mr-4" : "ml-4"}`}
+                    style={{ fontFamily: 'Montserrat', letterSpacing: '0.1em' }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: false, amount: 0.5 }}
+                    transition={{ 
+                      duration: 1.0, 
+                      ease: [0.22, 1, 0.36, 1], 
+                      delay: index * 0.15 + 0.2 
+                    }}
+                  >
+                    {item.text}
+                  </motion.div>
+                </div>
+                {!item.isLink && (
+                  <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-white text-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                    Coming Soon
+                  </div>
+                )}
+              </motion.div>
+            );
 
-          <div className="relative flex items-center overflow-hidden h-24 md:h-32 group cursor-default mb-4 md:mb-6 last:mb-0">
-            <div className="absolute inset-0">
-              <Image
-                src="/assets/images/artist-4.webp"
-                alt="Wedding Venues"
-                layout="fill"
-                objectFit="cover"
-                className="transition-transform duration-300 group-hover:scale-105"
-              />
-            </div>
-            <div className="relative z-10 w-full h-full flex items-center justify-end">
-              <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-white to-transparent transition-all duration-300 group-hover:w-full group-hover:from-white group-hover:to-white/70"></div>
-              <div
-                className="relative z-20 text-black text-xl md:text-2xl font-semibold mr-4"
-                style={{ fontFamily: 'Montserrat', letterSpacing: '0.1em' }}
-              >
-                WEDDING VENUES
+            return item.isLink ? (
+              <Link href={item.href} key={index}>
+                {content}
+              </Link>
+            ) : (
+              <div key={index} className="cursor-default">
+                {content}
               </div>
-            </div>
-            <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-white text-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-              Coming Soon
-            </div>
-          </div>
+            );
+          })}
         </div>
       </div>
 
       {/* Bidding Section */}
-      <section className="w-full px-6 py-16">
+      <motion.section 
+        className="w-full px-6 py-16"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={fadeInUp}
+      >
         {/* Desktop View - md and above */}
         <div className="hidden md:block relative w-full">
           <Image
@@ -1132,26 +1397,38 @@ function Home({ packages }) {
 
         {/* Get Quote Button */}
         <div className="w-full flex justify-center items-center mt-8 md:mt-12">
-          <Link href="/makeup-and-beauty/artists">
-            <button
-              className="bg-[#840032] hover:bg-[#6a0029] text-white px-12  md:px-16 py-2 rounded-xl text-base md:text-lg font-semibold tracking-wider shadow-lg transition-all duration-300 ease-in-out"
-              style={{
-                fontFamily: "'Montserrat', sans-serif",
-                fontWeight: 600,
-              }}
-            >
-              Get Quote !
-            </button>
-          </Link>
+          <button
+            onClick={() => {
+              if (!userLoggedIn) {
+                setSource("Makeup & Beauty Bidding");
+                setOpenLoginModalv2(true);
+              } else {
+                router.push("/makeup-and-beauty/bidding");
+              }
+            }}
+            className="bg-[#840032] hover:bg-[#6a0029] text-white px-12  md:px-16 py-2 rounded-xl text-base md:text-lg font-semibold tracking-wider shadow-lg transition-all duration-300 ease-in-out cursor-pointer"
+            style={{
+              fontFamily: "'Cinzel', serif",
+              fontWeight: 600,
+            }}
+          >
+            Get Quote !
+          </button>
         </div>
-      </section>
+      </motion.section>
 
       {/* Wedding Planning Section */}
       <section className="w-full">
         {/* Mobile View */}
         <div className="block lg:hidden">
           {/* Mobile Image */}
-          <div className="relative w-full">
+          <motion.div 
+            className="relative w-full"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeIn}
+          >
             <Image
               src="/assets/landing_v2/wedding_planning_mobile .webp"
               alt="Wedding Planning"
@@ -1160,36 +1437,63 @@ function Home({ packages }) {
               layout="responsive"
               objectFit="contain"
             />
-          </div>
+          </motion.div>
 
           {/* Mobile Content */}
-          <div className="px-8 py-10">
+          <motion.div 
+            className="px-8 py-10"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
             {/* Heading - Centered */}
-            <div className="text-center mb-10">
-              <h2
+            <motion.div 
+              className="text-center mb-10"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.6 }}
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <motion.h2
                 className="text-4xl text-black leading-tight"
                 style={{
                   fontFamily: "'Dream Avenue', serif",
                   fontWeight: 400,
                 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.6 }}
+                transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
               >
                 Wedding planning
-              </h2>
-              <p
+              </motion.h2>
+              <motion.p
                 className="text-3xl text-black mt-1"
                 style={{
                   fontFamily: "'Dream Avenue', serif",
                   fontWeight: 400,
                 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.6 }}
+                transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
               >
                 tailored for you
-              </p>
-            </div>
+              </motion.p>
+            </motion.div>
 
             {/* Points with Timeline */}
             <div className="relative mb-12 flex flex-row">
               {/* Vertical Bar Image */}
-              <div className="flex-shrink-0 mr-4" style={{ height: '300px', overflow: 'hidden' }}>
+              <motion.div 
+                className="flex-shrink-0 mr-4" 
+                style={{ height: '300px', overflow: 'hidden' }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: false, amount: 0.5 }}
+                transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+              >
                 <Image
                   src="/assets/landing_v2/bar.webp"
                   alt="Timeline bar"
@@ -1198,12 +1502,18 @@ function Home({ packages }) {
                   className="h-full w-auto object-contain"
                   style={{ width: '14px' }}
                 />
-              </div>
+              </motion.div>
 
               {/* Points */}
               <div className="flex flex-col space-y-4 py-4">
                 {/* Point 1 */}
-                <div className="relative flex flex-col">
+                <motion.div 
+                  className="relative flex flex-col"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.5 }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                >
                   {/* Horizontal Line */}
                   <div className="absolute left-[-20px] top-3 w-5 h-[1.5px] bg-black"></div>
                   <h3
@@ -1224,10 +1534,16 @@ function Home({ packages }) {
                   >
                     Your story and your style guide us in creating a wedding that reflects who you are
                   </p>
-                </div>
+                </motion.div>
 
                 {/* Point 2 */}
-                <div className="relative flex flex-col">
+                <motion.div 
+                  className="relative flex flex-col"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.5 }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+                >
                   {/* Horizontal Line */}
                   <div className="absolute left-[-20px] top-3 w-5 h-[1.5px] bg-black"></div>
                   <h3
@@ -1248,10 +1564,16 @@ function Home({ packages }) {
                   >
                     We design celebrations that reflect your vision while optimising costs without compromising quality
                   </p>
-                </div>
+                </motion.div>
 
                 {/* Point 3 */}
-                <div className="relative flex flex-col">
+                <motion.div 
+                  className="relative flex flex-col"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.5 }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.8 }}
+                >
                   {/* Horizontal Line */}
                   <div className="absolute left-[-20px] top-3 w-5 h-[1.5px] bg-black"></div>
                   <h3
@@ -1272,60 +1594,98 @@ function Home({ packages }) {
                   >
                     Every detail is managed with precision, from concept to execution, ensuring a seamless and stress free experience
                   </p>
-                </div>
+                </motion.div>
               </div>
             </div>
 
             {/* Mobile Button - Full Width */}
-            <div className="px-2">
-              <Link href="/contact">
-                <button
-                  className="w-full bg-black text-white py-4 px-8 rounded-2xl tracking-widest text-sm
-                            hover:bg-gray-800 transition-all duration-300 ease-in-out"
-                  style={{
-                    fontFamily: "'Cinzel', serif",
-                    fontWeight: 400,
-                    letterSpacing: '0.12em',
-                  }}
-                >
-                  CONNECT WITH AN EXPERT
-                </button>
-              </Link>
-            </div>
-          </div>
+            <motion.div 
+              className="px-2"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: false, amount: 0.5 }}
+              transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1], delay: 1.0 }}
+            >
+              <button
+                onClick={() => setOpenExpertModal(true)}
+                className="w-full bg-black text-white py-4 px-8 rounded-2xl tracking-widest text-sm
+                          hover:bg-gray-800 transition-all duration-300 ease-in-out cursor-pointer"
+                style={{
+                  fontFamily: "'Cinzel', serif",
+                  fontWeight: 400,
+                  letterSpacing: '0.12em',
+                }}
+              >
+                CONNECT WITH AN EXPERT
+              </button>
+            </motion.div>
+          </motion.div>
         </div>
 
         {/* Desktop View */}
-        <div className="hidden lg:flex container mx-auto px-8 lg:px-16 xl:px-24 py-16 xl:py-24">
+        <motion.div 
+          className="hidden lg:flex container mx-auto px-8 lg:px-16 xl:px-24 py-16 xl:py-24"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, amount: 0.6 }}
+          variants={staggerContainer}
+        >
           <div className="flex flex-row items-start justify-between w-full gap-12 xl:gap-20">
             {/* Left Content */}
-            <div className="flex flex-col w-1/2 xl:w-[48%]">
+            <motion.div 
+              className="flex flex-col w-1/2 xl:w-[48%]"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.6 }}
+              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+            >
               {/* Heading */}
-              <div className="mb-10">
-                <h2
+              <motion.div 
+                className="mb-10"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: false, amount: 0.6 }}
+                variants={staggerContainer}
+              >
+                <motion.h2
                   className="text-5xl xl:text-6xl text-black leading-tight"
                   style={{
                     fontFamily: "'Dream Avenue', serif",
                     fontWeight: 400,
                   }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.6 }}
+                  transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                 >
                   Wedding planning
-                </h2>
-                <p
+                </motion.h2>
+                <motion.p
                   className="text-4xl xl:text-5xl text-black mt-1"
                   style={{
                     fontFamily: "'Dream Avenue', serif",
                     fontWeight: 400,
                   }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.6 }}
+                  transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                 >
                   tailored for you
-                </p>
-              </div>
+                </motion.p>
+              </motion.div>
 
               {/* Points with Timeline */}
               <div className="relative flex flex-row">
                 {/* Vertical Bar Image */}
-                <div className="flex-shrink-0 mr-6" style={{ height: '400px', overflow: 'hidden' }}>
+                <motion.div 
+                  className="flex-shrink-0 mr-6" 
+                  style={{ height: '400px', overflow: 'hidden' }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: false, amount: 0.5 }}
+                  transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+                >
                   <Image
                     src="/assets/landing_v2/bar.webp"
                     alt="Timeline bar"
@@ -1334,12 +1694,18 @@ function Home({ packages }) {
                     className="h-full w-auto object-contain"
                     style={{ width: '16px' }}
                   />
-                </div>
+                </motion.div>
 
                 {/* Points */}
                 <div className="flex flex-col space-y-14 py-4">
                   {/* Point 1 */}
-                  <div className="relative flex flex-col">
+                  <motion.div 
+                    className="relative flex flex-col"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: false, amount: 0.5 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                  >
                     {/* Horizontal Line */}
                     <div className="absolute left-[-30px] top-4 w-7 h-[1.5px] bg-black"></div>
                     <h3
@@ -1360,10 +1726,16 @@ function Home({ packages }) {
                     >
                       Your story and your style guide us in creating a wedding that reflects who you are
                     </p>
-                  </div>
+                  </motion.div>
 
                   {/* Point 2 */}
-                  <div className="relative flex flex-col">
+                  <motion.div 
+                    className="relative flex flex-col"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: false, amount: 0.5 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+                  >
                     {/* Horizontal Line */}
                     <div className="absolute left-[-30px] top-4 w-7 h-[1.5px] bg-black"></div>
                     <h3
@@ -1384,10 +1756,16 @@ function Home({ packages }) {
                     >
                       We design celebrations that reflect your vision while optimising costs without compromising quality
                     </p>
-                  </div>
+                  </motion.div>
 
                   {/* Point 3 */}
-                  <div className="relative flex flex-col">
+                  <motion.div 
+                    className="relative flex flex-col"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: false, amount: 0.5 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.8 }}
+                  >
                     {/* Horizontal Line */}
                     <div className="absolute left-[-30px] top-4 w-7 h-[1.5px] bg-black"></div>
                     <h3
@@ -1408,15 +1786,27 @@ function Home({ packages }) {
                     >
                       Every detail is managed with precision, from concept to execution, ensuring a seamless and stress free experience
                     </p>
-                  </div>
+                  </motion.div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Right Side - Image and Button */}
-            <div className="flex flex-col items-center w-1/2 xl:w-[48%]">
+            <motion.div 
+              className="flex flex-col items-center w-1/2 xl:w-[48%]"
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.6 }}
+              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+            >
               {/* Wedding Image */}
-              <div className="relative w-full">
+              <motion.div 
+                className="relative w-full"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: false, amount: 0.5 }}
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+              >
                 <Image
                   src="/assets/landing_v2/wedding_planning.webp"
                   alt="Wedding Planning"
@@ -1425,31 +1815,34 @@ function Home({ packages }) {
                   layout="responsive"
                   objectFit="contain"
                 />
-              </div>
+              </motion.div>
 
               {/* Button - Below Image */}
-              <Link href="/contact">
-                <button
-                  className="mt-10 bg-black text-white py-4 px-12 rounded-xl tracking-widest text-sm
-                            hover:bg-gray-800 transition-all duration-300 ease-in-out"
-                  style={{
-                    fontFamily: "'Cinzel', serif",
-                    fontWeight: 400,
-                    letterSpacing: '0.12em',
-                  }}
-                >
-                  CONNECT WITH AN EXPERT
-                </button>
-              </Link>
-            </div>
+              <motion.button
+                onClick={() => setOpenExpertModal(true)}
+                className="mt-10 lg:ml-20 bg-black text-white py-4 px-12 rounded-xl tracking-widest text-sm
+                          hover:bg-gray-800 transition-all duration-300 ease-in-out cursor-pointer"
+                style={{
+                  fontFamily: "'Cinzel', serif",
+                  fontWeight: 400,
+                  letterSpacing: '0.12em',
+                }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: false, amount: 0.5 }}
+                transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1], delay: 0.8 }}
+              >
+                CONNECT WITH AN EXPERT
+              </motion.button>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       
       {/* bueaty section */}
+      {/* 
       <div className="flex flex-col md:flex-row justify-center items-stretch py-16 md:py-24 px-6 md:px-40 mt-6 md:mt-18">
-        {/* Mobile-only View Wrapper */}
         <div className="md:hidden w-full flex flex-col items-center">
           <div className="relative w-full h-[400px] overflow-hidden bg-[#EBEAF8]">
             <Image
@@ -1513,7 +1906,6 @@ function Home({ packages }) {
           </div>
         </div>
 
-        {/* Desktop View (md:flex-row) */}
         <div className="hidden md:flex flex-1 flex-col md:flex-row justify-center items-stretch">
           
           <div className="w-full md:w-1/2 bg-[#EBEAF8] p-6 md:p-10 flex flex-col justify-between shadow-md mb-4 md:mb-0 md:mr-4">
@@ -1593,9 +1985,11 @@ function Home({ packages }) {
           </div>
         </div>
       </div>
+      */}
 
 
       {/* furniture section */}
+      {/*
       <div className="py-16 md:py-24 px-6 md:px-40 mt-6 md:mt-18">
         <div className="container mx-auto">
         
@@ -1611,11 +2005,11 @@ function Home({ packages }) {
             
             <div className="absolute inset-0 z-20 p-6 md:p-10 flex flex-col justify-end">
               
-              <div className="flex flex-col items-center text-center space-y-4 w-full /* Mobile styles */
-                            md:flex-row md:justify-between md:items-end md:text-left md:space-y-0 /* Desktop original styles */">
+              <div className="flex flex-col items-center text-center space-y-4 w-full
+                            md:flex-row md:justify-between md:items-end md:text-left md:space-y-0">
                 <p
-                  className="text-sm font-medium mb-4 /* Mobile font size and margin */
-                            md:text-2xl md:mb-0 md:w-2/3 /* Desktop original font size and width */"
+                  className="text-sm font-medium mb-4
+                            md:text-2xl md:mb-0 md:w-2/3"
                   style={{ fontFamily: 'Montserrat' }}
                 >
                   MAKE YOUR DREAM WEDDING PERFECTLY FURNISHED WITH OUR PREMIUM WEDDING FURNITURE
@@ -1651,13 +2045,13 @@ function Home({ packages }) {
         </div>
       </div>
 
-      {/*line section */}
       <div className="flex justify-center w-full py-4 md:py-8">
         <div className="w-1/2 h-px bg-[#C6C6C6]"></div> 
       </div>
+      */}
             
       {/* review section */}
-      
+      {/*
       <div className="py-8 md:py-24 px-4 md:px-40">
       <h1 className="text-3xl md:text-5xl lg:text-7xl font-regular text-center mb-10 md:mb-16" style={{ fontFamily: 'Poiret One', fontWeight: 'normal', letterSpacing: '1%' }}>
         Discover our customers experiences.
@@ -1867,99 +2261,168 @@ function Home({ packages }) {
       
       <div className="mt-16 text-center">
         <Link href="https://hub.wedsy.in/reviews/">
-        <button className="bg-gray-800 text-white px-8 py-4 rounded-md text-sm md:text-lg font-semibold hover:bg-gray-700 transition-colors duration-300">
+        <button 
+          className="bg-gray-800 text-white px-8 py-4 rounded-md text-sm md:text-lg font-semibold hover:bg-gray-700 transition-colors duration-300"
+          style={{ fontFamily: "'Cinzel', serif" }}
+        >
           See what our clients say about us
         </button>
         </Link>
       </div>
       </div>
 
-      {/*line section */}
       <div className="flex justify-center w-full py-4 md:py-8">
         <div className="w-1/2 h-px bg-[#C6C6C6]"></div> 
       </div>
+      */}
 
       
       {/* wedsey section */}
 
-      <div className="py-16 md:py-24 px-4 md:px-10 lg:px-20 text-center">
-        <h2
-          className="text-2xl md:text-4xl lg:text-5xl text-gray-800 mb-12 md:mb-16"
+      <motion.div 
+        className="py-16 md:py-24 px-4 md:px-10 lg:px-20 text-center"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: false, amount: 0.6 }}
+        variants={staggerContainer}
+      >
+        <motion.h2
+          className="text-2xl md:text-4xl lg:text-5xl text-gray-800 mb-12 md:mb-4"
           style={{ fontFamily: 'Montserrat', fontWeight: 'medium' }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.6 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
         >
-          Wedsy’s WORK
-        </h2>
+          Wedsy's WORK
+        </motion.h2>
         
         
         <div className="md:py-24 px-4 md:px-10 lg:px-20 text-center">
 
           
-          <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto">
+          <motion.div 
+            className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: false, amount: 0.5 }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+          >
             
-            <div className="flex flex-col gap-4">
+            <motion.div 
+              className="flex flex-col gap-4"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.5 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+            >
               <div className="relative overflow-hidden h-40 md:h-48 bg-gray-300 shadow-md group">
                 <Image src="/assets/landing/img-1-s8.webp" alt="Desktop Grid 1" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
               <div className="relative overflow-hidden flex-grow bg-gray-300 shadow-md h-64 md:h-80 group">
                 <Image src="/assets/landing/img-2-s8.webp" alt="Desktop Grid 2" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
-            </div>
+            </motion.div>
             
-            <div className="flex flex-col gap-4">
+            <motion.div 
+              className="flex flex-col gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.5 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.7 }}
+            >
               <div className="relative overflow-hidden h-40 md:h-48 bg-gray-300 shadow-md group">
                 <Image src="/assets/landing/img-3-s8.webp" alt="Desktop Grid 3" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
               <div className="relative overflow-hidden flex-grow bg-gray-300 shadow-md h-64 md:h-80 group">
                 <Image src="/assets/landing/img-5-s8.webp" alt="Desktop Grid 4" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
-            </div>
+            </motion.div>
             
-            <div className="flex flex-col gap-4">
+            <motion.div 
+              className="flex flex-col gap-4"
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.5 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.9 }}
+            >
               <div className="relative overflow-hidden flex-grow bg-gray-300 shadow-md h-64 md:h-80 group">
                 <Image src="/assets/landing/img-6-s8.webp" alt="Desktop Grid 5" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
               <div className="relative overflow-hidden h-40 md:h-48 bg-gray-300 shadow-md group">
                 <Image src="/assets/landing/img-4-s8.webp" alt="Desktop Grid 6" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
           
           {/* Mobile Layout - Hidden on desktop */}
-          <div className="block md:hidden flex flex-col gap-4 max-w-6xl mx-auto">
-            <div className="relative overflow-hidden w-full h-80 bg-gray-300 shadow-md rounded-md group">
+          <motion.div 
+            className="block md:hidden flex flex-col gap-4 max-w-6xl mx-auto"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: false, amount: 0.5 }}
+            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+          >
+            <motion.div 
+              className="relative overflow-hidden w-full h-80 bg-gray-300 shadow-md rounded-md group"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.5 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            >
               <Image src="/assets/landing/img-1-s8.webp" alt="Mobile Grid 1" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
-            </div>
-            <div className="flex flex-row gap-2 justify-between">
-              <div className="relative overflow-hidden w-1/4 h-24 bg-gray-300 shadow-md rounded-md group">
-                <Image src="/assets/landing/img-2-s8.webp" alt="Mobile Grid 2" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
-              </div>
-              <div className="relative overflow-hidden w-1/4 h-24 bg-gray-300 shadow-md rounded-md group">
-                <Image src="/assets/landing/img-3-s8.webp" alt="Mobile Grid 3" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
-              </div>
-              <div className="relative overflow-hidden w-1/4 h-24 bg-gray-300 shadow-md rounded-md group">
-                <Image src="/assets/landing/img-4-s8.webp" alt="Mobile Grid 4" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
-              </div>
-              <div className="relative overflow-hidden w-1/4 h-24 bg-gray-300 shadow-md rounded-md group">
-                <Image src="/assets/landing/img-5-s8.webp" alt="Mobile Grid 5" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
-              </div>
-            </div>
-          </div>
+            </motion.div>
+            <motion.div 
+              className="flex flex-row gap-2 justify-between"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, amount: 0.5 }}
+              variants={staggerContainer}
+            >
+              {[2, 3, 4, 5].map((imgNum, index) => (
+                <motion.div
+                  key={index}
+                  className="relative overflow-hidden w-1/4 h-24 bg-gray-300 shadow-md rounded-md group"
+                  variants={staggerItem}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: false, amount: 0.5 }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: index * 0.1 }}
+                >
+                  <Image 
+                    src={`/assets/landing/img-${imgNum}-s8.webp`} 
+                    alt={`Mobile Grid ${imgNum}`} 
+                    layout="fill" 
+                    objectFit="cover" 
+                    className="rounded-md transition-transform duration-300 group-hover:scale-105" 
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
         </div>
         
-        <Link href="https://hub.wedsy.in/gallery/">
-          <button
-            className="mt-12 md:mt-12 px-16 py-4 rounded-md text-white shadow-lg hover:bg-[#6a0029] transition-colors duration-300"
-            style={{ backgroundColor: '#840032', fontFamily: 'Montserrat', fontWeight: 'semibold' }}
-          >
-            View more
-          </button>
-        </Link>
-      </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.5 }}
+          transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 1.2 }}
+        >
+          <Link href="https://hub.wedsy.in/gallery/">
+            <button
+              className="mt-12 md:mt-2 px-16 py-4 rounded-md text-white shadow-lg hover:bg-[#6a0029] transition-colors duration-300"
+              style={{ backgroundColor: '#840032', fontFamily: "'Cinzel', serif", fontWeight: 'semibold' }}
+            >
+              View more
+            </button>
+          </Link>
+        </motion.div>
+      </motion.div>
 
 
       {/*line section */}
       <div className="flex justify-center w-full py-4 md:py-8">
-        <div className="w-1/2 h-px bg-[#C6C6C6]"></div> 
+        <div className="w-4/5 h-px bg-[#C6C6C6]"></div> 
       </div>
 
 
@@ -1967,13 +2430,31 @@ function Home({ packages }) {
       
       <div className="py-6 md:py-8 px-6 md:px-40">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl md:text-4xl lg:text-5xl font-semibold mb-10 md:mb-16 hidden md:block">
-            What’s <span style={{ fontFamily: 'Montserrat', color: '#AD7200', fontWeight: 'semibold' }}>trending</span>?
-          </h2>
+          <motion.h2 
+            className="text-2xl md:text-4xl lg:text-5xl font-semibold mb-10 md:mb-16 hidden md:block"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.6 }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          >
+            What's <span style={{ fontFamily: 'Montserrat', color: '#AD7200', fontWeight: 'semibold' }}>trending</span>?
+          </motion.h2>
 
-          <div className="flex flex-col md:flex-row gap-6">
+          <motion.div 
+            className="flex flex-col md:flex-row gap-6"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.5 }}
+            variants={staggerContainer}
+          >
             
-            <div className="relative flex-1 h-64 md:h-80 bg-gray-300 overflow-hidden group">
+            <motion.div 
+              className="relative flex-1 h-64 md:h-80 bg-gray-300 overflow-hidden group"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.5 }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+            >
               <Image
                 src="/assets/landing/img-1-s9.webp"
                 alt="Trending Image 1"
@@ -1981,10 +2462,16 @@ function Home({ packages }) {
                 objectFit="cover"
                 className="transition-transform duration-300 group-hover:scale-105"
               />
-            </div>
+            </motion.div>
 
             
-            <div className="relative flex-1 h-64 md:h-80 bg-gray-300 overflow-hidden  group">
+            <motion.div 
+              className="relative flex-1 h-64 md:h-80 bg-gray-300 overflow-hidden  group"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.5 }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+            >
               <Image
                 src="/assets/landing/img-2-s9.webp"
                 alt="Trending Image 2"
@@ -1992,29 +2479,55 @@ function Home({ packages }) {
                 objectFit="cover"
                 className="transition-transform duration-300 group-hover:scale-105"
               />
-            </div>
+            </motion.div>
 
             
-            <div className="flex-1 bg-[#AD7200] flex items-center justify-between p-6 md:p-8 relative overflow-hidden">
-              <div className="text-white relative z-10">
-                <h3
+            <motion.div 
+              className="flex-1 bg-[#AD7200] flex items-center justify-between p-6 md:p-8 relative overflow-hidden"
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.5 }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.8 }}
+            >
+              <motion.div 
+                className="text-white relative z-10"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: false, amount: 0.5 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.0 }}
+              >
+                <motion.h3
                   className="text-4xl md:text-5xl font-semibold leading-none"
                   style={{ fontFamily: 'Montserrat', letterSpacing: '-0.05em' }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.5 }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.1 }}
                 >
-                  DO’s<br />DONT’s
-                </h3>
-                <p
+                  DO's<br />DONT's
+                </motion.h3>
+                <motion.p
                   className="text-lg md:text-xl font-medium mt-4"
                   style={{ fontFamily: 'Montserrat' }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.5 }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.3 }}
                 >
                   FOR YOUR
                   <br />
                   WEDDING
                   <br />
                   PLANNING
-                </p>
-              </div>
-              <div className="relative z-10">
+                </motion.p>
+              </motion.div>
+              <motion.div 
+                className="relative z-10"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: false, amount: 0.5 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 1.5 }}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-8 w-8 md:h-10 md:w-10 text-white"
@@ -2025,34 +2538,51 @@ function Home({ packages }) {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </div>
-              <span
+              </motion.div>
+              <motion.span
                 className="absolute top-4 right-4 text-white text-7xl md:text-9xl font-bold opacity-20"
                 style={{ fontFamily: 'Times New Roman', lineHeight: 1 }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 0.2, scale: 1 }}
+                viewport={{ once: false, amount: 0.5 }}
+                transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 1.2 }}
               >
                 &
-              </span>
-            </div>
-          </div>
+              </motion.span>
+            </motion.div>
+          </motion.div>
 
-          <Link href="https://hub.wedsy.in">
-            <button
-              className="mt-12 px-16 py-4 rounded-md text-white shadow-lg hover:bg-[#CE8C35] transition-colors duration-300
-                            block mx-auto md:hidden"
-              style={{ backgroundColor: '#CE8C35', fontFamily: 'Montserrat', fontWeight: 'semibold' }}
-            >
-              Explore our BLOGS
-            </button>
-          </Link>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.5 }}
+            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 1.6 }}
+          >
+            <Link href="https://hub.wedsy.in">
+              <button
+                className="mt-12 px-16 py-4 rounded-md text-white shadow-lg hover:bg-[#CE8C35] transition-colors duration-300
+                              block mx-auto md:hidden"
+                style={{ backgroundColor: '#CE8C35', fontFamily: "'Cinzel', serif", fontWeight: 'semibold' }}
+              >
+                Explore our BLOGS
+              </button>
+            </Link>
+          </motion.div>
         </div>
       </div>
 
       {/* Wedding Requirement Section */}
-      <section className="relative min-h-screen bg-[#3C2415]">
+      <section id="wedding-requirement-section" className="relative min-h-screen bg-[#3C2415]">
         {/* Desktop Layout - Side by Side */}
         <div className="hidden lg:flex min-h-screen mt-20">
           {/* Left Section - Image (2/3 width) */}
-          <div className="w-2/3 relative">
+          <motion.div 
+            className="w-2/3 relative"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: false, amount: 0.5 }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          >
             <Image
               src="/assets/landing_v2/wedding.webp"
               alt="Wedding couple"
@@ -2066,45 +2596,81 @@ function Home({ packages }) {
             {/* Branding Overlay */}
             <div className="absolute inset-0 flex flex-col justify-between p-12">
               {/* Top Branding - ALISHAAN */}
-              <div className="flex flex-col items-center justify-center">
-                <div className="flex items-center justify-center mb-4">
-                  <Image
-                    src="/assets/landing_v2/left_bar.webp"
-                    alt="decoration"
-                    width={123}
-                    height={5}
-                    className="mr-4"
-                  />
-                  <h1
+              <motion.div 
+                className="flex flex-col items-center justify-center"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: false, amount: 0.6 }}
+                variants={staggerContainer}
+              >
+                <motion.div 
+                  className="flex items-center justify-center mb-4"
+                  variants={staggerItem}
+                >
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: false, amount: 0.5 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                  >
+                    <Image
+                      src="/assets/landing_v2/left_bar.webp"
+                      alt="decoration"
+                      width={123}
+                      height={5}
+                      className="mr-4"
+                    />
+                  </motion.div>
+                  <motion.h1
                     className="text-6xl font-serif text-white mx-4"
                     style={{
                       fontFamily: "'Montserrat', sans-serif",
                       fontWeight: 300,
                     }}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: false, amount: 0.5 }}
+                    transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
                   >
                    WEDSY
-                  </h1>
-                  <Image
-                    src="/assets/landing_v2/right_bar.webp"
-                    alt="decoration"
-                    width={123}
-                    height={5}
-                    className="ml-4"
-                  />
-                </div>
-                <h2
+                  </motion.h1>
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: false, amount: 0.5 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                  >
+                    <Image
+                      src="/assets/landing_v2/right_bar.webp"
+                      alt="decoration"
+                      width={123}
+                      height={5}
+                      className="ml-4"
+                    />
+                  </motion.div>
+                </motion.div>
+                <motion.h2
                   className="text-white text-lg font-medium"
                   style={{
                     fontFamily: "'Montserrat', sans-serif",
                     fontWeight: 100,
                   }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.5 }}
+                  transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
                 >
                   WEDDINGS MADE EASY
-                </h2>
-              </div>
+                </motion.h2>
+              </motion.div>
 
               {/* Bottom Elements */}
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.5 }}
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.8 }}
+              >
                 <p
                   className="text-white text-2xl text-center"
                   style={{
@@ -2114,40 +2680,79 @@ function Home({ packages }) {
                 >
                   CURATED FOR PERFECTION
                 </p>
-              </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Right Section - Form Panel (1/3 width) */}
-          <div className="w-2/3 bg-[#523329] flex items-center justify-center rounded-2xl p-8 px-25 ">
-            <div className="w-full max-w-3xl border border-[#523329] p-16 rounded-2xl bg-white/75  rounded-4xl">
+          <motion.div 
+            className="w-2/3 bg-[#523329] flex items-center justify-center rounded-2xl p-8 px-25"
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: false, amount: 0.5 }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+          >
+            <motion.div 
+              className="w-full max-w-3xl border border-[#523329] p-16 rounded-2xl bg-white/75  rounded-4xl"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: false, amount: 0.5 }}
+              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+            >
               {!isWeddingSubmitted ? (
                 <>
                   {/* Form Header */}
-                  <div className="mb-4">
-                    <p
+                  <motion.div 
+                    className="mb-4"
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: false, amount: 0.6 }}
+                    variants={staggerContainer}
+                  >
+                    <motion.p
                       className="text-[#523329] text-xl mb-2"
                       style={{
                         fontFamily: "'Spartan', sans-serif",
                         fontWeight: 350,
                       }}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: false, amount: 0.6 }}
+                      transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.7 }}
                     >
-                      Let’s personalize your experience
-                    </p>
-                    <h3
+                      Let's personalize your experience
+                    </motion.p>
+                    <motion.h3
                       className="text-xl font-bold text-[#3C2415]"
                       style={{
                         fontFamily: "'Spartan', sans-serif",
                         fontWeight: 400,
                       }}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: false, amount: 0.6 }}
+                      transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.9 }}
                     >
                       Tell us about your Wedding
-                    </h3>
-                  </div>
+                    </motion.h3>
+                  </motion.div>
 
-                  <form onSubmit={handleWeddingSubmit} className="space-y-6 ">
+                  <motion.form 
+                    onSubmit={handleWeddingSubmit} 
+                    className="space-y-6"
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: false, amount: 0.5 }}
+                    variants={staggerContainer}
+                  >
                     {/* Name Field */}
-                    <div>
+                    <motion.div
+                      variants={staggerItem}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: false, amount: 0.5 }}
+                      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.1 }}
+                    >
                       <input
                         type="text"
                         placeholder="Name"
@@ -2155,22 +2760,29 @@ function Home({ packages }) {
                         onChange={(e) =>
                           handleWeddingInputChange("name", e.target.value)
                         }
-                        className="w-full bg-transparent border-0 border-b-2 py-3 text-[#523329] placeholder-[#523329] focus:border-[#523329] focus:outline-none focus:ring-0 transition-all duration-300 hover:border-[#523329]"
+                        className="w-full bg-transparent border-0 border-b-2 py-3 text-[#523329] placeholder-[#523329] placeholder-opacity-70 text-left focus:border-[#523329] focus:outline-none focus:ring-0 transition-all duration-300 hover:border-[#523329]"
                         style={{
                           fontFamily: "'Spartan', sans-serif",
                           fontWeight: 350,
                         }}
                       />
-                    </div>
+                    </motion.div>
 
                     {/* Date Field */}
-                    <div className="relative">
+                    <motion.div 
+                      className="relative"
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: false, amount: 0.5 }}
+                      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.3 }}
+                    >
                       <div
                         onClick={() => setIsDateDropdownOpen(!isDateDropdownOpen)}
-                        className="w-full bg-transparent border-b-2 border-[#523329] py-3 text-[#523329] cursor-pointer transition-all duration-300 hover:border-[#6B3A1A]"
+                        className="w-full bg-transparent border-b-2 border-[#523329] py-3 text-[#523329] cursor-pointer transition-all duration-300 hover:border-[#6B3A1A] text-left"
                         style={{
                           fontFamily: "'Spartan', sans-serif",
                           fontWeight: 350,
+                          opacity: weddingFormData.date ? 1 : 0.7,
                         }}
                       >
                         {weddingFormData.date || "When is your special day ?"}
@@ -2195,26 +2807,41 @@ function Home({ packages }) {
                           ))}
                         </div>
                       )}
-                    </div>
+                    </motion.div>
 
                     {/* Budget Selection */}
-                    <div>
-                      <p
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: false, amount: 0.5 }}
+                      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.5 }}
+                    >
+                      <motion.p
                         className="text-[#000000] text-md lg:text-md mb-3 "
                         style={{
                           fontFamily: "'Spartan', sans-serif",
                           fontWeight: 500,
                         }}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false, amount: 0.5 }}
+                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.5 }}
                       >
                        Please share your estimated budget for the event
-                      </p>
-                      <div className="grid grid-cols-3 gap-4">
+                      </motion.p>
+                      <motion.div 
+                        className="grid grid-cols-3 gap-4"
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: false, amount: 0.5 }}
+                        variants={staggerContainer}
+                      >
                         {[
                           { value: "5-10", label: "5-10 Lakhs" },
                           { value: "10-15", label: "10-15 Lakhs" },
                           { value: "20+", label: "Above 20 Lakhs" },
-                        ].map((option) => (
-                          <button
+                        ].map((option, index) => (
+                          <motion.button
                             key={option.value}
                             type="button"
                             onClick={() => setSelectedBudget(option.value)}
@@ -2227,23 +2854,53 @@ function Home({ packages }) {
                               fontFamily: "'Spartan', sans-serif",
                               fontWeight: 300,
                             }}
+                            variants={staggerItem}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: false, amount: 0.5 }}
+                            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 1.7 + index * 0.1 }}
                           >
                             {option.label}
-                          </button>
+                          </motion.button>
                         ))}
-                      </div>
-                    </div>
+                      </motion.div>
+                    </motion.div>
 
                     {/* Phone Field */}
-                    <div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: false, amount: 0.5 }}
+                      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 2.0 }}
+                    >
                       <input
                         type="tel"
+                        inputMode="numeric"
+                        pattern="[6-9][0-9]{9}"
+                        maxLength="10"
                         placeholder="Phone number"
                         value={weddingFormData.phone}
                         onChange={(e) =>
                           handleWeddingInputChange("phone", e.target.value)
                         }
-                        className={`w-full bg-transparent border-0 border-b-2 py-3 text-[#523329] placeholder-[#523329] focus:outline-none focus:ring-0 transition-all duration-300 ${
+                        onKeyDown={(e) => {
+                          // Allow: backspace, delete, tab, escape, enter, and decimal point
+                          if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
+                            // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                            (e.keyCode === 65 && e.ctrlKey === true) ||
+                            (e.keyCode === 67 && e.ctrlKey === true) ||
+                            (e.keyCode === 86 && e.ctrlKey === true) ||
+                            (e.keyCode === 88 && e.ctrlKey === true) ||
+                            // Allow: home, end, left, right
+                            (e.keyCode >= 35 && e.keyCode <= 39)) {
+                            return;
+                          }
+                          // Ensure that it is a number and stop the keypress
+                          if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        className={`w-full bg-transparent border-0 border-b-2 py-3 text-[#523329] placeholder-[#523329] placeholder-opacity-70 text-left focus:outline-none focus:ring-0 transition-all duration-300 ${
                           phoneError ? 'border-red-500' : 'border-[#523329] focus:border-[#523329] hover:border-[#523329]'
                         }`}
                         style={{
@@ -2256,10 +2913,16 @@ function Home({ packages }) {
                           {phoneError}
                         </p>
                       )}
-                    </div>
+                    </motion.div>
 
                     {/* Submit Button */}
-                    <div className="mt-8 text-left">
+                    <motion.div 
+                      className="mt-8 text-left"
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: false, amount: 0.5 }}
+                      transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 2.2 }}
+                    >
                       <button
                         type="submit"
                         disabled={isWeddingSubmitting}
@@ -2270,10 +2933,10 @@ function Home({ packages }) {
                         }}
                       >
                       
-                        {isWeddingSubmitting ? "Submitting..." : "Can’t  Wait to Start"}
+                        {isWeddingSubmitting ? "Submitting..." : "Can't  Wait to Start"}
                       </button>
-                    </div>
-                  </form>
+                    </motion.div>
+                  </motion.form>
                 </>
               ) : (
                 /* Success Message */
@@ -2299,12 +2962,18 @@ function Home({ packages }) {
                   </p>
                 </div>
               )}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
 
         {/* Mobile Layout - Form Over Image */}
-        <div className="lg:hidden relative min-h-screen">
+        <motion.div 
+          className="lg:hidden relative min-h-screen"
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: false, amount: 0.5 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+        >
           {/* Background Image */}
           <div className="absolute inset-0">
             <Image
@@ -2321,73 +2990,143 @@ function Home({ packages }) {
           {/* Content Overlay */}
           <div className="relative z-10 min-h-screen flex flex-col">
             {/* Top Branding */}
-            <div className="pt-8 pb-4 px-4">
-              <div className="flex items-center justify-center mb-2">
-                <Image
-                  src="/assets/landing_v2/left_bar.webp"
-                  alt="decoration"
-                  width={103}
-                  height={3}
-                  className="mr-2"
-                />
-                <h1
+            <motion.div 
+              className="pt-8 pb-4 px-4"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, amount: 0.6 }}
+              variants={staggerContainer}
+            >
+              <motion.div 
+                className="flex items-center justify-center mb-2"
+                variants={staggerItem}
+              >
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: false, amount: 0.5 }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                >
+                  <Image
+                    src="/assets/landing_v2/left_bar.webp"
+                    alt="decoration"
+                    width={103}
+                    height={3}
+                    className="mr-2"
+                  />
+                </motion.div>
+                <motion.h1
                   className="text-4xl font-serif text-white mx-2"
                   style={{
                     fontFamily: "'Montserrat', sans-serif",
                     fontWeight: 300,
                   }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.5 }}
+                  transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
                 >
                   WEDSY
-                </h1>
-                <Image
-                  src="/assets/landing_v2/right_bar.webp"
-                  alt="decoration"
-                  width={103}
-                  height={3}
-                  className="ml-2"
-                />
-              </div>
-              <h2
+                </motion.h1>
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: false, amount: 0.5 }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                >
+                  <Image
+                    src="/assets/landing_v2/right_bar.webp"
+                    alt="decoration"
+                    width={103}
+                    height={3}
+                    className="ml-2"
+                  />
+                </motion.div>
+              </motion.div>
+              <motion.h2
                 className="text-white text-sm text-center"
                 style={{
                   fontFamily: "'Montserrat', sans-serif",
                   fontWeight: 100,
                 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.5 }}
+                transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
               >
                WEDDINGS MADE EASY
-              </h2>
-            </div>
+              </motion.h2>
+            </motion.div>
 
             {/* Form Card - Centered */}
-            <div className="flex-1 flex items-center justify-center px-4">
-              <div className="w-full max-w-lg bg-white/70 rounded-2xl px-4 min-h-[600px] flex flex-col justify-center">
+            <motion.div 
+              className="flex-1 flex items-center justify-center px-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.5 }}
+              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+            >
+              <motion.div 
+                className="w-full max-w-lg bg-white/70 rounded-2xl px-4 min-h-[600px] flex flex-col justify-center"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: false, amount: 0.5 }}
+                transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+              >
                 {/* Form Header */}
                 {!isWeddingSubmitted ? (
                   <>
-                    <div className="mb-6 text-center">
-                      <p
+                    <motion.div 
+                      className="mb-6 text-center"
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: false, amount: 0.6 }}
+                      variants={staggerContainer}
+                    >
+                      <motion.p
                         className="text-[#523329] text-lg mb-1"
                         style={{
                           fontFamily: "'Spartan', sans-serif",
                           fontWeight: 350,
                         }}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false, amount: 0.6 }}
+                        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.7 }}
                       >
-                       Let’s personalize your experience
-                      </p>
-                      <h3
+                       Let's personalize your experience
+                      </motion.p>
+                      <motion.h3
                         className="text-lg text-[#523329]"
                         style={{
                           fontFamily: "'Spartan', sans-serif",
                           fontWeight: 500,
                         }}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false, amount: 0.6 }}
+                        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.9 }}
                       >
 Tell us about your Wedding
-                      </h3>
-                    </div>
+                      </motion.h3>
+                    </motion.div>
 
-                    <form onSubmit={handleWeddingSubmit} className="space-y-8 px-4">
+                    <motion.form 
+                      onSubmit={handleWeddingSubmit} 
+                      className="space-y-8 px-4"
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: false, amount: 0.5 }}
+                      variants={staggerContainer}
+                    >
                       {/* Name Field */}
-                      <div>
+                      <motion.div
+                        variants={staggerItem}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false, amount: 0.5 }}
+                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.1 }}
+                      >
                         <input
                           type="text"
                           placeholder="Name"
@@ -2395,22 +3134,29 @@ Tell us about your Wedding
                           onChange={(e) =>
                             handleWeddingInputChange("name", e.target.value)
                           }
-                          className="w-full bg-transparent border-0 border-b-2 border-[#000000] py-2 text-[#000000] placeholder-[#000000] text-md text-center focus:border-[#000000] focus:outline-none focus:ring-0 transition-all duration-300 hover:border-[#000000]"
+                          className="w-full bg-transparent border-0 border-b-2 border-[#000000] py-2 text-[#000000] placeholder-[#000000] placeholder-opacity-70 text-base text-center focus:border-[#000000] focus:outline-none focus:ring-0 transition-all duration-300 hover:border-[#000000]"
                           style={{
                             fontFamily: "'Spartan', sans-serif",
                             fontWeight: 350,
                           }}
                         />
-                      </div>
+                      </motion.div>
 
                       {/* Date Field */}
-                      <div className="relative">
+                      <motion.div 
+                        className="relative"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false, amount: 0.5 }}
+                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.3 }}
+                      >
                         <div
                           onClick={() => setIsDateDropdownOpen(!isDateDropdownOpen)}
-                          className="w-full bg-transparent border-b-2 border-[#000000] py-2 text-[#000000] text-md text-center cursor-pointer transition-all duration-300 hover:border-[#000000]"
+                          className="w-full bg-transparent border-b-2 border-[#000000] py-2 text-[#000000] text-base text-center cursor-pointer transition-all duration-300 hover:border-[#000000]"
                           style={{
                             fontFamily: "'Spartan', sans-serif",
                             fontWeight: 350,
+                            opacity: weddingFormData.date ? 1 : 0.7,
                           }}
                         >
                           {weddingFormData.date || "When is your special day ?"}
@@ -2435,26 +3181,41 @@ Tell us about your Wedding
                             ))}
                           </div>
                         )}
-                      </div>
+                      </motion.div>
 
                       {/* Budget Selection */}
-                      <div>
-                        <p
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false, amount: 0.5 }}
+                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.5 }}
+                      >
+                        <motion.p
                           className="text-[#000000] text-md mb-2 text-center whitespace-pre-line"
                           style={{
                             fontFamily: "'Spartan', sans-serif",
                             fontWeight: 500,
                           }}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: false, amount: 0.5 }}
+                          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.5 }}
                         >
                           What is your budget?
-                        </p>
-                        <div className="grid grid-cols-3 gap-2 ">
+                        </motion.p>
+                        <motion.div 
+                          className="grid grid-cols-3 gap-2"
+                          initial="hidden"
+                          whileInView="visible"
+                          viewport={{ once: false, amount: 0.5 }}
+                          variants={staggerContainer}
+                        >
                           {[
                             { value: "5-10", label: "5-10 Lakhs" },
                             { value: "10-15", label: "10-15 Lakhs" },
                             { value: "20+", label: "Above 20 Lakhs" },
-                          ].map((option) => (
-                            <button
+                          ].map((option, index) => (
+                            <motion.button
                               key={option.value}
                               type="button"
                               onClick={() => setSelectedBudget(option.value)}
@@ -2467,23 +3228,53 @@ Tell us about your Wedding
                                 fontFamily: "'Spartan', sans-serif",
                                 fontWeight: 350,
                               }}
+                              variants={staggerItem}
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              whileInView={{ opacity: 1, scale: 1 }}
+                              viewport={{ once: false, amount: 0.5 }}
+                              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 1.7 + index * 0.1 }}
                             >
                               {option.label}
-                            </button>
+                            </motion.button>
                           ))}
-                        </div>
-                      </div>
+                        </motion.div>
+                      </motion.div>
 
                       {/* Phone Field */}
-                      <div>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false, amount: 0.5 }}
+                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 2.0 }}
+                      >
                         <input
                           type="tel"
+                          inputMode="numeric"
+                          pattern="[6-9][0-9]{9}"
+                          maxLength="10"
                           placeholder="Phone number"
                           value={weddingFormData.phone}
                           onChange={(e) =>
                             handleWeddingInputChange("phone", e.target.value)
                           }
-                          className={`w-full bg-transparent border-0 border-b-2 py-2 text-[#000000] placeholder-[#000000] text-lg text-center focus:outline-none focus:ring-0 transition-all duration-300 ${
+                          onKeyDown={(e) => {
+                            // Allow: backspace, delete, tab, escape, enter, and decimal point
+                            if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
+                              // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                              (e.keyCode === 65 && e.ctrlKey === true) ||
+                              (e.keyCode === 67 && e.ctrlKey === true) ||
+                              (e.keyCode === 86 && e.ctrlKey === true) ||
+                              (e.keyCode === 88 && e.ctrlKey === true) ||
+                              // Allow: home, end, left, right
+                              (e.keyCode >= 35 && e.keyCode <= 39)) {
+                              return;
+                            }
+                            // Ensure that it is a number and stop the keypress
+                            if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                              e.preventDefault();
+                            }
+                          }}
+                          className={`w-full bg-transparent border-0 border-b-2 py-2 text-[#000000] placeholder-[#000000] placeholder-opacity-70 text-base text-center focus:outline-none focus:ring-0 transition-all duration-300 ${
                             phoneError ? 'border-red-500' : 'border-[#000000] focus:border-[#000000] hover:border-[#000000]'
                           }`}
                           style={{
@@ -2496,10 +3287,16 @@ Tell us about your Wedding
                             {phoneError}
                           </p>
                         )}
-                      </div>
+                      </motion.div>
 
                       {/* Submit Button */}
-                      <div className="mt-8 text-center">
+                      <motion.div 
+                        className="mt-8 text-center"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false, amount: 0.5 }}
+                        transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 2.2 }}
+                      >
                         <button
                           type="submit"
                           disabled={isWeddingSubmitting}
@@ -2509,10 +3306,10 @@ Tell us about your Wedding
                             fontWeight: 300,
                           }}
                         >
-                          {isWeddingSubmitting ? "Submitting..." : "Can’t Wait to Start"}
+                          {isWeddingSubmitting ? "Submitting..." : "Can't Wait to Start"}
                         </button>
-                      </div>
-                    </form>
+                      </motion.div>
+                    </motion.form>
                   </>
                 ) : (
                   /* Success Message */
@@ -2538,88 +3335,150 @@ Tell us about your Wedding
                     </p>
                   </div>
                 )}
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* FAQ Section */}
       <section className="w-full" style={{ backgroundColor: '#F9F8F6' }}>
-        <div className="relative w-full">
+        <motion.div 
+          className="relative w-full"
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: false, amount: 0.5 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+        >
           {/* Desktop Image */}
-          <Image
-            src="/assets/landing_v2/FAQ_Desktop.webp"
-            alt="Frequently Asked Questions"
-            width={1920}
-            height={800}
-            layout="responsive"
-            objectFit="cover"
-            className="hidden md:block w-full px-4 "
-          />
+          <motion.div
+            className="hidden md:block"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.5 }}
+            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <Image
+              src="/assets/landing_v2/FAQ_Desktop.webp"
+              alt="Frequently Asked Questions"
+              width={1920}
+              height={800}
+              layout="responsive"
+              objectFit="cover"
+              className="w-full px-4"
+            />
+          </motion.div>
           {/* Mobile Image */}
-          <Image
-            src="/assets/landing_v2/FAQ_mobile.webp"
-            alt="Frequently Asked Questions"
-            width={768}
-            height={600}
-            layout="responsive"
-            objectFit="cover"
-            className="block md:hidden w-full"
-          />
-        </div>
+          <motion.div
+            className="block md:hidden"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.5 }}
+            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <Image
+              src="/assets/landing_v2/FAQ_mobile.webp"
+              alt="Frequently Asked Questions"
+              width={768}
+              height={600}
+              layout="responsive"
+              objectFit="cover"
+              className="w-full"
+            />
+          </motion.div>
+        </motion.div>
         
         {/* FAQ Accordion - Show only 5 FAQs */}
-        <div className="px-6 md:px-40 py-8 md:py-8">
+        <motion.div 
+          className="px-6 md:px-40 py-8 md:py-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, amount: 0.6 }}
+          variants={staggerContainer}
+        >
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col">
+            <motion.div 
+              className="flex flex-col"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, amount: 0.5 }}
+              variants={staggerContainer}
+            >
               {faqsData.slice(0, 5).map((faq, index) => (
-                <div key={index} className="flex flex-col">
-                  <button
+                <motion.div 
+                  key={index} 
+                  className="flex flex-col"
+                  variants={staggerItem}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.5 }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: index * 0.15 }}
+                >
+                  <motion.button
                     className="w-full text-left py-4 md:py-6 focus:outline-none flex justify-between items-center"
                     onClick={() => toggleFAQ(index)}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: false, amount: 0.5 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: index * 0.15 + 0.2 }}
                   >
                     <p className="text-black text-base md:text-lg font-semibold pr-4" style={{ fontFamily: 'Montserrat', letterSpacing: '0.01em' }}>
                       {faq.question}
                     </p>
-                    <svg
+                    <motion.svg
                       xmlns="http://www.w3.org/2000/svg"
                       className={`h-6 w-6 flex-shrink-0 transition-transform duration-300 ${openIndex === index ? 'rotate-45' : ''}`}
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                       strokeWidth={2}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: false, amount: 0.5 }}
+                      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: index * 0.15 + 0.3 }}
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                  </button>
+                    </motion.svg>
+                  </motion.button>
                   <div
                     className={`overflow-hidden transition-all duration-500 ease-in-out ${
                       openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     }`}
                   >
-                    <p className="text-gray-700 text-sm md:text-base mb-4 md:mb-6" style={{ fontFamily: 'Montserrat', letterSpacing: '0.01em' }}>
+                    <motion.p 
+                      className="text-gray-700 text-sm md:text-base mb-4 md:mb-6" 
+                      style={{ fontFamily: 'Montserrat', letterSpacing: '0.01em' }}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={openIndex === index ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+                      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    >
                       {faq.answer}
-                    </p>
+                    </motion.p>
                   </div>
                   <div className="w-full border-b border-dashed border-gray-400"></div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
             
             {/* View More Button */}
-            <div className="flex justify-center mt-8 md:mt-12">
+            <motion.div 
+              className="flex justify-center mt-8 md:mt-12"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.5 }}
+              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 1.0 }}
+            >
               <Link href="/faq">
                 <button
                   className="bg-[#840032] text-white px-10 md:px-16 py-3 md:py-4 rounded-xl text-sm md:text-base font-semibold uppercase tracking-wider hover:bg-[#6a0029] transition-all duration-300 ease-in-out shadow-lg"
-                  style={{ fontFamily: "'Montserrat', sans-serif" }}
+                  style={{ fontFamily: "'Cinzel', serif" }}
                 >
                   View More
                 </button>
               </Link>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Most */}
@@ -2810,7 +3669,7 @@ Tell us about your Wedding
 
 
 
-      <PlanYourEvent />
+      {/* <PlanYourEvent /> */}
 
 
       {/* vendor and user sections */}
@@ -2930,6 +3789,11 @@ Tell us about your Wedding
         </div>
       </section> */}
 
+      {/* Expert Consultation Modal */}
+      <ExpertConsultModal 
+        openModal={openExpertModal} 
+        setOpenModal={setOpenExpertModal} 
+      />
 
     </>
   );
