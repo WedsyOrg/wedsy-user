@@ -241,7 +241,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
       if (numericValue.length > 0) {
         validateWeddingPhone(numericValue);
       } else {
-        setPhoneError("");
+      setPhoneError("");
       }
     } else {
       setWeddingFormData((prev) => ({ ...prev, [field]: value }));
@@ -725,18 +725,18 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                 element.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }
             }}
-            className="bg-black/30 backdrop-blur-md border-2 border-white text-white py-4 text-xs md:text-lg lg:text-lg font-semibold tracking-widest px-16 rounded-2xl
+              className="bg-black/30 backdrop-blur-md border-2 border-white text-white py-4 text-xs md:text-lg lg:text-lg font-semibold tracking-widest px-16 rounded-2xl
                       hover:bg-white/40 transition-all duration-300 ease-in-out cursor-pointer"
-            style={{
+              style={{
               fontFamily: "'Cinzel', serif",
-              fontWeight: 600,
-            }}
+                fontWeight: 600,
+              }}
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
-          >
-            START PLANNING
+            >
+              START PLANNING
           </motion.button>
         </div>
       </main>
@@ -777,10 +777,10 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             <motion.p 
               className="text-lg mb-4" 
               style={{
-                fontFamily: 'Montserrat, sans-serif',
-                fontStyle: 'normal',
-                color: '#840032',
-                fontWeight: 'bold',
+              fontFamily: 'Montserrat, sans-serif',
+              fontStyle: 'normal',
+              color: '#840032',
+              fontWeight: 'bold',
               }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -863,33 +863,31 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
           >
 
             <div className="relative overflow-hidden bg-[#3C3C3C] h-[200px] rounded-md md:h-auto md:row-span-2 md:col-span-3 md:rounded-none group">
-              <Image src="/assets/landing/img-1-s2.webp" alt="Grid image 1" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
+              <Image src="/assets/landing_v2/img1.webp" alt="Grid image 1" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
             </div>
 
             <div className="relative overflow-hidden bg-[#3C3C3C] h-[200px] rounded-md md:col-span-1 md:rounded-none group">
-              <Image src="/assets/landing/img-2-s2.webp" alt="Grid image 2" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
+              <Image src="/assets/landing_v2/img2.webp" alt="Grid image 2" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
             </div>
 
             <div className="relative overflow-hidden bg-[#3C3C3C] h-[200px] rounded-md md:col-span-1 md:rounded-none group">
-              <Image src="/assets/landing/img-3-s2.webp" alt="Grid image 3" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
+              <Image src="/assets/landing_v2/img3.webp" alt="Grid image 3" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
             </div>
 
             <div className="relative overflow-hidden bg-[#3C3C3C]  h-[200px] rounded-md md:col-span-1 md:rounded-none group">
-              <Image src="/assets/landing/img-4-s2.webp" alt="Grid image 4" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
+              <Image src="/assets/landing_v2/img4.webp" alt="Grid image 4" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
             </div>
 
             <div className="relative overflow-hidden bg-[#3C3C3C] h-[200px] rounded-md md:col-span-1 md:rounded-none group">
-              <Image src="/assets/landing/img-5-s2.webp" alt="Grid image 5" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
+              <Image src="/assets/landing_v2/img5.webp" alt="Grid image 5" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
             </div>
 
-            
             <div className="relative overflow-hidden bg-[#3C3C3C] h-[200px] rounded-md md:col-span-1 md:bg-[#D9D9D9] md:h-[200px] group">
-              <Image src="/assets/landing/img-6-s2.webp" alt="Grid image 6" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
+              <Image src="/assets/landing_v2/img6.webp" alt="Grid image 6" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
             </div>
 
-            
             <div className="relative overflow-hidden bg-[#D9D9D9] h-[200px] rounded-md md:col-span-1 hidden md:block md:rounded-none group">
-              <Image src="/assets/landing/img-7-s2.webp" alt="Grid image 8" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
+              <Image src="/assets/landing_v2/img7.webp" alt="Grid image 7" layout="fill" objectFit="cover" className="rounded-md md:rounded-none transition-transform duration-300 group-hover:scale-105" />
             </div>
           </motion.div>
 
@@ -974,13 +972,13 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
 
           {/* Desktop View */}
           <div className="hidden md:block relative">
-            <Image
-              src="/assets/landing_v2/Whatourlovedonessay.webp"
-              alt="What our loved ones say"
-              width={1920}
-              height={800}
-              layout="responsive"
-              objectFit="cover"
+          <Image
+            src="/assets/landing_v2/Whatourlovedonessay.webp"
+            alt="What our loved ones say"
+            width={1920}
+            height={800}
+            layout="responsive"
+            objectFit="cover"
             />
             
             {/* Review Text Overlay - Desktop */}
@@ -1028,13 +1026,13 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
 
           {/* Mobile View */}
           <div className="block md:hidden relative">
-            <Image
-              src="/assets/landing_v2/Whatourlovedonesays_mobile.webp"
-              alt="What our loved ones say"
-              width={768}
-              height={600}
-              layout="responsive"
-              objectFit="cover"
+          <Image
+            src="/assets/landing_v2/Whatourlovedonesays_mobile.webp"
+            alt="What our loved ones say"
+            width={768}
+            height={600}
+            layout="responsive"
+            objectFit="cover"
             />
             
             {/* Review Text Overlay - Mobile */}
@@ -1300,24 +1298,24 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   delay: index * 0.15 
                 }}
               >
-                <div className="absolute inset-0">
-                  <Image
+              <div className="absolute inset-0">
+                <Image
                     src={item.image}
                     alt={item.alt}
-                    layout="fill"
-                    objectFit="cover"
-                    className="transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
+                  layout="fill"
+                  objectFit="cover"
+                  className="transition-transform duration-300 group-hover:scale-105"
+                />
+              </div>
                 <div className={`relative z-10 w-full h-full flex items-center ${item.align === "right" ? "justify-end" : ""}`}>
                   {item.align === "right" ? (
-                    <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-white to-transparent transition-all duration-300 group-hover:w-full group-hover:from-white group-hover:to-white/70"></div>
+                <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-white to-transparent transition-all duration-300 group-hover:w-full group-hover:from-white group-hover:to-white/70"></div>
                   ) : (
-                    <div className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-white to-transparent transition-all duration-300 group-hover:w-full group-hover:from-white group-hover:to-white/70"></div>
+              <div className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-white to-transparent transition-all duration-300 group-hover:w-full group-hover:from-white group-hover:to-white/70"></div>
                   )}
                   <motion.div
                     className={`relative z-20 text-black text-xl md:text-2xl font-semibold ${item.align === "right" ? "mr-4" : "ml-4"}`}
-                    style={{ fontFamily: 'Montserrat', letterSpacing: '0.1em' }}
+                style={{ fontFamily: 'Montserrat', letterSpacing: '0.1em' }}
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: false, amount: 0.5 }}
@@ -1329,11 +1327,11 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   >
                     {item.text}
                   </motion.div>
-                </div>
+              </div>
                 {!item.isLink && (
-                  <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-white text-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                    Coming Soon
-                  </div>
+            <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-white text-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+              Coming Soon
+            </div>
                 )}
               </motion.div>
             );
@@ -1345,7 +1343,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             ) : (
               <div key={index} className="cursor-default">
                 {content}
-              </div>
+            </div>
             );
           })}
         </div>
@@ -1397,7 +1395,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
 
         {/* Get Quote Button */}
         <div className="w-full flex justify-center items-center mt-8 md:mt-12">
-          <button
+            <button
             onClick={() => {
               if (!userLoggedIn) {
                 setSource("Makeup & Beauty Bidding");
@@ -1407,13 +1405,13 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               }
             }}
             className="bg-[#840032] hover:bg-[#6a0029] text-white px-12  md:px-16 py-2 rounded-xl text-base md:text-lg font-semibold tracking-wider shadow-lg transition-all duration-300 ease-in-out cursor-pointer"
-            style={{
+              style={{
               fontFamily: "'Cinzel', serif",
-              fontWeight: 600,
-            }}
-          >
-            Get Quote !
-          </button>
+                fontWeight: 600,
+              }}
+            >
+              Get Quote !
+            </button>
         </div>
       </motion.section>
 
@@ -1606,25 +1604,25 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               viewport={{ once: false, amount: 0.5 }}
               transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1], delay: 1.0 }}
             >
-              <button
+                <button
                 onClick={() => setOpenExpertModal(true)}
-                className="w-full bg-black text-white py-4 px-8 rounded-2xl tracking-widest text-sm
+                  className="w-full bg-black text-white py-4 px-8 rounded-2xl tracking-widest text-sm
                           hover:bg-gray-800 transition-all duration-300 ease-in-out cursor-pointer"
-                style={{
-                  fontFamily: "'Cinzel', serif",
-                  fontWeight: 400,
-                  letterSpacing: '0.12em',
-                }}
-              >
-                CONNECT WITH AN EXPERT
-              </button>
+                  style={{
+                    fontFamily: "'Cinzel', serif",
+                    fontWeight: 400,
+                    letterSpacing: '0.12em',
+                  }}
+                >
+                  CONNECT WITH AN EXPERT
+                </button>
             </motion.div>
           </motion.div>
         </div>
 
         {/* Desktop View */}
         <motion.div 
-          className="hidden lg:flex container mx-auto px-8 lg:px-16 xl:px-24 py-16 xl:py-24"
+        className="hidden lg:flex container mx-auto px-8 lg:px-16 xl:px-24 pt-16 pb-8 xl:pt-24 xl:pb-10"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: false, amount: 0.6 }}
@@ -1787,8 +1785,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                       Every detail is managed with precision, from concept to execution, ensuring a seamless and stress free experience
                     </p>
                   </motion.div>
+                  </div>
                 </div>
-              </div>
             </motion.div>
 
             {/* Right Side - Image and Button */}
@@ -1822,20 +1820,20 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                 onClick={() => setOpenExpertModal(true)}
                 className="mt-10 lg:ml-20 bg-black text-white py-4 px-12 rounded-xl tracking-widest text-sm
                           hover:bg-gray-800 transition-all duration-300 ease-in-out cursor-pointer"
-                style={{
-                  fontFamily: "'Cinzel', serif",
-                  fontWeight: 400,
-                  letterSpacing: '0.12em',
-                }}
+                  style={{
+                    fontFamily: "'Cinzel', serif",
+                    fontWeight: 400,
+                    letterSpacing: '0.12em',
+                  }}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: false, amount: 0.5 }}
                 transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1], delay: 0.8 }}
-              >
-                CONNECT WITH AN EXPERT
+                >
+                  CONNECT WITH AN EXPERT
               </motion.button>
             </motion.div>
-          </div>
+            </div>
         </motion.div>
       </section>
 
@@ -2280,7 +2278,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
       {/* wedsey section */}
 
       <motion.div 
-        className="py-16 md:py-24 px-4 md:px-10 lg:px-20 text-center"
+      className="pt-8 md:pt-10 pb-16 md:pb-20 px-4 md:px-10 lg:px-20 text-center"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: false, amount: 0.6 }}
@@ -2408,14 +2406,14 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
           viewport={{ once: false, amount: 0.5 }}
           transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 1.2 }}
         >
-          <Link href="https://hub.wedsy.in/gallery/">
-            <button
+        <Link href="https://hub.wedsy.in/gallery/">
+          <button
               className="mt-12 md:mt-2 px-16 py-4 rounded-md text-white shadow-lg hover:bg-[#6a0029] transition-colors duration-300"
               style={{ backgroundColor: '#840032', fontFamily: "'Cinzel', serif", fontWeight: 'semibold' }}
-            >
-              View more
-            </button>
-          </Link>
+          >
+            View more
+          </button>
+        </Link>
         </motion.div>
       </motion.div>
 
@@ -2454,13 +2452,16 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: false, amount: 0.5 }}
               transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+              onClick={() => {
+                window.location.href = "https://hub.wedsy.in/decor/02/mandap-vs-stage/";
+              }}
             >
               <Image
-                src="/assets/landing/img-1-s9.webp"
+                src="/assets/landing_v2/B3.png"
                 alt="Trending Image 1"
                 layout="fill"
                 objectFit="cover"
-                className="transition-transform duration-300 group-hover:scale-105"
+                className="transition-transform  duration-300 group-hover:scale-105 hover:cursor-pointer"
               />
             </motion.div>
 
@@ -2471,23 +2472,29 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: false, amount: 0.5 }}
               transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+              onClick={() => {
+                window.location.href = "https://hub.wedsy.in/venue-2/11/a-comprehensive-guide-to-planning-your-dream-wedding-at-amita-rasa-costs-decor-and-more/";
+              }}
             >
               <Image
-                src="/assets/landing/img-2-s9.webp"
+                src="/assets/landing_v2/B2.png"
                 alt="Trending Image 2"
                 layout="fill"
                 objectFit="cover"
-                className="transition-transform duration-300 group-hover:scale-105"
+                className="transition-transform duration-300 group-hover:scale-105 hover:cursor-pointer"
               />
             </motion.div>
 
             
             <motion.div 
-              className="flex-1 bg-[#AD7200] flex items-center justify-between p-6 md:p-8 relative overflow-hidden"
+              className="flex-1 bg-[#AD7200] flex items-center justify-between p-6 md:p-8 relative overflow-hidden hover:cursor-pointer"
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: false, amount: 0.5 }}
               transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.8 }}
+              onClick={() => {
+                window.location.href = "https://hub.wedsy.in";
+              }}
             >
               <motion.div 
                 className="text-white relative z-10"
@@ -2558,15 +2565,15 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 1.6 }}
           >
-            <Link href="https://hub.wedsy.in">
-              <button
-                className="mt-12 px-16 py-4 rounded-md text-white shadow-lg hover:bg-[#CE8C35] transition-colors duration-300
-                              block mx-auto md:hidden"
+          <Link href="https://hub.wedsy.in">
+            <button
+              className="mt-12 px-16 py-4 rounded-md text-white shadow-lg hover:bg-[#CE8C35] transition-colors duration-300
+                            block mx-auto md:hidden"
                 style={{ backgroundColor: '#CE8C35', fontFamily: "'Cinzel', serif", fontWeight: 'semibold' }}
-              >
-                Explore our BLOGS
-              </button>
-            </Link>
+            >
+              Explore our BLOGS
+            </button>
+          </Link>
           </motion.div>
         </div>
       </div>
@@ -2613,13 +2620,13 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                     viewport={{ once: false, amount: 0.5 }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                   >
-                    <Image
-                      src="/assets/landing_v2/left_bar.webp"
-                      alt="decoration"
-                      width={123}
-                      height={5}
-                      className="mr-4"
-                    />
+                  <Image
+                    src="/assets/landing_v2/left_bar.webp"
+                    alt="decoration"
+                    width={123}
+                    height={5}
+                    className="mr-4"
+                  />
                   </motion.div>
                   <motion.h1
                     className="text-6xl font-serif text-white mx-4"
@@ -2640,13 +2647,13 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                     viewport={{ once: false, amount: 0.5 }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                   >
-                    <Image
-                      src="/assets/landing_v2/right_bar.webp"
-                      alt="decoration"
-                      width={123}
-                      height={5}
-                      className="ml-4"
-                    />
+                  <Image
+                    src="/assets/landing_v2/right_bar.webp"
+                    alt="decoration"
+                    width={123}
+                    height={5}
+                    className="ml-4"
+                  />
                   </motion.div>
                 </motion.div>
                 <motion.h2
@@ -2681,7 +2688,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   CURATED FOR PERFECTION
                 </p>
               </motion.div>
-            </div>
+              </div>
           </motion.div>
 
           {/* Right Section - Form Panel (1/3 width) */}
@@ -3007,13 +3014,13 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   viewport={{ once: false, amount: 0.5 }}
                   transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                 >
-                  <Image
-                    src="/assets/landing_v2/left_bar.webp"
-                    alt="decoration"
-                    width={103}
-                    height={3}
-                    className="mr-2"
-                  />
+                <Image
+                  src="/assets/landing_v2/left_bar.webp"
+                  alt="decoration"
+                  width={103}
+                  height={3}
+                  className="mr-2"
+                />
                 </motion.div>
                 <motion.h1
                   className="text-4xl font-serif text-white mx-2"
@@ -3034,13 +3041,13 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   viewport={{ once: false, amount: 0.5 }}
                   transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                 >
-                  <Image
-                    src="/assets/landing_v2/right_bar.webp"
-                    alt="decoration"
-                    width={103}
-                    height={3}
-                    className="ml-2"
-                  />
+                <Image
+                  src="/assets/landing_v2/right_bar.webp"
+                  alt="decoration"
+                  width={103}
+                  height={3}
+                  className="ml-2"
+                />
                 </motion.div>
               </motion.div>
               <motion.h2
@@ -3337,7 +3344,7 @@ Tell us about your Wedding
                 )}
               </motion.div>
             </motion.div>
-          </div>
+              </div>
         </motion.div>
       </section>
 
@@ -3358,15 +3365,15 @@ Tell us about your Wedding
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
           >
-            <Image
-              src="/assets/landing_v2/FAQ_Desktop.webp"
-              alt="Frequently Asked Questions"
-              width={1920}
-              height={800}
-              layout="responsive"
-              objectFit="cover"
+          <Image
+            src="/assets/landing_v2/FAQ_Desktop.webp"
+            alt="Frequently Asked Questions"
+            width={1920}
+            height={800}
+            layout="responsive"
+            objectFit="cover"
               className="w-full px-4"
-            />
+          />
           </motion.div>
           {/* Mobile Image */}
           <motion.div
@@ -3376,15 +3383,15 @@ Tell us about your Wedding
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
           >
-            <Image
-              src="/assets/landing_v2/FAQ_mobile.webp"
-              alt="Frequently Asked Questions"
-              width={768}
-              height={600}
-              layout="responsive"
-              objectFit="cover"
+          <Image
+            src="/assets/landing_v2/FAQ_mobile.webp"
+            alt="Frequently Asked Questions"
+            width={768}
+            height={600}
+            layout="responsive"
+            objectFit="cover"
               className="w-full"
-            />
+          />
           </motion.div>
         </motion.div>
         
@@ -3477,7 +3484,7 @@ Tell us about your Wedding
                 </button>
               </Link>
             </motion.div>
-          </div>
+            </div>
         </motion.div>
       </section>
 

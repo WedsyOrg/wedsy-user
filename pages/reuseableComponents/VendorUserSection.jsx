@@ -35,13 +35,13 @@ const VendorUserSection = () => {
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           >
-            <Image
-              src="/assets/images/vendor_landing.webp"
-              alt="People collaborating at a table"
-              layout="fill"
-              objectFit="cover"
-              className="z-0"
-            />
+          <Image
+            src="/assets/images/vendor_landing.webp"
+            alt="People collaborating at a table"
+            layout="fill"
+            objectFit="cover"
+            className="z-0"
+          />
           </motion.div>
           <div className="absolute inset-0 bg-black/30 z-10"></div>
           <motion.div 
@@ -74,14 +74,14 @@ const VendorUserSection = () => {
               viewport={{ once: false, amount: 0.5 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
             >
-              <Link href="/join-as-vendor">
-                <button
-                  className="bg-white text-[#2B3F6C] px-8 py-3 rounded-md font-bold shadow-md hover:bg-gray-100 transition-colors duration-300"
-                  style={{ fontFamily: 'Montserrat', fontWeight: 'bold' }}
-                >
-                  JOIN AS PARTNER
-                </button>
-              </Link>
+            <Link href="/join-as-vendor">
+              <button
+                className="bg-white text-[#2B3F6C] px-8 py-3 rounded-md font-bold shadow-md hover:bg-gray-100 transition-colors duration-300"
+                style={{ fontFamily: 'Montserrat', fontWeight: 'bold' }}
+              >
+                JOIN AS PARTNER
+              </button>
+            </Link>
             </motion.div>
           </motion.div>
         </motion.div>
@@ -101,13 +101,13 @@ const VendorUserSection = () => {
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
           >
-            <Image
-              src="/assets/images/user_landing.webp"
-              alt="Couple celebrating"
-              layout="fill"
-              objectFit="cover"
-              className="z-0"
-            />
+          <Image
+            src="/assets/images/user_landing.webp"
+            alt="Couple celebrating"
+            layout="fill"
+            objectFit="cover"
+            className="z-0"
+          />
           </motion.div>
           <div className="absolute inset-0 bg-black/30 z-10"></div>
           <motion.div 
@@ -140,14 +140,14 @@ const VendorUserSection = () => {
               viewport={{ once: false, amount: 0.5 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
             >
-              <Link href="/login">
-                <button
-                  className="bg-white text-[#840032] px-8 py-3 rounded-md font-bold shadow-md hover:bg-gray-100 transition-colors duration-300"
-                  style={{ fontFamily: 'Montserrat', fontWeight: 'bold' }}
-                >
-                  JOIN AS USER
-                </button>
-              </Link>
+            <Link href="/login">
+              <button
+                className="bg-white text-[#840032] px-8 py-3 rounded-md font-bold shadow-md hover:bg-gray-100 transition-colors duration-300"
+                style={{ fontFamily: 'Montserrat', fontWeight: 'bold' }}
+              >
+                JOIN AS USER
+              </button>
+            </Link>
             </motion.div>
           </motion.div>
         </motion.div>
