@@ -2429,14 +2429,25 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
       <div className="py-6 md:py-8 px-6 md:px-40">
         <div className="max-w-7xl mx-auto">
           <motion.h2 
-            className="text-2xl md:text-4xl lg:text-5xl font-semibold mb-10 md:mb-16 hidden md:block"
+            className="text-2xl md:text-4xl lg:text-4xl font-semibold mb-10 md:mb-4 hidden md:block"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.6 }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           >
-            What's <span style={{ fontFamily: 'Montserrat', color: '#AD7200', fontWeight: 'semibold' }}>trending</span>?
+            Wedding planning, <span style={{ fontFamily: 'Montserrat', color: '#AD7200', fontWeight: 'semibold' }}>Explained clearly.</span>
           </motion.h2>
+
+          <motion.p
+            className="text-base font-semibold md:text-lg mb-10 md:mb-8 hidden md:block"
+            style={{ color: '#840032' }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.6 }}
+            transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+          >
+            Practical guides on venues,decor,budgets,vendors and real wedding costs.
+          </motion.p>
 
           <motion.div 
             className="flex flex-col md:flex-row gap-6"
@@ -2487,76 +2498,40 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
 
             
             <motion.div 
-              className="flex-1 bg-[#AD7200] flex items-center justify-between p-6 md:p-8 relative overflow-hidden hover:cursor-pointer"
+              className="relative flex-1 h-64 md:h-80 bg-gray-300 overflow-hidden group"
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: false, amount: 0.5 }}
               transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.8 }}
               onClick={() => {
-                window.location.href = "https://hub.wedsy.in";
+                window.location.href = "https://hub.wedsy.in/uncategorized/02/how-much-does-a-wedding-actually-cost-in-bangalore/";
               }}
             >
-              <motion.div 
-                className="text-white relative z-10"
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: false, amount: 0.5 }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.0 }}
-              >
-                <motion.h3
-                  className="text-4xl md:text-5xl font-semibold leading-none"
-                  style={{ fontFamily: 'Montserrat', letterSpacing: '-0.05em' }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.5 }}
-                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.1 }}
-                >
-                  DO's<br />DONT's
-                </motion.h3>
-                <motion.p
-                  className="text-lg md:text-xl font-medium mt-4"
-                  style={{ fontFamily: 'Montserrat' }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.5 }}
-                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.3 }}
-                >
-                  FOR YOUR
-                  <br />
-                  WEDDING
-                  <br />
-                  PLANNING
-                </motion.p>
-              </motion.div>
-              <motion.div 
-                className="relative z-10"
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: false, amount: 0.5 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 1.5 }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-8 w-8 md:h-10 md:w-10 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </motion.div>
-              <motion.span
-                className="absolute top-4 right-4 text-white text-7xl md:text-9xl font-bold opacity-20"
-                style={{ fontFamily: 'Times New Roman', lineHeight: 1 }}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 0.2, scale: 1 }}
-                viewport={{ once: false, amount: 0.5 }}
-                transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 1.2 }}
-              >
-                &
-              </motion.span>
+              <Image
+                src="/assets/landing_v2/B1.png"
+                alt="Trending Image 3"
+                layout="fill"
+                objectFit="cover"
+                className="transition-transform duration-300 group-hover:scale-105 hover:cursor-pointer"
+              />
             </motion.div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.5 }}
+            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 1.6 }}
+            className="hidden md:flex justify-center mt-12"
+          >
+            <Link href="https://hub.wedsy.in">
+              <button
+                className="px-16 py-4 rounded-md text-white shadow-lg hover:bg-[#CE8C35] transition-colors duration-300"
+                style={{ backgroundColor: '#AD7200', fontFamily: "'Cinzel', serif", fontWeight: 600 }}
+              >
+                EXPLORE WEDDING PLANNING GUIDE
+              </button>
+            </Link>
           </motion.div>
 
           <motion.div
