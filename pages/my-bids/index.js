@@ -104,7 +104,8 @@ export default function Orders({ user }) {
           <div className="flex justify-center">
             <button
               className="rounded-full bg-[#840032] text-white px-6 py-2 text-sm md:text-base font-medium shadow-sm hover:bg-[#6b002a] transition-colors"
-              onClick={() => router.push("/makeup-and-beauty/bidding")}
+              // onClick={() => router.push("/makeup-and-beauty/bidding")}
+              onClick={() => router.push("/coming-soon")}
             >
               Create New Bidding Request
             </button>
@@ -123,7 +124,8 @@ export default function Orders({ user }) {
                   You haven&apos;t created any bidding requests. Start by exploring our makeup &amp; beauty services and request a quote.
                 </p>
                 <Link
-                  href="/makeup-and-beauty/bidding"
+                  // href="/makeup-and-beauty/bidding"
+                  href="/coming-soon"
                   className="mx-auto mt-2 inline-flex items-center justify-center rounded-full bg-rose-900 text-white px-6 py-2 text-sm hover:bg-rose-800 transition-colors"
                 >
                   Create a bidding request

@@ -323,7 +323,8 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
             </Link>
             <Link
               className="px-4 py-3 text-center text-black text-sm font-medium rounded-xl bg-white/90 hover:bg-white transition-all uppercase"
-              href="/makeup-and-beauty/bidding"
+              // href="/makeup-and-beauty/bidding"
+              href="/coming-soon"
               style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
               BIDDING
@@ -627,12 +628,13 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           <button
             className="bg-[#840032] text-white rounded-lg absolute bottom-3 left-1/2 -translate-x-1/2 px-16 py-2 lg:text-lg font-medium"
             onClick={() => {
-              if (!userLoggedIn) {
-                setSource("Makeup & Beauty Bidding");
-                setOpenLoginModalv2(true);
-              } else {
-                router.push("/makeup-and-beauty/bidding");
-              }
+              // if (!userLoggedIn) {
+              //   setSource("Makeup & Beauty Bidding");
+              //   setOpenLoginModalv2(true);
+              // } else {
+              //   router.push("/makeup-and-beauty/bidding");
+              // }
+              router.push("/coming-soon");
             }}
           >
             Next

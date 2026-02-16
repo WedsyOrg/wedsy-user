@@ -298,11 +298,12 @@ export default function Header({ userLoggedIn, user, Logout }) {
               WEDDING STORE
             </Link>
             <Link
-              href="/makeup-and-beauty"
+              href="/coming-soon"
               className="font-medium text-[15px] transition-colors duration-200 hover:text-[#840032] hover:cursor-pointer"
               style={{
                 fontFamily: 'Montserrat, sans-serif',
-                color: router?.pathname === '/makeup-and-beauty' ? '#840032' : '#000000',
+               // color: router?.pathname === '/makeup-and-beauty' ? '#840032' : '#000000',
+                color: router?.pathname === '/coming-soon' ? '#840032' : '#000000',
               }}
             >
               MAKEUP ARTIST

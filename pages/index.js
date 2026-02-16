@@ -1397,12 +1397,13 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
         <div className="w-full flex justify-center items-center mt-8 md:mt-12">
             <button
             onClick={() => {
-              if (!userLoggedIn) {
-                setSource("Makeup & Beauty Bidding");
-                setOpenLoginModalv2(true);
-              } else {
-                router.push("/makeup-and-beauty/bidding");
-              }
+              // if (!userLoggedIn) {
+              //   setSource("Makeup & Beauty Bidding");
+              //   setOpenLoginModalv2(true);
+              // } else {
+              //   router.push("/makeup-and-beauty/bidding");
+              // }
+              router.push("/coming-soon");
             }}
             className="bg-[#840032] hover:bg-[#6a0029] text-white px-12  md:px-16 py-2 rounded-xl text-base md:text-lg font-semibold tracking-wider shadow-lg transition-all duration-300 ease-in-out cursor-pointer"
               style={{

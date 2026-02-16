@@ -18,6 +18,8 @@ export default function FooterComponent() {
       router?.pathname?.startsWith("/chats")
     ) {
       setDisplayFooter(false);
+    } else {
+      setDisplayFooter(true);
     }
   }, [router?.pathname]);
   return (
