@@ -115,7 +115,7 @@ export default function EventToolAccessModal({
                 onClick={async () => {
                   try {
                     await navigator.clipboard.writeText(
-                      `https://wedsy.in/event/${eventId}/view`
+                      `https://www.wedsy.in/event/${eventId}/view`
                     );
                     setCopied(true);
                     setTimeout(() => setCopied(false), 5000); // Reset copied state after 2 seconds
