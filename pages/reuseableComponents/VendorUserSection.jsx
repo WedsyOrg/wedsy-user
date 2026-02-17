@@ -10,7 +10,7 @@ const VendorUserSection = () => {
         className="w-full flex flex-col md:flex-row"
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: false, amount: 0.5 }}
+        viewport={{ once: true, amount: 0.5 }}
         variants={{
           hidden: {},
           visible: {
@@ -25,14 +25,14 @@ const VendorUserSection = () => {
           className="relative flex-1 h-96 md:h-[450px] overflow-hidden shadow-lg flex flex-col items-center justify-center p-6 md:p-10"
           initial={{ opacity: 0, x: -20 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: false, amount: 0.5 }}
+          viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
         >
           <motion.div
             className="absolute inset-0 z-0"
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: false, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           >
           <Image
@@ -48,7 +48,7 @@ const VendorUserSection = () => {
             className="relative z-20 text-center"
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: false, amount: 0.6 }}
+            viewport={{ once: true, amount: 0.6 }}
             variants={{
               hidden: {},
               visible: {
@@ -63,7 +63,7 @@ const VendorUserSection = () => {
               style={{ fontFamily: 'Moul, serif' }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.6 }}
+              viewport={{ once: true, amount: 0.6 }}
               transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
             >
               " Lets grow together! "
@@ -71,7 +71,7 @@ const VendorUserSection = () => {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: false, amount: 0.5 }}
+              viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
             >
             <Link href="/join-as-vendor">
@@ -91,14 +91,14 @@ const VendorUserSection = () => {
           className="relative flex-1 md:h-[450px] overflow-hidden shadow-lg flex flex-col items-center justify-center p-6 md:p-100"
           initial={{ opacity: 0, x: 20 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: false, amount: 0.5 }}
+          viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
         >
           <motion.div
             className="absolute inset-0 z-0"
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: false, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
           >
           <Image
@@ -114,7 +114,7 @@ const VendorUserSection = () => {
             className="relative z-20 text-center"
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: false, amount: 0.6 }}
+            viewport={{ once: true, amount: 0.6 }}
             variants={{
               hidden: {},
               visible: {
@@ -129,7 +129,7 @@ const VendorUserSection = () => {
               style={{ fontFamily: 'Montaga, serif' }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.6 }}
+              viewport={{ once: true, amount: 0.6 }}
               transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
             >
               "To new beginnings"
@@ -137,7 +137,7 @@ const VendorUserSection = () => {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: false, amount: 0.5 }}
+              viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
             >
             <Link href="/login">
