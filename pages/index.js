@@ -2,6 +2,8 @@ import ExpertConsultModal from "@/components/modal/ExpertConsultModal";
 import PlanYourEvent from "@/components/screens/PlanYourEvent";
 import { LandingPageSkeleton } from "@/components/skeletons/landing_page";
 import VendorUserSection from "@/pages/reuseableComponents/VendorUserSection";
+import CountryCodeSelector from "@/components/other/CountryCodeSelector";
+import NotificationToast from "@/components/other/NotificationToast";
 import styles from "@/styles/Home.module.css";
 import { processMobileNumber } from "@/utils/phoneNumber";
 import { motion, AnimatePresence } from "framer-motion";
@@ -34,8 +36,8 @@ const staggerContainer = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.1
+      staggerChildren: 0.03,
+      delayChildren: 0
     }
   }
 };
@@ -224,6 +226,14 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
   const [isWeddingSubmitted, setIsWeddingSubmitted] = useState(false);
   const [phoneError, setPhoneError] = useState("");
   const [isDateDropdownOpen, setIsDateDropdownOpen] = useState(false);
+  const [countryCode, setCountryCode] = useState("+91");
+  const [showOTPForm, setShowOTPForm] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpValue, setOtpValue] = useState(["", "", "", "", "", ""]);
+  const [otpReferenceId, setOtpReferenceId] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [toast, setToast] = useState({ show: false, message: "", type: "error" });
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const dateOptions = [
     "Before 3 months",
@@ -233,15 +243,16 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
 
   const handleWeddingInputChange = (field, value) => {
     if (field === 'phone') {
-      // Only allow digits, limit to 10 digits
-      const numericValue = value.replace(/\D/g, '').slice(0, 10);
+      // For India, limit to 10 digits, for others allow more flexibility
+      const maxLength = countryCode === "+91" ? 10 : 15;
+      const numericValue = value.replace(/\D/g, '').slice(0, maxLength);
       setWeddingFormData((prev) => ({ ...prev, [field]: numericValue }));
       
       // Real-time validation
       if (numericValue.length > 0) {
         validateWeddingPhone(numericValue);
       } else {
-      setPhoneError("");
+        setPhoneError("");
       }
     } else {
       setWeddingFormData((prev) => ({ ...prev, [field]: value }));
@@ -256,30 +267,235 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
       return false;
     }
     
-    if (cleanPhone.length < 10) {
-      setPhoneError("Phone number must be 10 digits");
+    // India-specific validation
+    if (countryCode === "+91") {
+      if (cleanPhone.length < 10) {
+        setPhoneError("Phone number must be 10 digits");
+        return false;
+      }
+      
+      if (cleanPhone.length > 10) {
+        setPhoneError("Phone number cannot exceed 10 digits");
+        return false;
+      }
+      
+      // Validate Indian phone number (should start with 6, 7, 8, or 9)
+      if (!/^[6-9]/.test(cleanPhone)) {
+        setPhoneError("Phone number must start with 6, 7, 8, or 9");
+        return false;
+      }
+      
+      // Final validation - must be exactly 10 digits and start with 6-9
+      if (cleanPhone.length === 10 && /^[6-9]\d{9}$/.test(cleanPhone)) {
+        setPhoneError("");
+        return true;
+      }
+      
+      setPhoneError("Please enter a valid 10-digit phone number");
       return false;
-    }
-    
-    if (cleanPhone.length > 10) {
-      setPhoneError("Phone number cannot exceed 10 digits");
-      return false;
-    }
-    
-    // Validate Indian phone number (should start with 6, 7, 8, or 9)
-    if (!/^[6-9]/.test(cleanPhone)) {
-      setPhoneError("Phone number must start with 6, 7, 8, or 9");
-      return false;
-    }
-    
-    // Final validation - must be exactly 10 digits and start with 6-9
-    if (cleanPhone.length === 10 && /^[6-9]\d{9}$/.test(cleanPhone)) {
+    } else {
+      // For other countries, just check minimum length
+      if (cleanPhone.length < 7) {
+        setPhoneError("Please enter a valid phone number");
+        return false;
+      }
+      
+      if (cleanPhone.length > 15) {
+        setPhoneError("Phone number is too long");
+        return false;
+      }
+      
       setPhoneError("");
       return true;
     }
+  };
+
+  const sendOTP = async () => {
+    if (!weddingFormData.name.trim()) {
+      setToast({ show: true, message: "Please enter your name", type: "error" });
+      return;
+    }
     
-    setPhoneError("Please enter a valid 10-digit phone number");
-    return false;
+    if (!weddingFormData.phone.trim()) {
+      setPhoneError("Phone number is required");
+      return;
+    }
+    
+    if (!validateWeddingPhone(weddingFormData.phone)) {
+      return;
+    }
+    
+    setIsWeddingSubmitting(true);
+    setOtpError("");
+    
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone: `${countryCode}${weddingFormData.phone}`,
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (result.ReferenceId) {
+        setOtpReferenceId(result.ReferenceId);
+        setOtpSent(true);
+        setShowOTPForm(true);
+        setResendCooldown(60); // Start 60 second cooldown
+        // Store phone format for verification (must match exactly)
+        console.log("OTP sent successfully. Phone:", `${countryCode}${weddingFormData.phone}`, "ReferenceId:", result.ReferenceId);
+      } else {
+        setOtpError("Failed to send OTP. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      setOtpError("Failed to send OTP. Please try again.");
+    } finally {
+      setIsWeddingSubmitting(false);
+    }
+  };
+
+  const resendOTP = async () => {
+    if (resendCooldown > 0) return; // Prevent resend during cooldown
+    
+    setIsWeddingSubmitting(true);
+    setOtpError("");
+    setOtpValue(["", "", "", "", "", ""]); // Clear previous OTP
+    
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone: `${countryCode}${weddingFormData.phone}`,
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (result.ReferenceId) {
+        setOtpReferenceId(result.ReferenceId);
+        setResendCooldown(60); // Start 60 second cooldown
+        setToast({ show: true, message: "OTP resent successfully!", type: "success" });
+      } else {
+        setOtpError("Failed to resend OTP. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error resending OTP:", error);
+      setOtpError("Failed to resend OTP. Please try again.");
+    } finally {
+      setIsWeddingSubmitting(false);
+    }
+  };
+
+  // Countdown timer for resend OTP
+  useEffect(() => {
+    let interval = null;
+    if (resendCooldown > 0) {
+      interval = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [resendCooldown]);
+
+  const verifyOTP = async () => {
+    const otpString = otpValue.join('');
+    
+    if (otpString.length !== 6) {
+      setOtpError("Please enter complete OTP");
+      return;
+    }
+    
+    setIsWeddingSubmitting(true);
+    setOtpError("");
+    
+    // Use the SAME endpoint as login - /auth (not /auth/otp/verify)
+    const phoneNumber = `${countryCode}${weddingFormData.phone}`;
+    
+    // Use EXACT same pattern as login/signup
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        phone: phoneNumber,
+        Otp: otpString,
+        ReferenceId: otpReferenceId,
+        name: weddingFormData.name,
+        source: "Wedding Requirements Form",
+      }),
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        // Use EXACT same check as login
+        if (response.message === "Login Successful" && response.token) {
+          // OTP verified successfully (user created/logged in, but we'll just submit form)
+          // Don't store the token, just proceed with form submission
+          submitWeddingForm();
+        } else {
+          // Use EXACT same error handling as login
+          setOtpError(response.message || "Invalid OTP. Please try again.");
+          setOtpValue(["", "", "", "", "", ""]);
+          setIsWeddingSubmitting(false);
+        }
+      })
+      .catch((error) => {
+        console.error("Error verifying OTP:", error);
+        setOtpError("Failed to verify OTP. Please try again.");
+        setIsWeddingSubmitting(false);
+      });
+  };
+
+  const submitWeddingForm = async () => {
+    const budgetMap = {
+      "5-10": 750000,
+      "10-15": 1250000,
+      "20+": 2000000,
+    };
+
+    const budgetValue = budgetMap[selectedBudget] || 750000;
+
+    const formDataToSend = new FormData();
+    formDataToSend.append('name', weddingFormData.name || '');
+    formDataToSend.append('phone', `${countryCode}${weddingFormData.phone}` || '');
+    formDataToSend.append('budget', budgetValue.toString());
+    formDataToSend.append('date', weddingFormData.date || '');
+    formDataToSend.append('formType', 'wedding-requirements');
+
+    await fetch(
+      `${process.env.NEXT_PUBLIC_SHEET_URL}`,
+      {
+        method: 'POST',
+        mode: 'no-cors',
+        body: formDataToSend
+      }
+    );
+
+    setIsWeddingSubmitted(true);
+    setWeddingFormData({ name: "", date: "", phone: "" });
+    setSelectedBudget("5-10");
+    setPhoneError("");
+    setShowOTPForm(false);
+    setOtpSent(false);
+    setOtpValue(["", "", "", "", "", ""]);
+    setOtpReferenceId("");
+    setResendCooldown(0);
   };
 
   const handleWeddingSubmit = async (e) => {
@@ -287,7 +503,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
     
     // Validate name
     if (!weddingFormData.name.trim()) {
-      alert("Please enter your name");
+      setToast({ show: true, message: "Please enter your name", type: "error" });
       return;
     }
     
@@ -299,48 +515,50 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
     
     // Validate phone format
     if (!validateWeddingPhone(weddingFormData.phone)) {
-      // Error message is already set by validateWeddingPhone
       return;
     }
     
-    setIsWeddingSubmitting(true);
-
-    try {
-      const budgetMap = {
-        "5-10": 750000,
-        "10-15": 1250000,
-        "20+": 2000000,
-      };
-
-      const budgetValue = budgetMap[selectedBudget] || 750000;
-
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', weddingFormData.name || '');
-      formDataToSend.append('phone', weddingFormData.phone || '');
-      formDataToSend.append('budget', budgetValue.toString());
-      formDataToSend.append('date', weddingFormData.date || '');
-      formDataToSend.append('formType', 'wedding-requirements');
-
-      await fetch(
-        `${process.env.NEXT_PUBLIC_SHEET_URL}`,
-        {
-          method: 'POST',
-          mode: 'no-cors',
-          body: formDataToSend
-        }
-      );
-
-      setIsWeddingSubmitted(true);
-      setWeddingFormData({ name: "", date: "", phone: "" });
-      setSelectedBudget("5-10");
-      setPhoneError("");
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      alert("Error submitting form. Please try again.");
-    } finally {
-      setIsWeddingSubmitting(false);
+    // If India, send OTP first
+    if (countryCode === "+91") {
+      await sendOTP();
+    } else {
+      // For non-India, submit directly
+      setIsWeddingSubmitting(true);
+      try {
+        await submitWeddingForm();
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        setToast({ show: true, message: "Error submitting form. Please try again.", type: "error" });
+      } finally {
+        setIsWeddingSubmitting(false);
+      }
     }
   };
+
+  const handleOtpChange = (index, value, isMobile = false) => {
+    if (value.length > 1) return; // Only allow single digit
+    
+    const newOtp = [...otpValue];
+    newOtp[index] = value.replace(/\D/g, ''); // Only digits
+    setOtpValue(newOtp);
+    setOtpError("");
+    
+    // Auto-focus next input
+    if (value && index < 5) {
+      const nextInputId = isMobile ? `otp-mobile-${index + 1}` : `otp-${index + 1}`;
+      const nextInput = document.getElementById(nextInputId);
+      if (nextInput) nextInput.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index, e, isMobile = false) => {
+    if (e.key === 'Backspace' && !otpValue[index] && index > 0) {
+      const prevInputId = isMobile ? `otp-mobile-${index - 1}` : `otp-${index - 1}`;
+      const prevInput = document.getElementById(prevInputId);
+      if (prevInput) prevInput.focus();
+    }
+  };
+
   const handleMainEnquiry = async () => {
     if (await processMobileNumber(data.main.phone)) {
       setData({
@@ -371,7 +589,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
           console.error("There was a problem with the fetch operation:", error);
         });
     } else {
-      alert("Please enter valid mobile number");
+      setToast({ show: true, message: "Please enter valid mobile number", type: "error" });
     }
   };
 
@@ -468,7 +686,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
           console.error("There was a problem with the fetch operation:", error);
         });
     } else {
-      alert("Please enter valid mobile number");
+      setToast({ show: true, message: "Please enter valid mobile number", type: "error" });
     }
   };
   // Use real data loading instead of simulated loading
@@ -693,7 +911,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             }}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.6 }}
+            viewport={{ once: true, amount: 0.6 }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           >
             Luxury weddings, seamlessly planned.
@@ -709,7 +927,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             }}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.6 }}
+            viewport={{ once: true, amount: 0.6 }}
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
           >
             Complete wedding planning, from start to celebration.<br />
@@ -733,7 +951,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               }}
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: false, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
             >
               START PLANNING
@@ -750,7 +968,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             className="block md:hidden px-4 pb-8 mt-16"
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: false, amount: 0.6 }}
+            viewport={{ once: true, amount: 0.6 }}
             variants={staggerContainer}
           >
             <motion.h1 
@@ -758,8 +976,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               style={{ fontFamily: 'Montserrat, sans-serif' }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.6 }}
-              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true, amount: 0.6 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             >
               THE WEDDING STORE
             </motion.h1>
@@ -769,8 +987,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               style={{ fontFamily: 'Montserrat, sans-serif', fontStyle: 'normal' }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.6 }}
-              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+              viewport={{ once: true, amount: 0.6 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
             >
               Everything You Need.
             </motion.p>
@@ -784,8 +1002,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.6 }}
-              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+              viewport={{ once: true, amount: 0.6 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
             >
               With Pricing.
             </motion.p>
@@ -795,8 +1013,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               style={{ fontFamily: 'Montserrat, sans-serif', fontStyle: 'normal' }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.6 }}
-              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+              viewport={{ once: true, amount: 0.6 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
             >
               One place to discover, price, and plan your entire wedding setup.
             </motion.p>
@@ -807,7 +1025,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             className="hidden md:block px-18 md:px-20 pb-12"
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: false, amount: 0.6 }}
+            viewport={{ once: true, amount: 0.6 }}
             variants={staggerContainer}
           >
             <motion.h1 
@@ -815,8 +1033,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               style={{ fontFamily: 'Montserrat, sans-serif' }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.6 }}
-              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true, amount: 0.6 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             >
               THE WEDDING STORE
             </motion.h1>
@@ -826,8 +1044,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               style={{ fontFamily: 'Montserrat, sans-serif' }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.6 }}
-              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+              viewport={{ once: true, amount: 0.6 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
             >
               Everything You Need. <span style={{ color: '#840032', fontWeight: 'bold' }}>With Pricing.</span>
             </motion.p>
@@ -837,8 +1055,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               style={{ fontFamily: 'Montserrat, sans-serif' }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.6 }}
-              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+              viewport={{ once: true, amount: 0.6 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
             >
               <span>DECOR & STYLING</span>
               <span>•</span>
@@ -858,8 +1076,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             className="grid grid-cols-2 md:grid-cols-6 px-4 md:px-20 gap-1"
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: false, amount: 0.5 }}
-            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.8 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.8 }}
           >
 
             <div className="relative overflow-hidden bg-[#3C3C3C] h-[200px] rounded-md md:h-auto md:row-span-2 md:col-span-3 md:rounded-none group">
@@ -895,8 +1113,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               className="w-full flex justify-center items-center py-8 mt-6 md:py-10 md:mt-10"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.5 }}
-              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 1.0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
             >
               <Link href="/decor">
                 <button
@@ -1241,7 +1459,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
           className="flex flex-col text-center mx-auto px-6"
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: false, amount: 0.6 }}
+          viewport={{ once: true, amount: 0.6 }}
           variants={staggerContainer}
         >
           <motion.h2
@@ -1252,7 +1470,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             }}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.6 }}
+            viewport={{ once: true, amount: 0.6 }}
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
           >
             YOUR ULTIMATE WEDDING PLANNING DESTINATION IS HERE
@@ -1265,7 +1483,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             }}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.6 }}
+            viewport={{ once: true, amount: 0.6 }}
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
           >
             We've got you covered with everything you need for your big day!
@@ -1277,21 +1495,21 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
 
 
       {/* makeup banner section */}
-      <div className="py-16 md:py-24 px-6 md:px-40 mt-6 md:mt-20 hidden md:block">
-        <div className="container mx-auto flex flex-col space-y-4 md:space-y-6">
+      <div className="py-16 md:py-5 px-6 md:px-40 mt-6 md:mt-20 hidden md:block">
+        <div className="container mx-auto flex flex-col space-y-4 md:space-y-4">
           {[
-            { href: "/makeup-and-beauty/artists", image: "/assets/images/artist-1.webp", alt: "Makeup Artists", text: "MAKEUP ARTISTS", align: "left", isLink: true },
-            { href: "/decor", image: "/assets/images/artist-2.webp", alt: "Decor", text: "DECOR", align: "right", isLink: true },
-            { href: null, image: "/assets/images/artist-3.webp", alt: "Photography", text: "PHOTOGRAPHY", align: "left", isLink: false },
+            { href: null, image: "/assets/images/artist-1.webp", alt: "Makeup Artists", text: "MAKEUP ARTISTS", align: "left", isLink: false },
+            { href: "/decor", image: "/assets/images/artist-3.webp", alt: "Decor", text: "DECOR", align: "right", isLink: true },
+            { href: null, image: "/assets/images/artist-2.webp", alt: "Photography", text: "PHOTOGRAPHY", align: "left", isLink: false },
             { href: null, image: "/assets/images/artist-4.webp", alt: "Wedding Venues", text: "WEDDING VENUES", align: "right", isLink: false }
           ].map((item, index) => {
             const content = (
               <motion.div
                 key={index}
-                className="relative flex items-center overflow-hidden h-24 md:h-32 group cursor-pointer mb-4 md:mb-6 last:mb-0"
+                className="relative flex items-center overflow-hidden h-24 md:h-28 group cursor-pointer mb-4 md:mb-6 last:mb-0"
                 initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: false, amount: 0.5 }}
+                viewport={{ once: true, amount: 0.5 }}
                 transition={{ 
                   duration: 0.8, 
                   ease: [0.16, 1, 0.3, 1], 
@@ -1318,7 +1536,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                 style={{ fontFamily: 'Montserrat', letterSpacing: '0.1em' }}
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: false, amount: 0.5 }}
+                    viewport={{ once: true, amount: 0.5 }}
                     transition={{ 
                       duration: 1.0, 
                       ease: [0.22, 1, 0.36, 1], 
@@ -1352,10 +1570,10 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
       {/* Bidding Section */}
       <motion.section 
         className="w-full px-6 py-16"
-        initial="hidden"
-        whileInView="visible"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
-        variants={fadeInUp}
+        transition={{ duration: 0.7, ease: "easeOut", delay: 0.3 }}
       >
         {/* Desktop View - md and above */}
         <div className="hidden md:block relative w-full">
@@ -1394,7 +1612,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
         </div>
 
         {/* Get Quote Button */}
-        <div className="w-full flex justify-center items-center mt-8 md:mt-12">
+        <div className="w-full flex z-10 justify-center items-center -mt-4 md:-mt-6">
             <button
             onClick={() => {
               // if (!userLoggedIn) {
@@ -1451,8 +1669,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               className="text-center mb-10"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.6 }}
-              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+              viewport={{ once: true, amount: 0.6 }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
             >
               <motion.h2
                 className="text-4xl text-black leading-tight"
@@ -1462,8 +1680,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                 }}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.6 }}
-                transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+                viewport={{ once: true, amount: 0.6 }}
+                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
               >
                 Wedding planning
               </motion.h2>
@@ -1475,8 +1693,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                 }}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.6 }}
-                transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                viewport={{ once: true, amount: 0.6 }}
+                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
               >
                 tailored for you
               </motion.p>
@@ -1490,8 +1708,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                 style={{ height: '300px', overflow: 'hidden' }}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: false, amount: 0.5 }}
-                transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
               >
                 <Image
                   src="/assets/landing_v2/bar.webp"
@@ -1510,8 +1728,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   className="relative flex flex-col"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.5 }}
-                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                  viewport={{ once: true, amount: 0.5 }}
+                  transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
                 >
                   {/* Horizontal Line */}
                   <div className="absolute left-[-20px] top-3 w-5 h-[1.5px] bg-black"></div>
@@ -1540,8 +1758,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   className="relative flex flex-col"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.5 }}
-                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+                  viewport={{ once: true, amount: 0.5 }}
+                  transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
                 >
                   {/* Horizontal Line */}
                   <div className="absolute left-[-20px] top-3 w-5 h-[1.5px] bg-black"></div>
@@ -1570,8 +1788,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   className="relative flex flex-col"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.5 }}
-                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.8 }}
+                  viewport={{ once: true, amount: 0.5 }}
+                  transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
                 >
                   {/* Horizontal Line */}
                   <div className="absolute left-[-20px] top-3 w-5 h-[1.5px] bg-black"></div>
@@ -1602,8 +1820,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               className="px-2"
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: false, amount: 0.5 }}
-              transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1], delay: 1.0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
             >
                 <button
                 onClick={() => setOpenExpertModal(true)}
@@ -1623,10 +1841,10 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
 
         {/* Desktop View */}
         <motion.div 
-        className="hidden lg:flex container mx-auto px-8 lg:px-16 xl:px-24 pt-16 pb-8 xl:pt-24 xl:pb-10"
+        className="hidden lg:flex container mx-auto px-8 lg:px-16 xl:px-24 pt-4 pb-8 xl:pt-6 xl:pb-10"
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: false, amount: 0.6 }}
+          viewport={{ once: true, amount: 0.6 }}
           variants={staggerContainer}
         >
           <div className="flex flex-row items-start justify-between w-full gap-12 xl:gap-20">
@@ -1635,15 +1853,15 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               className="flex flex-col w-1/2 xl:w-[48%]"
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: false, amount: 0.6 }}
-              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true, amount: 0.6 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
             >
               {/* Heading */}
               <motion.div 
                 className="mb-10"
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: false, amount: 0.6 }}
+                viewport={{ once: true, amount: 0.6 }}
                 variants={staggerContainer}
               >
                 <motion.h2
@@ -1654,8 +1872,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   }}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.6 }}
-                  transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                  viewport={{ once: true, amount: 0.6 }}
+                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
                 >
                   Wedding planning
                 </motion.h2>
@@ -1667,8 +1885,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   }}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.6 }}
-                  transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                  viewport={{ once: true, amount: 0.6 }}
+                  transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
                 >
                   tailored for you
                 </motion.p>
@@ -1682,8 +1900,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   style={{ height: '400px', overflow: 'hidden' }}
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: false, amount: 0.5 }}
-                  transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+                  viewport={{ once: true, amount: 0.5 }}
+                  transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
                 >
                   <Image
                     src="/assets/landing_v2/bar.webp"
@@ -1702,8 +1920,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                     className="relative flex flex-col"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.5 }}
-                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                    viewport={{ once: true, amount: 0.5 }}
+                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
                   >
                     {/* Horizontal Line */}
                     <div className="absolute left-[-30px] top-4 w-7 h-[1.5px] bg-black"></div>
@@ -1732,8 +1950,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                     className="relative flex flex-col"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.5 }}
-                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+                    viewport={{ once: true, amount: 0.5 }}
+                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
                   >
                     {/* Horizontal Line */}
                     <div className="absolute left-[-30px] top-4 w-7 h-[1.5px] bg-black"></div>
@@ -1762,8 +1980,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                     className="relative flex flex-col"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.5 }}
-                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.8 }}
+                    viewport={{ once: true, amount: 0.5 }}
+                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
                   >
                     {/* Horizontal Line */}
                     <div className="absolute left-[-30px] top-4 w-7 h-[1.5px] bg-black"></div>
@@ -1795,16 +2013,16 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               className="flex flex-col items-center w-1/2 xl:w-[48%]"
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: false, amount: 0.6 }}
-              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true, amount: 0.6 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
             >
               {/* Wedding Image */}
               <motion.div 
                 className="relative w-full"
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: false, amount: 0.5 }}
-                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
               >
                 <Image
                   src="/assets/landing_v2/wedding_planning.webp"
@@ -1828,8 +2046,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   }}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: false, amount: 0.5 }}
-                transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1], delay: 0.8 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
                 >
                   CONNECT WITH AN EXPERT
               </motion.button>
@@ -2279,10 +2497,10 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
       {/* wedsey section */}
 
       <motion.div 
-      className="pt-8 md:pt-10 pb-16 md:pb-20 px-4 md:px-10 lg:px-20 text-center"
+      className="pt-0 md:pt-0 pb-16 md:pb-20 px-4 md:px-10 lg:px-20 text-center"
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: false, amount: 0.6 }}
+        viewport={{ once: true, amount: 0.6 }}
         variants={staggerContainer}
       >
         <motion.h2
@@ -2290,30 +2508,30 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
           style={{ fontFamily: 'Montserrat', fontWeight: 'medium' }}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.6 }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, amount: 0.6 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         >
           Wedsy's WORK
         </motion.h2>
         
         
-        <div className="md:py-24 px-4 md:px-10 lg:px-20 text-center">
+        <div className="md:py-8 px-4 md:px-10 lg:px-20 text-center">
 
           
           <motion.div 
             className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto"
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: false, amount: 0.5 }}
-            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1], delay: 0 }}
           >
             
             <motion.div 
               className="flex flex-col gap-4"
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: false, amount: 0.5 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
             >
               <div className="relative overflow-hidden h-40 md:h-48 bg-gray-300 shadow-md group">
                 <Image src="/assets/landing/img-1-s8.webp" alt="Desktop Grid 1" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
@@ -2327,8 +2545,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               className="flex flex-col gap-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.5 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.7 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
             >
               <div className="relative overflow-hidden h-40 md:h-48 bg-gray-300 shadow-md group">
                 <Image src="/assets/landing/img-3-s8.webp" alt="Desktop Grid 3" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
@@ -2342,8 +2560,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               className="flex flex-col gap-4"
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: false, amount: 0.5 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.9 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
             >
               <div className="relative overflow-hidden flex-grow bg-gray-300 shadow-md h-64 md:h-80 group">
                 <Image src="/assets/landing/img-6-s8.webp" alt="Desktop Grid 5" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
@@ -2359,15 +2577,15 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             className="block md:hidden flex flex-col gap-4 max-w-6xl mx-auto"
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: false, amount: 0.5 }}
-            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1], delay: 0 }}
           >
             <motion.div 
               className="relative overflow-hidden w-full h-80 bg-gray-300 shadow-md rounded-md group"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.5 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
             >
               <Image src="/assets/landing/img-1-s8.webp" alt="Mobile Grid 1" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
             </motion.div>
@@ -2375,7 +2593,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               className="flex flex-row gap-2 justify-between"
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: false, amount: 0.5 }}
+              viewport={{ once: true, amount: 0.5 }}
               variants={staggerContainer}
             >
               {[2, 3, 4, 5].map((imgNum, index) => (
@@ -2385,7 +2603,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   variants={staggerItem}
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: false, amount: 0.5 }}
+                  viewport={{ once: true, amount: 0.5 }}
                   transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: index * 0.1 }}
                 >
                   <Image 
@@ -2404,8 +2622,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.5 }}
-          transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 1.2 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
         >
         <Link href="https://hub.wedsy.in/gallery/">
           <button
@@ -2433,8 +2651,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             className="text-2xl md:text-4xl lg:text-4xl font-semibold mb-10 md:mb-4 hidden md:block"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.6 }}
-            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true, amount: 0.6 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
           >
             Wedding planning, <span style={{ fontFamily: 'Montserrat', color: '#AD7200', fontWeight: 'semibold' }}>Explained clearly.</span>
           </motion.h2>
@@ -2444,8 +2662,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             style={{ color: '#840032' }}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.6 }}
-            transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+            viewport={{ once: true, amount: 0.6 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
           >
             Practical guides on venues,decor,budgets,vendors and real wedding costs.
           </motion.p>
@@ -2454,7 +2672,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             className="flex flex-col md:flex-row gap-6"
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: false, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.5 }}
             variants={staggerContainer}
           >
             
@@ -2462,8 +2680,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               className="relative flex-1 h-64 md:h-80 bg-gray-300 overflow-hidden group"
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: false, amount: 0.5 }}
-              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
               onClick={() => {
                 window.location.href = "https://hub.wedsy.in/decor/02/mandap-vs-stage/";
               }}
@@ -2482,7 +2700,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               className="relative flex-1 h-64 md:h-80 bg-gray-300 overflow-hidden  group"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.5 }}
+              viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
               onClick={() => {
                 window.location.href = "https://hub.wedsy.in/venue-2/11/a-comprehensive-guide-to-planning-your-dream-wedding-at-amita-rasa-costs-decor-and-more/";
@@ -2502,7 +2720,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               className="relative flex-1 h-64 md:h-80 bg-gray-300 overflow-hidden group"
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: false, amount: 0.5 }}
+              viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.8 }}
               onClick={() => {
                 window.location.href = "https://hub.wedsy.in/uncategorized/02/how-much-does-a-wedding-actually-cost-in-bangalore/";
@@ -2521,7 +2739,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 1.6 }}
             className="hidden md:flex justify-center mt-12"
           >
@@ -2538,7 +2756,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 1.6 }}
           >
           <Link href="https://hub.wedsy.in">
@@ -2563,7 +2781,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             className="w-2/3 relative"
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: false, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           >
             <Image
@@ -2583,7 +2801,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                 className="flex flex-col items-center justify-center"
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: false, amount: 0.6 }}
+                viewport={{ once: true, amount: 0.6 }}
                 variants={staggerContainer}
               >
                 <motion.div 
@@ -2593,7 +2811,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: false, amount: 0.5 }}
+                    viewport={{ once: true, amount: 0.5 }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                   >
                   <Image
@@ -2612,7 +2830,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                     }}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.5 }}
+                    viewport={{ once: true, amount: 0.5 }}
                     transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
                   >
                    WEDSY
@@ -2620,7 +2838,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: false, amount: 0.5 }}
+                    viewport={{ once: true, amount: 0.5 }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                   >
                   <Image
@@ -2640,7 +2858,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   }}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.5 }}
+                  viewport={{ once: true, amount: 0.5 }}
                   transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
                 >
                   WEDDINGS MADE EASY
@@ -2651,7 +2869,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.5 }}
+                viewport={{ once: true, amount: 0.5 }}
                 transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.8 }}
               >
                 <p
@@ -2672,14 +2890,14 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             className="w-2/3 bg-[#523329] flex items-center justify-center rounded-2xl p-8 px-25"
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: false, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
           >
             <motion.div 
               className="w-full max-w-3xl border border-[#523329] p-16 rounded-2xl bg-white/75  rounded-4xl"
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: false, amount: 0.5 }}
+              viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
             >
               {!isWeddingSubmitted ? (
@@ -2689,7 +2907,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                     className="mb-4"
                     initial="hidden"
                     whileInView="visible"
-                    viewport={{ once: false, amount: 0.6 }}
+                    viewport={{ once: true, amount: 0.6 }}
                     variants={staggerContainer}
                   >
                     <motion.p
@@ -2700,7 +2918,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                       }}
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: false, amount: 0.6 }}
+                      viewport={{ once: true, amount: 0.6 }}
                       transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.7 }}
                     >
                       Let's personalize your experience
@@ -2713,7 +2931,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                       }}
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: false, amount: 0.6 }}
+                      viewport={{ once: true, amount: 0.6 }}
                       transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.9 }}
                     >
                       Tell us about your Wedding
@@ -2725,7 +2943,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                     className="space-y-6"
                     initial="hidden"
                     whileInView="visible"
-                    viewport={{ once: false, amount: 0.5 }}
+                    viewport={{ once: true, amount: 0.5 }}
                     variants={staggerContainer}
                   >
                     {/* Name Field */}
@@ -2733,7 +2951,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                       variants={staggerItem}
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: false, amount: 0.5 }}
+                      viewport={{ once: true, amount: 0.5 }}
                       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.1 }}
                     >
                       <input
@@ -2756,7 +2974,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                       className="relative"
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: false, amount: 0.5 }}
+                      viewport={{ once: true, amount: 0.5 }}
                       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.3 }}
                     >
                       <div
@@ -2796,7 +3014,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: false, amount: 0.5 }}
+                      viewport={{ once: true, amount: 0.5 }}
                       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.5 }}
                     >
                       <motion.p
@@ -2807,7 +3025,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                         }}
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: false, amount: 0.5 }}
+                        viewport={{ once: true, amount: 0.5 }}
                         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.5 }}
                       >
                        Please share your estimated budget for the event
@@ -2816,7 +3034,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                         className="grid grid-cols-3 gap-4"
                         initial="hidden"
                         whileInView="visible"
-                        viewport={{ once: false, amount: 0.5 }}
+                        viewport={{ once: true, amount: 0.5 }}
                         variants={staggerContainer}
                       >
                         {[
@@ -2840,7 +3058,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                             variants={staggerItem}
                             initial={{ opacity: 0, scale: 0.9 }}
                             whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: false, amount: 0.5 }}
+                            viewport={{ once: true, amount: 0.5 }}
                             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 1.7 + index * 0.1 }}
                           >
                             {option.label}
@@ -2853,44 +3071,55 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: false, amount: 0.5 }}
+                      viewport={{ once: true, amount: 0.5 }}
                       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 2.0 }}
                     >
-                      <input
-                        type="tel"
-                        inputMode="numeric"
-                        pattern="[6-9][0-9]{9}"
-                        maxLength="10"
-                        placeholder="Phone number"
-                        value={weddingFormData.phone}
-                        onChange={(e) =>
-                          handleWeddingInputChange("phone", e.target.value)
-                        }
-                        onKeyDown={(e) => {
-                          // Allow: backspace, delete, tab, escape, enter, and decimal point
-                          if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
-                            // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-                            (e.keyCode === 65 && e.ctrlKey === true) ||
-                            (e.keyCode === 67 && e.ctrlKey === true) ||
-                            (e.keyCode === 86 && e.ctrlKey === true) ||
-                            (e.keyCode === 88 && e.ctrlKey === true) ||
-                            // Allow: home, end, left, right
-                            (e.keyCode >= 35 && e.keyCode <= 39)) {
-                            return;
+                      <div className="flex gap-2">
+                        {/* Country Code Selector */}
+                        <CountryCodeSelector
+                          selectedCode={countryCode}
+                          onSelect={(code) => {
+                            setCountryCode(code);
+                            setPhoneError("");
+                          }}
+                        />
+                        {/* Phone Input */}
+                        <input
+                          type="tel"
+                          inputMode="numeric"
+                          pattern={countryCode === "+91" ? "[6-9][0-9]{9}" : "[0-9]*"}
+                          maxLength={countryCode === "+91" ? 10 : 15}
+                          placeholder="Phone number"
+                          value={weddingFormData.phone}
+                          onChange={(e) =>
+                            handleWeddingInputChange("phone", e.target.value)
                           }
-                          // Ensure that it is a number and stop the keypress
-                          if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
-                            e.preventDefault();
-                          }
-                        }}
-                        className={`w-full bg-transparent border-0 border-b-2 py-3 text-[#523329] placeholder-[#523329] placeholder-opacity-70 text-left focus:outline-none focus:ring-0 transition-all duration-300 ${
-                          phoneError ? 'border-red-500' : 'border-[#523329] focus:border-[#523329] hover:border-[#523329]'
-                        }`}
-                        style={{
-                          fontFamily: "'Spartan', sans-serif",
-                          fontWeight: 350,
-                        }}
-                      />
+                          onKeyDown={(e) => {
+                            // Allow: backspace, delete, tab, escape, enter, and decimal point
+                            if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
+                              // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                              (e.keyCode === 65 && e.ctrlKey === true) ||
+                              (e.keyCode === 67 && e.ctrlKey === true) ||
+                              (e.keyCode === 86 && e.ctrlKey === true) ||
+                              (e.keyCode === 88 && e.ctrlKey === true) ||
+                              // Allow: home, end, left, right
+                              (e.keyCode >= 35 && e.keyCode <= 39)) {
+                              return;
+                            }
+                            // Ensure that it is a number and stop the keypress
+                            if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                              e.preventDefault();
+                            }
+                          }}
+                          className={`flex-1 bg-transparent border-0 border-b-2 py-3 text-[#523329] placeholder-[#523329] placeholder-opacity-70 text-left focus:outline-none focus:ring-0 transition-all duration-300 ${
+                            phoneError ? 'border-red-500' : 'border-[#523329] focus:border-[#523329] hover:border-[#523329]'
+                          }`}
+                          style={{
+                            fontFamily: "'Spartan', sans-serif",
+                            fontWeight: 350,
+                          }}
+                        />
+                      </div>
                       {phoneError && (
                         <p className="text-red-500 text-xs mt-1">
                           {phoneError}
@@ -2898,27 +3127,119 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                       )}
                     </motion.div>
 
-                    {/* Submit Button */}
-                    <motion.div 
-                      className="mt-8 text-left"
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: false, amount: 0.5 }}
-                      transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 2.2 }}
-                    >
-                      <button
-                        type="submit"
-                        disabled={isWeddingSubmitting}
-                        className="bg-[#840032] hover:bg-[#70022c] px-16 py-4 text-sm font-bold uppercase tracking-wide text-white rounded-xl transition-all duration-300 disabled:opacity-50 mt-4"
-                        style={{
-                          fontFamily: "'Cinzel', serif",
-                          fontWeight: 300,
-                        }}
+                    {/* OTP Form - Show when OTP is sent for India */}
+                    {showOTPForm && countryCode === "+91" && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-6 p-6 bg-white/50 rounded-lg"
                       >
-                      
-                        {isWeddingSubmitting ? "Submitting..." : "Can't  Wait to Start"}
-                      </button>
-                    </motion.div>
+                        <p className="text-[#523329] text-sm mb-4" style={{ fontFamily: "'Spartan', sans-serif", fontWeight: 400 }}>
+                          Enter the 6-digit OTP sent to {countryCode} {weddingFormData.phone}
+                        </p>
+                        <div className="flex gap-2 justify-center mb-4">
+                          {otpValue.map((digit, index) => (
+                            <input
+                              key={index}
+                              id={`otp-${index}`}
+                              type="text"
+                              inputMode="numeric"
+                              maxLength="1"
+                              value={digit}
+                              onChange={(e) => handleOtpChange(index, e.target.value)}
+                              onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                              className="w-12 h-12 text-center text-lg border-2 border-[#523329] rounded-lg focus:border-[#840032] focus:outline-none transition-all"
+                              style={{
+                                fontFamily: "'Spartan', sans-serif",
+                                fontWeight: 400,
+                              }}
+                            />
+                          ))}
+                        </div>
+                        {otpError && (
+                          <p className="text-red-500 text-xs text-center mb-4">
+                            {otpError}
+                          </p>
+                        )}
+                        <button
+                          type="button"
+                          onClick={verifyOTP}
+                          disabled={isWeddingSubmitting || otpValue.join('').length !== 6}
+                          className="w-full bg-[#840032] hover:bg-[#70022c] px-8 py-3 text-sm font-bold uppercase tracking-wide text-white rounded-xl transition-all duration-300 disabled:opacity-50"
+                          style={{
+                            fontFamily: "'Cinzel', serif",
+                            fontWeight: 300,
+                          }}
+                        >
+                          {isWeddingSubmitting ? "Verifying..." : "Verify OTP"}
+                        </button>
+                        <div className="flex flex-col gap-2 mt-2">
+                          <button
+                            type="button"
+                            onClick={resendOTP}
+                            disabled={resendCooldown > 0 || isWeddingSubmitting}
+                            className={`w-full text-[#523329] text-sm transition-all duration-300 ${
+                              resendCooldown > 0 
+                                ? 'opacity-50 cursor-not-allowed' 
+                                : 'hover:opacity-70 underline'
+                            }`}
+                            style={{
+                              fontFamily: "'Spartan', sans-serif",
+                              fontWeight: 350,
+                            }}
+                          >
+                            {resendCooldown > 0 
+                              ? `Resend OTP in ${resendCooldown}s` 
+                              : 'Resend OTP'
+                            }
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowOTPForm(false);
+                              setOtpSent(false);
+                              setOtpValue(["", "", "", "", "", ""]);
+                              setOtpReferenceId("");
+                              setOtpError("");
+                              setResendCooldown(0);
+                            }}
+                            className="w-full text-[#523329] text-sm underline hover:opacity-70 transition-opacity"
+                            style={{
+                              fontFamily: "'Spartan', sans-serif",
+                              fontWeight: 350,
+                            }}
+                          >
+                            Change Phone Number
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Submit Button */}
+                    {!showOTPForm && (
+                      <motion.div 
+                        className="mt-8 text-left"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.5 }}
+                        transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 2.2 }}
+                      >
+                        <button
+                          type="submit"
+                          disabled={isWeddingSubmitting}
+                          className="bg-[#840032] hover:bg-[#70022c] px-16 py-4 text-sm font-bold uppercase tracking-wide text-white rounded-xl transition-all duration-300 disabled:opacity-50 mt-4"
+                          style={{
+                            fontFamily: "'Cinzel', serif",
+                            fontWeight: 300,
+                          }}
+                        >
+                          {isWeddingSubmitting 
+                            ? (countryCode === "+91" ? "Sending OTP..." : "Submitting...") 
+                            : (countryCode === "+91" ? "Send OTP" : "Can't Wait to Start")
+                          }
+                        </button>
+                      </motion.div>
+                    )}
                   </motion.form>
                 </>
               ) : (
@@ -2954,7 +3275,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
           className="lg:hidden relative min-h-screen"
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: false, amount: 0.5 }}
+          viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
         >
           {/* Background Image */}
@@ -2977,7 +3298,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               className="pt-8 pb-4 px-4"
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: false, amount: 0.6 }}
+              viewport={{ once: true, amount: 0.6 }}
               variants={staggerContainer}
             >
               <motion.div 
@@ -2987,7 +3308,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: false, amount: 0.5 }}
+                  viewport={{ once: true, amount: 0.5 }}
                   transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                 >
                 <Image
@@ -3006,7 +3327,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   }}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.5 }}
+                  viewport={{ once: true, amount: 0.5 }}
                   transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
                 >
                   WEDSY
@@ -3014,7 +3335,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: false, amount: 0.5 }}
+                  viewport={{ once: true, amount: 0.5 }}
                   transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                 >
                 <Image
@@ -3034,7 +3355,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                 }}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.5 }}
+                viewport={{ once: true, amount: 0.5 }}
                 transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
               >
                WEDDINGS MADE EASY
@@ -3046,14 +3367,14 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               className="flex-1 flex items-center justify-center px-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.5 }}
+              viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
             >
               <motion.div 
                 className="w-full max-w-lg bg-white/70 rounded-2xl px-4 min-h-[600px] flex flex-col justify-center"
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: false, amount: 0.5 }}
+                viewport={{ once: true, amount: 0.5 }}
                 transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
               >
                 {/* Form Header */}
@@ -3063,7 +3384,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                       className="mb-6 text-center"
                       initial="hidden"
                       whileInView="visible"
-                      viewport={{ once: false, amount: 0.6 }}
+                      viewport={{ once: true, amount: 0.6 }}
                       variants={staggerContainer}
                     >
                       <motion.p
@@ -3074,7 +3395,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                         }}
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: false, amount: 0.6 }}
+                        viewport={{ once: true, amount: 0.6 }}
                         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.7 }}
                       >
                        Let's personalize your experience
@@ -3087,7 +3408,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                         }}
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: false, amount: 0.6 }}
+                        viewport={{ once: true, amount: 0.6 }}
                         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.9 }}
                       >
 Tell us about your Wedding
@@ -3099,7 +3420,7 @@ Tell us about your Wedding
                       className="space-y-8 px-4"
                       initial="hidden"
                       whileInView="visible"
-                      viewport={{ once: false, amount: 0.5 }}
+                      viewport={{ once: true, amount: 0.5 }}
                       variants={staggerContainer}
                     >
                       {/* Name Field */}
@@ -3107,7 +3428,7 @@ Tell us about your Wedding
                         variants={staggerItem}
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: false, amount: 0.5 }}
+                        viewport={{ once: true, amount: 0.5 }}
                         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.1 }}
                       >
                         <input
@@ -3130,7 +3451,7 @@ Tell us about your Wedding
                         className="relative"
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: false, amount: 0.5 }}
+                        viewport={{ once: true, amount: 0.5 }}
                         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.3 }}
                       >
                         <div
@@ -3170,7 +3491,7 @@ Tell us about your Wedding
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: false, amount: 0.5 }}
+                        viewport={{ once: true, amount: 0.5 }}
                         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.5 }}
                       >
                         <motion.p
@@ -3181,7 +3502,7 @@ Tell us about your Wedding
                           }}
                           initial={{ opacity: 0, y: 20 }}
                           whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: false, amount: 0.5 }}
+                          viewport={{ once: true, amount: 0.5 }}
                           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.5 }}
                         >
                           What is your budget?
@@ -3190,7 +3511,7 @@ Tell us about your Wedding
                           className="grid grid-cols-3 gap-2"
                           initial="hidden"
                           whileInView="visible"
-                          viewport={{ once: false, amount: 0.5 }}
+                          viewport={{ once: true, amount: 0.5 }}
                           variants={staggerContainer}
                         >
                           {[
@@ -3214,7 +3535,7 @@ Tell us about your Wedding
                               variants={staggerItem}
                               initial={{ opacity: 0, scale: 0.9 }}
                               whileInView={{ opacity: 1, scale: 1 }}
-                              viewport={{ once: false, amount: 0.5 }}
+                              viewport={{ once: true, amount: 0.5 }}
                               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 1.7 + index * 0.1 }}
                             >
                               {option.label}
@@ -3227,44 +3548,56 @@ Tell us about your Wedding
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: false, amount: 0.5 }}
+                        viewport={{ once: true, amount: 0.5 }}
                         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 2.0 }}
                       >
-                        <input
-                          type="tel"
-                          inputMode="numeric"
-                          pattern="[6-9][0-9]{9}"
-                          maxLength="10"
-                          placeholder="Phone number"
-                          value={weddingFormData.phone}
-                          onChange={(e) =>
-                            handleWeddingInputChange("phone", e.target.value)
-                          }
-                          onKeyDown={(e) => {
-                            // Allow: backspace, delete, tab, escape, enter, and decimal point
-                            if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
-                              // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-                              (e.keyCode === 65 && e.ctrlKey === true) ||
-                              (e.keyCode === 67 && e.ctrlKey === true) ||
-                              (e.keyCode === 86 && e.ctrlKey === true) ||
-                              (e.keyCode === 88 && e.ctrlKey === true) ||
-                              // Allow: home, end, left, right
-                              (e.keyCode >= 35 && e.keyCode <= 39)) {
-                              return;
+                        <div className="flex gap-2">
+                          {/* Country Code Selector */}
+                          <CountryCodeSelector
+                            selectedCode={countryCode}
+                            onSelect={(code) => {
+                              setCountryCode(code);
+                              setPhoneError("");
+                            }}
+                            className="[&_button]:border-[#000000] [&_button]:text-[#000000] [&_button]:hover:border-[#000000] [&_button]:min-w-[70px] [&_button]:py-2 [&_button]:text-sm [&_div]:border-[#000000] [&_div]:text-[#000000]"
+                          />
+                          {/* Phone Input */}
+                          <input
+                            type="tel"
+                            inputMode="numeric"
+                            pattern={countryCode === "+91" ? "[6-9][0-9]{9}" : "[0-9]*"}
+                            maxLength={countryCode === "+91" ? 10 : 15}
+                            placeholder="Phone number"
+                            value={weddingFormData.phone}
+                            onChange={(e) =>
+                              handleWeddingInputChange("phone", e.target.value)
                             }
-                            // Ensure that it is a number and stop the keypress
-                            if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
-                              e.preventDefault();
-                            }
-                          }}
-                          className={`w-full bg-transparent border-0 border-b-2 py-2 text-[#000000] placeholder-[#000000] placeholder-opacity-70 text-base text-center focus:outline-none focus:ring-0 transition-all duration-300 ${
-                            phoneError ? 'border-red-500' : 'border-[#000000] focus:border-[#000000] hover:border-[#000000]'
-                          }`}
-                          style={{
-                            fontFamily: "'Spartan', sans-serif",
-                            fontWeight: 350,
-                          }}
-                        />
+                            onKeyDown={(e) => {
+                              // Allow: backspace, delete, tab, escape, enter, and decimal point
+                              if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
+                                // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                                (e.keyCode === 65 && e.ctrlKey === true) ||
+                                (e.keyCode === 67 && e.ctrlKey === true) ||
+                                (e.keyCode === 86 && e.ctrlKey === true) ||
+                                (e.keyCode === 88 && e.ctrlKey === true) ||
+                                // Allow: home, end, left, right
+                                (e.keyCode >= 35 && e.keyCode <= 39)) {
+                                return;
+                              }
+                              // Ensure that it is a number and stop the keypress
+                              if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                                e.preventDefault();
+                              }
+                            }}
+                            className={`flex-1 bg-transparent border-0 border-b-2 py-2 text-[#000000] placeholder-[#000000] placeholder-opacity-70 text-base text-center focus:outline-none focus:ring-0 transition-all duration-300 ${
+                              phoneError ? 'border-red-500' : 'border-[#000000] focus:border-[#000000] hover:border-[#000000]'
+                            }`}
+                            style={{
+                              fontFamily: "'Spartan', sans-serif",
+                              fontWeight: 350,
+                            }}
+                          />
+                        </div>
                         {phoneError && (
                           <p className="text-red-500 text-xs mt-1 text-center">
                             {phoneError}
@@ -3272,26 +3605,119 @@ Tell us about your Wedding
                         )}
                       </motion.div>
 
-                      {/* Submit Button */}
-                      <motion.div 
-                        className="mt-8 text-center"
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: false, amount: 0.5 }}
-                        transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 2.2 }}
-                      >
-                        <button
-                          type="submit"
-                          disabled={isWeddingSubmitting}
-                          className="w-full bg-[#840032] hover:bg-[#70022c] px-4 py-3 text-sm md:text-xl font-bold uppercase tracking-wide text-white rounded-xl transition-all duration-300 disabled:opacity-50"
-                          style={{
-                            fontFamily: "'Cinzel', serif",
-                            fontWeight: 300,
-                          }}
+                      {/* OTP Form - Show when OTP is sent for India */}
+                      {showOTPForm && countryCode === "+91" && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mt-6 p-4 bg-white/70 rounded-lg"
                         >
-                          {isWeddingSubmitting ? "Submitting..." : "Can't Wait to Start"}
-                        </button>
-                      </motion.div>
+                          <p className="text-[#000000] text-sm mb-4 text-center" style={{ fontFamily: "'Spartan', sans-serif", fontWeight: 400 }}>
+                            Enter the 6-digit OTP sent to {countryCode} {weddingFormData.phone}
+                          </p>
+                          <div className="flex gap-2 justify-center mb-4">
+                            {otpValue.map((digit, index) => (
+                              <input
+                                key={index}
+                                id={`otp-mobile-${index}`}
+                                type="text"
+                                inputMode="numeric"
+                                maxLength="1"
+                                value={digit}
+                                onChange={(e) => handleOtpChange(index, e.target.value, true)}
+                                onKeyDown={(e) => handleOtpKeyDown(index, e, true)}
+                                className="w-10 h-10 text-center text-base border-2 border-[#000000] rounded-lg focus:border-[#840032] focus:outline-none transition-all"
+                                style={{
+                                  fontFamily: "'Spartan', sans-serif",
+                                  fontWeight: 400,
+                                }}
+                              />
+                            ))}
+                          </div>
+                          {otpError && (
+                            <p className="text-red-500 text-xs text-center mb-4">
+                              {otpError}
+                            </p>
+                          )}
+                          <button
+                            type="button"
+                            onClick={verifyOTP}
+                            disabled={isWeddingSubmitting || otpValue.join('').length !== 6}
+                            className="w-full bg-[#840032] hover:bg-[#70022c] px-8 py-3 text-sm font-bold uppercase tracking-wide text-white rounded-xl transition-all duration-300 disabled:opacity-50"
+                            style={{
+                              fontFamily: "'Cinzel', serif",
+                              fontWeight: 300,
+                            }}
+                          >
+                            {isWeddingSubmitting ? "Verifying..." : "Verify OTP"}
+                          </button>
+                          <div className="flex flex-col gap-2 mt-2">
+                            <button
+                              type="button"
+                              onClick={resendOTP}
+                              disabled={resendCooldown > 0 || isWeddingSubmitting}
+                              className={`w-full text-[#000000] text-sm transition-all duration-300 ${
+                                resendCooldown > 0 
+                                  ? 'opacity-50 cursor-not-allowed' 
+                                  : 'hover:opacity-70 underline'
+                              }`}
+                              style={{
+                                fontFamily: "'Spartan', sans-serif",
+                                fontWeight: 350,
+                              }}
+                            >
+                              {resendCooldown > 0 
+                                ? `Resend OTP in ${resendCooldown}s` 
+                                : 'Resend OTP'
+                              }
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowOTPForm(false);
+                                setOtpSent(false);
+                                setOtpValue(["", "", "", "", "", ""]);
+                                setOtpReferenceId("");
+                                setOtpError("");
+                                setResendCooldown(0);
+                              }}
+                              className="w-full text-[#000000] text-sm underline hover:opacity-70 transition-opacity"
+                              style={{
+                                fontFamily: "'Spartan', sans-serif",
+                                fontWeight: 350,
+                              }}
+                            >
+                              Change Phone Number
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Submit Button */}
+                      {!showOTPForm && (
+                        <motion.div 
+                          className="mt-8 text-center"
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true, amount: 0.5 }}
+                          transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 2.2 }}
+                        >
+                          <button
+                            type="submit"
+                            disabled={isWeddingSubmitting}
+                            className="w-full bg-[#840032] hover:bg-[#70022c] px-4 py-3 text-sm md:text-xl font-bold uppercase tracking-wide text-white rounded-xl transition-all duration-300 disabled:opacity-50"
+                            style={{
+                              fontFamily: "'Cinzel', serif",
+                              fontWeight: 300,
+                            }}
+                          >
+                            {isWeddingSubmitting 
+                              ? (countryCode === "+91" ? "Sending OTP..." : "Submitting...") 
+                              : (countryCode === "+91" ? "Send OTP" : "Can't Wait to Start")
+                            }
+                          </button>
+                        </motion.div>
+                      )}
                     </motion.form>
                   </>
                 ) : (
@@ -3330,7 +3756,7 @@ Tell us about your Wedding
           className="relative w-full"
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: false, amount: 0.5 }}
+          viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
         >
           {/* Desktop Image */}
@@ -3338,7 +3764,7 @@ Tell us about your Wedding
             className="hidden md:block"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
           >
           <Image
@@ -3356,7 +3782,7 @@ Tell us about your Wedding
             className="block md:hidden"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
           >
           <Image
@@ -3376,7 +3802,7 @@ Tell us about your Wedding
           className="px-6 md:px-40 py-8 md:py-8"
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: false, amount: 0.6 }}
+          viewport={{ once: true, amount: 0.6 }}
           variants={staggerContainer}
         >
           <div className="max-w-7xl mx-auto">
@@ -3384,7 +3810,7 @@ Tell us about your Wedding
               className="flex flex-col"
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: false, amount: 0.5 }}
+              viewport={{ once: true, amount: 0.5 }}
               variants={staggerContainer}
             >
               {faqsData.slice(0, 5).map((faq, index) => (
@@ -3394,7 +3820,7 @@ Tell us about your Wedding
                   variants={staggerItem}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.5 }}
+                  viewport={{ once: true, amount: 0.5 }}
                   transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: index * 0.15 }}
                 >
                   <motion.button
@@ -3402,7 +3828,7 @@ Tell us about your Wedding
                     onClick={() => toggleFAQ(index)}
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: false, amount: 0.5 }}
+                    viewport={{ once: true, amount: 0.5 }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: index * 0.15 + 0.2 }}
                   >
                     <p className="text-black text-base md:text-lg font-semibold pr-4" style={{ fontFamily: 'Montserrat', letterSpacing: '0.01em' }}>
@@ -3417,7 +3843,7 @@ Tell us about your Wedding
                       strokeWidth={2}
                       initial={{ opacity: 0, scale: 0.9 }}
                       whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: false, amount: 0.5 }}
+                      viewport={{ once: true, amount: 0.5 }}
                       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: index * 0.15 + 0.3 }}
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -3448,7 +3874,7 @@ Tell us about your Wedding
               className="flex justify-center mt-8 md:mt-12"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.5 }}
+              viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 1.0 }}
             >
               <Link href="/faq">
@@ -3776,6 +4202,14 @@ Tell us about your Wedding
       <ExpertConsultModal 
         openModal={openExpertModal} 
         setOpenModal={setOpenExpertModal} 
+      />
+
+      {/* Toast Notification */}
+      <NotificationToast
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ show: false, message: "", type: "error" })}
       />
 
     </>
