@@ -1842,7 +1842,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
             >
                 <button
-                onClick={() => setOpenExpertModal(true)}
+                onClick={() => document.getElementById('wedding-requirement-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                   className="w-full bg-black text-white py-4 px-8 rounded-2xl tracking-widest text-sm
                           hover:bg-gray-800 transition-all duration-300 ease-in-out cursor-pointer"
                   style={{
@@ -2054,7 +2054,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
 
               {/* Button - Below Image */}
               <motion.button
-                onClick={() => setOpenExpertModal(true)}
+                onClick={() => document.getElementById('wedding-requirement-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 className="mt-10 lg:ml-20 bg-black text-white py-4 px-12 rounded-xl tracking-widest text-sm
                           hover:bg-gray-800 transition-all duration-300 ease-in-out cursor-pointer"
                   style={{
