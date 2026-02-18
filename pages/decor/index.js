@@ -5,7 +5,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightList = [] }) {
+function Decor({
+  bestSellerBackdrops = [],
+  grandEntry = [],
+  bestSellerMandaps = [],
+  furniture = [],
+  popular = [],
+  userLoggedIn,
+  user,
+  spotlightList = [],
+}) {
   const [spotlightIndex, setSpotlightIndex] = useState(0);
   const spotlightRef = useRef(null);
   const spotlightHorizontalRef = useRef(null);
@@ -147,88 +156,68 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
     }
   };
 
-  // Best Seller handlers
+  // Best Seller (Backdrops) handlers
   const handleBestSellerPrev = () => {
-    const length = bestSeller ? bestSeller.length : 0;
+    const length = bestSellerBackdrops?.length ?? 0;
     if (length === 0) return;
-    const newIndices = bestSellerIndex.map(index =>
-      (index - 1 + length) % length
-    );
+    const newIndices = bestSellerIndex.map((index) => (index - 1 + length) % length);
     setBestSellerIndex(newIndices);
-    setBestSellerSlideOffset(prev => prev + 457);
+    setBestSellerSlideOffset((prev) => prev + 457);
   };
-
   const handleBestSellerNext = () => {
-    const length = bestSeller ? bestSeller.length : 0;
+    const length = bestSellerBackdrops?.length ?? 0;
     if (length === 0) return;
-    const newIndices = bestSellerIndex.map(index =>
-      (index + 1) % length
-    );
+    const newIndices = bestSellerIndex.map((index) => (index + 1) % length);
     setBestSellerIndex(newIndices);
-    setBestSellerSlideOffset(prev => prev - 457);
+    setBestSellerSlideOffset((prev) => prev - 457);
   };
 
   // Grand Entry handlers
   const handleGrandEntryPrev = () => {
-    const length = bestSeller ? bestSeller.length : 0;
+    const length = grandEntry?.length ?? 0;
     if (length === 0) return;
-    const newIndices = grandEntryIndex.map(index =>
-      (index - 1 + length) % length
-    );
+    const newIndices = grandEntryIndex.map((index) => (index - 1 + length) % length);
     setGrandEntryIndex(newIndices);
-    setGrandEntrySlideOffset(prev => prev + 457);
+    setGrandEntrySlideOffset((prev) => prev + 457);
   };
-
   const handleGrandEntryNext = () => {
-    const length = bestSeller ? bestSeller.length : 0;
+    const length = grandEntry?.length ?? 0;
     if (length === 0) return;
-    const newIndices = grandEntryIndex.map(index =>
-      (index + 1) % length
-    );
+    const newIndices = grandEntryIndex.map((index) => (index + 1) % length);
     setGrandEntryIndex(newIndices);
-    setGrandEntrySlideOffset(prev => prev - 457);
+    setGrandEntrySlideOffset((prev) => prev - 457);
   };
 
   // Mandaps handlers
   const handleMandapsPrev = () => {
-    const length = bestSeller ? bestSeller.length : 0;
+    const length = bestSellerMandaps?.length ?? 0;
     if (length === 0) return;
-    const newIndices = mandapsIndex.map(index =>
-      (index - 1 + length) % length
-    );
+    const newIndices = mandapsIndex.map((index) => (index - 1 + length) % length);
     setMandapsIndex(newIndices);
-    setMandapsSlideOffset(prev => prev + 457);
+    setMandapsSlideOffset((prev) => prev + 457);
   };
-
   const handleMandapsNext = () => {
-    const length = bestSeller ? bestSeller.length : 0;
+    const length = bestSellerMandaps?.length ?? 0;
     if (length === 0) return;
-    const newIndices = mandapsIndex.map(index =>
-      (index + 1) % length
-    );
+    const newIndices = mandapsIndex.map((index) => (index + 1) % length);
     setMandapsIndex(newIndices);
-    setMandapsSlideOffset(prev => prev - 457);
+    setMandapsSlideOffset((prev) => prev - 457);
   };
 
   // Furniture handlers
   const handleFurniturePrev = () => {
-    const length = bestSeller ? bestSeller.length : 0;
+    const length = furniture?.length ?? 0;
     if (length === 0) return;
-    const newIndices = furnitureIndex.map(index =>
-      (index - 1 + length) % length
-    );
+    const newIndices = furnitureIndex.map((index) => (index - 1 + length) % length);
     setFurnitureIndex(newIndices);
-    setFurnitureSlideOffset(prev => prev + 457);
+    setFurnitureSlideOffset((prev) => prev + 457);
   };
-
   const handleFurnitureNext = () => {
-    const length = bestSeller ? bestSeller.length : 0;
+    const length = furniture?.length ?? 0;
     if (length === 0) return;
-    const newIndices = furnitureIndex.map(index =>
-      (index + 1) % length
-    );
+    const newIndices = furnitureIndex.map((index) => (index + 1) % length);
     setFurnitureIndex(newIndices);
-    setFurnitureSlideOffset(prev => prev - 457);
+    setFurnitureSlideOffset((prev) => prev - 457);
   };
 
   useEffect(() => {
@@ -268,7 +257,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
     "name": "Wedding Decoration Items",
     "description": "Browse our collection of wedding decoration items including stages, mandaps, pathways, entrances, and more",
     "itemListElement": [
-      ...(bestSeller?.slice(0, 10) || []).map((item, index) => ({
+      ...(bestSellerBackdrops?.slice(0, 10) || []).map((item, index) => ({
         "@type": "ListItem",
         "position": index + 1,
         "name": item.name,
@@ -340,73 +329,63 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
   // Optimized carousel - reduced frequency for better performance
   useEffect(() => {
-    if (!bestSeller || bestSeller.length === 0) return;
+    const hasAny =
+      (bestSellerBackdrops?.length > 0) ||
+      (grandEntry?.length > 0) ||
+      (bestSellerMandaps?.length > 0) ||
+      (furniture?.length > 0);
+    if (!hasAny) return;
 
     let animationId;
     let lastTime = Date.now();
-    // Slower speed: one item width every 8 seconds for better performance
-    const constantSpeedPerSecond = itemWidth / 8; // pixels per second
+    const constantSpeedPerSecond = itemWidth / 8;
     let accumulatedMovement = 0;
 
     const animate = () => {
       const currentTime = Date.now();
       const deltaTime = currentTime - lastTime;
       lastTime = currentTime;
-
-      // Calculate constant movement amount for this frame
       const constantMovement = (deltaTime / 1000) * constantSpeedPerSecond;
       accumulatedMovement += constantMovement;
 
-      // Only update if movement is significant enough (performance optimization)
-      if (accumulatedMovement >= 2) { // Increased threshold for fewer updates
+      if (accumulatedMovement >= 2) {
         const movementToApply = Math.floor(accumulatedMovement);
         accumulatedMovement -= movementToApply;
-
-        // Batch all updates together for better performance
         const updates = {};
-        
-        if (!isPaused.backdrops) {
+
+        if (!isPaused.backdrops && bestSellerBackdrops?.length > 0) {
+          const len = Math.min(bestSellerBackdrops.length, 6);
           updates.backdrops = (prev) => {
             let newX = prev - movementToApply;
-            const resetThreshold = -(Math.min(bestSeller.length, 6) * itemWidth);
-            if (newX <= resetThreshold) {
-              newX += Math.min(bestSeller.length, 6) * itemWidth;
-            }
+            if (newX <= -len * itemWidth) newX += len * itemWidth;
             return newX;
           };
         }
-        if (!isPaused.grandEntry) {
+        if (!isPaused.grandEntry && grandEntry?.length > 0) {
+          const len = Math.min(grandEntry.length, 6);
           updates.grandEntry = (prev) => {
             let newX = prev - movementToApply;
-            const resetThreshold = -(Math.min(bestSeller.length, 6) * itemWidth);
-            if (newX <= resetThreshold) {
-              newX += Math.min(bestSeller.length, 6) * itemWidth;
-            }
+            if (newX <= -len * itemWidth) newX += len * itemWidth;
             return newX;
           };
         }
-        if (!isPaused.mandaps) {
+        if (!isPaused.mandaps && bestSellerMandaps?.length > 0) {
+          const len = Math.min(bestSellerMandaps.length, 6);
           updates.mandaps = (prev) => {
             let newX = prev - movementToApply;
-            const resetThreshold = -(Math.min(bestSeller.length, 6) * itemWidth);
-            if (newX <= resetThreshold) {
-              newX += Math.min(bestSeller.length, 6) * itemWidth;
-            }
+            if (newX <= -len * itemWidth) newX += len * itemWidth;
             return newX;
           };
         }
-        if (!isPaused.furniture) {
+        if (!isPaused.furniture && furniture?.length > 0) {
+          const len = Math.min(furniture.length, 6);
           updates.furniture = (prev) => {
             let newX = prev - movementToApply;
-            const resetThreshold = -(Math.min(bestSeller.length, 6) * itemWidth);
-            if (newX <= resetThreshold) {
-              newX += Math.min(bestSeller.length, 6) * itemWidth;
-            }
+            if (newX <= -len * itemWidth) newX += len * itemWidth;
             return newX;
           };
         }
 
-        // Apply all updates
         if (updates.backdrops) setBackdropsTranslateX(updates.backdrops);
         if (updates.grandEntry) setGrandEntryTranslateX(updates.grandEntry);
         if (updates.mandaps) setMandapsTranslateX(updates.mandaps);
@@ -416,13 +395,16 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
       animationId = requestAnimationFrame(animate);
     };
 
-    // Start the animation
     animationId = requestAnimationFrame(animate);
-
-    return () => {
-      cancelAnimationFrame(animationId);
-    };
-  }, [bestSeller, isPaused, itemWidth]);
+    return () => cancelAnimationFrame(animationId);
+  }, [
+    bestSellerBackdrops,
+    grandEntry,
+    bestSellerMandaps,
+    furniture,
+    isPaused,
+    itemWidth,
+  ]);
 
   return (
     <div className="bg-[#F4F4F4] min-h-screen w-full">
@@ -676,7 +658,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
             {categoryList.slice(0, 8).map((item, index) => (
               <div
                 key={index}
-                className="group w-full h-[80px] sm:h-[100px] relative rounded-md overflow-hidden opacity-100 shadow-md transform transition duration-300 hover:scale-[1.03]"
+                className="group w-full h-[80px] sm:h-[100px] lg:h-[80px] relative rounded-md overflow-hidden opacity-100 shadow-md transform transition duration-300 hover:scale-[1.03]"
               >
                 <Link href={`/decor/view?category=${item}`} className="block w-full h-full">
                   <img
@@ -704,14 +686,14 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
               <div className="flex justify-start md:justify-center w-full sm:px-0">
                 <div
                   onClick={() => setShowAllCategories(!showAllCategories)}
-                  className="w-[calc(50%-0.5rem)] sm:max-w-[calc(50%-1.5rem)] md:max-w-[calc(50%-2rem)] h-[35px] sm:h-[100px] relative rounded-md overflow-hidden opacity-100 shadow-md transform transition duration-300 hover:scale-[1.03] bg-[#FFFFFF] flex items-center justify-start sm:justify-center cursor-pointer"
+                  className="w-[calc(50%-0.5rem)] sm:max-w-[calc(50%-1.5rem)] md:max-w-[calc(50%-2rem)] h-[35px] sm:h-[100px] lg:h-[80px] relative rounded-md overflow-hidden opacity-100 shadow-md transform transition duration-300 hover:scale-[1.03] bg-[#FFFFFF] flex items-center justify-start sm:justify-center cursor-pointer"
                 >
                   <div className="flex items-center gap-3 text-black px-3 sm:px-0">
                     <span className="text-[10px] sm:text-[24px] md:text-[28px] font-normal tracking-[2px] uppercase">
                       {showAllCategories ? 'VIEW LESS' : 'VIEW MORE'}
                     </span>
                     <svg
-                      className={`w-4 h-4 md:w-5 md:h-5 transition-transform duration-300 ${showAllCategories ? 'rotate-180' : ''}`}
+                      className={`w-4 h-4 md:w-5 md:h-5 transition-transform duration-300 ${showAllCategories ? '' : 'rotate-180'}`}
                       viewBox="0 0 18 11"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
@@ -889,11 +871,11 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 className="flex gap-6"
                 style={{
                   transform: `translateX(${backdropsTranslateX}px)`,
-                  width: `${Math.min(bestSeller.length, 6) * 3 * itemWidth}px` // Triple width for seamless circular flow
+                  width: `${Math.min(bestSellerBackdrops.length, 6) * 3 * itemWidth}px` // Triple width for seamless circular flow
                 }}
               >
                 {/* Render cards three times for seamless circular loop */}
-                    {[...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6)].map((decor, index) => (
+                    {[...bestSellerBackdrops.slice(0, 6), ...bestSellerBackdrops.slice(0, 6), ...bestSellerBackdrops.slice(0, 6)].map((decor, index) => (
                   <div 
                     key={`backdrops-${index}`} 
                     className="carousel-item relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
@@ -924,17 +906,17 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
               style={{ scrollBehavior: 'auto' }}
               onScroll={(e) => {
                 const scrollLeft = e.target.scrollLeft;
-                const slideWidth = e.target.scrollWidth / Math.ceil(bestSeller.length / 4);
+                const slideWidth = e.target.scrollWidth / Math.ceil(bestSellerBackdrops.length / 4);
                 const newSlide = Math.round(scrollLeft / slideWidth);
                 setCurrentSlide(newSlide);
               }}
             >
-              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, groupIndex) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSellerBackdrops.length, 8) / 4) }, (_, groupIndex) => (
                 <div
                   key={groupIndex}
                   className="min-w-full snap-start grid grid-cols-2 gap-4"
                 >
-                  {bestSeller
+                  {bestSellerBackdrops
                     .slice(groupIndex * 4, groupIndex * 4 + 4)
                     .map((item, index) => (
                       <div key={index}>
@@ -951,7 +933,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* Dots below slider*/}
             <div className="flex gap-2 items-center justify-center mt-4">
-              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, i) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSellerBackdrops.length, 8) / 4) }, (_, i) => (
                 <span
                   key={i}
                   className={`rounded-full h-2 w-2 cursor-pointer transition-colors duration-300 ${i === currentSlide ? 'bg-black' : 'bg-gray-400'
@@ -959,7 +941,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                   onClick={() => {
                     const slider = document.querySelector('.overflow-x-auto');
                     if (slider) {
-                      const slideWidth = slider.scrollWidth / Math.ceil(bestSeller.length / 4);
+                      const slideWidth = slider.scrollWidth / Math.ceil(bestSellerBackdrops.length / 4);
                       slider.scrollTo({
                         left: i * slideWidth,
                         behavior: 'smooth'
@@ -1017,15 +999,8 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
             }}
           >
             <div className="flex gap-6 justify-center w-full overflow-hidden carousel-container">
-              <div 
-                className="flex gap-6"
-                style={{
-                  transform: `translateX(${grandEntryTranslateX}px)`,
-                  width: `${Math.min(bestSeller.length, 6) * 3 * itemWidth}px` // Triple width for seamless circular flow
-                }}
-              >
-                {/* Render cards three times for seamless circular loop */}
-                    {[...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6)].map((decor, index) => (
+              <div className="flex gap-6" style={{ transform: `translateX(${grandEntryTranslateX}px)`, width: `${Math.min(grandEntry.length, 6) * 3 * itemWidth}px` }}>
+                {[...grandEntry.slice(0, 6), ...grandEntry.slice(0, 6), ...grandEntry.slice(0, 6)].map((decor, index) => (
                   <div 
                     key={`grandEntry-${index}`} 
                     className="carousel-item relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
@@ -1056,17 +1031,17 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
               style={{ scrollBehavior: 'auto' }}
               onScroll={(e) => {
                 const scrollLeft = e.target.scrollLeft;
-                const slideWidth = e.target.scrollWidth / Math.ceil(bestSeller.length / 4);
+                const slideWidth = e.target.scrollWidth / Math.ceil(grandEntry.length / 4);
                 const newSlide = Math.round(scrollLeft / slideWidth);
                 setCurrentSlide(newSlide);
               }}
             >
-              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, groupIndex) => (
+              {Array.from({ length: Math.ceil(Math.min(grandEntry.length, 8) / 4) }, (_, groupIndex) => (
                 <div
                   key={groupIndex}
                   className="min-w-full snap-start grid grid-cols-2 gap-4"
                 >
-                  {bestSeller
+                  {grandEntry
                     .slice(groupIndex * 4, groupIndex * 4 + 4)
                     .map((item, index) => (
                       <div key={index}>
@@ -1083,7 +1058,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* Dots below slider*/}
             <div className="flex gap-2 items-center justify-center mt-4">
-              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, i) => (
+              {Array.from({ length: Math.ceil(Math.min(grandEntry.length, 8) / 4) }, (_, i) => (
                 <span
                   key={i}
                   className={`rounded-full h-2 w-2 cursor-pointer transition-colors duration-300 ${i === currentSlide ? 'bg-black' : 'bg-gray-400'
@@ -1091,7 +1066,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                   onClick={() => {
                     const slider = document.querySelector('.overflow-x-auto');
                     if (slider) {
-                      const slideWidth = slider.scrollWidth / Math.ceil(bestSeller.length / 4);
+                      const slideWidth = slider.scrollWidth / Math.ceil(grandEntry.length / 4);
                       slider.scrollTo({
                         left: i * slideWidth,
                         behavior: 'smooth'
@@ -1306,11 +1281,11 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                 className="flex gap-6"
                 style={{
                   transform: `translateX(${mandapsTranslateX}px)`,
-                  width: `${Math.min(bestSeller.length, 6) * 3 * itemWidth}px` // Triple width for seamless circular flow
+                  width: `${Math.min(bestSellerMandaps.length, 6) * 3 * itemWidth}px` // Triple width for seamless circular flow
                 }}
               >
                 {/* Render cards three times for seamless circular loop */}
-                    {[...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6)].map((decor, index) => (
+                    {[...bestSellerMandaps.slice(0, 6), ...bestSellerMandaps.slice(0, 6), ...bestSellerMandaps.slice(0, 6)].map((decor, index) => (
                   <div 
                     key={`mandaps-${index}`} 
                     className="carousel-item relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
@@ -1341,17 +1316,17 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
               style={{ scrollBehavior: 'auto' }}
               onScroll={(e) => {
                 const scrollLeft = e.target.scrollLeft;
-                const slideWidth = e.target.scrollWidth / Math.ceil(bestSeller.length / 4);
+                const slideWidth = e.target.scrollWidth / Math.ceil(bestSellerMandaps.length / 4);
                 const newSlide = Math.round(scrollLeft / slideWidth);
                 setCurrentSlide(newSlide);
               }}
             >
-              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, groupIndex) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSellerMandaps.length, 8) / 4) }, (_, groupIndex) => (
                 <div
                   key={groupIndex}
                   className="min-w-full snap-start grid grid-cols-2 gap-4"
                 >
-                  {bestSeller
+                  {bestSellerMandaps
                     .slice(groupIndex * 4, groupIndex * 4 + 4)
                     .map((item, index) => (
                       <div key={index}>
@@ -1368,7 +1343,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* Dots below slider*/}
             <div className="flex gap-2 items-center justify-center mt-4">
-              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, i) => (
+              {Array.from({ length: Math.ceil(Math.min(bestSellerMandaps.length, 8) / 4) }, (_, i) => (
                 <span
                   key={i}
                   className={`rounded-full h-2 w-2 cursor-pointer transition-colors duration-300 ${i === currentSlide ? 'bg-black' : 'bg-gray-400'
@@ -1376,7 +1351,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                   onClick={() => {
                     const slider = document.querySelector('.overflow-x-auto');
                     if (slider) {
-                      const slideWidth = slider.scrollWidth / Math.ceil(bestSeller.length / 4);
+                      const slideWidth = slider.scrollWidth / Math.ceil(bestSellerMandaps.length / 4);
                       slider.scrollTo({
                         left: i * slideWidth,
                         behavior: 'smooth'
@@ -1434,15 +1409,8 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
             }}
           >
             <div className="flex gap-6 justify-center w-full overflow-hidden carousel-container">
-              <div 
-                className="flex gap-6"
-                style={{
-                  transform: `translateX(${furnitureTranslateX}px)`,
-                  width: `${Math.min(bestSeller.length, 6) * 3 * itemWidth}px` // Triple width for seamless circular flow
-                }}
-              >
-                {/* Render cards three times for seamless circular loop */}
-                    {[...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6), ...bestSeller.slice(0, 6)].map((decor, index) => (
+              <div className="flex gap-6" style={{ transform: `translateX(${furnitureTranslateX}px)`, width: `${Math.min(furniture.length, 6) * 3 * itemWidth}px` }}>
+                {[...furniture.slice(0, 6), ...furniture.slice(0, 6), ...furniture.slice(0, 6)].map((decor, index) => (
                   <div 
                     key={`furniture-${index}`} 
                     className="carousel-item relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
@@ -1473,17 +1441,17 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
               style={{ scrollBehavior: 'auto' }}
               onScroll={(e) => {
                 const scrollLeft = e.target.scrollLeft;
-                const slideWidth = e.target.scrollWidth / Math.ceil(bestSeller.length / 4);
+                const slideWidth = e.target.scrollWidth / Math.ceil(furniture.length / 4);
                 const newSlide = Math.round(scrollLeft / slideWidth);
                 setCurrentSlide(newSlide);
               }}
             >
-              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, groupIndex) => (
+              {Array.from({ length: Math.ceil(Math.min(furniture.length, 8) / 4) }, (_, groupIndex) => (
                 <div
                   key={groupIndex}
                   className="min-w-full snap-start grid grid-cols-2 gap-4"
                 >
-                  {bestSeller
+                  {furniture
                     .slice(groupIndex * 4, groupIndex * 4 + 4)
                     .map((item, index) => (
                       <div key={index}>
@@ -1500,7 +1468,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
 
             {/* Dots below slider*/}
             <div className="flex gap-2 items-center justify-center mt-4">
-              {Array.from({ length: Math.ceil(Math.min(bestSeller.length, 8) / 4) }, (_, i) => (
+              {Array.from({ length: Math.ceil(Math.min(furniture.length, 8) / 4) }, (_, i) => (
                 <span
                   key={i}
                   className={`rounded-full h-2 w-2 cursor-pointer transition-colors duration-300 ${i === currentSlide ? 'bg-black' : 'bg-gray-400'
@@ -1508,7 +1476,7 @@ function Decor({ bestSeller = [], popular = [], userLoggedIn, user, spotlightLis
                   onClick={() => {
                     const slider = document.querySelector('.overflow-x-auto');
                     if (slider) {
-                      const slideWidth = slider.scrollWidth / Math.ceil(bestSeller.length / 4);
+                      const slideWidth = slider.scrollWidth / Math.ceil(furniture.length / 4);
                       slider.scrollTo({
                         left: i * slideWidth,
                         behavior: 'smooth'
@@ -2019,7 +1987,10 @@ export async function getServerSideProps(context) {
       console.warn("NEXT_PUBLIC_API_URL not configured; returning empty decor lists");
       return {
         props: {
-          bestSeller: [],
+          bestSellerBackdrops: [],
+          grandEntry: [],
+          bestSellerMandaps: [],
+          furniture: [],
           popular: [],
           spotlightList: [],
         },
@@ -2044,29 +2015,52 @@ export async function getServerSideProps(context) {
       return res.json().catch(() => null);
     };
 
-    const [bestSellerData, popularData, spotlightListData] = await Promise.all([
-      fetchJson(`${apiUrl}/decor?label=bestSeller`),
+    const [
+      bestSellerBackdropsData,
+      grandEntryData,
+      bestSellerMandapsData,
+      furnitureData,
+      popularData,
+      spotlightListData,
+    ] = await Promise.all([
+      fetchJson(`${apiUrl}/decor?label=bestSeller&category=Stage`),
+      fetchJson(`${apiUrl}/decor?category=Entrance`),
+      fetchJson(`${apiUrl}/decor?label=bestSeller&category=Mandap`),
+      fetchJson(`${apiUrl}/decor?category=Furniture`),
       fetchJson(`${apiUrl}/decor?label=popular`),
       fetchJson(`${apiUrl}/decor?spotlight=true&random=false`),
     ]);
 
-    const bestSeller = Array.isArray(bestSellerData?.list)
-      ? bestSellerData.list.sort((a, b) => 0.5 - Math.random())
-      : [];
-    const popular = Array.isArray(popularData?.list)
-      ? popularData.list.sort((a, b) => 0.5 - Math.random())
-      : [];
-    const spotlightList = Array.isArray(spotlightListData?.list)
-      ? spotlightListData.list
-      : [];
+    const toList = (data) =>
+      Array.isArray(data?.list) ? data.list.sort((a, b) => 0.5 - Math.random()) : [];
+    const bestSellerBackdrops = toList(bestSellerBackdropsData);
+    const grandEntry = toList(grandEntryData);
+    const bestSellerMandaps = toList(bestSellerMandapsData);
+    const furniture = toList(furnitureData);
+    const popular = toList(popularData);
+    const spotlightList = Array.isArray(spotlightListData?.list) ? spotlightListData.list : [];
 
     return {
-      props: { bestSeller, popular, spotlightList },
+      props: {
+        bestSellerBackdrops,
+        grandEntry,
+        bestSellerMandaps,
+        furniture,
+        popular,
+        spotlightList,
+      },
     };
   } catch (error) {
     console.error("Error fetching data:", error);
     return {
-      props: { bestSeller: [], popular: [], spotlightList: [] },
+      props: {
+        bestSellerBackdrops: [],
+        grandEntry: [],
+        bestSellerMandaps: [],
+        furniture: [],
+        popular: [],
+        spotlightList: [],
+      },
     };
   }
 }
