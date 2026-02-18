@@ -97,16 +97,16 @@ export default function EventTool({ user }) {
       });
   };
   const fetchEvent = () => {
-    fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/event/${event_id}?populate=true&display=true`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    )
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/event/${event_id}?populate=true&display=true`;
+    const share = router.query.share;
+    const fullUrl = share ? `${url}&share=${share}` : url;
+    fetch(fullUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
       .then((response) => response.json())
       .then((response) => {
         if (response.message !== "error") {
@@ -133,13 +133,13 @@ export default function EventTool({ user }) {
       });
   };
   useEffect(() => {
-    if (event_id) {
+    if (router.isReady && event_id) {
       fetchEvent();
       fetchCategoryList();
       fetchFlooringInfo();
       fetchPlatformInfo();
     }
-  }, [router, event_id]);
+  }, [router.isReady, event_id]);
   useEffect(() => {
     const handleResize = () => {
       if (divRef.current) {
@@ -260,9 +260,9 @@ export default function EventTool({ user }) {
                     )}
                   />
                   {tempEventDay?.decorItems.length <= 0 &&
-                  tempEventDay?.packages.length <= 0 &&
-                  tempEventDay?.customItems.length <= 0 &&
-                  tempEventDay?.mandatoryItems.length <= 0 ? (
+                    tempEventDay?.packages.length <= 0 &&
+                    tempEventDay?.customItems.length <= 0 &&
+                    tempEventDay?.mandatoryItems.length <= 0 ? (
                     <p className="text-center py-8">
                       No decor selected.{" "}
                       <Link href={"/decor"} className="underline">

@@ -8,7 +8,7 @@ export default function EventToolShareButton({ eventName, eventId }) {
         data={{
           title: `EventPlanner - ${eventName}`,
           text: `Check out the Wedsy's event plan for ${eventName}.`,
-          url: `https://www.wedsy.in/event/${eventId}/view`,
+          url: `${process.env.NEXT_PUBLIC_USER_APP_URL || "https://www.wedsy.in"}/event/${eventId}/view`,
         }}
         onClick={() => console.log("Event shared successfully!")}
       >
