@@ -95,3 +95,12 @@
     height: auto !important ;
   }
 }
+
+/* Hide scrollbar on carousel while keeping scroll/swipe */
+.scrollbar_hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar_hide::-webkit-scrollbar {
+  display: none;
+}

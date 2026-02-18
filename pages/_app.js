@@ -99,6 +99,69 @@ function App({ Component, pageProps }) {
     };
   }, [router.events]);
 
+  // Global WhatsApp sticky widget (Kraya AI) - icon only, no "WhatsApp Us" text
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.chatWidgetConfig = {
+      whatsappNumber: "916364014464",
+      welcomeMessage: "Hey 👋,\nHow can we help you?",
+      buttonText: "", // empty = show only WhatsApp logo
+      profileName: "Kraya AI",
+      profileImageUrl: "https://api.kraya-ai.com/images/kraya-logo.png",
+      appUrl: "https://api.kraya-ai.com",
+    };
+    const script = document.createElement("script");
+    script.src = "https://api.kraya-ai.com/widget/chat.js?v=1771335055790";
+    script.async = true;
+    document.head.appendChild(script);
+    // Hide "WhatsApp Us" text + push widget above bottom nav on phone
+    const styleId = "kraya-widget-icon-only";
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = `
+        .kraya-floating-whatsapp-text-cont { display: none !important; }
+        @media (max-width: 768px) {
+          #chat-widget-container,
+          .kraya-floating-chat-container,
+          .kraya-floating-whatsapp-container { bottom: 110px !important; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    // Force position via JS — MutationObserver overrides widget when it (re)injects inline styles
+    const BOTTOM_MOBILE = "120px"; // adjust if needed
+
+    const updateWidgetPosition = () => {
+      if (window.innerWidth > 768) return;
+
+      const el =
+        document.querySelector(".kraya-floating-chat-container") ||
+        document.querySelector("#chat-widget-container");
+
+      if (el) {
+        el.style.setProperty("bottom", BOTTOM_MOBILE, "important");
+      }
+    };
+
+    // Observe DOM + style changes (widget loads async and may re-apply inline styles)
+    const observer = new MutationObserver(() => {
+      updateWidgetPosition();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["style"],
+    });
+
+    // Initial call
+    updateWidgetPosition();
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
       <Head>

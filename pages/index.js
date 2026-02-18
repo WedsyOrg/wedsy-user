@@ -59,6 +59,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const videoRef = useRef(null);
   const mobileVideoRef = useRef(null);
+  const trendingCarouselRef = useRef(null);
+  const [trendingSlideIndex, setTrendingSlideIndex] = useState(0);
 
   // Reviews data
   const reviews = [
@@ -75,6 +77,22 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
 
     return () => clearInterval(interval);
   }, [reviews.length]);
+
+  // Wedding planning cards carousel: auto-slide on mobile (3 cards)
+  const TRENDING_CARDS_COUNT = 3;
+  useEffect(() => {
+    const el = trendingCarouselRef.current;
+    if (!el) return;
+    const interval = setInterval(() => {
+      setTrendingSlideIndex((prev) => {
+        const next = (prev + 1) % TRENDING_CARDS_COUNT;
+        const slideWidth = el.scrollWidth / TRENDING_CARDS_COUNT;
+        el.scrollTo({ left: next * slideWidth, behavior: "smooth" });
+        return next;
+      });
+    }, 4500);
+    return () => clearInterval(interval);
+  }, []);
   
   const categoryList = [
     "Stage",
@@ -1612,7 +1630,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
         </div>
 
         {/* Get Quote Button */}
-        <div className="w-full flex z-10 justify-center items-center -mt-4 md:-mt-6">
+        <div className="w-full flex z-10 justify-center items-center mt-6 md:-mt-6">
             <button
             onClick={() => {
               // if (!userLoggedIn) {
@@ -2648,7 +2666,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
       <div className="py-6 md:py-8 px-6 md:px-40">
         <div className="max-w-7xl mx-auto">
           <motion.h2 
-            className="text-2xl md:text-4xl lg:text-4xl font-semibold mb-10 md:mb-4 hidden md:block"
+            className="text-2xl md:text-4xl lg:text-4xl font-semibold mb-4 md:mb-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.6 }}
@@ -2658,26 +2676,34 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
           </motion.h2>
 
           <motion.p
-            className="text-base font-semibold md:text-lg mb-10 md:mb-8 hidden md:block"
+            className="text-base font-semibold md:text-lg mb-6 md:mb-8"
             style={{ color: '#840032' }}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.6 }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
           >
-            Practical guides on venues,decor,budgets,vendors and real wedding costs.
+            Practical guides on venues, decor, budgets, vendors and real wedding costs.
           </motion.p>
 
           <motion.div 
-            className="flex flex-col md:flex-row gap-6"
+            ref={trendingCarouselRef}
+            className={`flex gap-6 overflow-x-auto overflow-y-hidden snap-x snap-mandatory md:overflow-visible md:snap-none scroll-smooth -mx-6 px-6 md:mx-0 md:px-0 ${styles.scrollbar_hide}`}
+            style={{ WebkitOverflowScrolling: 'touch' }}
+            onScroll={() => {
+              const el = trendingCarouselRef.current;
+              if (!el) return;
+              const slideWidth = el.scrollWidth / TRENDING_CARDS_COUNT;
+              const index = Math.round(el.scrollLeft / (slideWidth || 1));
+              setTrendingSlideIndex(Math.min(Math.max(0, index), TRENDING_CARDS_COUNT - 1));
+            }}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.5 }}
             variants={staggerContainer}
           >
-            
             <motion.div 
-              className="relative flex-1 h-64 md:h-80 bg-gray-300 overflow-hidden group"
+              className="relative flex-[0_0_85vw] md:flex-1 h-56 md:h-80 bg-gray-100 overflow-hidden group snap-center shrink-0 md:min-w-0"
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, amount: 0.5 }}
@@ -2690,14 +2716,14 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                 src="/assets/landing_v2/B3.png"
                 alt="Trending Image 1"
                 layout="fill"
-                objectFit="cover"
-                className="transition-transform  duration-300 group-hover:scale-105 hover:cursor-pointer"
+                objectFit="contain"
+                className="transition-transform duration-300 group-hover:scale-105 hover:cursor-pointer"
               />
             </motion.div>
 
             
             <motion.div 
-              className="relative flex-1 h-64 md:h-80 bg-gray-300 overflow-hidden  group"
+              className="relative flex-[0_0_85vw] md:flex-1 h-56 md:h-80 bg-gray-100 overflow-hidden group snap-center shrink-0 md:min-w-0"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.5 }}
@@ -2710,14 +2736,14 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                 src="/assets/landing_v2/B2.png"
                 alt="Trending Image 2"
                 layout="fill"
-                objectFit="cover"
+                objectFit="contain"
                 className="transition-transform duration-300 group-hover:scale-105 hover:cursor-pointer"
               />
             </motion.div>
 
             
             <motion.div 
-              className="relative flex-1 h-64 md:h-80 bg-gray-300 overflow-hidden group"
+              className="relative flex-[0_0_85vw] md:flex-1 h-56 md:h-80 bg-gray-100 overflow-hidden group snap-center shrink-0 md:min-w-0"
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, amount: 0.5 }}
@@ -2730,11 +2756,31 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                 src="/assets/landing_v2/B1.png"
                 alt="Trending Image 3"
                 layout="fill"
-                objectFit="cover"
+                objectFit="contain"
                 className="transition-transform duration-300 group-hover:scale-105 hover:cursor-pointer"
               />
             </motion.div>
           </motion.div>
+
+          {/* Carousel dots - mobile only */}
+          <div className="flex justify-center gap-2 mt-4 md:hidden">
+            {[0, 1, 2].map((i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Go to slide ${i + 1}`}
+                onClick={() => {
+                  const el = trendingCarouselRef.current;
+                  if (el) {
+                    setTrendingSlideIndex(i);
+                    const slideWidth = el.scrollWidth / TRENDING_CARDS_COUNT;
+                    el.scrollTo({ left: i * slideWidth, behavior: 'smooth' });
+                  }
+                }}
+                className={`w-2 h-2 rounded-full transition-colors ${trendingSlideIndex === i ? 'bg-[#AD7200] scale-125' : 'bg-gray-300'}`}
+              />
+            ))}
+          </div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -3551,7 +3597,7 @@ Tell us about your Wedding
                         viewport={{ once: true, amount: 0.5 }}
                         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 2.0 }}
                       >
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 min-w-0 overflow-hidden">
                           {/* Country Code Selector */}
                           <CountryCodeSelector
                             selectedCode={countryCode}
@@ -3589,7 +3635,7 @@ Tell us about your Wedding
                                 e.preventDefault();
                               }
                             }}
-                            className={`flex-1 bg-transparent border-0 border-b-2 py-2 text-[#000000] placeholder-[#000000] placeholder-opacity-70 text-base text-center focus:outline-none focus:ring-0 transition-all duration-300 ${
+                            className={`flex-1 min-w-0 bg-transparent border-0 border-b-2 py-2 text-[#000000] placeholder-[#000000] placeholder-opacity-70 text-base text-center focus:outline-none focus:ring-0 transition-all duration-300 ${
                               phoneError ? 'border-red-500' : 'border-[#000000] focus:border-[#000000] hover:border-[#000000]'
                             }`}
                             style={{
