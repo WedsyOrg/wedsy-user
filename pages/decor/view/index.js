@@ -147,11 +147,21 @@ function DecorListing({
   const isEntranceCategory = (filters.category || "").toLowerCase() === "entrance";
   const isPathwayCategory = (filters.category || "").toLowerCase() === "pathway";
   const isNameboardCategory = (filters.category || "").toLowerCase() === "nameboard";
-  
+
+  // Only Stage, Pathway, Entrance, Mandap, Photobooth, Nameboard get full filters; rest get only Price range
+  const hasFullFilters =
+    isStageCategory ||
+    isPathwayCategory ||
+    isEntranceCategory ||
+    isMandapCategory ||
+    isPhotoboothCategory ||
+    isNameboardCategory ||
+    (filters.category || "").toLowerCase() === "backdrop";
+
   // Categories that show Size filter
-  const showSizeFilter = isStageCategory || isMandapCategory || isEntranceCategory || isNameboardCategory;
+  const showSizeFilter = hasFullFilters && (isStageCategory || isMandapCategory || isEntranceCategory || isNameboardCategory);
   // Categories that show Occasion filter
-  const showOccasionFilter = !isMandapCategory;
+  const showOccasionFilter = hasFullFilters && !isMandapCategory;
   // Categories that show Style filter (Pathway specific)
   const showPathwayStyleFilter = isPathwayCategory;
 
@@ -172,6 +182,9 @@ function DecorListing({
 
   // Helper functions to check if filters/sort are active
   const hasActiveFilters = () => {
+    if (!hasFullFilters) {
+      return filters.priceRange[0] !== 0 || filters.priceRange[1] !== 115000;
+    }
     return (
       (showOccasionFilter && filters.occasion.length > 0) ||
       filters.colours.length > 0 ||
@@ -223,53 +236,54 @@ function DecorListing({
       ) {
         params.append("sort", filters.sort);
       }
-      // Occasion filter - skip for Mandap category; for Stage/Backdrop exclude Muhurtham
-      const occasionForApi =
-        showOccasionFilter && filters.occasion.length > 0
-          ? isStageOrBackdrop
-            ? filters.occasion.filter((o) => o !== "Muhurtham")
-            : filters.occasion
-          : [];
-      if (occasionForApi.length > 0) {
-        params.append("occassion", occasionForApi.join("|"));
-      }
-      if (filters.colours.length > 0) {
-        params.append("color", filters.colours.join("|"));
-      }
-      if (filters.type.length === 1) {
-        // Backend accepts single style value
-        params.append("style", filters.type[0]);
+      // For categories with full filters only: occasion, colours, type, size
+      if (hasFullFilters) {
+        const occasionForApi =
+          showOccasionFilter && filters.occasion.length > 0
+            ? isStageOrBackdrop
+              ? filters.occasion.filter((o) => o !== "Muhurtham")
+              : filters.occasion
+            : [];
+        if (occasionForApi.length > 0) {
+          params.append("occassion", occasionForApi.join("|"));
+        }
+        if (filters.colours.length > 0) {
+          params.append("color", filters.colours.join("|"));
+        }
+        if (filters.type.length === 1) {
+          params.append("style", filters.type[0]);
+        }
       }
       if (filters.priceRange && (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 115000)) {
         params.append("priceLower", filters.priceRange[0].toString());
         params.append("priceHigher", filters.priceRange[1].toString());
       }
-      // Stage Size filter (only for Stage category)
-      if (isStageCategory && filters.stageSize) {
+      // Stage Size filter (only for Stage category, full filters only)
+      if (hasFullFilters && isStageCategory && filters.stageSize) {
         const range = getStageLengthRange(filters.stageSize);
         if (range) {
           params.append("stageLengthLower", range.min.toString());
           params.append("stageLengthHigher", range.max.toString());
         }
       }
-      // Mandap Size filter (only for Mandap category)
-      if (isMandapCategory && filters.mandapSize) {
+      // Mandap Size filter (only for Mandap category, full filters only)
+      if (hasFullFilters && isMandapCategory && filters.mandapSize) {
         const range = getMandapLengthRange(filters.mandapSize);
         if (range) {
           params.append("stageLengthLower", range.min.toString());
           params.append("stageLengthHigher", range.max.toString());
         }
       }
-      // Entrance Size filter (only for Entrance category)
-      if (isEntranceCategory && filters.entranceSize) {
+      // Entrance Size filter (only for Entrance category, full filters only)
+      if (hasFullFilters && isEntranceCategory && filters.entranceSize) {
         const range = getEntranceNameboardLengthRange(filters.entranceSize);
         if (range) {
           params.append("stageLengthLower", range.min.toString());
           params.append("stageLengthHigher", range.max.toString());
         }
       }
-      // Nameboard Size filter (only for Nameboard category)
-      if (isNameboardCategory && filters.nameboardSize) {
+      // Nameboard Size filter (only for Nameboard category, full filters only)
+      if (hasFullFilters && isNameboardCategory && filters.nameboardSize) {
         const range = getEntranceNameboardLengthRange(filters.nameboardSize);
         if (range) {
           params.append("stageLengthLower", range.min.toString());
@@ -322,11 +336,13 @@ function DecorListing({
     fetchList(page);
   }, [page, filters]);
 
+  const fullFilterCategories = ["stage", "pathway", "entrance", "mandap", "photobooth", "nameboard", "backdrop"];
   useEffect(() => {
     const newCategory = category || "Stage";
     const catLower = newCategory.toLowerCase();
     const isStageOrBackdropCat =
       catLower === "stage" || catLower === "backdrop";
+    const isFullFilterCategory = fullFilterCategories.includes(catLower);
     setFilters((prev) => ({
       ...prev,
       category: newCategory,
@@ -335,6 +351,10 @@ function DecorListing({
         isStageOrBackdropCat && prev.occasion.includes("Muhurtham")
           ? prev.occasion.filter((o) => o !== "Muhurtham")
           : prev.occasion,
+      // For non–full-filter categories, clear occasion/colours/type
+      ...(isFullFilterCategory
+        ? {}
+        : { occasion: [], colours: [], type: [] }),
       // Clear size/style filters when switching categories
       stageSize: catLower === "stage" ? prev.stageSize : "",
       mandapSize: catLower === "mandap" ? prev.mandapSize : "",
@@ -426,14 +446,14 @@ function DecorListing({
   const handleApplyFilters = () => {
     setFilters((prev) => ({
       ...prev,
-      occasion: showOccasionFilter ? [...tempFilters.occasion] : [],
-      colours: [...tempFilters.colours],
-      type: [...tempFilters.type],
+      occasion: hasFullFilters && showOccasionFilter ? [...tempFilters.occasion] : [],
+      colours: hasFullFilters ? [...tempFilters.colours] : [],
+      type: hasFullFilters ? [...tempFilters.type] : [],
       priceRange: [...tempFilters.priceRange],
-      stageSize: isStageCategory ? (tempFilters.stageSize || "") : "",
-      mandapSize: isMandapCategory ? (tempFilters.mandapSize || "") : "",
-      entranceSize: isEntranceCategory ? (tempFilters.entranceSize || "") : "",
-      nameboardSize: isNameboardCategory ? (tempFilters.nameboardSize || "") : "",
+      stageSize: hasFullFilters && isStageCategory ? (tempFilters.stageSize || "") : "",
+      mandapSize: hasFullFilters && isMandapCategory ? (tempFilters.mandapSize || "") : "",
+      entranceSize: hasFullFilters && isEntranceCategory ? (tempFilters.entranceSize || "") : "",
+      nameboardSize: hasFullFilters && isNameboardCategory ? (tempFilters.nameboardSize || "") : "",
       pathwayStyle: isPathwayCategory ? (tempFilters.pathwayStyle || "") : "",
     }));
     setShowFilterModal(false);
@@ -680,8 +700,9 @@ function DecorListing({
                   <button
                     ref={filterButtonRef}
                     onClick={() => {
-                      // Set default section based on category
-                      if (!showOccasionFilter) {
+                      if (!hasFullFilters) {
+                        setSelectedSection("price-range");
+                      } else if (!showOccasionFilter) {
                         setSelectedSection("colours");
                       } else {
                         setSelectedSection("occasion");
@@ -709,11 +730,11 @@ function DecorListing({
                     >
                       {/* Content Area */}
                       <div className="flex flex-row flex-1 overflow-hidden">
-                        {/* Left Panel - Sections */}
+                        {/* Left Panel - Sections (only Price range for non–full-filter categories) */}
                         <div className="w-1/3 border-r bg-gray-50">
                           <div className="p-4 space-y-1">
-                            {/* Occasion - Hidden for Mandap */}
-                            {showOccasionFilter && (
+                            {/* Occasion - Only for full-filter categories, hidden for Mandap */}
+                            {hasFullFilters && showOccasionFilter && (
                               <button
                                 onClick={() => setSelectedSection("occasion")}
                                 className={`w-full text-left px-4 py-3 text-sm rounded transition-colors flex items-center justify-between ${
@@ -728,7 +749,8 @@ function DecorListing({
                                 )}
                               </button>
                             )}
-                            {/* Colours - Always visible */}
+                            {/* Colours - Only for full-filter categories */}
+                            {hasFullFilters && (
                             <button
                               onClick={() => setSelectedSection("colours")}
                               className={`w-full text-left px-4 py-3 text-sm rounded transition-colors flex items-center justify-between ${
@@ -742,7 +764,9 @@ function DecorListing({
                                 <Check className="h-4 w-4 text-black" />
                               )}
                             </button>
-                            {/* Type - Always visible */}
+                            )}
+                            {/* Type - Only for full-filter categories */}
+                            {hasFullFilters && (
                             <button
                               onClick={() => setSelectedSection("type")}
                               className={`w-full text-left px-4 py-3 text-sm rounded transition-colors flex items-center justify-between ${
@@ -756,7 +780,8 @@ function DecorListing({
                                 <Check className="h-4 w-4 text-black" />
                               )}
                             </button>
-                            {/* Size - For Stage, Mandap, Entrance, Nameboard */}
+                            )}
+                            {/* Size - For Stage, Mandap, Entrance, Nameboard (full-filter only) */}
                             {showSizeFilter && (
                               <button
                                 onClick={() => setSelectedSection("size")}
