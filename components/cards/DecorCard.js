@@ -67,9 +67,11 @@ export default function DecorCard({ decor = {}, size = "normal" }) {
       </div>
 
       {/* DESKTOP: Name & Price section */}
-      <div className="mt-2 text-center flex justify-around bg-white rounded-xl md:flex hidden">
-        <p className="font-semibold text-gray-800 truncate">{name}</p>
-        <p className="mt-1 text-sm font-medium text-rose-900">
+      <div className="mt-2 w-full flex justify-between items-center gap-2 bg-white rounded-xl px-3 py-2 md:flex hidden">
+        <p className="font-semibold text-gray-800 truncate min-w-0 flex-shrink" title={name}>
+          {name}
+        </p>
+        <p className="text-sm font-medium text-rose-900 flex-shrink-0 whitespace-nowrap">
           ₹ {displayPrice} {unitSuffix}
         </p>
       </div>
