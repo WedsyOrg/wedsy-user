@@ -127,14 +127,14 @@ export default function Account({ user }) {
       </Head>
       <div className="flex flex-col bg-gray-100">
         <div className="flex flex-row justify-around items-center bg-[#2B2B2BE5] px-4 md:px-24 py-4 text-white">
-          <p
+          {/* <p
             className="text-xs md:text-base cursor-pointer"
             onClick={() => {
               router.push("/my-bids");
             }}
           >
             MY BIDS
-          </p>
+          </p> */}
           <p
             className="text-xs md:text-base cursor-pointer"
             onClick={() => {

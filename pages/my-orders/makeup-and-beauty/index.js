@@ -37,9 +37,9 @@ export default function Orders({ user }) {
       <div className="flex flex-col bg-gray-100 min-h-[70vh]">
         {/* <UserProfileHeader display={"my-orders"} /> */}
         <div className="flex flex-row justify-around items-center bg-[#2B2B2BE5] px-4 md:px-24 py-4 text-white">
-          <p className="text-xs md:text-base cursor-pointer" onClick={() => {
+          {/* <p className="text-xs md:text-base cursor-pointer" onClick={() => {
               router.push("/my-bids");
-            }}>MY BIDS</p>
+            }}>MY BIDS</p> */}
           <p className="text-xs md:text-base border-b border-b-white cursor-pointer" onClick={() => {
               router.push("/my-orders");
             }}>ORDERS</p>

@@ -195,9 +195,9 @@ export default function Header({ userLoggedIn, user, Logout }) {
                 <Dropdown.Item as={Link} href="/my-account">
                   My Account
                 </Dropdown.Item>
-                <Dropdown.Item as={Link} href="/my-bids">
+                {/* <Dropdown.Item as={Link} href="/my-bids">
                   My Bids
-                </Dropdown.Item>
+                </Dropdown.Item> */}
                 <Dropdown.Item as={Link} href="/my-orders">
                   Orders
                 </Dropdown.Item>
@@ -389,9 +389,9 @@ export default function Header({ userLoggedIn, user, Logout }) {
                   <Dropdown.Item as={Link} href="/my-account" className="hover:bg-gray-50 hover:cursor-pointer">
                     My Account
                   </Dropdown.Item>
-                  <Dropdown.Item as={Link} href="/my-bids" className="hover:bg-gray-50 hover:cursor-pointer">
+                  {/* <Dropdown.Item as={Link} href="/my-bids" className="hover:bg-gray-50 hover:cursor-pointer">
                     My Bids
-                  </Dropdown.Item>
+                  </Dropdown.Item> */}
                   <Dropdown.Item as={Link} href="/my-orders" className="hover:bg-gray-50 hover:cursor-pointer">Orders</Dropdown.Item>
                   <Dropdown.Item as={Link} href="/wishlist" className="hover:bg-gray-50 hover:cursor-pointer">Wishlist</Dropdown.Item>
                   <Dropdown.Item as={Link} href="/event" className="hover:bg-gray-50 hover:cursor-pointer">Events</Dropdown.Item>
