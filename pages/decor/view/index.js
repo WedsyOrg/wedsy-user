@@ -791,10 +791,18 @@ function DecorListing({
                           {selectedSection === "occasion" && showOccasionFilter && (
                             <div className="space-y-2">
                               {occasionList.map((o) => (
-                                <button
+                                <div
                                   key={o}
+                                  role="button"
+                                  tabIndex={0}
                                   onClick={() => handleTempFilterChange("occasion", o)}
-                                  className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                      e.preventDefault();
+                                      handleTempFilterChange("occasion", o);
+                                    }
+                                  }}
+                                  className={`w-full text-left px-4 py-3 text-sm rounded transition-colors cursor-pointer ${
                                     tempFilters.occasion.includes(o)
                                       ? "bg-gray-100 font-medium"
                                       : "hover:bg-gray-50"
@@ -805,11 +813,13 @@ function DecorListing({
                                       type="checkbox"
                                       checked={tempFilters.occasion.includes(o)}
                                       onChange={() => handleTempFilterChange("occasion", o)}
-                                      className="w-4 h-4"
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="w-4 h-4 cursor-pointer"
+                                      aria-label={o}
                                     />
                                     <span>{o}</span>
                                   </div>
-                                </button>
+                                </div>
                               ))}
                             </div>
                           )}
@@ -817,10 +827,18 @@ function DecorListing({
                           {selectedSection === "colours" && (
                             <div className="space-y-2">
                               {coloursList.map((colour) => (
-                                <button
+                                <div
                                   key={colour.name}
+                                  role="button"
+                                  tabIndex={0}
                                   onClick={() => handleTempFilterChange("colours", colour.name)}
-                                  className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                      e.preventDefault();
+                                      handleTempFilterChange("colours", colour.name);
+                                    }
+                                  }}
+                                  className={`w-full text-left px-4 py-3 text-sm rounded transition-colors cursor-pointer ${
                                     tempFilters.colours.includes(colour.name)
                                       ? "bg-gray-100 font-medium"
                                       : "hover:bg-gray-50"
@@ -834,7 +852,9 @@ function DecorListing({
                                         onChange={() =>
                                           handleTempFilterChange("colours", colour.name)
                                         }
-                                        className="w-4 h-4"
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="w-4 h-4 cursor-pointer"
+                                        aria-label={colour.name}
                                       />
                                       <div
                                         className="w-4 h-4 rounded-full border border-gray-300"
@@ -846,7 +866,7 @@ function DecorListing({
                                       <Circle className="h-2 w-2 fill-black text-black" />
                                     )}
                                   </div>
-                                </button>
+                                </div>
                               ))}
                             </div>
                           )}
@@ -854,10 +874,18 @@ function DecorListing({
                           {selectedSection === "type" && (
                             <div className="space-y-2">
                               {typeList.map((type) => (
-                                <button
+                                <div
                                   key={type}
+                                  role="button"
+                                  tabIndex={0}
                                   onClick={() => handleTempFilterChange("type", type)}
-                                  className={`w-full text-left px-4 py-3 text-sm rounded transition-colors ${
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                      e.preventDefault();
+                                      handleTempFilterChange("type", type);
+                                    }
+                                  }}
+                                  className={`w-full text-left px-4 py-3 text-sm rounded transition-colors cursor-pointer ${
                                     tempFilters.type.includes(type)
                                       ? "bg-gray-100 font-medium"
                                       : "hover:bg-gray-50"
@@ -869,7 +897,9 @@ function DecorListing({
                                         type="checkbox"
                                         checked={tempFilters.type.includes(type)}
                                         onChange={() => handleTempFilterChange("type", type)}
-                                        className="w-4 h-4"
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="w-4 h-4 cursor-pointer"
+                                        aria-label={type}
                                       />
                                       <span>{type}</span>
                                     </div>
@@ -877,7 +907,7 @@ function DecorListing({
                                       <Circle className="h-2 w-2 fill-black text-black" />
                                     )}
                                   </div>
-                                </button>
+                                </div>
                               ))}
                             </div>
                           )}
