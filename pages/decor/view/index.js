@@ -81,7 +81,7 @@ function DecorListing({
   const filterButtonRef = useRef(null);
   const filterDropdownContentRef = useRef(null);
 
-  const occasionList = [
+  const allOccasions = [
     "Reception",
     "Engagement",
     "Sangeet",
@@ -90,6 +90,12 @@ function DecorListing({
     "Mehendi",
     "Muhurtham",
   ];
+  const isStageOrBackdrop =
+    (filters.category || "").toLowerCase() === "stage" ||
+    (filters.category || "").toLowerCase() === "backdrop";
+  const occasionList = isStageOrBackdrop
+    ? allOccasions.filter((o) => o !== "Muhurtham")
+    : allOccasions;
 
   const coloursList = [
     { name: "Black", color: "#000000" },
@@ -217,9 +223,15 @@ function DecorListing({
       ) {
         params.append("sort", filters.sort);
       }
-      // Occasion filter - skip for Mandap category
-      if (showOccasionFilter && filters.occasion.length > 0) {
-        params.append("occassion", filters.occasion.join("|"));
+      // Occasion filter - skip for Mandap category; for Stage/Backdrop exclude Muhurtham
+      const occasionForApi =
+        showOccasionFilter && filters.occasion.length > 0
+          ? isStageOrBackdrop
+            ? filters.occasion.filter((o) => o !== "Muhurtham")
+            : filters.occasion
+          : [];
+      if (occasionForApi.length > 0) {
+        params.append("occassion", occasionForApi.join("|"));
       }
       if (filters.colours.length > 0) {
         params.append("color", filters.colours.join("|"));
@@ -313,9 +325,16 @@ function DecorListing({
   useEffect(() => {
     const newCategory = category || "Stage";
     const catLower = newCategory.toLowerCase();
+    const isStageOrBackdropCat =
+      catLower === "stage" || catLower === "backdrop";
     setFilters((prev) => ({
       ...prev,
       category: newCategory,
+      // For Stage/Backdrop, remove Muhurtham from occasion
+      occasion:
+        isStageOrBackdropCat && prev.occasion.includes("Muhurtham")
+          ? prev.occasion.filter((o) => o !== "Muhurtham")
+          : prev.occasion,
       // Clear size/style filters when switching categories
       stageSize: catLower === "stage" ? prev.stageSize : "",
       mandapSize: catLower === "mandap" ? prev.mandapSize : "",
