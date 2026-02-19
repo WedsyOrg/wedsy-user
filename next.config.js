@@ -15,6 +15,10 @@ const nextConfig = {
         source: '/blogs/:path*',
         destination: 'https://hub.wedsy.in/:path*',
       },
+      {
+        source: '/hub/:path*',
+        destination: 'https://hub.wedsy.in/:path*',
+      },
     ]
   },
 };
