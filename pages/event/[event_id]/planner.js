@@ -327,7 +327,7 @@ export default function EventTool({user}) {
           authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
-          decor: decor_id,
+          decorItemId: decor_id,
         }),
       }
     )

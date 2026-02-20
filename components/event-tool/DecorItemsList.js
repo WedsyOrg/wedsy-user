@@ -87,7 +87,7 @@ export default function DecorItemsList({
                           className="cursor-pointer"
                           onClick={() => {
                             RemoveDecorFromEvent({
-                              decor_id: item.decor._id,
+                              decor_id: item._id,
                             });
                           }}
                         />
