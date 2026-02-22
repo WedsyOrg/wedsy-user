@@ -2552,10 +2552,10 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
             >
               <div className="relative overflow-hidden h-40 md:h-48 bg-gray-300 shadow-md group">
-                <Image src="/assets/landing/img-1-s8.webp" alt="Desktop Grid 1" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
+                <Image src="/assets/landing_v2/ww5.webp" alt="Desktop Grid 1" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
               <div className="relative overflow-hidden flex-grow bg-gray-300 shadow-md h-64 md:h-80 group">
-                <Image src="/assets/landing/img-2-s8.webp" alt="Desktop Grid 2" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
+                <Image src="/assets/landing_v2/ww2.webp" alt="Desktop Grid 2" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
             </motion.div>
             
@@ -2567,10 +2567,10 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
             >
               <div className="relative overflow-hidden h-40 md:h-48 bg-gray-300 shadow-md group">
-                <Image src="/assets/landing/img-3-s8.webp" alt="Desktop Grid 3" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
+                <Image src="/assets/landing_v2/ww3.webp" alt="Desktop Grid 3" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
               <div className="relative overflow-hidden flex-grow bg-gray-300 shadow-md h-64 md:h-80 group">
-                <Image src="/assets/landing/img-5-s8.webp" alt="Desktop Grid 4" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
+                <Image src="/assets/landing_v2/ww1.webp" alt="Desktop Grid 4" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
             </motion.div>
             
@@ -2582,10 +2582,10 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
             >
               <div className="relative overflow-hidden flex-grow bg-gray-300 shadow-md h-64 md:h-80 group">
-                <Image src="/assets/landing/img-6-s8.webp" alt="Desktop Grid 5" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
+                <Image src="/assets/landing_v2/ww6.webp" alt="Desktop Grid 5" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
               <div className="relative overflow-hidden h-40 md:h-48 bg-gray-300 shadow-md group">
-                <Image src="/assets/landing/img-4-s8.webp" alt="Desktop Grid 6" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
+                <Image src="/assets/landing_v2/ww4.webp" alt="Desktop Grid 6" layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105" />
               </div>
             </motion.div>
           </motion.div>
@@ -2605,7 +2605,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
             >
-              <Image src="/assets/landing/img-1-s8.webp" alt="Mobile Grid 1" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
+              <Image src="/assets/landing_v2/ww1.webp" alt="Mobile Grid 1" layout="fill" objectFit="cover" className="rounded-md transition-transform duration-300 group-hover:scale-105" />
             </motion.div>
             <motion.div 
               className="flex flex-row gap-2 justify-between"
@@ -2625,7 +2625,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
                   transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: index * 0.1 }}
                 >
                   <Image 
-                    src={`/assets/landing/img-${imgNum}-s8.webp`} 
+                    src={`/assets/landing_v2/ww${imgNum}.webp`} 
                     alt={`Mobile Grid ${imgNum}`} 
                     layout="fill" 
                     objectFit="cover" 
