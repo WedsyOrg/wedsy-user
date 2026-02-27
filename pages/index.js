@@ -1470,7 +1470,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
 
       
       {/* triangle section */}
-      <section className="relative w-full flex justify-between items-center mt-12 md:mt-20">
+      <section className="relative w-full hidden md:flex justify-between items-center mt-12 md:mt-20">
         <div className="hidden md:block w-80 h-16 bg-[#840032] clip-left-triangle" />
 
         <motion.div 
@@ -1610,7 +1610,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
           {/* Mobile Title */}
           <div className="text-center mb-6">
             <h2
-              className="text-md md:text-2xl text-black font-semibold"
+              className="text-xl md:text-2xl text-black font-semibold"
               style={{
                 fontFamily: "'Montserrat', sans-serif",
                 fontWeight: 600,
