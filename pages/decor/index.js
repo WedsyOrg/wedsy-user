@@ -774,15 +774,15 @@ function Decor({
                         </div>
 
                         {/* Text Content */}
-                        <div className="flex flex-col p-4 sm:p-6 justify-between gap-2 sm:gap-4">
-                          <p className="text-xl md:text-3xl font-semibold">
+                        <div className="flex flex-col p-4 sm:p-6 justify-between h-full overflow-hidden">
+                          <p className="text-xl md:text-2xl font-semibold flex-shrink-0">
                             {item.name}
                           </p>
-                          <p className="hidden md:block font-medium">
+                          <p className="hidden md:block font-medium text-sm overflow-hidden flex-1 min-h-0 my-2 line-clamp-5">
                             {item.description}
                           </p>
-                          <div className="flex justify-between items-center mt-2 md:mt-4">
-                            <p className="text-xl md:text-3xl font-semibold">
+                          <div className="flex justify-between items-center flex-shrink-0 mt-auto pt-2">
+                            <p className="text-xl md:text-2xl font-semibold">
                               ₹{' '}
                               {
                                 item.productInfo?.variant?.artificialFlowers?.sellingPrice ||
@@ -791,7 +791,7 @@ function Decor({
                               }
                             </p>
                             <Link href={`/decor/view/${item._id}`}>
-                              <button className="bg-black text-white py-2 px-4 md:px-8 rounded-lg">
+                              <button className="bg-black text-white py-2 px-4 md:px-8 rounded-lg whitespace-nowrap">
                                 View Details
                               </button>
                             </Link>
