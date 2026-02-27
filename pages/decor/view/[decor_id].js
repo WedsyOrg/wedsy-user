@@ -1406,7 +1406,7 @@ function DecorListing({
                 <div className="flex flex-row gap-3 flex-nowrap min-w-max">
                   {categoryList?.map((item) => (
                     <Link
-                      href={`/decor/view?category=${item.name}`}
+                      href={`/decor/view?category=${encodeURIComponent(item.name)}`}
                       key={item._id}
                       className={`whitespace-nowrap rounded-full font-medium py-2 px-5 text-sm transition-all duration-200 flex-shrink-0 ${
                         item.name === category.name

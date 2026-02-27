@@ -410,7 +410,7 @@ function DecorListing({
   }, [showFilterModal]);
 
   const handleCategoryChange = (categoryName) => {
-    router.push(`/decor/view?category=${categoryName}`);
+    router.push(`/decor/view?category=${encodeURIComponent(categoryName)}`);
   };
 
   const handleFilterChange = (filterType, value) => {

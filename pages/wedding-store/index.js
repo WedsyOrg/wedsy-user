@@ -305,7 +305,7 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
       </div>
       <div className="py-8 flex flex-col gap-4 md:gap-6">
         <p className="text-2xl md:text-3xl font-medium text-center px-6 md:px-24">
-          IDEAS FOR YOUR <span className="text-rose-900">GRAND ENTRY</span>
+          IDEAS FOR YOUR <span className="text-rose-900">GRAND ENTRANCE</span>
           <span className="hidden md:inline float-right text-sm underline">
             see more
           </span>

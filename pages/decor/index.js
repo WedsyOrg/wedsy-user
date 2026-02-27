@@ -660,7 +660,7 @@ function Decor({
                 key={index}
                 className="group w-full h-[80px] sm:h-[100px] lg:h-[80px] relative rounded-md overflow-hidden opacity-100 shadow-md transform transition duration-300 hover:scale-[1.03]"
               >
-                <Link href={`/decor/view?category=${item}`} className="block w-full h-full">
+                <Link href={`/decor/view?category=${encodeURIComponent(item)}`} className="block w-full h-full">
                   <img
                     src={`/assets/decor/categories-img/${item.toLowerCase()}.webp`}
                     alt={item}
@@ -713,7 +713,7 @@ function Decor({
                         key={index}
                         className="text-center px-2"
                       >
-                        <Link href={`/decor/view?category=${item}`} className="hover:underline">
+                        <Link href={`/decor/view?category=${encodeURIComponent(item)}`} className="hover:underline">
                           <span className="text-black text-xs sm:text-sm md:text-base font-medium uppercase tracking-wide whitespace-nowrap">
                             {item.toUpperCase()}
                           </span>
@@ -973,7 +973,7 @@ function Decor({
               <h2 className="flex items-center justify-center text-[20px] sm:text-[26px] md:text-[30px] font-medium font-['Montserrat'] tracking-[0.1em] text-center m-auto opacity-100 flex-wrap md:flex-nowrap">
                 <span>IDEAS FOR YOUR</span>
                 <span className="text-[#8B0034] font-semibold ml-2 font-['Montserrat']">
-                  GRAND ENTRY
+                  GRAND ENTRANCE
                 </span>
               </h2>
               <Link
@@ -1838,7 +1838,7 @@ function Decor({
                   className="overflow-hidden rounded-lg w-[33vw] md:w-[20vw] relative"
                 >
                   <Link
-                    href={`/decor/view?category=${item}`}
+                    href={`/decor/view?category=${encodeURIComponent(item)}`}
                     className="hover:z-40 transition-all"
                   >
                     <Image
@@ -1873,7 +1873,7 @@ function Decor({
                   className="relative overflow-hidden rounded-lg w-[33vw] md:w-[20vw]"
                 >
                   <Link
-                    href={`/decor/view?category=${item}`}
+                    href={`/decor/view?category=${encodeURIComponent(item)}`}
                     className="rounded-lg hover:overflow-hidden hover:z-40 transition-all"
                   >
                     <Image
