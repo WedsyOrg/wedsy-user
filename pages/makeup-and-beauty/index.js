@@ -122,6 +122,13 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
     });
   }, []);
 
+  // Redirect mobile to same coming-soon page as desktop
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      router.replace("/coming-soon");
+    }
+  }, [router]);
+
   // Custom colors from the provided image
   const colors = [
     { header: '#FFAFCD', services: '#FFAFCD', products: '#FFAFCD', priceBg: '#FFAFCD', buttonBg: '#840032' },
@@ -253,7 +260,8 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       </div>
 
 
-      <div className="bg-[#f4f4f4] py-4 px-6 md:hidden mb-1">
+      {/* Mobile-only CTA and category cards – commented out so mobile shows same coming-soon page as desktop */}
+      {/* <div className="bg-[#f4f4f4] py-4 px-6 md:hidden mb-1">
         <p className="text-lg text-center font-medium">
           BOOK YOUR MAKEUP ARTIST NOW
         </p>
@@ -295,7 +303,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       <img
         src="/assets/images/makeup-landing-page-8.webp"
         className="w-full md:hidden"
-      />
+      /> */}
 
       {/* wedsy top-image section */}
       <div

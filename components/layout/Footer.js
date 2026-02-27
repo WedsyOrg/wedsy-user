@@ -25,7 +25,7 @@ export default function FooterComponent() {
   return (
     displayFooter && (
       <>
-        <Footer container className="bg-white text-black p-0 rounded-none">
+        <Footer container className="bg-white text-black p-0 rounded-none hidden md:block">
           <div className="w-full">
             {router?.pathname !== "/my-payments" && (
               <div className="grid w-full grid-cols-1 gap-8 px-6 py-8 md:grid-cols-3">
