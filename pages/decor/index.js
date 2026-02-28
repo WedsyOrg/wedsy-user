@@ -704,11 +704,11 @@ function Decor({
                 </div>
               </div>
               
-              {/* more Section */}
+              {/* more Section – only categories not already shown in tiles */}
               {showAllCategories && (
                 <div className="w-full mt-6 bg-white rounded-md shadow-md p-4 md:p-6">
                   <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-                    {categoryList.map((item, index) => (
+                    {categoryList.slice(8).map((item, index) => (
                       <div
                         key={index}
                         className="text-center px-2"
