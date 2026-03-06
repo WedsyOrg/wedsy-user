@@ -235,6 +235,7 @@ export default function ExpertConsultModal({
               {/* Submit Button */}
               <button
                 type="button"
+                aria-label={data.otpSent ? "Submit enquiry" : "Get OTP"}
                 className="w-full bg-[#840032] text-white py-3 px-6 rounded-lg font-semibold tracking-wider
                           hover:bg-[#6a0029] transition-all duration-300 ease-in-out disabled:bg-gray-400 disabled:cursor-not-allowed"
                 disabled={
@@ -263,6 +264,7 @@ export default function ExpertConsultModal({
               {data.otpSent && (
                 <button
                   type="button"
+                  aria-label="Change phone number"
                   className="w-full text-[#840032] text-sm underline"
                   onClick={() => {
                     setData({ ...data, otpSent: false, Otp: "", ReferenceId: "", message: "" });
@@ -291,6 +293,7 @@ export default function ExpertConsultModal({
               </p>
               <button
                 type="button"
+                aria-label="Close"
                 className="bg-[#840032] text-white py-3 px-8 rounded-lg font-semibold
                           hover:bg-[#6a0029] transition-all duration-300 ease-in-out"
                 onClick={handleClose}

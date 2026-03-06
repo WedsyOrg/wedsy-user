@@ -1,6 +1,7 @@
 import SearchBar from "@/components/searchBar/SearchBar";
 import { toPriceString } from "@/utils/text";
 import { Checkbox, Dropdown, Label, Select } from "flowbite-react";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
@@ -348,6 +349,14 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
 
   return (
     <>
+      <Breadcrumbs
+        items={[
+          { name: "Home", href: "/" },
+          { name: "Makeup & Beauty", href: "/makeup-and-beauty" },
+          { name: "Artists" },
+        ]}
+        className="px-4 md:px-24 py-3 bg-[#f4f4f4]"
+      />
       <div className="w-full relative hidden md:block pt-[16.2%]">
         <img
           className="absolute top-0 left-0 w-full object-cover"
@@ -377,10 +386,11 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       {/* Filters Toolbar - UPDATED FOR SCROLLING */}
       <div className="hidden md:block bg-white p-2 shadow-lg relative z-10">
         <div className="flex items-center justify-between gap-2 sm:gap-4">
-          <button className="flex items-center gap-1 sm:gap-2 p-1 sm:p-2 pr-2 sm:pr-4 flex-shrink-0">
+          <button type="button" aria-label="Filter by locality, rating and more" className="flex items-center gap-1 sm:gap-2 p-1 sm:p-2 pr-2 sm:pr-4 flex-shrink-0">
             <img 
               src="/assets/new_icons/filter.svg" 
-              alt="filter icon" 
+              alt="" 
+              aria-hidden
               className="h-4 w-4 sm:h-5 sm:w-5" 
             />
             <span className="font-semibold text-xs sm:text-sm">Filters</span>
@@ -393,6 +403,8 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
           
           {getSelectedFiltersCount() > 0 && (
             <button
+              type="button"
+              aria-label="Clear all filters"
               onClick={resetFilters}
               className="text-xs text-gray-500 hover:text-[#840032] px-2 py-1"
             >

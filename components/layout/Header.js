@@ -171,6 +171,7 @@ export default function Header({ userLoggedIn, user, Logout }) {
         <div className="flex items-center gap-6">
           <button
             type="button"
+            aria-label="Search"
             className="p-0 m-0 bg-transparent border-none hover:cursor-pointer"
             onClick={() => {
               setMobileSearchOpen((v) => !v);
@@ -183,7 +184,9 @@ export default function Header({ userLoggedIn, user, Logout }) {
             inline
             arrowIcon={false}
             label={
-              <FaRegUserCircle className="w-[28px] h-[28px] text-[#2C365A] hover:text-[#840032] transition-colors duration-200" />
+              <span className="inline-flex" aria-label="Account menu">
+                <FaRegUserCircle className="w-[28px] h-[28px] text-[#2C365A] hover:text-[#840032] transition-colors duration-200" />
+              </span>
             }
             className="w-44"
           >

@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/Breadcrumbs";
 import DecorCard from "@/components/cards/DecorCard";
 import { processMobileNumber } from "@/utils/phoneNumber";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
@@ -570,11 +571,21 @@ function Decor({
             className="w-full h-auto block filter brightness-[80%]"
           />
 
+          <div className="absolute top-0 left-0 right-0 z-20 px-6 md:px-24 py-4">
+            <Breadcrumbs
+              items={[{ name: "Home", href: "/" }, { name: "Decor" }]}
+              className="text-white [&_a]:text-white [&_a]:hover:text-white/90 [&_span]:text-white/95 drop-shadow-md"
+            />
+          </div>
+
           <div className="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center z-10">
             <h1 className="text-white text-[65px] font-medium tracking-[2px] text-center drop-shadow-lg">
               MAKE IT UNIQUE<br />MAKE IT YOURS
             </h1>
           </div>
+        </div>
+        <div className="md:hidden px-6 py-3 bg-[#F4F4F4]">
+          <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Decor" }]} />
         </div>
 
         {/* Enquiry Form (commented out as per new design) */}

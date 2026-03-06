@@ -131,6 +131,8 @@ export default function CreateEventModal({
             }
           />
           <button
+            type="button"
+            aria-label="Create event"
             className={`text-white bg-rose-900 border border-rose-900 hover:bg-rose-900 hover:text-white disabled:bg-rose-800 font-medium rounded-lg text-sm px-3 py-1.5 focus:outline-none`}
             disabled={
               !eventData.name ||

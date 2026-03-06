@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/Breadcrumbs";
 import DecorCard from "@/components/cards/DecorCard";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
@@ -147,6 +148,7 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       </Head>
+      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Wedding Store" }]} className="px-6 md:px-24 py-3 bg-white border-b" />
       <DecorDisclaimer />
       <div className="hidden md:block relative pt-[31%] mb-6">
         <Image

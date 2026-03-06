@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/Breadcrumbs";
 import ImageFillCard from "@/components/cards/ImageFillCard";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
 import CreateEventModal from "@/components/modal/CreateEventModal";
@@ -815,6 +816,16 @@ function DecorListing({
         isRemoved={toastMessage === "Removed from Wishlist"}
       />
       <DecorDisclaimer />
+      <div className="max-w-screen-xl mx-auto px-4 md:px-8 py-2">
+        <Breadcrumbs
+          items={[
+            { name: "Home", href: "/" },
+            { name: "Decor", href: "/decor" },
+            { name: decor?.category || "Decor", href: `/decor/view?category=${encodeURIComponent(decor?.category || "")}` },
+            { name: decor?.name || "Product" },
+          ]}
+        />
+      </div>
       {/* Image Lightbox */}
       <ImageLightbox
         images={getAllImages()}

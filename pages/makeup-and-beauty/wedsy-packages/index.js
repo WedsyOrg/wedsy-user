@@ -1,4 +1,5 @@
 import { toPriceString } from "@/utils/text";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import { pushDataLayer } from "@/utils/tracking";
 import { Modal } from "flowbite-react";
@@ -192,6 +193,14 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initial
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       </Head>
+      <Breadcrumbs
+        items={[
+          { name: "Home", href: "/" },
+          { name: "Makeup & Beauty", href: "/makeup-and-beauty" },
+          { name: "Packages" },
+        ]}
+        className="px-6 md:px-24 py-3 bg-[#f4f4f4]"
+      />
       {selectedPackages?.reduce((accumulator, item) => {
         return accumulator + item.quantity;
       }, 0) > 0 && (

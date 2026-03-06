@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/Breadcrumbs";
 import DecorCard from "@/components/cards/DecorCard";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
 import { SpecificCategorySkeleton } from "@/components/skeletons/wedding-store/specific-category";
@@ -622,11 +623,22 @@ function DecorListing({
 
       <div className="bg-[#F4F4F4]">
         <main className="p-4 md:p-8 max-w-screen-xl mx-auto">
+          <Breadcrumbs
+            items={[
+              { name: "Home", href: "/" },
+              { name: "Decor", href: "/decor" },
+              { name: filters.category || "All Categories" },
+            ]}
+            className="mb-4"
+          />
           <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
             <div className="flex py-3 flex-nowrap justify-start gap-2 overflow-x-auto max-w-full scrollbar-hide md:flex-1 md:pr-4">
               {categoryList.map((cat) => (
                 <button
                   key={cat.name}
+                  type="button"
+                  aria-label={`Filter by ${cat.name}`}
+                  aria-pressed={filters.category === cat.name}
                   onClick={() => handleCategoryChange(cat.name)}
                   className={`py-2 px-5 rounded-full text-sm font-semibold transition-colors shadow-md whitespace-nowrap flex-shrink-0 ${
                     filters.category === cat.name
@@ -646,10 +658,11 @@ function DecorListing({
                     inline
                     arrowIcon={false}
                     label={
-                      <div className="ml-10 md:ml-0 px-4 py-2 flex items-center justify-center text-center gap-2 flex-1 min-h-[44px] relative">
+                      <div className="ml-10 md:ml-0 px-4 py-2 flex items-center justify-center text-center gap-2 flex-1 min-h-[44px] relative" aria-label="Sort by price or new arrivals">
                         <img
                           src="/assets/new_icons/sort.svg"
-                          alt="sort"
+                          alt=""
+                          aria-hidden
                           className="h-4 w-4"
                         />
                         <span className="text-sm font-medium">Sort</span>
@@ -701,6 +714,7 @@ function DecorListing({
                 <div className="flex-1 relative" ref={filterDropdownRef}>
                   <button
                     ref={filterButtonRef}
+                    aria-label="Filter by category and price"
                     onClick={() => {
                       if (!hasFullFilters) {
                         setSelectedSection("price-range");
@@ -715,7 +729,8 @@ function DecorListing({
                   >
                     <img
                       src="/assets/new_icons/filter.svg"
-                      alt="filter"
+                      alt=""
+                      aria-hidden
                       className="h-4 w-4"
                     />
                     <span className="text-sm font-medium">Filter</span>
@@ -1198,12 +1213,16 @@ function DecorListing({
                       {/* Bottom Buttons */}
                       <div className="flex border-t p-4 gap-3">
                         <button
+                          type="button"
+                          aria-label="Reset filters"
                           onClick={handleResetFilters}
                           className="flex-1 px-4 py-2 text-sm border border-gray-300 rounded font-medium hover:bg-gray-50 transition-colors"
                         >
                           Reset
                         </button>
                         <button
+                          type="button"
+                          aria-label="Apply filters"
                           onClick={handleApplyFilters}
                           className="flex-1 px-4 py-2 text-sm bg-black text-white rounded font-medium hover:bg-gray-800 transition-colors"
                         >
@@ -1261,8 +1280,10 @@ function DecorListing({
                 ))}
               </div>
 
-              <div className="flex flex-col items-center mt-12 gap-4">
+              <div className="flex flex-col items-center mt-12 gap-4" role="navigation" aria-label="Decor listing pagination">
                 <button
+                  type="button"
+                  aria-label="Next page"
                   onClick={() => setPage((p) => p + 1)}
                   disabled={page >= totalPages}
                   className="px-6 py-2 bg-white rounded-full text-sm font-medium disabled:opacity-50 transition-colors shadow-md hover:bg-gray-100 flex items-center gap-2"
@@ -1271,7 +1292,7 @@ function DecorListing({
                 </button>
                 <div className="flex flex-wrap justify-center items-center gap-2">
                   {totalPages <= 1 ? (
-                    <button className="flex justify-center items-center h-10 w-10 border rounded-full bg-rose-900 text-white border-rose-900">
+                    <button type="button" aria-label="Page 1" className="flex justify-center items-center h-10 w-10 border rounded-full bg-rose-900 text-white border-rose-900">
                       1
                     </button>
                   ) : totalPages <= 3 ? (
@@ -1279,6 +1300,8 @@ function DecorListing({
                       (pageNum) => (
                         <button
                           key={pageNum}
+                          type="button"
+                          aria-label={`Go to page ${pageNum}`}
                           onClick={() => setPage(pageNum)}
                           className={`flex justify-center items-center h-10 w-10 border rounded-full transition-colors ${
                             page === pageNum
@@ -1296,12 +1319,16 @@ function DecorListing({
                         <span
                           key={`dots-${index}`}
                           className="px-2 py-2 text-gray-500"
+                          aria-hidden
                         >
                           ...
                         </span>
                       ) : (
                         <button
                           key={pageNum}
+                          type="button"
+                          aria-label={`Go to page ${pageNum}`}
+                          aria-current={page === pageNum ? "page" : undefined}
                           onClick={() => setPage(pageNum)}
                           className={`flex justify-center items-center h-10 w-10 border rounded-full transition-colors ${
                             page === pageNum
@@ -1316,6 +1343,8 @@ function DecorListing({
                   )}
                 </div>
                 <button
+                  type="button"
+                  aria-label="Previous page"
                   onClick={() => setPage((p) => p - 1)}
                   disabled={page <= 1}
                   className="px-6 py-2 bg-white rounded-full text-sm font-medium disabled:opacity-50 transition-colors shadow-md hover:bg-gray-100 flex items-center gap-2"

@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/Breadcrumbs";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import { pushDataLayer } from "@/utils/tracking";
@@ -422,6 +423,16 @@ function DecorListing({
         />
       </Head>
       <DecorDisclaimer />
+      <div className="max-w-screen-xl mx-auto px-4 md:px-8 py-2">
+        <Breadcrumbs
+          items={[
+            { name: "Home", href: "/" },
+            { name: "Decor", href: "/decor" },
+            { name: "Packages", href: "/decor/packages" },
+            { name: decorPackage?.name || "Package" },
+          ]}
+        />
+      </div>
       
       {/* Image Lightbox */}
       {enlargedImage && (

@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/Breadcrumbs";
 import FAQAccordion from "@/components/accordion/FAQAccordion";
 import SearchBar from "@/components/searchBar/SearchBar";
 import { MakeupAndBeautyPageSkeleton } from "@/components/skeletons/makeup-store";
@@ -234,6 +235,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initial
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       </Head>
+      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Makeup & Beauty" }]} className="px-6 md:px-24 py-3 bg-[#f4f4f4]" />
       {selectedPackages?.reduce((accumulator, item) => {
         return accumulator + item.quantity;
       }, 0) > 0 && (

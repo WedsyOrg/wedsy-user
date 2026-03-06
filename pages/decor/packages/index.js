@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/Breadcrumbs";
 import DecorPackageTile from "@/components/decor-packages/DecorPackageTile";
 import { trimTitle, trimDescription } from "@/utils/seo";
 import Head from "next/head";
@@ -125,10 +126,32 @@ export default function DecorPackagesIndex({
           rel="canonical"
           href={`https://www.wedsy.in${router.asPath.split("?")[0]}`}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.wedsy.in" },
+                { "@type": "ListItem", "position": 2, "name": "Decor", "item": "https://www.wedsy.in/decor" },
+                { "@type": "ListItem", "position": 3, "name": category ? category : "Packages", "item": `https://www.wedsy.in/decor/packages${category ? `?category=${encodeURIComponent(category)}` : ""}` },
+              ],
+            }),
+          }}
+        />
       </Head>
 
       <div className="w-full bg-white">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-10">
+          <Breadcrumbs
+            items={[
+              { name: "Home", href: "/" },
+              { name: "Decor", href: "/decor" },
+              ...(category ? [{ name: "Packages", href: "/decor/packages" }, { name: category }] : [{ name: "Packages" }]),
+            ]}
+            className="mb-4"
+          />
           <h1
             className="text-center text-xl md:text-2xl tracking-[0.35em] text-gray-800"
             style={{ fontFamily: "Montserrat, sans-serif" }}

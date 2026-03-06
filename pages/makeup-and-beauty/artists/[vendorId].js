@@ -1,5 +1,6 @@
 import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
 import { toPriceString } from "@/utils/text";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import { pushDataLayer } from "@/utils/tracking";
 import { Label, Modal, TextInput } from "flowbite-react";
@@ -830,6 +831,16 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initial
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
         />
       </Head>
+      <div className="max-w-screen-xl mx-auto px-4 md:px-8 py-2 bg-[#f4f4f4]">
+        <Breadcrumbs
+          items={[
+            { name: "Home", href: "/" },
+            { name: "Makeup & Beauty", href: "/makeup-and-beauty" },
+            { name: "Artists", href: "/makeup-and-beauty/artists" },
+            { name: vendor?.name || "Artist" },
+          ]}
+        />
+      </div>
       {selectedPackages?.reduce((accumulator, item) => {
         return accumulator + item.quantity;
       }, 0) > 0 && (
