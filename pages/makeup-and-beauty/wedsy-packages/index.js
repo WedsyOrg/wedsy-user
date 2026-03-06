@@ -10,20 +10,28 @@ import {
 } from "react-icons/fa";
 import { MdClear } from "react-icons/md";
 
-function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
+function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initialWedsyPackages = [], initialTaxationData = null }) {
   const router = useRouter();
   const divRef = useRef(null);
   const [divSize, setDivSize] = useState({ width: 0, height: 0 });
   const [search, setSearch] = useState("");
-  const [wedsyPackages, setWedsyPackages] = useState([]);
-  const [display, setDisplay] = useState("");
+  const wedsyList = Array.isArray(initialWedsyPackages) ? initialWedsyPackages : [];
+  const [wedsyPackages, setWedsyPackages] = useState(wedsyList);
+  const [display, setDisplay] = useState(wedsyList[0]?._id || "");
   const [mobiledisplay, setMobileDisplay] = useState("");
-  const [wedsyPackageCategory, setWedsyPackageCategory] = useState([]);
+  const [wedsyPackageCategory, setWedsyPackageCategory] = useState(() =>
+    [...new Set(wedsyList.map((item) => item.category))].filter(Boolean)
+  );
   const [selectedWedsyPackageCategory, setSelectedWedsyPackageCategory] =
     useState("");
-  const [taxationData, setTaxationData] = useState({});
-  const [wedsyPackageTaxMultiply, setWedsyPackageTaxMultiply] = useState(1);
-  const [selectedPackages, setSelectedPackages] = useState([]);
+  const [taxationData, setTaxationData] = useState(initialTaxationData || {});
+  const initialTaxMult = initialTaxationData?.wedsyPackage
+    ? (100 + (initialTaxationData.wedsyPackage.cgst || 0) + (initialTaxationData.wedsyPackage.sgst || 0)) / 100
+    : 1;
+  const [wedsyPackageTaxMultiply, setWedsyPackageTaxMultiply] = useState(initialTaxMult);
+  const [selectedPackages, setSelectedPackages] = useState(() =>
+    wedsyList.length ? wedsyList.map((i) => ({ _id: i._id, quantity: 0, price: i.price })) : []
+  );
   const fetchTaxationData = () => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/config?code=MUA-Taxation`, {
       method: "GET",
@@ -81,6 +89,10 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       });
   };
   useEffect(() => {
+    if (wedsyList.length > 0) {
+      if (!initialTaxationData) fetchTaxationData();
+      return;
+    }
     fetchWedsyPackages();
     fetchTaxationData();
   }, []);
@@ -660,6 +672,37 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       </div>
     </>
   );
+}
+
+export async function getServerSideProps() {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) {
+    return { props: { initialWedsyPackages: [], initialTaxationData: null } };
+  }
+  const headers = { "Content-Type": "application/json" };
+  try {
+    const [wedsyRes, configRes] = await Promise.all([
+      fetch(`${apiUrl}/wedsy-package`, { method: "GET", headers }),
+      fetch(`${apiUrl}/config?code=MUA-Taxation`, { method: "GET", headers }),
+    ]);
+    const wedsyData = await wedsyRes.json().catch(() => []);
+    const configData = await configRes.json().catch(() => ({}));
+    const wedsyList = Array.isArray(wedsyData) ? wedsyData : [];
+    const taxationData = configData?.data || null;
+    return {
+      props: {
+        initialWedsyPackages: wedsyList,
+        initialTaxationData: taxationData,
+      },
+    };
+  } catch (e) {
+    return {
+      props: {
+        initialWedsyPackages: [],
+        initialTaxationData: null,
+      },
+    };
+  }
 }
 
 export default MakeupAndBeauty;

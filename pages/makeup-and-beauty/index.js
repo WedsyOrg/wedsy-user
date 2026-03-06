@@ -18,18 +18,31 @@ import { MdChevronRight } from "react-icons/md";
 const VendorUserSection = React.lazy(() => import("@/pages/reuseableComponents/VendorUserSection"));
 
 
-function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
+function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initialWedsyPackages = [], initialVendors = [], initialTaxationData = null }) {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [wedsyPackages, setWedsyPackages] = useState([]);
-  const [vendors, setVendors] = useState([]);
-  const [displayWedsyPackages, setDisplayWedsyPackages] = useState([
-    0, 1, 2, 3,
-  ]);
-  const [selectedPackages, setSelectedPackages] = useState([]);
-  const [taxationData, setTaxationData] = useState({});
-  const [wedsyPackageTaxMultiply, setWedsyPackageTaxMultiply] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const [wedsyPackages, setWedsyPackages] = useState(Array.isArray(initialWedsyPackages) ? initialWedsyPackages : []);
+  const [vendors, setVendors] = useState(Array.isArray(initialVendors) ? initialVendors : []);
+  const [displayWedsyPackages, setDisplayWedsyPackages] = useState(() => {
+    const n = Array.isArray(initialWedsyPackages) ? initialWedsyPackages.length : 4;
+    if (n < 4) {
+      if (n === 1) return [0, 0, 0, 0];
+      if (n === 2) return [0, 1, 0, 1];
+      if (n === 3) return [0, 1, 2, 0];
+    }
+    return [0, 1, 2, 3];
+  });
+  const [selectedPackages, setSelectedPackages] = useState(() => {
+    if (!Array.isArray(initialWedsyPackages) || initialWedsyPackages.length === 0) return [];
+    return initialWedsyPackages.map((i) => ({ _id: i._id, quantity: 0, price: i.price }));
+  });
+  const [taxationData, setTaxationData] = useState(initialTaxationData || {});
+  const taxMult = initialTaxationData?.wedsyPackage
+    ? (100 + (initialTaxationData.wedsyPackage.cgst || 0) + (initialTaxationData.wedsyPackage.sgst || 0)) / 100
+    : 1;
+  const [wedsyPackageTaxMultiply, setWedsyPackageTaxMultiply] = useState(taxMult);
+  const hasServerData = Array.isArray(initialWedsyPackages) && Array.isArray(initialVendors);
+  const [isLoading, setIsLoading] = useState(!hasServerData);
   const fetchTaxationData = () => {
     return fetch(`${process.env.NEXT_PUBLIC_API_URL}/config?code=MUA-Taxation`, {
       method: "GET",
@@ -118,6 +131,10 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       });
   };
   useEffect(() => {
+    if (hasServerData) {
+      if (!initialTaxationData) fetchTaxationData();
+      return;
+    }
     setIsLoading(true);
     Promise.all([fetchWedsyPackages(), fetchVendors(), fetchTaxationData()]).finally(() => {
       setTimeout(() => setIsLoading(false), 1500);
@@ -936,6 +953,46 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       <VendorUserSection />
     </>
   );
+}
+
+export async function getServerSideProps() {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) {
+    return { props: { initialWedsyPackages: [], initialVendors: [], initialTaxationData: null } };
+  }
+  const headers = { "Content-Type": "application/json" };
+  try {
+    const [wedsyRes, vendorsRes, configRes] = await Promise.all([
+      fetch(`${apiUrl}/wedsy-package`, { method: "GET", headers }),
+      fetch(`${apiUrl}/vendor`, { method: "GET", headers }),
+      fetch(`${apiUrl}/config?code=MUA-Taxation`, { method: "GET", headers }),
+    ]);
+    const wedsyData = await wedsyRes.json().catch(() => []);
+    const vendorsData = await vendorsRes.json().catch(() => []);
+    const configData = await configRes.json().catch(() => ({}));
+    const wedsyList = Array.isArray(wedsyData) ? wedsyData : [];
+    const vendorsList = Array.isArray(vendorsData)
+      ? vendorsData
+      : Array.isArray(vendorsData?.list)
+        ? vendorsData.list
+        : [];
+    const taxationData = configData?.data || null;
+    return {
+      props: {
+        initialWedsyPackages: wedsyList,
+        initialVendors: vendorsList,
+        initialTaxationData: taxationData,
+      },
+    };
+  } catch (e) {
+    return {
+      props: {
+        initialWedsyPackages: [],
+        initialVendors: [],
+        initialTaxationData: null,
+      },
+    };
+  }
 }
 
 export default MakeupAndBeauty;

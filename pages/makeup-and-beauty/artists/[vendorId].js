@@ -21,13 +21,13 @@ import { MdClear } from "react-icons/md";
 import { RWebShare } from "react-web-share";
 import Toast from "@/components/other/Toast";
 
-function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
+function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initialVendor = null }) {
   const router = useRouter();
   const { vendorId } = router.query;
   const share = typeof router?.query?.share === "string" ? router.query.share : "";
   const [loading, setLoading] = useState(false);
   const [personalPackages, setPersonalPackages] = useState([]);
-  const [vendor, setVendor] = useState([]);
+  const [vendor, setVendor] = useState(initialVendor || null);
   const [similarVendors, setSimilarVendors] = useState([]);
   const [displayPersonalPackages, setDisplayPersonalPackages] = useState([
     0, 1, 2, 3,
@@ -662,9 +662,19 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       });
   };
   useEffect(() => {
+    if (initialVendor?._id && initialVendor._id === vendorId) {
+      setVendor(initialVendor);
+    }
+  }, [initialVendor, vendorId]);
+
+  useEffect(() => {
     if (!vendorId) return;
+    if (initialVendor?._id && initialVendor._id === vendorId) {
+      fetchSimilarVendors(initialVendor);
+    } else {
+      fetchVendor();
+    }
     fetchPersonalPackages();
-    fetchVendor();
     fetchTaxationData();
   }, [vendorId]);
   useEffect(() => {
@@ -2642,4 +2652,25 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       );
 }
 
-      export default MakeupAndBeauty;
+export async function getServerSideProps(context) {
+  const { vendorId } = context.params || {};
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl || !vendorId) {
+    return { redirect: { destination: "/makeup-and-beauty/artists", permanent: false } };
+  }
+  try {
+    const res = await fetch(
+      `${apiUrl}/vendor/${vendorId}?fetchSimilar=false`,
+      { method: "GET", headers: { "Content-Type": "application/json" } }
+    );
+    const data = await res.json().catch(() => null);
+    if (!data?._id) {
+      return { redirect: { destination: "/makeup-and-beauty/artists", permanent: false } };
+    }
+    return { props: { initialVendor: data } };
+  } catch (e) {
+    return { redirect: { destination: "/makeup-and-beauty/artists", permanent: false } };
+  }
+}
+
+export default MakeupAndBeauty;
