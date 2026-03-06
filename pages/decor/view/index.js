@@ -4,6 +4,7 @@ import { SpecificCategorySkeleton } from "@/components/skeletons/wedding-store/s
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import { Dropdown } from "flowbite-react";
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import Masonry from "react-masonry-css";
@@ -1324,9 +1325,15 @@ function DecorListing({
               </div>
             </>
           ) : (
-            <div className="text-center py-16">
-              <h2 className="text-2xl font-semibold">No Products Found</h2>
-              <p className="text-gray-600 mt-2">Try adjusting your filters.</p>
+            <div className="text-center py-12 md:py-16">
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-800">No matches for your filters</h2>
+              <p className="text-gray-600 mt-2 mb-6">Try another category above or explore our decor collection.</p>
+              <Link
+                href="/decor"
+                className="inline-block py-2.5 px-6 rounded-full text-sm font-semibold bg-[#840032] text-white hover:bg-rose-800 transition-colors"
+              >
+                Explore decor
+              </Link>
             </div>
           )}
         </main>

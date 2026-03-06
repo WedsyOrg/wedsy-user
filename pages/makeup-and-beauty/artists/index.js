@@ -1,6 +1,7 @@
 import SearchBar from "@/components/searchBar/SearchBar";
 import { toPriceString } from "@/utils/text";
 import { Checkbox, Dropdown, Label, Select } from "flowbite-react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { FaMapMarkerAlt, FaStar } from "react-icons/fa";
@@ -528,9 +529,36 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
             ))
         ) : (
           <div className="col-span-2 md:col-span-3 lg:col-span-4 flex justify-center items-center py-12">
-            <div className="text-center">
-              <p className="text-gray-500 text-lg">No makeup artists found</p>
-              <p className="text-gray-400 text-sm">Try adjusting your filters or search terms</p>
+            <div className="text-center max-w-md">
+              <p className="text-gray-800 text-lg font-medium">No matches for your filters or search</p>
+              <p className="text-gray-500 text-sm mt-1 mb-6">Try viewing all artists or explore our makeup packages.</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch("");
+                    setSelectedFilters({
+                      Locality: [],
+                      Rated: [],
+                      Speciality: [],
+                      "Services offered": [],
+                      "Groom makeup services": [],
+                      Gender: [],
+                    });
+                    setSortOption("");
+                    setPage(0);
+                  }}
+                  className="py-2.5 px-5 rounded-full text-sm font-semibold bg-[#840032] text-white hover:bg-rose-800 transition-colors"
+                >
+                  View all artists
+                </button>
+                <Link
+                  href="/makeup-and-beauty/wedsy-packages"
+                  className="py-2.5 px-5 rounded-full text-sm font-semibold bg-white border border-gray-300 text-gray-800 hover:bg-gray-50 transition-colors"
+                >
+                  Explore makeup packages
+                </Link>
+              </div>
             </div>
           </div>
         )}

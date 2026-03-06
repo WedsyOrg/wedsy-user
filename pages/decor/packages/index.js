@@ -174,14 +174,28 @@ export default function DecorPackagesIndex({
                   packages.
                 </div>
               ) : packages.length === 0 ? (
-                <div className="text-sm text-gray-700">
-                  {category ? (
-                    <>
-                      No packages found for <b>{category}</b>.
-                    </>
-                  ) : (
-                    <>No packages found.</>
-                  )}
+                <div className="text-center py-12 md:py-16">
+                  <h2 className="text-xl md:text-2xl font-semibold text-gray-800">
+                    {category ? <>No packages found for <b>{category}</b></> : "No packages found"}
+                  </h2>
+                  <p className="text-gray-600 mt-2 mb-6">Try a popular occasion or view all packages.</p>
+                  <div className="flex flex-wrap justify-center gap-2 mb-6">
+                    {CATEGORY_OPTIONS.map((cat) => (
+                      <Link
+                        key={cat}
+                        href={`/decor/packages${cat ? `?category=${encodeURIComponent(cat)}` : ""}`}
+                        className="py-2 px-4 rounded-full text-sm font-medium bg-white border border-gray-200 text-gray-800 hover:bg-rose-50 hover:border-rose-200 transition-colors shadow-sm"
+                      >
+                        {cat}
+                      </Link>
+                    ))}
+                  </div>
+                  <Link
+                    href="/decor/packages"
+                    className="inline-block py-2.5 px-6 rounded-full text-sm font-semibold bg-[#840032] text-white hover:bg-rose-800 transition-colors"
+                  >
+                    View all packages
+                  </Link>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
