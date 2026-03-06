@@ -700,10 +700,11 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       "addressCountry": "IN",
       "postalCode": vendor?.businessAddress?.postalCode || ""
     },
-    "aggregateRating": vendor?.rating ? {
+    "aggregateRating": vendor?.rating != null ? {
       "@type": "AggregateRating",
-      "ratingValue": vendor.rating.toString(),
-      "reviewCount": vendor.reviewCount?.toString() || "0"
+      "ratingValue": Number(vendor.rating).toFixed(1),
+      "reviewCount": String(vendor.reviewCount ?? 0),
+      "bestRating": "5"
     } : undefined,
     "priceRange": vendor?.priceRange || "₹₹",
     "telephone": vendor?.phone || "",
@@ -714,6 +715,16 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   if (!localBusinessSchema.aggregateRating) {
     delete localBusinessSchema.aggregateRating;
   }
+
+  // Person schema for artist (A7 – richer snippets)
+  const personSchema = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": vendor?.name || "Makeup Artist",
+    "description": vendor?.about || `${vendor?.speciality || "Professional Makeup Artist"} in ${vendor?.businessAddress?.city || "Bangalore"}`,
+    "image": vendor?.gallery?.coverPhoto ? [vendor.gallery.coverPhoto] : [],
+    "url": `https://www.wedsy.in/makeup-and-beauty/artists/${vendorId}`
+  };
 
   // Generate Breadcrumb Schema
   const breadcrumbSchema = {
@@ -784,6 +795,10 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
         />
       </Head>
       {selectedPackages?.reduce((accumulator, item) => {

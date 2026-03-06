@@ -658,7 +658,7 @@ function DecorListing({
     "image": decor?.seoTags?.image ? [decor.seoTags.image] : decor.image ? [decor.image] : [],
     "offers": {
       "@type": "Offer",
-      "price": decor?.productTypes?.[0]?.sellingPrice || "0",
+      "price": String(decor?.productTypes?.[0]?.sellingPrice ?? 0),
       "priceCurrency": "INR",
       "availability": "https://schema.org/InStock",
       "url": `https://www.wedsy.in/decor/view/${decor_id}`

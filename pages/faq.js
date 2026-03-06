@@ -229,6 +229,20 @@ export default function FAQ() {
   // Group FAQs by category
   const categories = [...new Set(faqsData.map(faq => faq.category))];
 
+  // FAQPage structured data for rich results (A6)
+  const faqPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqsData.map((faq) => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  };
+
   return (
     <>
       <Head>
@@ -239,6 +253,10 @@ export default function FAQ() {
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPageSchema) }}
+        />
       </Head>
 
       <div className="min-h-screen bg-[#F9F8F6]">

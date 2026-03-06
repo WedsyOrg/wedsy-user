@@ -274,7 +274,7 @@ function DecorListing({
       });
   };
   // Generate Product Schema for Package
-  const packagePrice = decorPackage.variant?.[variant]?.sellingPrice || decorPackage.variant?.artificialFlowers?.sellingPrice || "0";
+  const packagePrice = decorPackage.variant?.[variant]?.sellingPrice ?? decorPackage.variant?.artificialFlowers?.sellingPrice ?? decorPackage.variant?.mixedFlowers?.sellingPrice ?? decorPackage.variant?.naturalFlowers?.sellingPrice ?? 0;
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -283,7 +283,7 @@ function DecorListing({
     "image": decorPackage?.seoTags?.image ? [decorPackage.seoTags.image] : decorPackage.image ? [decorPackage.image] : [],
     "offers": {
       "@type": "Offer",
-      "price": packagePrice,
+      "price": String(packagePrice),
       "priceCurrency": "INR",
       "availability": "https://schema.org/InStock",
       "url": `https://www.wedsy.in/decor/packages/${package_id}`
