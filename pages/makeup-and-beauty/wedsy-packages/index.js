@@ -1,4 +1,5 @@
 import { toPriceString } from "@/utils/text";
+import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import { Modal } from "flowbite-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -148,8 +149,8 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   return (
     <>
       <Head>
-        <title>Makeup & Beauty Packages in Bangalore | Wedding Packages | Wedsy</title>
-        <meta name="description" content="Browse professional makeup and beauty packages in Bangalore for your wedding. Compare prices and book the perfect package for your special day." />
+        <title>{trimTitle("Makeup & Beauty Packages in Bangalore | Wedding Packages | Wedsy")}</title>
+        <meta name="description" content={trimDescription("Browse professional makeup and beauty packages in Bangalore for your wedding. Compare prices and book the perfect package for your special day.")} />
         <meta name="keywords" content="makeup packages bangalore, beauty packages bangalore, wedding makeup packages, bridal makeup packages, makeup artist packages" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://www.wedsy.in/makeup-and-beauty/wedsy-packages" />
@@ -157,7 +158,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         {/* Open Graph Tags */}
         <meta property="og:title" content="Makeup & Beauty Packages in Bangalore | Wedding Packages | Wedsy" />
         <meta property="og:description" content="Browse professional makeup and beauty packages in Bangalore for your wedding. Compare prices and book the perfect package." />
-        <meta property="og:image" content="https://www.wedsy.in/logo-black.webp" />
+        <meta property="og:image" content={OG_IMAGES.makeup} />
         <meta property="og:url" content="https://www.wedsy.in/makeup-and-beauty/wedsy-packages" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Wedsy" />
@@ -166,7 +167,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Makeup & Beauty Packages in Bangalore | Wedding Packages | Wedsy" />
         <meta name="twitter:description" content="Browse professional makeup and beauty packages in Bangalore for your wedding." />
-        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
+        <meta name="twitter:image" content={OG_IMAGES.makeup} />
         
         {/* Structured Data */}
         <script

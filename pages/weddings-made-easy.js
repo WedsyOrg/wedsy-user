@@ -1,6 +1,7 @@
 import Testimonials from "@/components/screens/Testimonials";
 import styles from "@/styles/LandingPage.module.css";
 import { processMobileNumber } from "@/utils/phoneNumber";
+import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import { Checkbox, Footer, Label, Select, TextInput } from "flowbite-react";
 import Head from "next/head";
 import Image from "next/image";
@@ -128,8 +129,8 @@ export default function HomePage({}) {
   return (
     <>
       <Head>
-        <title>Weddings Made Easy | India's First Online Wedding Planning Platform | Wedsy</title>
-        <meta name="description" content="Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform. Get free quotes, expert consultation, and premium wedding services in Bangalore." />
+        <title>{trimTitle("Weddings Made Easy | India's First Online Wedding Planning Platform | Wedsy")}</title>
+        <meta name="description" content={trimDescription("Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform. Get free quotes, expert consultation, and premium wedding services in Bangalore.")} />
         <meta name="keywords" content="wedding planning, online wedding planning, wedding planners bangalore, event planning bangalore, wedding services, wedding consultation" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://www.wedsy.in/weddings-made-easy" />
@@ -137,7 +138,7 @@ export default function HomePage({}) {
         {/* Open Graph Tags */}
         <meta property="og:title" content="Weddings Made Easy | India's First Online Wedding Planning Platform | Wedsy" />
         <meta property="og:description" content="Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform. Get free quotes and expert consultation." />
-        <meta property="og:image" content="https://www.wedsy.in/logo-black.webp" />
+        <meta property="og:image" content={OG_IMAGES.default} />
         <meta property="og:url" content="https://www.wedsy.in/weddings-made-easy" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Wedsy" />
@@ -146,7 +147,7 @@ export default function HomePage({}) {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Weddings Made Easy | India's First Online Wedding Planning Platform | Wedsy" />
         <meta name="twitter:description" content="Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform." />
-        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
+        <meta name="twitter:image" content={OG_IMAGES.default} />
         
         {/* Structured Data */}
         <script

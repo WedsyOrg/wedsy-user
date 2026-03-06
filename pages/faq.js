@@ -1,3 +1,4 @@
+import { trimTitle, trimDescription } from "@/utils/seo";
 import Head from "next/head";
 import Link from "next/link";
 import { useState } from "react";
@@ -231,10 +232,10 @@ export default function FAQ() {
   return (
     <>
       <Head>
-        <title>Frequently Asked Questions | Wedsy - Wedding Planners in Bangalore</title>
+        <title>{trimTitle("Frequently Asked Questions | Wedsy - Wedding Planners in Bangalore")}</title>
         <meta
           name="description"
-          content="Find answers to all your questions about Wedsy's wedding planning, decor, and makeup services in Bangalore. Learn about our packages, pricing, and how we make your dream wedding come true."
+          content={trimDescription("Find answers to all your questions about Wedsy's wedding planning, decor, and makeup services in Bangalore. Learn about our packages, pricing, and how we make your dream wedding come true.")}
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />

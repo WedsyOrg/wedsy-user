@@ -2,6 +2,7 @@ import EventHowItWorks from "@/components/screens/EventHowItWorks";
 import { EventPageSkeleton } from "@/components/skeletons/event";
 import { formatDate, sortEventsByDate } from "@/utils/common";
 import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
+import { trimTitle } from "@/utils/seo";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -999,7 +1000,7 @@ export default function EventTool({userLoggedIn, setOpenLoginModal}) {
   return (
     <>
       <Head>
-        <title>My Events | Wedsy</title>
+        <title>{trimTitle("My Events | Wedsy")}</title>
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://www.wedsy.in/event" />
       </Head>

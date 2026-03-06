@@ -6,6 +6,7 @@ import CountryCodeSelector from "@/components/other/CountryCodeSelector";
 import NotificationToast from "@/components/other/NotificationToast";
 import styles from "@/styles/Home.module.css";
 import { processMobileNumber } from "@/utils/phoneNumber";
+import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import { motion, AnimatePresence } from "framer-motion";
 import Head from "next/head";
 import Image from "next/image";
@@ -817,11 +818,11 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
     <>
       <Head>
         <title>
-          Affordable Wedding Packages in Bangalore - Best Planners in Bangalore
+          {trimTitle("Affordable Wedding Packages in Bangalore - Best Planners in Bangalore")}
         </title>
         <meta
           name="description"
-          content="Find affordable wedding planners in Bangalore. Explore budget-friendly wedding, event, and destination packages in India. Tailored solutions for your perfect day!"
+          content={trimDescription("Find affordable wedding planners in Bangalore. Explore budget-friendly wedding, event, and destination packages in India. Tailored solutions for your perfect day!")}
         />
         <meta
           name="keywords"
@@ -835,7 +836,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
         {/* Open Graph Tags */}
         <meta property="og:title" content="Affordable Wedding Packages in Bangalore - Best Planners in Bangalore | Wedsy" />
         <meta property="og:description" content="Find affordable wedding planners in Bangalore. Explore budget-friendly wedding, event, and destination packages in India. Tailored solutions for your perfect day!" />
-        <meta property="og:image" content="https://www.wedsy.in/logo-black.webp" />
+        <meta property="og:image" content={OG_IMAGES.default} />
         <meta property="og:url" content="https://www.wedsy.in/" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Wedsy" />
@@ -844,7 +845,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Affordable Wedding Packages in Bangalore - Best Planners in Bangalore | Wedsy" />
         <meta name="twitter:description" content="Find affordable wedding planners in Bangalore. Explore budget-friendly wedding, event, and destination packages in India." />
-        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
+        <meta name="twitter:image" content={OG_IMAGES.default} />
         
         {/* Structured Data */}
         <script

@@ -5,6 +5,7 @@ import SimilarDecor from "@/components/screens/SimilarDecor";
 import Toast from "@/components/other/Toast";
 import ImageLightbox from "@/components/lightbox/ImageLightbox";
 import { toProperCase } from "@/utils/text";
+import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import {
   Button,
   Checkbox,
@@ -733,13 +734,13 @@ function DecorListing({
   const pageTitle = decor?.seoTags?.title || `${decor.name} | Wedding ${decor.category || "Decoration"} | Wedsy`;
   const pageDescription = decor?.seoTags?.description || `${decor.name} - ${decor.description?.substring(0, 150) || "Premium wedding decoration item"} | Starting at ₹${decor?.productTypes?.[0]?.sellingPrice || "0"}. Book now for your special day in Bangalore.`;
   const pageKeywords = decor?.seoTags?.keywords || `${decor.name}, ${decor.category || "wedding decoration"}, wedding decor bangalore, ${decor.category?.toLowerCase()} decoration, wedding planning bangalore`;
-  const ogImage = decor?.seoTags?.image || decor.image || "https://www.wedsy.in/logo-black.webp";
+  const ogImage = decor?.seoTags?.image || decor.image || OG_IMAGES.decor;
 
   return (
     <>
       <Head>
-        <title>{pageTitle}</title>
-        <meta name="description" content={pageDescription} />
+        <title>{trimTitle(pageTitle)}</title>
+        <meta name="description" content={trimDescription(pageDescription)} />
         <meta name="keywords" content={pageKeywords} />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={`https://www.wedsy.in/decor/view/${decor_id}`} />

@@ -1,4 +1,5 @@
 import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
+import { trimTitle } from "@/utils/seo";
 import { Label, Select, TextInput, Textarea } from "flowbite-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -433,7 +434,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   return (
     <>
       <Head>
-        <title>Bidding | Wedsy</title>
+        <title>{trimTitle("Bidding | Wedsy")}</title>
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://www.wedsy.in/makeup-and-beauty/bidding" />
       </Head>

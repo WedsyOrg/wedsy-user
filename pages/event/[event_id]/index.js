@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import { IoClose } from "react-icons/io5";
 import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
+import { trimTitle } from "@/utils/seo";
 import Head from "next/head";
 
 // Clipboard Visual Component
@@ -279,7 +280,7 @@ export default function EventDetailsPage() {
   return (
     <>
       <Head>
-        <title>{event?.name || "Event"} | Wedsy</title>
+        <title>{trimTitle(`${event?.name || "Event"} | Wedsy`)}</title>
         <meta name="robots" content="noindex, nofollow" />
       </Head>
 

@@ -2,6 +2,7 @@ import FAQAccordion from "@/components/accordion/FAQAccordion";
 import SearchBar from "@/components/searchBar/SearchBar";
 import { MakeupAndBeautyPageSkeleton } from "@/components/skeletons/makeup-store";
 import { toPriceString } from "@/utils/text";
+import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -185,8 +186,8 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   return (
     <>
       <Head>
-        <title>Makeup Artists & Beauty Services in Bangalore | Wedsy</title>
-        <meta name="description" content="Find the best makeup artists and beauty services in Bangalore for your wedding. Browse professional bridal makeup artists, compare prices, and book your perfect look." />
+        <title>{trimTitle("Makeup Artists & Beauty Services in Bangalore | Wedsy")}</title>
+        <meta name="description" content={trimDescription("Find the best makeup artists and beauty services in Bangalore for your wedding. Browse professional bridal makeup artists, compare prices, and book your perfect look.")} />
         <meta name="keywords" content="makeup artists bangalore, bridal makeup bangalore, wedding makeup artists, beauty services bangalore, makeup artist near me" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://www.wedsy.in/makeup-and-beauty" />
@@ -194,7 +195,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         {/* Open Graph Tags */}
         <meta property="og:title" content="Makeup Artists & Beauty Services in Bangalore | Wedsy" />
         <meta property="og:description" content="Find the best makeup artists and beauty services in Bangalore for your wedding. Browse professional bridal makeup artists and book your perfect look." />
-        <meta property="og:image" content="https://www.wedsy.in/logo-black.webp" />
+        <meta property="og:image" content={OG_IMAGES.makeup} />
         <meta property="og:url" content="https://www.wedsy.in/makeup-and-beauty" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Wedsy" />
@@ -203,7 +204,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Makeup Artists & Beauty Services in Bangalore | Wedsy" />
         <meta name="twitter:description" content="Find the best makeup artists and beauty services in Bangalore for your wedding." />
-        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
+        <meta name="twitter:image" content={OG_IMAGES.makeup} />
 
         {/* Structured Data */}
         <script

@@ -1,5 +1,6 @@
 import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
 import { toPriceString } from "@/utils/text";
+import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import { Label, Modal, TextInput } from "flowbite-react";
 import Head from "next/head";
 import Link from "next/link";
@@ -749,14 +750,14 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
   const pageTitle = vendor?.name ? `${vendor.name} | ${vendor.speciality || "Makeup Artist"} in ${vendor.businessAddress?.city || "Bangalore"} | Wedsy` : "Makeup Artist | Wedsy";
   const pageDescription = vendor?.about || `${vendor?.name || "Professional Makeup Artist"} - ${vendor?.speciality || "Makeup Artist"} in ${vendor?.businessAddress?.city || "Bangalore"}. ${vendor?.rating ? `Rated ${vendor.rating}/5. ` : ""}Book now for your special day.`;
   const pageKeywords = `${vendor?.name || ""}, ${vendor?.speciality || "makeup artist"}, makeup artist ${vendor?.businessAddress?.city || "bangalore"}, bridal makeup, wedding makeup, makeup artist near me`.trim();
-  const ogImage = vendor?.gallery?.coverPhoto || "https://www.wedsy.in/logo-black.webp";
+  const ogImage = vendor?.gallery?.coverPhoto || OG_IMAGES.makeup;
   const coverPhoto = vendor?.gallery?.coverPhoto || "/assets/images/makeup-artist-cover.webp";
 
   return (
     <>
       <Head>
-        <title>{pageTitle}</title>
-        <meta name="description" content={pageDescription} />
+        <title>{trimTitle(pageTitle)}</title>
+        <meta name="description" content={trimDescription(pageDescription)} />
         <meta name="keywords" content={pageKeywords} />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={`https://www.wedsy.in/makeup-and-beauty/artists/${vendorId}`} />

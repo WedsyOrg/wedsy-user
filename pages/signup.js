@@ -1,4 +1,5 @@
 import { processMobileNumber } from "@/utils/phoneNumber";
+import { trimTitle } from "@/utils/seo";
 import { Spinner } from "flowbite-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -109,7 +110,7 @@ export default function Signup({ CheckLogin }) {
   return (
     <>
       <Head>
-        <title>Sign Up | Wedsy</title>
+        <title>{trimTitle("Sign Up | Wedsy")}</title>
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://www.wedsy.in/signup" />
       </Head>

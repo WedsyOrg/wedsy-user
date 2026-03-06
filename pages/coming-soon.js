@@ -1,3 +1,4 @@
+import { trimTitle, trimDescription } from "@/utils/seo";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,8 +8,8 @@ export default function ComingSoon() {
   return (
     <>
       <Head>
-        <title>Coming Soon | Wedsy</title>
-        <meta name="description" content="Something amazing is coming soon. Stay tuned!" />
+        <title>{trimTitle("Coming Soon | Wedsy")}</title>
+        <meta name="description" content={trimDescription("Something amazing is coming soon. Stay tuned!")} />
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://www.wedsy.in/coming-soon" />
       </Head>

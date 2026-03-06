@@ -1,3 +1,4 @@
+import { trimTitle } from "@/utils/seo";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -6,7 +7,7 @@ function Wishlist() {
   return (
     <>
       <Head>
-        <title>Wishlist | Wedsy</title>
+        <title>{trimTitle("Wishlist | Wedsy")}</title>
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://www.wedsy.in/wishlist" />
       </Head>

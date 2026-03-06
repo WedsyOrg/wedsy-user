@@ -1,6 +1,7 @@
 import DecorCard from "@/components/cards/DecorCard";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
 import { SpecificCategorySkeleton } from "@/components/skeletons/wedding-store/specific-category";
+import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import { Dropdown } from "flowbite-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -549,8 +550,8 @@ function DecorListing({
     <>
       <DecorDisclaimer />
       <Head>
-        <title>{seoTitle}</title>
-        <meta name="description" content={seoDescription} />
+        <title>{trimTitle(seoTitle)}</title>
+        <meta name="description" content={trimDescription(seoDescription)} />
         <meta name="keywords" content={seoKeywords} />
         <meta name="robots" content="index, follow" />
         <meta name="copyright" content="Wedsy" />
@@ -566,7 +567,7 @@ function DecorListing({
         {/* Open Graph Tags */}
         <meta property="og:title" content={seoTitle} />
         <meta property="og:description" content={seoDescription} />
-        <meta property="og:image" content="https://www.wedsy.in/logo-black.webp" />
+        <meta property="og:image" content={OG_IMAGES.decor} />
         <meta
           property="og:url"
           content={`https://www.wedsy.in/decor/view?category=${filters.category || ""}`}
@@ -578,7 +579,7 @@ function DecorListing({
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={seoTitle} />
         <meta name="twitter:description" content={seoDescription} />
-        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
+        <meta name="twitter:image" content={OG_IMAGES.decor} />
 
         {/* Breadcrumb Schema */}
         <script

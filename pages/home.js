@@ -1,5 +1,6 @@
 import FAQAccordion from "@/components/accordion/FAQAccordion";
 import PlanYourEvent from "@/components/screens/PlanYourEvent";
+import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import { Button } from "flowbite-react";
 import Head from "next/head";
 import Image from "next/image";
@@ -85,8 +86,8 @@ function Home({ categoryList }) {
   return (
     <>
       <Head>
-        <title>Wedding Planning Made Easy | Premium Wedding Services in Bangalore | Wedsy</title>
-        <meta name="description" content="Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform. Get expert consultation, premium decorations, makeup artists, and complete wedding services in Bangalore." />
+        <title>{trimTitle("Wedding Planning Made Easy | Premium Wedding Services in Bangalore | Wedsy")}</title>
+        <meta name="description" content={trimDescription("Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform. Get expert consultation, premium decorations, makeup artists, and complete wedding services in Bangalore.")} />
         <meta name="keywords" content="wedding planning, online wedding planning, wedding planners bangalore, event planning bangalore, wedding services, wedding decoration bangalore, makeup artists bangalore" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://www.wedsy.in/home" />
@@ -94,7 +95,7 @@ function Home({ categoryList }) {
         {/* Open Graph Tags */}
         <meta property="og:title" content="Wedding Planning Made Easy | Premium Wedding Services in Bangalore | Wedsy" />
         <meta property="og:description" content="Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform. Get expert consultation and premium wedding services." />
-        <meta property="og:image" content="https://www.wedsy.in/logo-black.webp" />
+        <meta property="og:image" content={OG_IMAGES.default} />
         <meta property="og:url" content="https://www.wedsy.in/home" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Wedsy" />
@@ -103,7 +104,7 @@ function Home({ categoryList }) {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Wedding Planning Made Easy | Premium Wedding Services in Bangalore | Wedsy" />
         <meta name="twitter:description" content="Plan your dream wedding effortlessly with Wedsy - India's first online wedding planning platform." />
-        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
+        <meta name="twitter:image" content={OG_IMAGES.default} />
         
         {/* Structured Data */}
         <script

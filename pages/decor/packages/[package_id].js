@@ -1,4 +1,5 @@
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
+import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import {
   Checkbox,
   Dropdown,
@@ -329,7 +330,7 @@ function DecorListing({
   const pageTitle = decorPackage?.seoTags?.title || `${decorPackage.name} | Wedding Decoration Package | Wedsy`;
   const pageDescription = decorPackage?.seoTags?.description || `${decorPackage.name} - ${decorPackage.description?.substring(0, 150) || "Complete wedding decoration package"} | Starting at ₹${packagePrice}. Book now for your special day in Bangalore.`;
   const pageKeywords = decorPackage?.seoTags?.keywords || `${decorPackage.name}, wedding decoration package, wedding decor bangalore, decoration package, wedding planning bangalore`;
-  const ogImage = decorPackage?.seoTags?.image || decorPackage.image || "https://www.wedsy.in/logo-black.webp";
+  const ogImage = decorPackage?.seoTags?.image || decorPackage.image || OG_IMAGES.decor;
 
   const [selectedByCategory, setSelectedByCategory] = useState({});
   const [enlargedImage, setEnlargedImage] = useState(null);
@@ -371,8 +372,8 @@ function DecorListing({
   return (
     <>
       <Head>
-        <title>{pageTitle}</title>
-        <meta name="description" content={pageDescription} />
+        <title>{trimTitle(pageTitle)}</title>
+        <meta name="description" content={trimDescription(pageDescription)} />
         <meta name="keywords" content={pageKeywords} />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={`https://www.wedsy.in/decor/packages/${package_id}`} />

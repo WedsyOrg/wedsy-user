@@ -1,5 +1,6 @@
 import DecorCard from "@/components/cards/DecorCard";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
+import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -116,8 +117,8 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
   return (
     <>
       <Head>
-        <title>Wedding Store | Premium Wedding Decorations in Bangalore | Wedsy</title>
-        <meta name="description" content="Explore Wedsy's wedding store for premium wedding decorations in Bangalore. Browse stages, mandaps, pathways, entrances, and more decoration items." />
+        <title>{trimTitle("Wedding Store | Premium Wedding Decorations in Bangalore | Wedsy")}</title>
+        <meta name="description" content={trimDescription("Explore Wedsy's wedding store for premium wedding decorations in Bangalore. Browse stages, mandaps, pathways, entrances, and more decoration items.")} />
         <meta name="keywords" content="wedding store, wedding decorations bangalore, wedding decor items, wedding stage decoration, wedding mandap decoration" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://www.wedsy.in/wedding-store" />
@@ -125,7 +126,7 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
         {/* Open Graph Tags */}
         <meta property="og:title" content="Wedding Store | Premium Wedding Decorations in Bangalore | Wedsy" />
         <meta property="og:description" content="Explore Wedsy's wedding store for premium wedding decorations in Bangalore. Browse stages, mandaps, pathways, and more." />
-        <meta property="og:image" content="https://www.wedsy.in/logo-black.webp" />
+        <meta property="og:image" content={OG_IMAGES.decor} />
         <meta property="og:url" content="https://www.wedsy.in/wedding-store" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Wedsy" />
@@ -134,7 +135,7 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Wedding Store | Premium Wedding Decorations in Bangalore | Wedsy" />
         <meta name="twitter:description" content="Explore Wedsy's wedding store for premium wedding decorations in Bangalore." />
-        <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
+        <meta name="twitter:image" content={OG_IMAGES.decor} />
         
         {/* Structured Data */}
         <script

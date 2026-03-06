@@ -7,6 +7,7 @@ import { EventPageSkeleton } from "@/components/skeletons/event";
 import { BiddingPageSkeleton, MakeupAndBeautyPageSkeleton, MakeupArtistsPageSkeleton, WedsyPackagesPageSkeleton } from "@/components/skeletons/makeup-store";
 import { DecorPageSkeleton } from "@/components/skeletons/wedding-store";
 import "@/styles/globals.css";
+import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import { Spinner } from "flowbite-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -169,22 +170,22 @@ function App({ Component, pageProps }) {
         {/* Specific meta tags for homepage */}
         {router.pathname === "/" && (
           <>
-            <title>Affordable Wedding Packages in Bangalore - Best Planners in Bangalore</title>
-            <meta name="description" content="Find affordable wedding planners in Bangalore. Explore budget-friendly wedding, event, and destination packages in India. Tailored solutions for your perfect day!" />
+            <title>{trimTitle("Affordable Wedding Packages in Bangalore - Best Planners in Bangalore")}</title>
+            <meta name="description" content={trimDescription("Find affordable wedding planners in Bangalore. Explore budget-friendly wedding, event, and destination packages in India. Tailored solutions for your perfect day!")} />
           </>
         )}
         {/* Specific meta tags for decor page */}
         {router.pathname === "/decor" && (
           <>
-            <title>Premium Wedding Decor Services | Wedding Stage Decoration in Bangalore</title>
-            <meta name="description" content="Transform your wedding with Wedsy's premium decor services. Discover exquisite themes, floral arrangements, and custom setups designed to bring your dream wedding to life. Book now for a seamless experience." />
+            <title>{trimTitle("Premium Wedding Decor Services | Wedding Stage Decoration in Bangalore")}</title>
+            <meta name="description" content={trimDescription("Transform your wedding with Wedsy's premium decor services. Discover exquisite themes, floral arrangements, and custom setups designed to bring your dream wedding to life. Book now for a seamless experience.")} />
           </>
         )}
         {/* Default meta tags for other pages */}
         {router.pathname !== "/" && router.pathname !== "/decor" && (
           <>
-            <title>Wedsy | Weddings Made Easy</title>
-            <meta name="description" content="Elevate your wedding experience with Wedsy - your affordable Wedtech partner. Explore stunning flower decor, captivating stage setups, and budget-friendly planning." />
+            <title>{trimTitle("Wedsy | Weddings Made Easy")}</title>
+            <meta name="description" content={trimDescription("Elevate your wedding experience with Wedsy - your affordable Wedtech partner. Explore stunning flower decor, captivating stage setups, and budget-friendly planning.")} />
           </>
         )}
         <link rel="canonical" href={`https://www.wedsy.in${router.asPath === "/" ? "" : router.asPath.split("?")[0]}`} />
@@ -193,7 +194,7 @@ function App({ Component, pageProps }) {
         <meta property="og:locale" content="en_IN" />
         <meta property="og:title" content="Wedsy | Weddings Made Easy" />
         <meta property="og:description" content="Elevate your wedding experience with Wedsy - your affordable Wedtech partner." />
-        <meta property="og:image" content="https://wedsy.vercel.app/wedsy-logo.jpg" />
+        <meta property="og:image" content={OG_IMAGES.default} />
         <meta property="og:url" content="https://www.wedsy.in/" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Wedsy | Weddings Made Easy" />

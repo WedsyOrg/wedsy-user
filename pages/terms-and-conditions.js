@@ -1,3 +1,4 @@
+import { trimTitle, trimDescription } from "@/utils/seo";
 import Head from "next/head";
 import Link from "next/link";
 
@@ -5,8 +6,8 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Terms & Conditions | Wedsy</title>
-        <meta name="description" content="Wedsy's terms and conditions. Read our terms of service, refund policy, and guidelines for using our wedding planning platform." />
+        <title>{trimTitle("Terms & Conditions | Wedsy")}</title>
+        <meta name="description" content={trimDescription("Wedsy's terms and conditions. Read our terms of service, refund policy, and guidelines for using our wedding planning platform.")} />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://www.wedsy.in/terms-and-conditions" />
         

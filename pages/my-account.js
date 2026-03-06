@@ -1,6 +1,7 @@
 import { checkValidEmail } from "@/utils/email";
 import { uploadFile } from "@/utils/file";
 import { processMobileNumber } from "@/utils/phoneNumber";
+import { trimTitle } from "@/utils/seo";
 import { Button, TextInput } from "flowbite-react";
 import Head from "next/head";
 import Image from "next/image";
@@ -121,7 +122,7 @@ export default function Account({ user }) {
   return (
     <>
       <Head>
-        <title>My Account | Wedsy</title>
+        <title>{trimTitle("My Account | Wedsy")}</title>
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://www.wedsy.in/my-account" />
       </Head>

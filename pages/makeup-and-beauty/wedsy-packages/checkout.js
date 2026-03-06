@@ -1,5 +1,6 @@
 import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
 import { toPriceString, toProperCase } from "@/utils/text";
+import { trimTitle } from "@/utils/seo";
 import { Button, Label, Modal, Select, TextInput } from "flowbite-react";
 import Head from "next/head";
 import Image from "next/image";
@@ -598,7 +599,7 @@ function MakeupAndBeauty({ user }) {
   return (
     <>
       <Head>
-        <title>Checkout | Wedsy</title>
+        <title>{trimTitle("Checkout | Wedsy")}</title>
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://www.wedsy.in/makeup-and-beauty/wedsy-packages/checkout" />
       </Head>

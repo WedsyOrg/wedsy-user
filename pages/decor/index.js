@@ -1,5 +1,6 @@
 import DecorCard from "@/components/cards/DecorCard";
 import { processMobileNumber } from "@/utils/phoneNumber";
+import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -415,12 +416,11 @@ function Decor({
             content="6NQH3LHjenBtdQYZzStAqCj51nFRb1P4Pb5jhIdugB0"
           />
           <title>
-            Premium Wedding Decor Services | Wedding Stage Decoration in
-            Bangalore
+            {trimTitle("Premium Wedding Decor Services | Wedding Stage Decoration in Bangalore")}
           </title>
           <meta
             name="description"
-            content="Transform your wedding with Wedsy's premium decor services. Discover exquisite themes, floral arrangements, and custom setups designed to bring your dream wedding to life. Book now for a seamless experience."
+            content={trimDescription("Transform your wedding with Wedsy's premium decor services. Discover exquisite themes, floral arrangements, and custom setups designed to bring your dream wedding to life. Book now for a seamless experience.")}
           />
           <meta
             name="keywords"
@@ -434,7 +434,7 @@ function Decor({
           {/* Open Graph Tags */}
           <meta property="og:title" content="Wedding Decorations | Premium Wedding Decor in Bangalore | Wedsy" />
           <meta property="og:description" content="Transform your wedding with Wedsy's premium decor services. Discover exquisite themes, floral arrangements, and custom setups designed to bring your dream wedding to life." />
-          <meta property="og:image" content="https://www.wedsy.in/logo-black.webp" />
+          <meta property="og:image" content={OG_IMAGES.decor} />
           <meta property="og:url" content="https://www.wedsy.in/decor" />
           <meta property="og:type" content="website" />
           <meta property="og:site_name" content="Wedsy" />
@@ -443,7 +443,7 @@ function Decor({
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:title" content="Wedding Decorations | Premium Wedding Decor in Bangalore | Wedsy" />
           <meta name="twitter:description" content="Transform your wedding with Wedsy's premium decor services. Discover exquisite themes, floral arrangements, and custom setups." />
-          <meta name="twitter:image" content="https://www.wedsy.in/logo-black.webp" />
+          <meta name="twitter:image" content={OG_IMAGES.decor} />
           
           {/* Structured Data */}
           <script

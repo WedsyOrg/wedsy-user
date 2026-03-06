@@ -1,4 +1,5 @@
 import DecorPackageTile from "@/components/decor-packages/DecorPackageTile";
+import { trimTitle, trimDescription } from "@/utils/seo";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -115,10 +116,10 @@ export default function DecorPackagesIndex({
   return (
     <>
       <Head>
-        <title>Packages | Wedsy</title>
+        <title>{trimTitle("Packages | Wedsy")}</title>
         <meta
           name="description"
-          content="Browse decor packages by occasion and explore package details."
+          content={trimDescription("Browse decor packages by occasion and explore package details.")}
         />
         <link
           rel="canonical"

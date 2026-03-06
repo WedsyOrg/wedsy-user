@@ -1,3 +1,4 @@
+import { trimTitle, trimDescription } from "@/utils/seo";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -6,10 +7,9 @@ export default function Custom404() {
   return (
     <>
       <Head>
-        <title>404 - Page Not Found | Wedsy</title>
-        <meta name="description" content="The page you are looking for does not exist." />
+        <title>{trimTitle("404 - Page Not Found | Wedsy")}</title>
+        <meta name="description" content={trimDescription("The page you are looking for does not exist.")} />
         <meta name="robots" content="noindex, nofollow" />
-        <link rel="canonical" href="https://www.wedsy.in/404" />
       </Head>
       <div className="min-h-screen bg-[#F4F4F4] flex flex-col">
       {/* Main Content Area */}

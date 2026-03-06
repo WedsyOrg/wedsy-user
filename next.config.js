@@ -1,6 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async redirects() {
+    return [
+      // Add 301 redirects for old or broken URLs. Example:
+      // { source: '/old-path', destination: '/new-path', permanent: true },
+    ];
+  },
   images: {
     domains: [
       "wedsy.s3.amazonaws.com",
