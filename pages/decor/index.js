@@ -112,6 +112,9 @@ function Decor({
             message: "",
           });
           localStorage.setItem("token", response.token);
+          import("react-facebook-pixel")
+            .then((x) => x.default)
+            .then((ReactPixel) => ReactPixel.track("Lead"));
         } else {
           setEnquiryForm({
             ...enquiryForm,

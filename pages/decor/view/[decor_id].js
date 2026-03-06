@@ -457,6 +457,23 @@ function DecorListing({
     }
   }, [decor_id, userLoggedIn]);
 
+  // Meta Pixel ViewContent (A10)
+  useEffect(() => {
+    if (!decor_id || !decor?.name) return;
+    import("react-facebook-pixel")
+      .then((x) => x.default)
+      .then((ReactPixel) => {
+        ReactPixel.track("ViewContent", {
+          content_name: decor.name,
+          content_ids: [decor_id],
+          content_type: "product",
+          content_category: decor.category || "decor",
+          value: decor?.productTypes?.[0]?.sellingPrice ?? 0,
+          currency: "INR",
+        });
+      });
+  }, [decor_id, decor?._id, decor?.name]);
+
   // UI Components
   function AddToEventButton({}) {
     return (

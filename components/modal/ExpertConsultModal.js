@@ -123,6 +123,9 @@ export default function ExpertConsultModal({
           success: true,
           message: "",
         });
+        import("react-facebook-pixel")
+          .then((x) => x.default)
+          .then((ReactPixel) => ReactPixel.track("Lead"));
       })
       .catch((error) => {
         console.error("There was a problem:", error);

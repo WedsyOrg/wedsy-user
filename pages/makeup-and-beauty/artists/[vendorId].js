@@ -126,6 +126,22 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vendorId]);
 
+  // Meta Pixel ViewContent (A10)
+  useEffect(() => {
+    if (!vendorId || !vendor?.name) return;
+    import("react-facebook-pixel")
+      .then((x) => x.default)
+      .then((ReactPixel) => {
+        ReactPixel.track("ViewContent", {
+          content_name: vendor.name,
+          content_ids: [vendorId],
+          content_type: "profile",
+          content_category: vendor?.speciality || "makeup_artist",
+          currency: "INR",
+        });
+      });
+  }, [vendorId, vendor?._id, vendor?.name]);
+
   const submitReview = async () => {
     const text = String(reviewForm.text || "").trim();
     if (!vendorId) return;

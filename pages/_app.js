@@ -188,7 +188,7 @@ function App({ Component, pageProps }) {
             <meta name="description" content={trimDescription("Elevate your wedding experience with Wedsy - your affordable Wedtech partner. Explore stunning flower decor, captivating stage setups, and budget-friendly planning.")} />
           </>
         )}
-        <link rel="canonical" href={`https://www.wedsy.in${router.asPath === "/" ? "" : router.asPath.split("?")[0]}`} />
+        <link rel="canonical" href={`https://www.wedsy.in${router.asPath === "/" ? "" : router.asPath.split("?")[0].split("#")[0]}`} />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta httpEquiv="content-type" content="text/html;charset=UTF-8" />
         <meta property="og:locale" content="en_IN" />

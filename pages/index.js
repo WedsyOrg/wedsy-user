@@ -602,6 +602,9 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               ...data,
               main: { phone: "", name: "", loading: false, success: true },
             });
+            import("react-facebook-pixel")
+              .then((x) => x.default)
+              .then((ReactPixel) => ReactPixel.track("Lead"));
           }
         })
         .catch((error) => {
@@ -658,6 +661,9 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             },
           });
           localStorage.setItem("token", response.token);
+          import("react-facebook-pixel")
+            .then((x) => x.default)
+            .then((ReactPixel) => ReactPixel.track("Lead"));
         } else {
           setData({
             ...data,
@@ -1445,6 +1451,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               <div className="absolute inset-0 bg-black/80 rounded-xl"></div>
               <a
                 href="https://venues.wedsy.in"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="relative z-10 text-white
              text-[10px] md:text-xl font-semibold 
              flex items-center justify-center md:justify-start"
@@ -2318,7 +2326,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
           md:col-span-2 md:row-span-5
           md:col-start-8 md:row-start-1
         ">
-        <Link href="https://hub.wedsy.in/reviews/">
+        <Link href="https://hub.wedsy.in/reviews/" target="_blank" rel="noopener noreferrer">
           <Image
             src="/assets/images/review_9.webp"
             alt="Grid Item 9"
@@ -2496,7 +2504,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
 
       
       <div className="mt-16 text-center">
-        <Link href="https://hub.wedsy.in/reviews/">
+        <Link href="https://hub.wedsy.in/reviews/" target="_blank" rel="noopener noreferrer">
         <button 
           className="bg-gray-800 text-white px-8 py-4 rounded-md text-sm md:text-lg font-semibold hover:bg-gray-700 transition-colors duration-300"
           style={{ fontFamily: "'Cinzel', serif" }}
@@ -2644,7 +2652,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
         >
-        <Link href="https://hub.wedsy.in/gallery/">
+        <Link href="https://hub.wedsy.in/gallery/" target="_blank" rel="noopener noreferrer">
           <button
               className="mt-12 md:mt-2 px-16 py-4 rounded-md text-white shadow-lg hover:bg-[#6a0029] transition-colors duration-300"
               style={{ backgroundColor: '#840032', fontFamily: "'Cinzel', serif", fontWeight: 'semibold' }}
@@ -2790,7 +2798,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 1.6 }}
             className="hidden md:flex justify-center mt-12"
           >
-            <Link href="https://hub.wedsy.in">
+            <Link href="https://hub.wedsy.in" target="_blank" rel="noopener noreferrer">
               <button
                 className="px-16 py-4 rounded-md text-white shadow-lg hover:bg-[#CE8C35] transition-colors duration-300"
                 style={{ backgroundColor: '#AD7200', fontFamily: "'Cinzel', serif", fontWeight: 600 }}
@@ -2806,7 +2814,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 1.6 }}
           >
-          <Link href="https://hub.wedsy.in">
+          <Link href="https://hub.wedsy.in" target="_blank" rel="noopener noreferrer">
             <button
               className="mt-12 px-16 py-4 rounded-md text-white shadow-lg hover:bg-[#CE8C35] transition-colors duration-300
                             block mx-auto md:hidden"

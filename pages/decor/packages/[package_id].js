@@ -356,6 +356,24 @@ function DecorListing({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decorPackage?._id]);
 
+  // Meta Pixel ViewContent (A10)
+  useEffect(() => {
+    if (!package_id || !decorPackage?.name) return;
+    const price = decorPackage?.variant?.[variant]?.sellingPrice ?? decorPackage?.variant?.artificialFlowers?.sellingPrice ?? 0;
+    import("react-facebook-pixel")
+      .then((x) => x.default)
+      .then((ReactPixel) => {
+        ReactPixel.track("ViewContent", {
+          content_name: decorPackage.name,
+          content_ids: [package_id],
+          content_type: "product",
+          content_category: "decor_package",
+          value: price,
+          currency: "INR",
+        });
+      });
+  }, [package_id, decorPackage?._id, decorPackage?.name, variant]);
+
   const selectedItemFor = (cat) => {
     const items = grouped[cat] || [];
     const id = selectedByCategory[cat];

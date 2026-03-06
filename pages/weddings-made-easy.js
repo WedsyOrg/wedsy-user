@@ -51,6 +51,9 @@ export default function HomePage({}) {
               });
               setLoading(false);
               setSuccess(true);
+              import("react-facebook-pixel")
+                .then((x) => x.default)
+                .then((ReactPixel) => ReactPixel.track("Lead"));
               resolve();
             }
           })
@@ -693,21 +696,25 @@ export default function HomePage({}) {
                   href="https://www.facebook.com/wedsy.in?mibextid=LQQJ4d"
                   icon={BsFacebook}
                   className="text-black"
+                  rel="noopener noreferrer"
                 />
                 <Footer.Icon
                   href="https://x.com/wedsyindia?s=11&t=cw__PWAfpNh_XaLeRkSHcg"
                   icon={BsTwitter}
                   className="text-black"
+                  rel="noopener noreferrer"
                 />
                 <Footer.Icon
                   href="https://www.instagram.com/wedsy.in?igsh=MTV3bWszMjVrM2pzbQ=="
                   icon={BsInstagram}
                   className="text-black"
+                  rel="noopener noreferrer"
                 />
                 <Footer.Icon
                   href="https://g.co/kgs/F3kbQei"
                   icon={BsGoogle}
                   className="text-black"
+                  rel="noopener noreferrer"
                 />
               </div>
             </div>
