@@ -158,7 +158,7 @@ export default function Header({ userLoggedIn, user, Logout }) {
   return router?.pathname === `/my-payments/[paymentId]/invoice` ? null : (
     <>
       {/* Mobile Header */}
-      <div className="flex md:hidden items-center justify-between w-full h-[60px] px-4 bg-[#FAFBFF] shadow-md sticky top-0 z-50">
+      <nav aria-label="Main navigation" className="flex md:hidden items-center justify-between w-full h-[60px] px-4 bg-[#FAFBFF] shadow-md sticky top-0 z-50">
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <img
@@ -224,7 +224,7 @@ export default function Header({ userLoggedIn, user, Logout }) {
             )}
           </Dropdown>
         </div>
-      </div>
+      </nav>
 
       {/* Mobile Search (dropdown) */}
       {mobileSearchOpen && (
@@ -282,7 +282,7 @@ export default function Header({ userLoggedIn, user, Logout }) {
       )}
 
       {/* Desktop Header */}
-      <div ref={navbarRef} className="hidden md:flex sticky top-0 z-50 w-full bg-[#FAFBFF] shadow items-center h-[60px]">
+      <nav ref={navbarRef} aria-label="Main navigation" className="hidden md:flex sticky top-0 z-50 w-full bg-[#FAFBFF] shadow items-center h-[60px]">
         <div className="w-full max-w-[1550px] mx-auto flex justify-between items-center px-6">
           
           {/* Left: Links */}
@@ -410,7 +410,7 @@ export default function Header({ userLoggedIn, user, Logout }) {
             </Dropdown>
           </div>
         </div>
-      </div>
+      </nav>
 
     </>
   );

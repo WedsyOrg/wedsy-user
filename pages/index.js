@@ -7,6 +7,7 @@ import NotificationToast from "@/components/other/NotificationToast";
 import styles from "@/styles/Home.module.css";
 import { processMobileNumber } from "@/utils/phoneNumber";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
+import { pushDataLayer } from "@/utils/tracking";
 import { motion, AnimatePresence } from "framer-motion";
 import Head from "next/head";
 import Image from "next/image";
@@ -602,6 +603,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               ...data,
               main: { phone: "", name: "", loading: false, success: true },
             });
+            pushDataLayer("Lead", { form_name: "LandingMainEnquiry" });
             import("react-facebook-pixel")
               .then((x) => x.default)
               .then((ReactPixel) => ReactPixel.track("Lead"));
@@ -661,6 +663,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             },
           });
           localStorage.setItem("token", response.token);
+          pushDataLayer("Lead", { form_name: "SpeakToExpert" });
           import("react-facebook-pixel")
             .then((x) => x.default)
             .then((ReactPixel) => ReactPixel.track("Lead"));
@@ -4091,25 +4094,25 @@ Tell us about your Wedding
         <div className="grid grid-cols-2 md:flex md:flex-row gap-4 md:gap-12 mx-auto">
           <div className="text-center flex flex-col items-center gap-3">
             <div className="bg-[#FFB8C0] flex justify-center rounded-3xl w-32 h-32">
-              <img className="m-auto" src="/assets/icons/easy.webp" />
+              <img className="m-auto" src="/assets/icons/easy.webp" alt="Easy booking" />
             </div>
             <span>Easy</span>
           </div>
           <div className="text-center flex flex-col items-center gap-3">
             <div className="bg-[#D6FF79] flex justify-center rounded-3xl w-32 h-32">
-              <img className="m-auto" src="/assets/icons/price.webp" />
+              <img className="m-auto" src="/assets/icons/price.webp" alt="Best price" />
             </div>
             <span>Unbeatable Pricing</span>
           </div>
           <div className="text-center flex flex-col items-center gap-3">
             <div className="bg-[#F19A3E] flex justify-center rounded-3xl w-32 h-32">
-              <img className="m-auto" src="/assets/icons/quality.webp" />
+              <img className="m-auto" src="/assets/icons/quality.webp" alt="Quality service" />
             </div>
             <span>Superior Quality</span>
           </div>
           <div className="text-center flex flex-col items-center gap-3">
             <div className="bg-[#70D6FF] flex justify-center rounded-3xl w-32 h-32">
-              <img className="m-auto" src="/assets/icons/solutions.webp" />
+              <img className="m-auto" src="/assets/icons/solutions.webp" alt="End-to-end solutions" />
             </div>
             <span>Innovative Solutions</span>
           </div>

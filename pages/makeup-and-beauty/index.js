@@ -3,6 +3,7 @@ import SearchBar from "@/components/searchBar/SearchBar";
 import { MakeupAndBeautyPageSkeleton } from "@/components/skeletons/makeup-store";
 import { toPriceString } from "@/utils/text";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
+import { pushDataLayer } from "@/utils/tracking";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -227,6 +228,10 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                   "wedsy-package-cart",
                   JSON.stringify(selectedPackages)
                 );
+                const value = selectedPackages?.reduce((acc, item) => acc + (item?.quantity ?? 0) * (item?.price ?? 0), 0) * (wedsyPackageTaxMultiply ?? 1) ?? 0;
+                const content_ids = selectedPackages?.map((p) => p._id) ?? [];
+                pushDataLayer("AddToCart", { content_ids, content_type: "makeup_package", value, currency: "INR" });
+                import("react-facebook-pixel").then((x) => x.default).then((ReactPixel) => ReactPixel.track("AddToCart", { content_ids, content_type: "product", value, currency: "INR" }));
                 if (!userLoggedIn) {
                   setSource("Makeup & Beauty Packages");
                   setOpenLoginModalv2(true);

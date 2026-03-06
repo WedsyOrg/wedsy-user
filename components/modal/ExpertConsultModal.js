@@ -2,6 +2,7 @@
 
 import { Modal, Spinner } from "flowbite-react";
 import { useState } from "react";
+import { pushDataLayer } from "@/utils/tracking";
 
 export default function ExpertConsultModal({
   openModal,
@@ -123,6 +124,7 @@ export default function ExpertConsultModal({
           success: true,
           message: "",
         });
+        pushDataLayer("Lead", { form_name: "ExpertConsult" });
         import("react-facebook-pixel")
           .then((x) => x.default)
           .then((ReactPixel) => ReactPixel.track("Lead"));

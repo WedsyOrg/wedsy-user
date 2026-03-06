@@ -1,5 +1,6 @@
 import { toPriceString } from "@/utils/text";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
+import { pushDataLayer } from "@/utils/tracking";
 import { Modal } from "flowbite-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -190,6 +191,10 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                   "wedsy-package-cart",
                   JSON.stringify(selectedPackages)
                 );
+                const value = selectedPackages?.reduce((acc, item) => acc + (item?.quantity ?? 0) * (item?.price ?? 0), 0) * (wedsyPackageTaxMultiply ?? 1) ?? 0;
+                const content_ids = selectedPackages?.map((p) => p._id) ?? [];
+                pushDataLayer("AddToCart", { content_ids, content_type: "makeup_package", value, currency: "INR" });
+                import("react-facebook-pixel").then((x) => x.default).then((ReactPixel) => ReactPixel.track("AddToCart", { content_ids, content_type: "product", value, currency: "INR" }));
                 if (!userLoggedIn) {
                   setSource("Makeup & Beauty Packages");
                   setOpenLoginModalv2(true);
@@ -225,18 +230,22 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
       <div className="bg-[#f4f4f4] py-4 px-6 grid grid-cols-2 gap-4 md:hidden">
         <img
           src="/assets/images/makeup-landing-page-4.webp"
+          alt="Makeup and beauty"
           className="w-full"
         />
         <img
           src="/assets/images/makeup-landing-page-5.webp"
+          alt="Bridal makeup"
           className="w-full"
         />
         <img
           src="/assets/images/makeup-landing-page-6.webp"
+          alt="Wedding makeup"
           className="w-full"
         />
         <img
           src="/assets/images/makeup-landing-page-7.webp"
+          alt="Makeup packages"
           className="w-full"
         />
       </div>
@@ -365,7 +374,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                               </span>
                             </div>
                           </div>
-                          <img src={item.image} />
+                          <img src={item.image} alt={item.name ? `${item.name} makeup package` : "Makeup package"} />
                         </div>
                         <div className="grid grid-cols-3 gap-4">
                           <div className="col-span-2 pt-3 font-medium">
@@ -453,7 +462,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
             ))}
           </select>
           <div className="flex items-center gap-1">
-            <img src="/assets/icons/location-pin.webp" className="h-[18px] pr-2"/>
+            <img src="/assets/icons/location-pin.webp" alt="Location" className="h-[18px] pr-2"/>
             <h2 className="text-2xl font-normal  text-[#880E4F]">
               Bangalore,<span className="text-2xl font-semibold text-[#880E4F]"> IN</span> 
             </h2>
@@ -503,7 +512,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                               </span>
                             </div>
                           </div>
-                          <img src={item.image} />
+                          <img src={item.image} alt={item.name ? `${item.name} makeup package` : "Makeup package"} />
                         </div>
                         <div className="grid grid-cols-3 gap-4">
                           <div className="col-span-2 pt-3 font-medium">

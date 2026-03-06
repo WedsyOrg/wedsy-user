@@ -240,7 +240,7 @@ function Home({ categoryList }) {
           </Button>
         </div>
         <div className="flex md:hidden flex-col gap-4">
-          <img className="w-full" src="/assets/images/home-img-bidding-2.webp" />
+          <img className="w-full" src="/assets/images/home-img-bidding-2.webp" alt="Wedding bidding" />
           <p className="text-xl text-center font-medium">
             Choose the ideal Makeup artist for the best glam for you gram.
           </p>

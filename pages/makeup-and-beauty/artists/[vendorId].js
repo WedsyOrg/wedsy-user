@@ -1,6 +1,7 @@
 import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
 import { toPriceString } from "@/utils/text";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
+import { pushDataLayer } from "@/utils/tracking";
 import { Label, Modal, TextInput } from "flowbite-react";
 import Head from "next/head";
 import Link from "next/link";
@@ -126,19 +127,21 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vendorId]);
 
-  // Meta Pixel ViewContent (A10)
+  // Meta Pixel ViewContent (A10) + GTM dataLayer (A13)
   useEffect(() => {
     if (!vendorId || !vendor?.name) return;
+    const payload = {
+      content_name: vendor.name,
+      content_ids: [vendorId],
+      content_type: "profile",
+      content_category: vendor?.speciality || "makeup_artist",
+      currency: "INR",
+    };
+    pushDataLayer("ContentView", payload);
     import("react-facebook-pixel")
       .then((x) => x.default)
       .then((ReactPixel) => {
-        ReactPixel.track("ViewContent", {
-          content_name: vendor.name,
-          content_ids: [vendorId],
-          content_type: "profile",
-          content_category: vendor?.speciality || "makeup_artist",
-          currency: "INR",
-        });
+        ReactPixel.track("ViewContent", payload);
       });
   }, [vendorId, vendor?._id, vendor?.name]);
 
@@ -943,7 +946,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               }
             }}
           >
-            <img src="/assets/icons/icon-message.webp" className="h-5 w-5 md:h-6 md:w-6" />
+            <img src="/assets/icons/icon-message.webp" alt="Message" className="h-5 w-5 md:h-6 md:w-6" />
             <span className="font-semibold text-sm md:text-base">CHAT</span>
           </div>
           <div
@@ -954,7 +957,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                 ?.scrollIntoView({ behavior: "smooth", block: "start" });
             }}
           >
-            <img src="/assets/icons/icon-image.webp" className="h-5 w-5 md:h-6 md:w-6" />
+            <img src="/assets/icons/icon-image.webp" alt="Gallery" className="h-5 w-5 md:h-6 md:w-6" />
             <span className="font-semibold text-sm md:text-base">100 PHOTOS</span>
           </div>
           <div
@@ -965,7 +968,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                 ?.scrollIntoView({ behavior: "smooth", block: "start" });
             }}
           >
-            <img src="/assets/icons/icon-info.webp" className="h-5 w-5 md:h-6 md:w-6" />
+            <img src="/assets/icons/icon-info.webp" alt="Info" className="h-5 w-5 md:h-6 md:w-6" />
             <span className="font-semibold text-sm md:text-base">ABOUT</span>
           </div>
           <div
@@ -976,7 +979,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                 ?.scrollIntoView({ behavior: "smooth", block: "start" });
             }}
           >
-            <img src="/assets/icons/icon-review.webp" className="h-5 w-5 md:h-6 md:w-6" />
+            <img src="/assets/icons/icon-review.webp" alt="Reviews" className="h-5 w-5 md:h-6 md:w-6" />
             <span className="font-semibold text-sm md:text-base">REVIEWS</span>
           </div>
           <div
@@ -992,7 +995,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
               }
             }}
           >
-            <img src="/assets/icons/icon-call.webp" className="h-5 w-5 md:h-6 md:w-6" />
+            <img src="/assets/icons/icon-call.webp" alt="Call" className="h-5 w-5 md:h-6 md:w-6" />
             <span className="font-semibold text-sm md:text-base">CONTACT</span>
           </div>
         </div>
@@ -1237,7 +1240,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                 }
               }}
             >
-              <img src="/assets/icons/icon-message-2.webp" className="h-6 w-6" />
+              <img src="/assets/icons/icon-message-2.webp" alt="Message artist" className="h-6 w-6" />
               <span className="font-semibold">CHAT NOW</span>
             </div>
             <div
@@ -1253,7 +1256,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource }) {
                 }
               }}
             >
-              <img src="/assets/icons/icon-call-3.webp" className="h-6 w-6" />
+              <img src="/assets/icons/icon-call-3.webp" alt="Call artist" className="h-6 w-6" />
               <span className="font-semibold text-white">CALL NOW</span>
             </div>
           </div>

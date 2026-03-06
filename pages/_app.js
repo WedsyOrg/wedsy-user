@@ -263,7 +263,9 @@ function App({ Component, pageProps }) {
       )}
 
         <div className="flex flex-col min-h-screen">
-          <Header userLoggedIn={!logIn} user={user} Logout={Logout} />
+          <header className="contents">
+            <Header userLoggedIn={!logIn} user={user} Logout={Logout} />
+          </header>
           <LoginModal openLoginModal={openLoginModal} setOpenLoginModal={setOpenLoginModal} user={user} logIn={logIn} setLogIn={setLogIn} CheckLogin={CheckLogin} />
           <LoginModalv2 openLoginModal={openLoginModalv2} setOpenLoginModal={setOpenLoginModalv2} user={user} logIn={logIn} setLogIn={setLogIn} CheckLogin={CheckLogin} source={loginSource} />
           <main className="flex-grow">
@@ -287,8 +289,10 @@ function App({ Component, pageProps }) {
               <Component {...pageProps} userLoggedIn={!logIn} user={user} setOpenLoginModal={setOpenLoginModal} setOpenLoginModalv2={setOpenLoginModalv2} CheckLogin={CheckLogin} setSource={setLoginSource} />
             )}
           </main>
-          <Footer />
-          <MobileStickyFooter />
+          <footer className="contents">
+            <Footer />
+            <MobileStickyFooter />
+          </footer>
         </div>
     </>
   );

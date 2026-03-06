@@ -1,6 +1,7 @@
 import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
 import { toPriceString, toProperCase } from "@/utils/text";
 import { trimTitle } from "@/utils/seo";
+import { pushDataLayer } from "@/utils/tracking";
 import { Button, Label, Modal, Select, TextInput } from "flowbite-react";
 import Head from "next/head";
 import Image from "next/image";
@@ -453,6 +454,9 @@ function MakeupAndBeauty({ user }) {
       description: "Your Event Payment",
       handler: function (response) {
         setPaymentStatus("success");
+        const value = (amount / 100);
+        pushDataLayer("Purchase", { value, currency: "INR", order_id, content_type: "makeup_package" });
+        import("react-facebook-pixel").then((x) => x.default).then((ReactPixel) => ReactPixel.track("Purchase", { value, currency: "INR" }));
         UpdatePayment({ order_id, response });
       },
       prefill: {
@@ -552,6 +556,14 @@ function MakeupAndBeauty({ user }) {
     fetchTaxationData();
     fetchUserSavedAddress();
   }, []);
+  // A12 + A13: InitiateCheckout when checkout page is ready with cart
+  useEffect(() => {
+    if (selectedPackages?.length > 0) {
+      const value = selectedPackages.reduce((sum, p) => sum + (p?.quantity ?? 0) * (p?.price ?? 0), 0);
+      pushDataLayer("InitiateCheckout", { value, currency: "INR", content_ids: selectedPackages.map((p) => p._id), content_type: "makeup_package" });
+      import("react-facebook-pixel").then((x) => x.default).then((ReactPixel) => ReactPixel.track("InitiateCheckout", { value, currency: "INR" }));
+    }
+  }, [selectedPackages?.length]);
   useEffect(() => {
     const handleResize = () => {
       if (divRef.current) {

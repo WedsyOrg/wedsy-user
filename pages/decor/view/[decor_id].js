@@ -6,6 +6,7 @@ import Toast from "@/components/other/Toast";
 import ImageLightbox from "@/components/lightbox/ImageLightbox";
 import { toProperCase } from "@/utils/text";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
+import { pushDataLayer } from "@/utils/tracking";
 import {
   Button,
   Checkbox,
@@ -264,6 +265,18 @@ function DecorListing({
       .then((response) => {
         if (response.message === "success") {
           fetchEvents();
+          // A12 + A13: AddToCart
+          const addToCartPayload = {
+            content_name: decor.name,
+            content_ids: [decor_id],
+            content_type: "product",
+            value: (decor?.productTypes?.[0]?.sellingPrice ?? 0) * quantity,
+            currency: "INR",
+          };
+          pushDataLayer("AddToCart", addToCartPayload);
+          import("react-facebook-pixel")
+            .then((x) => x.default)
+            .then((ReactPixel) => ReactPixel.track("AddToCart", addToCartPayload));
           if (decor.productAddOns.length > 0) {
             setProductAddOnsCart({
               ...productAddOnsCart,
@@ -457,20 +470,22 @@ function DecorListing({
     }
   }, [decor_id, userLoggedIn]);
 
-  // Meta Pixel ViewContent (A10)
+  // Meta Pixel ViewContent (A10) + GTM dataLayer (A13)
   useEffect(() => {
     if (!decor_id || !decor?.name) return;
+    const payload = {
+      content_name: decor.name,
+      content_ids: [decor_id],
+      content_type: "product",
+      content_category: decor.category || "decor",
+      value: decor?.productTypes?.[0]?.sellingPrice ?? 0,
+      currency: "INR",
+    };
+    pushDataLayer("ContentView", payload);
     import("react-facebook-pixel")
       .then((x) => x.default)
       .then((ReactPixel) => {
-        ReactPixel.track("ViewContent", {
-          content_name: decor.name,
-          content_ids: [decor_id],
-          content_type: "product",
-          content_category: decor.category || "decor",
-          value: decor?.productTypes?.[0]?.sellingPrice ?? 0,
-          currency: "INR",
-        });
+        ReactPixel.track("ViewContent", payload);
       });
   }, [decor_id, decor?._id, decor?.name]);
 

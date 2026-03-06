@@ -1,5 +1,6 @@
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
+import { pushDataLayer } from "@/utils/tracking";
 import {
   Checkbox,
   Dropdown,
@@ -356,22 +357,22 @@ function DecorListing({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decorPackage?._id]);
 
-  // Meta Pixel ViewContent (A10)
+  // Meta Pixel ViewContent (A10) + GTM dataLayer (A13)
   useEffect(() => {
     if (!package_id || !decorPackage?.name) return;
     const price = decorPackage?.variant?.[variant]?.sellingPrice ?? decorPackage?.variant?.artificialFlowers?.sellingPrice ?? 0;
+    const payload = {
+      content_name: decorPackage.name,
+      content_ids: [package_id],
+      content_type: "product",
+      content_category: "decor_package",
+      value: price,
+      currency: "INR",
+    };
+    pushDataLayer("ContentView", payload);
     import("react-facebook-pixel")
       .then((x) => x.default)
-      .then((ReactPixel) => {
-        ReactPixel.track("ViewContent", {
-          content_name: decorPackage.name,
-          content_ids: [package_id],
-          content_type: "product",
-          content_category: "decor_package",
-          value: price,
-          currency: "INR",
-        });
-      });
+      .then((ReactPixel) => ReactPixel.track("ViewContent", payload));
   }, [package_id, decorPackage?._id, decorPackage?.name, variant]);
 
   const selectedItemFor = (cat) => {

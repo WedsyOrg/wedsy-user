@@ -335,28 +335,28 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
       </div>
       <div className="hidden md:flex flex-row justify-between gap-12 my-4 py-4 border-y mx-24">
         <div className="flex flex-row items-center gap-4">
-          <img src="/assets/icons/stage.webp" className="h-12 w-12" />
+          <img src="/assets/icons/stage.webp" alt="Stage decoration" className="h-12 w-12" />
           <p className="font-semibold">
             EXCLUSIVE
             <br /> DESIGNS
           </p>
         </div>
         <div className="flex flex-row items-center gap-4">
-          <img src="/assets/icons/customize.webp" className="h-12 w-12" />
+          <img src="/assets/icons/customize.webp" alt="Customize" className="h-12 w-12" />
           <p className="font-semibold">
             CUSTOMIZATION
             <br /> OPTIONS
           </p>
         </div>
         <div className="flex flex-row items-center gap-4">
-          <img src="/assets/icons/customer-service.webp" className="h-12 w-12" />
+          <img src="/assets/icons/customer-service.webp" alt="Customer service" className="h-12 w-12" />
           <p className="font-semibold">
             EXCEPTIONAL
             <br /> CUSTOMER SERVICE
           </p>
         </div>
         <div className="flex flex-row items-center gap-4">
-          <img src="/assets/icons/offer.webp" className="h-12 w-12" />
+          <img src="/assets/icons/offer.webp" alt="Offers" className="h-12 w-12" />
           <p className="font-semibold">
             COMPETETIVE
             <br /> PRICING

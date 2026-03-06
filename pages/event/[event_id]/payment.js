@@ -1,6 +1,7 @@
 import paymentFailureGif from "@/public/assets/gif/payment-failure.gif";
 import paymentSuccessGif from "@/public/assets/gif/payment-success.gif";
 import { checkValidEmail } from "@/utils/email";
+import { pushDataLayer } from "@/utils/tracking";
 import { Label, Modal, Radio, TextInput } from "flowbite-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -103,6 +104,9 @@ export default function EventTool({ user }) {
       description: "Your Event Payment",
       handler: function (response) {
         setPaymentStatus("success");
+        const value = amount / 100;
+        pushDataLayer("Purchase", { value, currency: "INR", order_id, content_type: "event" });
+        import("react-facebook-pixel").then((x) => x.default).then((ReactPixel) => ReactPixel.track("Purchase", { value, currency: "INR" }));
         UpdatePayment({ order_id, response });
       },
       prefill: {
@@ -190,6 +194,13 @@ export default function EventTool({ user }) {
   useEffect(() => {
     fetchPayment();
   }, []);
+  // A12 + A13: InitiateCheckout when payment page is shown (paymentAmount in rupees)
+  useEffect(() => {
+    if (event?._id && paymentAmount > 0) {
+      pushDataLayer("InitiateCheckout", { value: paymentAmount, currency: "INR", content_type: "event", content_ids: [event_id] });
+      import("react-facebook-pixel").then((x) => x.default).then((ReactPixel) => ReactPixel.track("InitiateCheckout", { value: paymentAmount, currency: "INR" }));
+    }
+  }, [event?._id, event_id]);
   return (
     <>
       <Modal

@@ -1,6 +1,7 @@
 import DecorCard from "@/components/cards/DecorCard";
 import { processMobileNumber } from "@/utils/phoneNumber";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
+import { pushDataLayer } from "@/utils/tracking";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -112,6 +113,7 @@ function Decor({
             message: "",
           });
           localStorage.setItem("token", response.token);
+          pushDataLayer("Lead", { form_name: "DecorEnquiry" });
           import("react-facebook-pixel")
             .then((x) => x.default)
             .then((ReactPixel) => ReactPixel.track("Lead"));

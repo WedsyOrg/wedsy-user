@@ -2,6 +2,7 @@ import Testimonials from "@/components/screens/Testimonials";
 import styles from "@/styles/LandingPage.module.css";
 import { processMobileNumber } from "@/utils/phoneNumber";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
+import { pushDataLayer } from "@/utils/tracking";
 import { Checkbox, Footer, Label, Select, TextInput } from "flowbite-react";
 import Head from "next/head";
 import Image from "next/image";
@@ -51,6 +52,7 @@ export default function HomePage({}) {
               });
               setLoading(false);
               setSuccess(true);
+              pushDataLayer("Lead", { form_name: "WeddingsMadeEasy" });
               import("react-facebook-pixel")
                 .then((x) => x.default)
                 .then((ReactPixel) => ReactPixel.track("Lead"));
