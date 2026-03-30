@@ -465,9 +465,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
       .then((response) => {
         // Use EXACT same check as login
         if (response.message === "Login Successful" && response.token) {
-          // OTP verified successfully (user created/logged in, but we'll just submit form)
-          // Don't store the token, just proceed with form submission
-          submitWeddingForm();
+          // OTP verified successfully - pass true for Verified
+          submitWeddingForm(true);
         } else {
           // Use EXACT same error handling as login
           setOtpError(response.message || "Invalid OTP. Please try again.");
@@ -482,7 +481,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
       });
   };
 
-  const submitWeddingForm = async () => {
+  const submitWeddingForm = async (isVerified = false) => {
     const budgetMap = {
       "5-10": 750000,
       "10-15": 1250000,
@@ -496,7 +495,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
     formDataToSend.append('phone', `${countryCode}${weddingFormData.phone}` || '');
     formDataToSend.append('budget', budgetValue.toString());
     formDataToSend.append('date', weddingFormData.date || '');
-    formDataToSend.append('formType', 'wedding-requirements');
+    formDataToSend.append('Verified', isVerified ? "Verified" : "Pending");
 
     await fetch(
       `${process.env.NEXT_PUBLIC_SHEET_URL}`,
@@ -542,10 +541,10 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
     if (countryCode === "+91") {
       await sendOTP();
     } else {
-      // For non-India, submit directly
+      // For non-India, submit directly - pass false for Pending
       setIsWeddingSubmitting(true);
       try {
-        await submitWeddingForm();
+        await submitWeddingForm(false);
       } catch (error) {
         console.error("Error submitting form:", error);
         setToast({ show: true, message: "Error submitting form. Please try again.", type: "error" });

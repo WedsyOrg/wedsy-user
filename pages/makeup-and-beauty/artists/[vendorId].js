@@ -72,6 +72,38 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initial
   });
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
+  const renderMedia = (url, className = "") => {
+    if (!url) return null;
+  
+    const videoExtensions = [".mp4", ".mov", ".webm", ".ogg"];
+    const isVideo = videoExtensions.some((ext) =>
+      url.toLowerCase().includes(ext)
+    );
+  
+    if (isVideo) {
+      return (
+        <video
+          src={url}
+          className={className}
+          autoPlay
+          muted
+          loop
+          playsInline
+        />
+      );
+    }
+  
+    return (
+      <img
+        src={url}
+        className={className}
+        onError={(e) => {
+          e.target.src = "/assets/images/placeholder.jpg";
+        }}
+      />
+    );
+  };
+
   useEffect(() => {
     const generateShortUrl = async () => {
       try {
@@ -1384,7 +1416,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initial
       </div>
 
 
-      {/* Desktop wedsy packages section */}
+      {/* Desktop personal packages section */}
 <div className="bg-[#f4f4f4] px-24 py-12 pt-32 hidden md:block">
   <p className="text-2xl font-semibold text-center">Make up Artist Packages</p>
   <div className="relative pt-12 flex items-center justify-center">
@@ -1641,421 +1673,268 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initial
         </div>
       </div> */}
         {/* Gallery Section - Only show if images exist */}
-        {vendor?.gallery?.photos && vendor.gallery.photos.length > 0 && (
+          {vendor?.gallery?.photos && vendor.gallery.photos.length > 0 && (
           <>
-            <style dangerouslySetInnerHTML={{__html: `
-              .scrollbar-hide {
-                -ms-overflow-style: none;
-                scrollbar-width: none;
-              }
-              .scrollbar-hide::-webkit-scrollbar {
-                display: none;
-              }
-            `}} />
-            <div className="bg-[#f4f4f4] mt-8 uppercase px-6 md:px-24 py-8 md:py-16 text-2xl md:text-3xl font-semibold md:mt-0 md:mb-0 text-center">
-          {"Gallery"}
-        </div>
-            
-            {(() => {
-              const photos = vendor.gallery.photos;
-              const totalPhotos = photos.length;
-              const hasMoreThanFive = totalPhotos > 5;
+          <style dangerouslySetInnerHTML={{__html: `
+          .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+          }
+          .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+          }
+          `}} />
 
-              // For 1-4 images: Use a clean horizontal row layout
-              if (totalPhotos <= 4) {
-                return (
-                  <div className="bg-[#f4f4f4] pb-12 px-6 md:px-28">
-                    {/* Mobile: Horizontal scrollable row */}
-                    <div className="flex md:hidden gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
-                      {photos.map((photo, index) => (
-                        <div
-                          key={index}
-                          className="relative flex-shrink-0 w-[85vw] aspect-square rounded-xl overflow-hidden cursor-pointer group shadow-lg snap-center"
-                          onClick={() => {
-                            setCurrentImageIndex(index);
-                            setGalleryViewAll(true);
-                          }}
-                        >
-                          <img
-                            src={photo}
-                            alt={`Gallery image ${index + 1}`}
-                            className="absolute top-0 left-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
-                            onError={(e) => {
-                              e.target.src = '/assets/images/placeholder.jpg';
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300"></div>
-                        </div>
-                      ))}
-                    </div>
-                    {/* Desktop: Grid layout */}
-                    <div className={`hidden md:grid gap-3 md:gap-4 ${
-                      totalPhotos === 1 
-                        ? 'grid-cols-1 max-w-4xl mx-auto' 
-                        : totalPhotos === 2
-                        ? 'grid-cols-2 max-w-5xl mx-auto'
-                        : totalPhotos === 3
-                        ? 'grid-cols-3 max-w-6xl mx-auto'
-                        : 'grid-cols-4 max-w-7xl mx-auto'
-                    }`}>
-                      {photos.map((photo, index) => (
-                        <div
-                          key={index}
-                          className="relative aspect-square rounded-xl overflow-hidden cursor-pointer group shadow-lg hover:shadow-xl transition-all duration-300"
-                          onClick={() => {
-                            setCurrentImageIndex(index);
-                            setGalleryViewAll(true);
-                          }}
-                        >
-                          <img
-                            src={photo}
-                            alt={`Gallery image ${index + 1}`}
-                            className="absolute top-0 left-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
-                            onError={(e) => {
-                              e.target.src = '/assets/images/placeholder.jpg';
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300"></div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              }
+          <div className="bg-[#f4f4f4] mt-8 uppercase px-6 md:px-24 py-8 md:py-16 text-2xl md:text-3xl font-semibold text-center">
+          Gallery
+          </div>
 
-              // For 5+ images: Show preview or expanded grid
-              if (galleryExpanded) {
-                // Expanded view: Horizontal scroll on mobile, grid on desktop
-                return (
-                  <div className="bg-[#f4f4f4] pb-12 px-6 md:px-28">
-                    {/* Mobile: Horizontal scrollable row */}
-                    <div className="flex md:hidden gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
-                      {photos.map((photo, index) => (
-                        <div
-                          key={index}
-                          className="relative flex-shrink-0 w-[85vw] aspect-square rounded-xl overflow-hidden cursor-pointer group shadow-lg snap-center"
-                          onClick={() => {
-                            setCurrentImageIndex(index);
-                            setGalleryViewAll(true);
-                          }}
-                        >
-                          <img
-                            src={photo}
-                            alt={`Gallery image ${index + 1}`}
-                            className="absolute top-0 left-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
-                            onError={(e) => {
-                              e.target.src = '/assets/images/placeholder.jpg';
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300"></div>
-                        </div>
-                      ))}
-                    </div>
-                    {/* Desktop: Grid layout */}
-                    <div className="hidden md:grid grid-cols-5 gap-2 md:gap-3">
-                      {photos.map((photo, index) => (
-                        <div
-                          key={index}
-                          className="relative aspect-square rounded-xl overflow-hidden cursor-pointer group shadow-lg hover:shadow-xl transition-all duration-300"
-                          onClick={() => {
-                            setCurrentImageIndex(index);
-                            setGalleryViewAll(true);
-                          }}
-                        >
-                          <img
-                            src={photo}
-                            alt={`Gallery image ${index + 1}`}
-                            className="absolute top-0 left-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
-                            onError={(e) => {
-                              e.target.src = '/assets/images/placeholder.jpg';
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300"></div>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {/* Collapse button */}
-                    <div className="flex justify-center mt-6">
-                      <button
-                        onClick={() => setGalleryExpanded(false)}
-                        className="bg-[#840032] text-white rounded-lg px-8 py-2 hover:bg-[#6b0028] transition-colors font-semibold"
-                      >
-                        VIEW LESS
-                      </button>
-                    </div>
-                  </div>
-                );
-              }
+          {(() => {
+          const photos = vendor.gallery.photos;
+          const totalPhotos = photos.length;
+          const hasMoreThanFive = totalPhotos > 5;
 
-              // Preview view: Zomato-style layout (first 4 + View More)
-              return (
-                <>
-                  {/* Mobile: Horizontal scrollable row */}
-                  <div className="flex md:hidden bg-[#f4f4f4] gap-3 overflow-x-auto pb-12 px-6 scrollbar-hide snap-x snap-mandatory">
-                    {photos.slice(0, hasMoreThanFive ? 4 : 5).map((photo, index) => (
-                      <div
-                        key={index}
-                        className="relative flex-shrink-0 w-[85vw] aspect-square rounded-xl overflow-hidden cursor-pointer group shadow-lg snap-center"
-                        onClick={() => {
-                          setCurrentImageIndex(index);
-                          setGalleryViewAll(true);
-                        }}
-                      >
-                        <img
-                          src={photo}
-                          alt={`Gallery image ${index + 1}`}
-                          className="absolute top-0 left-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300"></div>
-                      </div>
-                    ))}
-                    {hasMoreThanFive && (
-                      <div
-                        className="relative flex-shrink-0 w-[85vw] aspect-square rounded-xl bg-[#333] flex flex-col items-center justify-center text-white hover:bg-[#444] transition cursor-pointer snap-center"
-                        onClick={() => setGalleryExpanded(true)}
-                      >
-                        <div className="text-sm font-semibold tracking-wider mb-3">
-                          VIEW MORE
-                        </div>
-                        <div className="w-8 h-8 border-2 border-white rounded-full flex items-center justify-center">
-                          <span className="text-lg">›</span>
-                        </div>
-                        <div className="text-xs mt-2 opacity-80">
-                          +{totalPhotos - 4} more
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  {/* Desktop: Zomato-style grid */}
-                  <div className="hidden md:grid bg-[#f4f4f4] grid-cols-5 md:grid-rows-2 pb-12 gap-2 md:px-28">
-                  {/* S1 - Large image (first photo) */}
-                  <div 
-                    className="bg-gray-300 aspect-square rounded-xl md:row-span-2 md:col-span-2 relative overflow-hidden cursor-pointer group"
-                    onClick={() => {
-                      setCurrentImageIndex(0);
-                      setGalleryViewAll(true);
-                    }}
-                  >
-                    <img
-                      src={photos[0]}
-                      alt={`Gallery image 1`}
-                      className="absolute top-0 left-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  </div>
+          /* 1–4 MEDIA */
+          if (totalPhotos <= 4) {
+          return (
+          <div className="bg-[#f4f4f4] pb-12 px-6 md:px-28">
 
-                  {/* S2 - Second photo */}
-                  <div 
-                    className="bg-gray-300 aspect-square rounded-xl relative overflow-hidden cursor-pointer group"
-                    onClick={() => {
-                      setCurrentImageIndex(1);
-                      setGalleryViewAll(true);
-                    }}
-                  >
-                    <img
-                      src={photos[1]}
-                      alt={`Gallery image 2`}
-                      className="absolute top-0 left-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  </div>
-
-                  {/* S3 - Third photo (rectangular) */}
-                  <div 
-                    className="bg-gray-300 aspect-square rounded-xl md:col-span-2 md:aspect-auto relative overflow-hidden cursor-pointer group"
-                    onClick={() => {
-                      setCurrentImageIndex(2);
-                      setGalleryViewAll(true);
-                    }}
-                  >
-                    <img
-                      src={photos[2]}
-                      alt={`Gallery image 3`}
-                      className="absolute top-0 left-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  </div>
-
-                  {/* S4 - Fourth photo */}
-                  <div 
-                    className="bg-gray-300 aspect-square rounded-xl relative overflow-hidden cursor-pointer group"
-                    onClick={() => {
-                      setCurrentImageIndex(3);
-                      setGalleryViewAll(true);
-                    }}
-                  >
-                    <img
-                      src={photos[3]}
-                      alt={`Gallery image 4`}
-                      className="absolute top-0 left-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  </div>
-
-                  {/* S5 - Fifth photo OR "View More" overlay */}
-                  {hasMoreThanFive ? (
-                    <div
-                      className="bg-[#333] aspect-square rounded-xl flex flex-col items-center justify-center text-white hover:bg-[#444] transition cursor-pointer"
-                      onClick={() => setGalleryExpanded(true)}
+          {/* MOBILE */}
+          <div className="flex md:hidden gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
+          {photos.map((photo, index) => (
+          <div
+          key={index}
+          className="relative flex-shrink-0 w-[85vw] aspect-square rounded-xl overflow-hidden cursor-pointer group shadow-lg snap-center"
+          onClick={()=>{
+          setCurrentImageIndex(index);
+          setGalleryViewAll(true);
+          }}
           >
-            <div className="text-sm font-semibold tracking-wider mb-3">
-              VIEW MORE
-            </div>
-            <div className="w-8 h-8 border-2 border-white rounded-full flex items-center justify-center">
-              <span className="text-lg">›</span>
-            </div>
-                      <div className="text-xs mt-2 opacity-80">
-                        +{totalPhotos - 4} more
-                      </div>
-                    </div>
-                  ) : (
-                    <div 
-                      className="bg-gray-300 aspect-square rounded-xl relative overflow-hidden cursor-pointer group"
-                      onClick={() => {
-                        setCurrentImageIndex(4);
-                        setGalleryViewAll(true);
-                      }}
-                    >
-                      <img
-                        src={photos[4]}
-                        alt={`Gallery image 5`}
-                        className="absolute top-0 left-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
-                  </div>
-                </>
-              );
-            })()}
 
-            {/* Zomato-style Gallery Modal (Lightbox) */}
-            <Modal 
-              show={galleryViewAll} 
-              onClose={() => setGalleryViewAll(false)}
-              size="7xl"
-              className="gallery-modal"
-            >
-              <style dangerouslySetInnerHTML={{__html: `
-                .gallery-modal [data-modal-backdrop] {
-                  backdrop-filter: blur(12px) !important;
-                  -webkit-backdrop-filter: blur(12px) !important;
-                  background-color: rgba(0, 0, 0, 0.75) !important;
-                }
-              `}} />
-              <Modal.Body className="relative bg-black/80 backdrop-blur-2xl p-0 overflow-hidden">
-                {/* Close button */}
-                <button
-                  onClick={() => setGalleryViewAll(false)}
-                  className="absolute top-4 right-4 z-50 text-white hover:text-gray-300 transition-colors"
-                  style={{ fontSize: '24px', lineHeight: '1' }}
-                >
-                  <MdClear size={32} />
-                </button>
+          {renderMedia(photo,"absolute top-0 left-0 h-full w-full object-cover")}
 
-                {/* Gallery title */}
-                <div className="absolute top-4 left-4 z-50 text-white text-xl font-semibold uppercase">
-                  Gallery
-        </div>
-        
-                {/* Main image container */}
-                {vendor?.gallery?.photos && vendor.gallery.photos.length > 0 && (
-                  <div className="relative w-full" style={{ minHeight: '70vh' }}>
-                    <img
-                      src={vendor.gallery.photos[currentImageIndex]}
-                      alt={`Gallery image ${currentImageIndex + 1}`}
-                      className="w-full h-auto object-contain"
-                      style={{ maxHeight: '80vh' }}
-                      onError={(e) => {
-                        e.target.src = '/assets/images/placeholder.jpg';
-                      }}
-                    />
+          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity"></div>
+          </div>
+          ))}
+          </div>
 
-                    {/* Image counter */}
-                    <div className="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white px-4 py-2 rounded text-sm">
-                      {currentImageIndex + 1} of {vendor.gallery.photos.length}
-                    </div>
+          {/* DESKTOP */}
+          <div className={`hidden md:grid gap-3 md:gap-4 ${
+          totalPhotos === 1
+          ? "grid-cols-1 max-w-4xl mx-auto"
+          : totalPhotos === 2
+          ? "grid-cols-2 max-w-5xl mx-auto"
+          : totalPhotos === 3
+          ? "grid-cols-3 max-w-6xl mx-auto"
+          : "grid-cols-4 max-w-7xl mx-auto"
+          }`}>
+          {photos.map((photo,index)=>(
+          <div
+          key={index}
+          className="relative aspect-square rounded-xl overflow-hidden cursor-pointer group shadow-lg"
+          onClick={()=>{
+          setCurrentImageIndex(index);
+          setGalleryViewAll(true);
+          }}
+          >
 
-                    {/* Navigation arrows */}
-                    {vendor.gallery.photos.length > 1 && (
-                      <>
-                        {/* Left arrow */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCurrentImageIndex((prev) => 
-                              prev === 0 ? vendor.gallery.photos.length - 1 : prev - 1
-                            );
-                          }}
-                          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-3 rounded-full transition-all z-50"
-                          aria-label="Previous image"
-                        >
-                          <FaArrowLeft size={20} />
-                        </button>
+          {renderMedia(photo,"absolute top-0 left-0 h-full w-full object-cover")}
 
-                        {/* Right arrow */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCurrentImageIndex((prev) => 
-                              prev === vendor.gallery.photos.length - 1 ? 0 : prev + 1
-                            );
-                          }}
-                          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-3 rounded-full transition-all z-50"
-                          aria-label="Next image"
-                        >
-                          <FaArrowRight size={20} />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
+          </div>
+          ))}
+          </div>
 
-                {/* Thumbnail strip */}
-                {vendor?.gallery?.photos && vendor.gallery.photos.length > 1 && (
-                  <div className="bg-gray-900 px-4 py-3 overflow-x-auto">
-                    <div className="flex gap-2 justify-center">
-                      {vendor.gallery.photos.map((photo, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentImageIndex(index)}
-                          className={`flex-shrink-0 w-20 h-20 rounded overflow-hidden border-2 transition-all ${
-                            index === currentImageIndex 
-                              ? 'border-white scale-110' 
-                              : 'border-transparent opacity-60 hover:opacity-100'
-                          }`}
-                        >
-                          <img
-                            src={photo}
-                            alt={`Thumbnail ${index + 1}`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.target.src = '/assets/images/placeholder.jpg';
-                            }}
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </Modal.Body>
-            </Modal>
+          </div>
+          );
+          }
+
+          /* 5+ MEDIA */
+          if(galleryExpanded){
+          return(
+          <div className="bg-[#f4f4f4] pb-12 px-6 md:px-28">
+
+          {/* MOBILE */}
+          <div className="flex md:hidden gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
+          {photos.map((photo,index)=>(
+          <div
+          key={index}
+          className="relative flex-shrink-0 w-[85vw] aspect-square rounded-xl overflow-hidden cursor-pointer group shadow-lg snap-center"
+          onClick={()=>{
+          setCurrentImageIndex(index);
+          setGalleryViewAll(true);
+          }}
+          >
+
+          {renderMedia(photo,"absolute top-0 left-0 h-full w-full object-cover")}
+
+          </div>
+          ))}
+          </div>
+
+          {/* DESKTOP */}
+          <div className="hidden md:grid grid-cols-5 gap-2 md:gap-3">
+          {photos.map((photo,index)=>(
+          <div
+          key={index}
+          className="relative aspect-square rounded-xl overflow-hidden cursor-pointer"
+          onClick={()=>{
+          setCurrentImageIndex(index);
+          setGalleryViewAll(true);
+          }}
+          >
+
+          {renderMedia(photo,"absolute top-0 left-0 h-full w-full object-cover")}
+
+          </div>
+          ))}
+          </div>
+
+          <div className="flex justify-center mt-6">
+          <button
+          onClick={()=>setGalleryExpanded(false)}
+          className="bg-[#840032] text-white rounded-lg px-8 py-2"
+          >
+          VIEW LESS
+          </button>
+          </div>
+
+          </div>
+          );
+          }
+
+          /* PREVIEW GRID */
+          return(
+          <>
+          <div className="flex md:hidden bg-[#f4f4f4] gap-3 overflow-x-auto pb-12 px-6 scrollbar-hide snap-x snap-mandatory">
+          {photos.slice(0,hasMoreThanFive?4:5).map((photo,index)=>(
+          <div
+          key={index}
+          className="relative flex-shrink-0 w-[85vw] aspect-square rounded-xl overflow-hidden cursor-pointer group shadow-lg snap-center"
+          onClick={()=>{
+          setCurrentImageIndex(index);
+          setGalleryViewAll(true);
+          }}
+          >
+
+          {renderMedia(photo,"absolute top-0 left-0 h-full w-full object-cover")}
+
+          </div>
+          ))}
+
+          {hasMoreThanFive && (
+          <div
+          className="relative flex-shrink-0 w-[85vw] aspect-square rounded-xl bg-[#333] flex flex-col items-center justify-center text-white cursor-pointer snap-center"
+          onClick={()=>setGalleryExpanded(true)}
+          >
+          <div className="text-sm font-semibold mb-3">
+          VIEW MORE
+          </div>
+          <div className="text-xs">
+          +{totalPhotos-4} more
+          </div>
+          </div>
+          )}
+
+          </div>
+
+          {/* DESKTOP GRID */}
+          <div className="hidden md:grid bg-[#f4f4f4] grid-cols-5 md:grid-rows-2 pb-12 gap-2 md:px-28">
+
+          <div
+          className="aspect-square md:row-span-2 md:col-span-2 relative rounded-xl overflow-hidden cursor-pointer"
+          onClick={()=>{
+          setCurrentImageIndex(0);
+          setGalleryViewAll(true);
+          }}
+          >
+          {renderMedia(photos[0],"absolute top-0 left-0 h-full w-full object-cover")}
+          </div>
+
+          <div
+          className="aspect-square relative rounded-xl overflow-hidden cursor-pointer"
+          onClick={()=>{
+          setCurrentImageIndex(1);
+          setGalleryViewAll(true);
+          }}
+          >
+          {renderMedia(photos[1],"absolute top-0 left-0 h-full w-full object-cover")}
+          </div>
+
+          <div
+          className="aspect-square md:col-span-2 relative rounded-xl overflow-hidden cursor-pointer"
+          onClick={()=>{
+          setCurrentImageIndex(2);
+          setGalleryViewAll(true);
+          }}
+          >
+          {renderMedia(photos[2],"absolute top-0 left-0 h-full w-full object-cover")}
+          </div>
+
+          <div
+          className="aspect-square relative rounded-xl overflow-hidden cursor-pointer"
+          onClick={()=>{
+          setCurrentImageIndex(3);
+          setGalleryViewAll(true);
+          }}
+          >
+          {renderMedia(photos[3],"absolute top-0 left-0 h-full w-full object-cover")}
+          </div>
+
+          {!hasMoreThanFive && (
+          <div
+          className="aspect-square relative rounded-xl overflow-hidden cursor-pointer"
+          onClick={()=>{
+          setCurrentImageIndex(4);
+          setGalleryViewAll(true);
+          }}
+          >
+          {renderMedia(photos[4],"absolute top-0 left-0 h-full w-full object-cover")}
+          </div>
+          )}
+
+          </div>
           </>
-        )}
+          );
+
+          })()}
+
+          /* MODAL */
+          <Modal
+          show={galleryViewAll}
+          onClose={()=>setGalleryViewAll(false)}
+          size="7xl"
+          className="gallery-modal"
+          >
+
+          <Modal.Body className="relative bg-black p-0">
+
+          <button
+          onClick={()=>setGalleryViewAll(false)}
+          className="absolute top-4 right-4 text-white z-50"
+          >
+          <MdClear size={32}/>
+          </button>
+
+          {vendor?.gallery?.photos && (
+          <div className="relative w-full flex justify-center items-center">
+
+          {renderMedia(
+          vendor.gallery.photos[currentImageIndex],
+          "max-h-[80vh] object-contain"
+          )}
+
+          <div className="absolute bottom-4 right-4 bg-black/50 text-white px-4 py-2 rounded text-sm">
+          {currentImageIndex+1} of {vendor.gallery.photos.length}
+          </div>
+
+          </div>
+          )}
+
+          </Modal.Body>
+          </Modal>
+
+          </>
+          )}
         
 
 
