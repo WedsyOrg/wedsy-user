@@ -1898,7 +1898,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initial
 
           })()}
 
-          /* MODAL */
+          {/* MODAL */}
           <Modal
           show={galleryViewAll}
           onClose={()=>setGalleryViewAll(false)}
