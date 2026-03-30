@@ -406,22 +406,27 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initial
 
                   {/* Services & Products Section */}
                   <div className="bg-white flex flex-col p-6 gap-4">
-                    <div className="flex flex-col gap-2">
-                      <h4 className="text-black font-normal uppercase">Services</h4>
-                      <ul className="text-black font-semibold text-xl">
-                        {pkg?.process ? pkg.process.map((i, i1) => (
-                          <li key={i1}>&bull; {i.topic}</li>
-                        )) : <li>No services listed</li>}
-                      </ul>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <h4 className="text-black font-normal uppercase">Products</h4>
-                      <ul className="text-black font-semibold text-xl">
-                        {pkg?.products ? pkg.products.split(",").map((p, pIndex) => (
-                          <li key={pIndex}>&bull; {p.trim()}</li>
-                        )) : <li>No products listed</li>}
-                      </ul>
-                    </div>
+
+                  {/* Services */}
+                  <div className="flex flex-col gap-2">
+                    <h4 className="text-black font-normal uppercase">Services</h4>
+                    <ul className="text-black font-semibold text-xl">
+                      {pkg?.process?.length > 0 ? pkg.process.map((i, i1) => (
+                        <li key={i1}>&bull; {i.topic}</li>
+                      )) : <li>No services listed</li>}
+                    </ul>
+                  </div>
+
+                  {/* Products */}
+                  <div className="flex flex-col gap-2">
+                    <h4 className="text-black font-normal uppercase">Products</h4>
+                    <ul className="text-black font-semibold text-xl">
+                      {pkg?.process?.length > 0 ? pkg.process.map((p, pIndex) => (
+                        <li key={pIndex}>&bull; {p.description}</li>
+                      )) : <li>No products listed</li>}
+                    </ul>
+                  </div>
+
                   </div>
 
                   <div
@@ -462,9 +467,9 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initial
                     {/* Price */}
                     <div className="text-white text-right">
                       {originalPrice && (
-                        <p className="text-xs line-through">₹{toPriceString(originalPrice)}</p>
+                        <p className="text-xs line-through">{toPriceString(discountedPrice)}</p>
                       )}
-                      <p className="text-lg font-bold">₹{toPriceString(discountedPrice)}</p>
+                      <p className="text-lg font-bold">{toPriceString(originalPrice)}</p>
                       <p className="text-xs font-normal">Per Person</p>
                     </div>
                   </div>
@@ -529,18 +534,24 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initial
           </div>
           {/* Package Grid */}
           {wedsyPackages.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-0 px-6 md:px-0 w-full mb-8">
-              {[
-                wedsyPackages[displayWedsyPackages[0]],
-                wedsyPackages[displayWedsyPackages[1]],
-                wedsyPackages[displayWedsyPackages[2]],
-                wedsyPackages[displayWedsyPackages[3]],
-              ].map((pkg, index) => {
+            <div
+              className={`grid 
+              grid-cols-1 
+              sm:grid-cols-2 
+              ${wedsyPackages.length === 1 ? "lg:grid-cols-1 justify-items-center" : ""}
+              ${wedsyPackages.length === 2 ? "lg:grid-cols-2 justify-items-center" : ""}
+              ${wedsyPackages.length === 3 ? "lg:grid-cols-3" : ""}
+              ${wedsyPackages.length >= 4 ? "lg:grid-cols-4" : ""}
+              gap-8 md:gap-0 px-6 md:px-0 w-full mb-8`}
+            >
+              {wedsyPackages
+              .slice(displayWedsyPackages[0], displayWedsyPackages[0] + 4)
+              .map((pkg, index) => {
                 const colorSet = colors[index] || colors[0];
                 return (
                   <div
                     key={pkg?._id}
-                    className="flex flex-col rounded-2xl md:rounded-none overflow-hidden shadow-md md:border-2 md:border-white"
+                    className="flex flex-col w-full max-w-[320px] rounded-2xl md:rounded-none overflow-hidden shadow-md md:border-2 md:border-white"
                   >
                     {/* Package Name Header */}
                     <div
@@ -577,15 +588,18 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initial
 
                       <h4 className="mb-1 text-black font-normal uppercase relative z-10">Products</h4>
                       <p className="hidden md:block text-black font-semibold text-xl text-center px-4 relative z-10">
-                        {pkg?.products ? pkg.products.split(",").map((p, pIndex) => (
+                        {pkg?.process?.length > 0 ? pkg.process.map((p, pIndex) => (
                           <React.Fragment key={pIndex}>
-                            {p.trim()}
-                            {pIndex < pkg.products.split(",").length - 1 && <br />}
+                            {p.description}
+                            {pIndex < pkg.process.length - 1 && <br />}
                           </React.Fragment>
                         )) : "No products listed"}
                       </p>
+
                       <p className="md:hidden text-black font-normal text-sm text-center px-4 relative z-10">
-                        {pkg?.products || "No products listed"}
+                        {pkg?.process?.length > 0
+                          ? pkg.process.map(i => i.description).join(", ")
+                          : "No products listed"}
                       </p>
                     </div>
 
@@ -633,7 +647,7 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initial
                       <div className="text-black font-semibold text-right">
                         <p className="text-xs font-normal text-black">Per Person</p>
                         <p className="text-[#840032] font-semibold text-lg">
-                          {toPriceString((pkg?.price || 0) * wedsyPackageTaxMultiply)}
+                          {toPriceString((pkg?.price || 0))}
                         </p>
                       </div>
                     </div>
@@ -643,8 +657,17 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initial
             </div>
           )}
         </div>
-
-
+        {wedsyPackages.length > 4 && (
+          <div className="flex flex-row justify-center">
+            <Link href="/makeup-and-beauty/wedsy-packages">
+              <button
+                className="rounded-md md:rounded-full bg-black text-white py-2 px-28 mt-4 mb-10"
+              >
+                View More
+              </button>
+            </Link>
+          </div>
+        )}
       </div>
 
 
