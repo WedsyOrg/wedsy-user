@@ -24,9 +24,6 @@ export default function DecorCard({ decor = {}, size = "normal" }) {
 
   const unitSuffix = category === "Pathway" && unit ? `/ ${unit}` : "";
 
-  // Conditionally set the height class based on the 'size' prop
-  const imageHeightClass = size === "small" ? "min-h-[200px]" : "min-h-[280px]";
-
   return (
     <Link
       href={`/decor/view/${_id}`}
@@ -35,16 +32,14 @@ export default function DecorCard({ decor = {}, size = "normal" }) {
       rel="noopener noreferrer"
     >
       {/* IMAGE SECTION */}
-      {/* Apply the conditional height class here */}
-      <div
-        className={`relative w-full ${imageHeightClass} overflow-hidden rounded-2xl`}
-      >
+      <div className="relative w-full overflow-hidden rounded-2xl">
         <Image
           src={thumbnail || "/placeholder.webp"}
           alt={name}
-          fill
+          width={0}
+          height={0}
           sizes="(max-width: 768px) 50vw, 33vw"
-          style={{ objectFit: "cover" }}
+          style={{ objectFit: "contain", width: "100%", height: "auto" }}
           className="transition-transform duration-500 ease-in-out md:group-hover:scale-110"
           placeholder="blur"
           blurDataURL="/placeholder.webp"

@@ -1524,7 +1524,7 @@ function DecorListing({
                       alt={decor.name}
                       fill
                       sizes="(max-width: 768px) 100vw, 60vw"
-                      className="object-cover transition-transform duration-300 hover:scale-105"
+                      className="object-contain transition-transform duration-300 hover:scale-105"
                     />
                   </div>
                 )}
@@ -1821,7 +1821,7 @@ function DecorListing({
                   alt={decor.name}
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover md:rounded-xl transition-transform duration-300 hover:scale-105"
+                  className="object-contain md:rounded-xl transition-transform duration-300 hover:scale-105"
                 />
               </div>
             </div>
