@@ -1509,10 +1509,10 @@ function DecorListing({
               <p className="md:hidden text-xl font-semibold mb-2 text-center">
                 {decor.name} ({decor?.productInfo.id})
               </p>
-              <div className={`relative pt-[56.25%] `}>
+              <div>
                 {displayImage && (
                   <div
-                    className="md:rounded-xl overflow-hidden shadow-lg decor-detail-image cursor-pointer absolute inset-0 w-full h-full"
+                    className="max-h-[500px] w-full bg-white flex items-center justify-center rounded-xl overflow-hidden shadow-lg decor-detail-image cursor-pointer"
                     onClick={() => {
                       const images = getAllImages();
                       const index = images.findIndex((img) => img === displayImage);
@@ -1522,16 +1522,18 @@ function DecorListing({
                     <Image
                       src={displayImage}
                       alt={decor.name}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 60vw"
-                      className="object-contain transition-transform duration-300 hover:scale-105"
+                      width={0}
+                      height={0}
+                      sizes="100vw"
+                      style={{ width: "100%", height: "100%", maxHeight: "500px", objectFit: "contain" }}
+                      className="transition-transform duration-300 hover:scale-105"
                     />
                   </div>
                 )}
                 {displayVideo && (
                   <video
                     src={displayVideo}
-                    className="md:rounded-xl w-full h-full object-contain overflow-hidden absolute top-0"
+                    className="rounded-xl w-full object-contain overflow-hidden"
                     controls
                     autoPlay
                     muted
@@ -1794,8 +1796,8 @@ function DecorListing({
               <p className="text-2xl font-semibold text-center tracking-wide uppercase">
                 {decor.name} ({decor?.productInfo.id})
               </p>
-              <div 
-                className={`relative pt-[75%] mx-8 md:mx-16 cursor-pointer`}
+              <div
+                className="max-h-[500px] w-full bg-white flex items-center justify-center rounded-xl overflow-hidden mx-8 md:mx-16 cursor-pointer"
                 onClick={() => {
                   const currentImage = productVariant
                     ? decor.productVariants.find(
@@ -1803,7 +1805,6 @@ function DecorListing({
                       )?.image
                     : decor?.image;
                   const images = getAllImages();
-                  // If current image is from variant, use it; otherwise find index
                   const index = currentImage && images.includes(currentImage)
                     ? images.findIndex((img) => img === currentImage)
                     : 0;
@@ -1819,9 +1820,11 @@ function DecorListing({
                       : decor?.image
                   }
                   alt={decor.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-contain md:rounded-xl transition-transform duration-300 hover:scale-105"
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  style={{ width: "100%", height: "100%", maxHeight: "500px", objectFit: "contain" }}
+                  className="transition-transform duration-300 hover:scale-105"
                 />
               </div>
             </div>
