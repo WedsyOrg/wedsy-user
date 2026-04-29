@@ -226,7 +226,7 @@ function DecorListing({
       setLoading(true);
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        limit: "14",
+        limit: "32",
         displayVisible: "true",
         displayAvailable: "true",
       });
@@ -1361,7 +1361,7 @@ export async function getServerSideProps(context) {
     const currentPage = query.page || "1";
     const params = new URLSearchParams({
       page: currentPage,
-      limit: "14",
+      limit: "32",
       displayVisible: "true",
       displayAvailable: "true",
     });
