@@ -2031,26 +2031,30 @@ export async function getServerSideProps(context) {
     const step1Data = await step1Response.json();
     let combined = step1Data.list || [];
 
-    // Step 2 — relax to occasion-only if under 20 results
-    if (combined.length < 20 && occasions.length) {
-      const step2Params = new URLSearchParams({ similarDecorFor: decor_id, category: decor.category, occassion: occasions.join("|"), limit: "20" });
-      const step2Response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/decor?${step2Params}`);
-      const step2Data = await step2Response.json();
+    const mergeInto = (list) => {
       const seenIds = new Set(combined.map((i) => String(i._id)));
-      for (const item of step2Data.list || []) {
+      for (const item of list) {
         if (!seenIds.has(String(item._id))) {
           combined.push(item);
           seenIds.add(String(item._id));
         }
       }
+    };
+
+    // Step 1.5 — drop color/style, keep occasion (only when Step 1 was strict and still < 20)
+    if (combined.length < 20 && occasions.length && (colors.length || (style && style !== "Both"))) {
+      const step15Params = new URLSearchParams({ similarDecorFor: decor_id, category: decor.category, occassion: occasions.join("|"), limit: "20" });
+      const step15Response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/decor?${step15Params}`);
+      const step15Data = await step15Response.json();
+      mergeInto(step15Data.list || []);
     }
 
-    // Fallback to category-only if no occasion set
-    if (!occasions.length) {
-      const fallbackParams = new URLSearchParams({ similarDecorFor: decor_id, category: decor.category, limit: "20" });
-      const fallbackResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/decor?${fallbackParams}`);
-      const fallbackData = await fallbackResponse.json();
-      combined = fallbackData.list || [];
+    // Step 2 — category only (fires if still < 20 after steps 1 and 1.5)
+    if (combined.length < 20) {
+      const step2Params = new URLSearchParams({ similarDecorFor: decor_id, category: decor.category, limit: "20" });
+      const step2Response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/decor?${step2Params}`);
+      const step2Data = await step2Response.json();
+      mergeInto(step2Data.list || []);
     }
 
     const similarDecorList = combined.filter((i) => String(i._id) !== String(decor_id)).slice(0, 20);

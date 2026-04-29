@@ -8,10 +8,13 @@ import { BiddingPageSkeleton, MakeupAndBeautyPageSkeleton, MakeupArtistsPageSkel
 import { DecorPageSkeleton } from "@/components/skeletons/wedding-store";
 import "@/styles/globals.css";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
+import { AnimatePresence, motion } from "framer-motion";
 import { Spinner } from "flowbite-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import Script from "next/script";
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
 import { useEffect, useState } from "react";
 
 function App({ Component, pageProps }) {
@@ -77,6 +80,20 @@ function App({ Component, pageProps }) {
   }, []);
 
   useEffect(() => {
+    NProgress.configure({ showSpinner: false });
+    const handleStart = () => NProgress.start();
+    const handleDone = () => NProgress.done();
+    router.events.on("routeChangeStart", handleStart);
+    router.events.on("routeChangeComplete", handleDone);
+    router.events.on("routeChangeError", handleDone);
+    return () => {
+      router.events.off("routeChangeStart", handleStart);
+      router.events.off("routeChangeComplete", handleDone);
+      router.events.off("routeChangeError", handleDone);
+    };
+  }, [router.events]);
+
+  useEffect(() => {
     // This logic ensures the Meta Pixel script runs correctly on client-side navigation.
     const handleRouteChange = () => {
       import("react-facebook-pixel")
@@ -93,7 +110,7 @@ function App({ Component, pageProps }) {
         ReactPixel.pageView();
         router.events.on("routeChangeComplete", handleRouteChange);
       });
-    
+
     // This is the cleanup function to prevent memory leaks as recommended.
     return () => {
       router.events.off("routeChangeComplete", handleRouteChange);
@@ -269,25 +286,35 @@ function App({ Component, pageProps }) {
           <LoginModal openLoginModal={openLoginModal} setOpenLoginModal={setOpenLoginModal} user={user} logIn={logIn} setLogIn={setLogIn} CheckLogin={CheckLogin} />
           <LoginModalv2 openLoginModal={openLoginModalv2} setOpenLoginModal={setOpenLoginModalv2} user={user} logIn={logIn} setLogIn={setLogIn} CheckLogin={CheckLogin} source={loginSource} />
           <main className="flex-grow">
-            {loading ? (
-              router.pathname === '/makeup-and-beauty' ? (
-                <MakeupAndBeautyPageSkeleton />
-              ) : router.pathname.startsWith('/makeup-and-beauty/wedsy-packages') ? (
-                <WedsyPackagesPageSkeleton />
-              ) : router.pathname.startsWith('/makeup-and-beauty/artists') ? (
-                <MakeupArtistsPageSkeleton />
-              ) : router.pathname.startsWith('/makeup-and-beauty/bidding') ? (
-                <BiddingPageSkeleton />
-              ) : router.pathname === '/event' ? (
-                <EventPageSkeleton formStep={1} />
-              ) : router.pathname === '/decor' ? (
-                <DecorPageSkeleton />
-              ) : (
-                <div className="grid place-content-center h-screen "><Spinner size="xl" /></div>
-              )
-            ) : (
-              <Component {...pageProps} userLoggedIn={!logIn} user={user} setOpenLoginModal={setOpenLoginModal} setOpenLoginModalv2={setOpenLoginModalv2} CheckLogin={CheckLogin} setSource={setLoginSource} />
-            )}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={router.asPath}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+              >
+                {loading ? (
+                  router.pathname === '/makeup-and-beauty' ? (
+                    <MakeupAndBeautyPageSkeleton />
+                  ) : router.pathname.startsWith('/makeup-and-beauty/wedsy-packages') ? (
+                    <WedsyPackagesPageSkeleton />
+                  ) : router.pathname.startsWith('/makeup-and-beauty/artists') ? (
+                    <MakeupArtistsPageSkeleton />
+                  ) : router.pathname.startsWith('/makeup-and-beauty/bidding') ? (
+                    <BiddingPageSkeleton />
+                  ) : router.pathname === '/event' ? (
+                    <EventPageSkeleton formStep={1} />
+                  ) : router.pathname === '/decor' ? (
+                    <DecorPageSkeleton />
+                  ) : (
+                    <div className="grid place-content-center h-screen "><Spinner size="xl" /></div>
+                  )
+                ) : (
+                  <Component {...pageProps} userLoggedIn={!logIn} user={user} setOpenLoginModal={setOpenLoginModal} setOpenLoginModalv2={setOpenLoginModalv2} CheckLogin={CheckLogin} setSource={setLoginSource} />
+                )}
+              </motion.div>
+            </AnimatePresence>
           </main>
           <footer className="contents">
             <Footer />
