@@ -1,7 +1,6 @@
 import Breadcrumbs from "@/components/Breadcrumbs";
 import DecorCard from "@/components/cards/DecorCard";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
-import { SpecificCategorySkeleton } from "@/components/skeletons/wedding-store/specific-category";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import { Dropdown } from "flowbite-react";
 import Head from "next/head";
@@ -1222,7 +1221,25 @@ function DecorListing({
           </h1>
 
           {loading ? (
-            <SpecificCategorySkeleton />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="flex flex-col gap-2">
+                  <div className={`relative overflow-hidden rounded-2xl bg-gray-200 ${
+                    i % 4 === 0 || i % 4 === 3 ? 'h-40' : 'h-52'
+                  }`}>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer" />
+                  </div>
+                  <div className="hidden md:flex gap-2 px-1">
+                    <div className="relative flex-1 overflow-hidden h-3 rounded bg-gray-200">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer" />
+                    </div>
+                    <div className="relative overflow-hidden h-3 w-16 rounded bg-gray-200">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : list.length > 0 ? (
             <>
               {/* Mobile Grid */}

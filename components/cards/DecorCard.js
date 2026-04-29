@@ -27,7 +27,7 @@ export default function DecorCard({ decor = {}, size = "normal" }) {
   return (
     <Link
       href={`/decor/view/${_id}`}
-      className="group block h-full w-full flex flex-col"
+      className="group block h-full w-full flex flex-col hover:shadow-xl active:scale-95 transition-all duration-300"
       target="_blank"
       rel="noopener noreferrer"
     >
