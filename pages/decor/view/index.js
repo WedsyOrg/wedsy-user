@@ -480,22 +480,6 @@ function DecorListing({
 
   const dynamicHeading = filters.category ? `${filters.category}` : "All Decor";
 
-  const gridClasses = [
-    "md:col-span-2 md:row-span-2",
-    "md:col-span-4 md:row-span-2 md:col-start-3",
-    "md:col-span-2 md:row-span-2 md:col-start-7",
-    "md:col-span-2 md:row-span-2 md:row-start-3",
-    "md:col-span-3 md:row-span-2 md:col-start-3 md:row-start-3",
-    "md:col-span-3 md:row-span-2 md:col-start-6 md:row-start-3",
-    "md:col-span-4 md:row-span-3 md:row-start-5",
-    "md:col-span-4 md:row-span-3 md:col-start-5 md:row-start-5",
-    "md:col-span-4 md:row-span-2 md:row-start-8",
-    "md:col-span-4 md:row-span-2 md:col-start-5 md:row-start-8",
-    "md:col-span-3 md:row-span-2 md:row-start-10",
-    "md:col-span-4 md:row-span-2 md:col-start-4 md:row-start-10",
-    "md:col-span-4 md:row-span-2 md:row-start-12",
-    "md:col-span-3 md:row-span-2 md:col-start-5 md:row-start-12",
-  ];
 
   const renderPaginationNumbers = () => {
     const numbers = [];
@@ -1266,18 +1250,18 @@ function DecorListing({
                 </Masonry>
               </div>
 
-              <div className="hidden md:grid grid-cols-2 sm:grid-cols-3 md:grid-cols-8 md:grid-rows-13 gap-2 md:gap-4 min-h-[1600px]">
-                {list.map((item, index) => (
-                  <div
-                    key={item._id}
-                    className={
-                      gridClasses[index] ||
-                      "col-span-1 sm:col-span-1 md:col-span-3 md:row-span-2"
-                    }
-                  >
-                    <DecorCard decor={item} />
-                  </div>
-                ))}
+              <div className="hidden md:block">
+                <Masonry
+                  breakpointCols={{ default: 3, 1100: 3, 700: 2, 500: 2 }}
+                  className="my-masonry-grid"
+                  columnClassName="my-masonry-grid_column"
+                >
+                  {list.map((item) => (
+                    <div key={item._id}>
+                      <DecorCard decor={item} />
+                    </div>
+                  ))}
+                </Masonry>
               </div>
 
               <div className="flex flex-col items-center mt-12 gap-4" role="navigation" aria-label="Decor listing pagination">
