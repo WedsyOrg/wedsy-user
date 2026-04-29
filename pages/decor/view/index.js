@@ -87,7 +87,7 @@ function DecorListing({
   const [allOccasions, setAllOccasions] = useState([]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/attribute`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/attribute/public`)
       .then((r) => r.json())
       .then((attrs) => {
         const attr = attrs.find((a) => a.name === "Occasion");
