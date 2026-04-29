@@ -1231,7 +1231,7 @@ function DecorListing({
               {/* Mobile Grid */}
               <div className="block md:hidden">
                 <Masonry
-                  breakpointCols={2}
+                  breakpointCols={{ default: 4, 1280: 4, 1024: 3, 768: 2, 500: 2 }}
                   className="my-masonry-grid"
                   columnClassName="my-masonry-grid_column"
                 >
@@ -1252,7 +1252,7 @@ function DecorListing({
 
               <div className="hidden md:block">
                 <Masonry
-                  breakpointCols={{ default: 3, 1100: 3, 700: 2, 500: 2 }}
+                  breakpointCols={{ default: 4, 1280: 4, 1024: 3, 768: 2, 500: 2 }}
                   className="my-masonry-grid"
                   columnClassName="my-masonry-grid_column"
                 >
