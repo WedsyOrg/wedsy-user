@@ -84,20 +84,27 @@ function DecorListing({
   const filterButtonRef = useRef(null);
   const filterDropdownContentRef = useRef(null);
 
-  const allOccasions = [
-    "Reception",
-    "Engagement",
-    "Sangeet",
-    "Wedding",
-    "Haldi",
-    "Mehendi",
-    "Muhurtham",
-  ];
+  const [allOccasions, setAllOccasions] = useState([]);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/attribute`)
+      .then((r) => r.json())
+      .then((attrs) => {
+        const attr = attrs.find((a) => a.name === "Occasion");
+        if (attr?.list?.length) {
+          setAllOccasions(
+            attr.list.map((o) => o.charAt(0).toUpperCase() + o.slice(1).toLowerCase())
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const isStageOrBackdrop =
     (filters.category || "").toLowerCase() === "stage" ||
     (filters.category || "").toLowerCase() === "backdrop";
   const occasionList = isStageOrBackdrop
-    ? allOccasions.filter((o) => o !== "Muhurtham")
+    ? allOccasions.filter((o) => o.toLowerCase() !== "muhurtham")
     : allOccasions;
 
   const coloursList = [
@@ -232,12 +239,8 @@ function DecorListing({
       });
 
       if (filters.category) params.append("category", filters.category);
-      if (
-        filters.sort &&
-        filters.sort !== "Sort" &&
-        filters.sort !== "New-Arrivals"
-      ) {
-        params.append("sort", filters.sort);
+      if (filters.sort && filters.sort !== "Sort") {
+        params.append("sort", filters.sort === "New-Arrivals" ? "Newest-First" : filters.sort);
       }
       // For categories with full filters only: occasion, colours, type, size
       if (hasFullFilters) {
@@ -322,12 +325,6 @@ function DecorListing({
           });
         }
         
-        if (filters.sort === "New-Arrivals") {
-          sortedList = [...sortedList].sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          );
-        }
-
         setList(sortedList);
         setTotalPages(data.totalPages || 1);
       } catch (error) {

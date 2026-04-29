@@ -2016,11 +2016,44 @@ export async function getServerSideProps(context) {
       };
     }
     
-    // Fetch similar decor filtered by the same category
-    const similarDecorResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/decor?similarDecorFor=${decor_id}&category=${encodeURIComponent(decor.category)}`
-    );
-    const similarDecor = await similarDecorResponse.json();
+    // Extract productVariation fields safely
+    const occasions = (decor.productVariation?.occassion || []).filter(Boolean);
+    const colors = (decor.productVariation?.colors || []).filter(Boolean);
+    const style = decor.productVariation?.style || "";
+
+    // Step 1 — strict: same category + occasion + color + style
+    const step1Params = new URLSearchParams({ similarDecorFor: decor_id, category: decor.category, limit: "20" });
+    if (occasions.length) step1Params.set("occassion", occasions.join("|"));
+    if (colors.length) step1Params.set("color", colors.join("|"));
+    if (style && style !== "Both") step1Params.set("style", style);
+
+    const step1Response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/decor?${step1Params}`);
+    const step1Data = await step1Response.json();
+    let combined = step1Data.list || [];
+
+    // Step 2 — relax to occasion-only if under 20 results
+    if (combined.length < 20 && occasions.length) {
+      const step2Params = new URLSearchParams({ similarDecorFor: decor_id, category: decor.category, occassion: occasions.join("|"), limit: "20" });
+      const step2Response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/decor?${step2Params}`);
+      const step2Data = await step2Response.json();
+      const seenIds = new Set(combined.map((i) => String(i._id)));
+      for (const item of step2Data.list || []) {
+        if (!seenIds.has(String(item._id))) {
+          combined.push(item);
+          seenIds.add(String(item._id));
+        }
+      }
+    }
+
+    // Fallback to category-only if no occasion set
+    if (!occasions.length) {
+      const fallbackParams = new URLSearchParams({ similarDecorFor: decor_id, category: decor.category, limit: "20" });
+      const fallbackResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/decor?${fallbackParams}`);
+      const fallbackData = await fallbackResponse.json();
+      combined = fallbackData.list || [];
+    }
+
+    const similarDecorList = combined.filter((i) => String(i._id) !== String(decor_id)).slice(0, 20);
     
     const categoryResponse = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/category`
@@ -2029,7 +2062,7 @@ export async function getServerSideProps(context) {
     const category = categoryList.find((i) => i.name === decor.category);
     return {
       props: {
-        similarDecor: similarDecor.list,
+        similarDecor: similarDecorList,
         decor,
         category,
         categoryList,
