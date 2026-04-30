@@ -43,6 +43,8 @@ function DecorListing({
   initialData,
   categoryList,
   totalPages: initialTotalPages,
+  platformConfig,
+  flooringConfig,
 }) {
   const router = useRouter();
   const { category, page: queryPage } = router.query;
@@ -475,6 +477,35 @@ function DecorListing({
   };
 
   const dynamicHeading = filters.category ? `${filters.category}` : "All Decor";
+
+  const isFurnitureCategory = (filters.category || "").toLowerCase() === "furniture";
+
+  const platformCard = {
+    _id: "platform",
+    thumbnail: platformConfig?.data?.image || "/assets/images/platform.webp",
+    name: "Platform",
+    productTypes: [{ name: "sq.ft", sellingPrice: parseInt(platformConfig?.data?.price || 0) }],
+    category: "Furniture",
+    unit: "sq.ft",
+    productInfo: {},
+  };
+
+  const _flooringList = flooringConfig?.data?.flooringList || [];
+  const flooringCard = {
+    _id: "flooring",
+    thumbnail: _flooringList[0]?.image || "/assets/images/carpet.webp",
+    name: "Flooring",
+    productTypes: _flooringList.length
+      ? _flooringList.map((f) => ({ name: f.title, sellingPrice: parseInt(f.price || 0) }))
+      : [{ name: "sq.ft", sellingPrice: 0 }],
+    category: "Furniture",
+    unit: "sq.ft",
+    productInfo: {},
+  };
+
+  const displayList = isFurnitureCategory
+    ? [platformCard, flooringCard, ...list]
+    : list;
 
 
   const renderPaginationNumbers = () => {
@@ -1240,7 +1271,7 @@ function DecorListing({
                 </div>
               ))}
             </div>
-          ) : list.length > 0 ? (
+          ) : displayList.length > 0 ? (
             <>
               {/* Mobile Grid */}
               <div className="block md:hidden">
@@ -1249,7 +1280,7 @@ function DecorListing({
                   className="my-masonry-grid"
                   columnClassName="my-masonry-grid_column"
                 >
-                  {list.map((item, index) => (
+                  {displayList.map((item, index) => (
                     <div key={item._id}>
                       <DecorCard
                         decor={item}
@@ -1270,7 +1301,7 @@ function DecorListing({
                   className="my-masonry-grid"
                   columnClassName="my-masonry-grid_column"
                 >
-                  {list.map((item) => (
+                  {displayList.map((item) => (
                     <div key={item._id}>
                       <DecorCard decor={item} />
                     </div>
@@ -1381,25 +1412,38 @@ export async function getServerSideProps(context) {
     });
     const categoryToFetch = query.category || "Stage";
     params.append("category", categoryToFetch);
-    const decorResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/decor?${params.toString()}`
-    );
-    const decorData = await decorResponse.json();
-    const categoryResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/category`
-    );
-    const categoryList = await categoryResponse.json();
+    const isFurniture = categoryToFetch.toLowerCase() === "furniture";
+
+    const fetches = [
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/decor?${params.toString()}`),
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/category`),
+    ];
+    if (isFurniture) {
+      fetches.push(fetch(`${process.env.NEXT_PUBLIC_API_URL}/config?code=platform`));
+      fetches.push(fetch(`${process.env.NEXT_PUBLIC_API_URL}/config?code=flooring`));
+    }
+
+    const responses = await Promise.all(fetches);
+    const [decorData, categoryList] = await Promise.all([
+      responses[0].json(),
+      responses[1].json(),
+    ]);
+    const platformConfig = isFurniture ? await responses[2].json() : {};
+    const flooringConfig = isFurniture ? await responses[3].json() : {};
+
     return {
       props: {
         initialData: decorData.list || [],
         categoryList: categoryList || [],
         totalPages: decorData.totalPages || 1,
+        platformConfig: platformConfig || {},
+        flooringConfig: flooringConfig || {},
       },
     };
   } catch (error) {
     console.error("Error fetching initial data:", error);
     return {
-      props: { initialData: [], categoryList: [], totalPages: 1 },
+      props: { initialData: [], categoryList: [], totalPages: 1, platformConfig: {}, flooringConfig: {} },
     };
   }
 }
