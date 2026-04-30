@@ -75,7 +75,14 @@ function Decor({
     mandaps: false,
     furniture: false
   });
-  
+
+  // Photobooth flip animation
+  const pbTimersRef = useRef([]);
+  const [pbCurrentIdx, setPbCurrentIdx] = useState(
+    Array.from({ length: 5 }, (_, i) => photoboothDecor.length > 0 ? i % photoboothDecor.length : 0)
+  );
+  const [pbMidFlip, setPbMidFlip] = useState(Array(5).fill(false));
+
   // Item width calculation (451px + 24px gap = 475px)
   const itemWidth = 475;
 
@@ -413,6 +420,55 @@ function Decor({
     isPaused,
     itemWidth,
   ]);
+
+  // Photobooth tile flip animation — staggered per tile, repeating every 5s
+  useEffect(() => {
+    pbTimersRef.current.forEach(t => { clearTimeout(t); clearInterval(t); });
+    pbTimersRef.current = [];
+
+    if (photoboothDecor.length < 2) return;
+
+    for (let i = 0; i < 5; i++) {
+      const tileIdx = i;
+
+      const flipTile = () => {
+        // Phase 1: rotate card edge-on (disappears over 350ms)
+        setPbMidFlip(prev => {
+          const next = [...prev];
+          next[tileIdx] = true;
+          return next;
+        });
+        // Phase 2: swap image at midpoint, rotate back to face (appears over 350ms)
+        const swapTimer = setTimeout(() => {
+          setPbCurrentIdx(prev => {
+            const next = [...prev];
+            next[tileIdx] = (next[tileIdx] + 1) % photoboothDecor.length;
+            return next;
+          });
+          setPbMidFlip(prev => {
+            const next = [...prev];
+            next[tileIdx] = false;
+            return next;
+          });
+        }, 380);
+        pbTimersRef.current.push(swapTimer);
+      };
+
+      // Stagger initial flip: tile 0→3s, tile 1→4s, tile 2→5s, tile 3→6s, tile 4→7s
+      const startTimer = setTimeout(() => {
+        flipTile();
+        const repeatTimer = setInterval(flipTile, 5000);
+        pbTimersRef.current.push(repeatTimer);
+      }, (tileIdx + 3) * 1000);
+
+      pbTimersRef.current.push(startTimer);
+    }
+
+    return () => {
+      pbTimersRef.current.forEach(t => { clearTimeout(t); clearInterval(t); });
+      pbTimersRef.current = [];
+    };
+  }, [photoboothDecor.length]);
 
   return (
     <div className="bg-[#F4F4F4] min-h-screen w-full">
@@ -895,13 +951,13 @@ function Decor({
                     {[...bestSellerBackdrops.slice(0, 6), ...bestSellerBackdrops.slice(0, 6), ...bestSellerBackdrops.slice(0, 6)].map((decor, index) => (
                   <div 
                     key={`backdrops-${index}`} 
-                    className="carousel-item relative group w-[451px] max-h-[300px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
+                    className="carousel-item relative group w-[451px] h-[280px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
                   >
                     <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
                       <DecorCard
                         decor={decor}
-                        className="w-full h-full rounded-[30px] overflow-hidden"
                         hideInfo={true}
+                        fillContainer={true}
                       />
                     </div>
                     {/* Hover overlay for name and price */}
@@ -1020,13 +1076,13 @@ function Decor({
                 {[...grandEntry.slice(0, 6), ...grandEntry.slice(0, 6), ...grandEntry.slice(0, 6)].map((decor, index) => (
                   <div 
                     key={`grandEntry-${index}`} 
-                    className="carousel-item relative group w-[451px] max-h-[300px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
+                    className="carousel-item relative group w-[451px] h-[280px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
                   >
                     <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
                       <DecorCard
                         decor={decor}
-                        className="w-full h-full rounded-[30px] overflow-hidden"
                         hideInfo={true}
+                        fillContainer={true}
                       />
                     </div>
                     {/* Hover overlay for name and price */}
@@ -1305,13 +1361,13 @@ function Decor({
                     {[...bestSellerMandaps.slice(0, 6), ...bestSellerMandaps.slice(0, 6), ...bestSellerMandaps.slice(0, 6)].map((decor, index) => (
                   <div 
                     key={`mandaps-${index}`} 
-                    className="carousel-item relative group w-[451px] max-h-[300px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
+                    className="carousel-item relative group w-[451px] h-[280px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
                   >
                     <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
                       <DecorCard
                         decor={decor}
-                        className="w-full h-full rounded-[30px] overflow-hidden"
                         hideInfo={true}
+                        fillContainer={true}
                       />
                     </div>
                     {/* Hover overlay for name and price */}
@@ -1430,13 +1486,13 @@ function Decor({
                 {[...furniture.slice(0, 6), ...furniture.slice(0, 6), ...furniture.slice(0, 6)].map((decor, index) => (
                   <div 
                     key={`furniture-${index}`} 
-                    className="carousel-item relative group w-[451px] max-h-[300px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
+                    className="carousel-item relative group w-[451px] h-[280px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
                   >
                     <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
                       <DecorCard
                         decor={decor}
-                        className="w-full h-full rounded-[30px] overflow-hidden"
                         hideInfo={true}
+                        fillContainer={true}
                       />
                     </div>
                     {/* Hover overlay for name and price */}
@@ -1540,57 +1596,75 @@ function Decor({
           {/* Desktop Grid Layout */}
           <div className="hidden md:block max-w-[1180px] mx-auto px-4">
             <div className="grid grid-cols-3 gap-6">
-              {/* Large image on the left */}
-              {photoboothDecor[0] && (
+              {/* Large image — tile 0 */}
+              {photoboothDecor.length > 0 && (
                 <div className="col-span-1">
-                  <Link href={`/decor/view/${photoboothDecor[0]._id}`}>
-                    <div className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-all duration-300">
+                  <Link href={`/decor/view/${photoboothDecor[pbCurrentIdx[0]]?._id}`}>
+                    <div
+                      className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-shadow duration-300"
+                      style={{
+                        transform: pbMidFlip[0] ? 'perspective(600px) rotateY(-90deg)' : 'perspective(600px) rotateY(0deg)',
+                        transition: 'transform 0.35s ease-in-out',
+                      }}
+                    >
                       <img
-                        src={photoboothDecor[0].thumbnail || "/assets/decor/decor-home.webp"}
-                        alt={photoboothDecor[0].name || "Photobooth Design"}
-                        className="w-full h-[400px] object-contain group-hover:scale-105 transition-transform duration-300"
+                        src={photoboothDecor[pbCurrentIdx[0]]?.thumbnail || "/assets/decor/decor-home.webp"}
+                        alt={photoboothDecor[pbCurrentIdx[0]]?.name || "Photobooth Design"}
+                        className="w-full h-[400px] object-contain"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <h3 className="text-lg font-semibold">{photoboothDecor[0].name}</h3>
+                        <h3 className="text-lg font-semibold">{photoboothDecor[pbCurrentIdx[0]]?.name}</h3>
                       </div>
                     </div>
                   </Link>
                 </div>
               )}
 
-              {/* Four smaller images on the right */}
+              {/* Four smaller tiles — tiles 1–4 */}
               {photoboothDecor.length > 1 && (
                 <div className="col-span-2 space-y-6">
                   <div className="grid grid-cols-2 gap-6">
-                    {photoboothDecor.slice(1, 3).map((item) => (
-                      <Link key={item._id} href={`/decor/view/${item._id}`}>
-                        <div className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-all duration-300">
+                    {[1, 2].map((tileIdx) => (
+                      <Link key={tileIdx} href={`/decor/view/${photoboothDecor[pbCurrentIdx[tileIdx]]?._id}`}>
+                        <div
+                          className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-shadow duration-300"
+                          style={{
+                            transform: pbMidFlip[tileIdx] ? 'perspective(600px) rotateY(-90deg)' : 'perspective(600px) rotateY(0deg)',
+                            transition: 'transform 0.35s ease-in-out',
+                          }}
+                        >
                           <img
-                            src={item.thumbnail || "/assets/decor/decor-home.webp"}
-                            alt={item.name || "Photobooth Design"}
-                            className="w-full h-[190px] object-contain group-hover:scale-105 transition-transform duration-300"
+                            src={photoboothDecor[pbCurrentIdx[tileIdx]]?.thumbnail || "/assets/decor/decor-home.webp"}
+                            alt={photoboothDecor[pbCurrentIdx[tileIdx]]?.name || "Photobooth Design"}
+                            className="w-full h-[190px] object-contain"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                           <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <h3 className="text-lg font-semibold">{item.name}</h3>
+                            <h3 className="text-lg font-semibold">{photoboothDecor[pbCurrentIdx[tileIdx]]?.name}</h3>
                           </div>
                         </div>
                       </Link>
                     ))}
                   </div>
                   <div className="grid grid-cols-2 gap-6">
-                    {photoboothDecor.slice(3, 5).map((item) => (
-                      <Link key={item._id} href={`/decor/view/${item._id}`}>
-                        <div className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-all duration-300">
+                    {[3, 4].map((tileIdx) => (
+                      <Link key={tileIdx} href={`/decor/view/${photoboothDecor[pbCurrentIdx[tileIdx]]?._id}`}>
+                        <div
+                          className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-shadow duration-300"
+                          style={{
+                            transform: pbMidFlip[tileIdx] ? 'perspective(600px) rotateY(-90deg)' : 'perspective(600px) rotateY(0deg)',
+                            transition: 'transform 0.35s ease-in-out',
+                          }}
+                        >
                           <img
-                            src={item.thumbnail || "/assets/decor/decor-home.webp"}
-                            alt={item.name || "Photobooth Design"}
-                            className="w-full h-[190px] object-contain group-hover:scale-105 transition-transform duration-300"
+                            src={photoboothDecor[pbCurrentIdx[tileIdx]]?.thumbnail || "/assets/decor/decor-home.webp"}
+                            alt={photoboothDecor[pbCurrentIdx[tileIdx]]?.name || "Photobooth Design"}
+                            className="w-full h-[190px] object-contain"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                           <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <h3 className="text-lg font-semibold">{item.name}</h3>
+                            <h3 className="text-lg font-semibold">{photoboothDecor[pbCurrentIdx[tileIdx]]?.name}</h3>
                           </div>
                         </div>
                       </Link>
@@ -1604,32 +1678,46 @@ function Decor({
           {/* Mobile Grid Layout */}
           <div className="md:hidden px-4">
             <div className="grid grid-cols-2 gap-4">
-              {photoboothDecor.slice(0, 4).map((item) => (
-                <Link key={item._id} href={`/decor/view/${item._id}`}>
-                  <div className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg hover:shadow-xl transition-all duration-300">
+              {/* Tiles 0–3 */}
+              {photoboothDecor.length > 0 && [0, 1, 2, 3].map((tileIdx) => (
+                <Link key={tileIdx} href={`/decor/view/${photoboothDecor[pbCurrentIdx[tileIdx]]?._id}`}>
+                  <div
+                    className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg"
+                    style={{
+                      transform: pbMidFlip[tileIdx] ? 'perspective(600px) rotateY(-90deg)' : 'perspective(600px) rotateY(0deg)',
+                      transition: 'transform 0.35s ease-in-out',
+                    }}
+                  >
                     <img
-                      src={item.thumbnail || "/assets/decor/decor-home.webp"}
-                      alt={item.name || "Photobooth Design"}
-                      className="w-full h-[200px] object-contain group-hover:scale-105 transition-transform duration-300"
+                      src={photoboothDecor[pbCurrentIdx[tileIdx]]?.thumbnail || "/assets/decor/decor-home.webp"}
+                      alt={photoboothDecor[pbCurrentIdx[tileIdx]]?.name || "Photobooth Design"}
+                      className="w-full h-[200px] object-contain"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="absolute bottom-3 left-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <h3 className="text-sm font-semibold">{item.name}</h3>
+                      <h3 className="text-sm font-semibold">{photoboothDecor[pbCurrentIdx[tileIdx]]?.name}</h3>
                     </div>
                   </div>
                 </Link>
               ))}
-              {photoboothDecor[4] && (
-                <Link href={`/decor/view/${photoboothDecor[4]._id}`} className="col-span-2">
-                  <div className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg hover:shadow-xl transition-all duration-300">
+              {/* Tile 4 — full width */}
+              {photoboothDecor.length > 0 && (
+                <Link href={`/decor/view/${photoboothDecor[pbCurrentIdx[4]]?._id}`} className="col-span-2">
+                  <div
+                    className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg"
+                    style={{
+                      transform: pbMidFlip[4] ? 'perspective(600px) rotateY(-90deg)' : 'perspective(600px) rotateY(0deg)',
+                      transition: 'transform 0.35s ease-in-out',
+                    }}
+                  >
                     <img
-                      src={photoboothDecor[4].thumbnail || "/assets/decor/decor-home.webp"}
-                      alt={photoboothDecor[4].name || "Photobooth Design"}
-                      className="w-full h-[200px] object-contain group-hover:scale-105 transition-transform duration-300"
+                      src={photoboothDecor[pbCurrentIdx[4]]?.thumbnail || "/assets/decor/decor-home.webp"}
+                      alt={photoboothDecor[pbCurrentIdx[4]]?.name || "Photobooth Design"}
+                      className="w-full h-[200px] object-contain"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="absolute bottom-3 left-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <h3 className="text-sm font-semibold">{photoboothDecor[4].name}</h3>
+                      <h3 className="text-sm font-semibold">{photoboothDecor[pbCurrentIdx[4]]?.name}</h3>
                     </div>
                   </div>
                 </Link>
