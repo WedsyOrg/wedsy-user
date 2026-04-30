@@ -487,7 +487,7 @@ function DecorListing({
     productTypes: [{ name: "sq.ft", sellingPrice: parseInt(platformConfig?.data?.price || 0) }],
     category: "Furniture",
     unit: "sq.ft",
-    productInfo: {},
+    productInfo: { id: "fp01" },
   };
 
   const _flooringList = flooringConfig?.data?.flooringList || [];
@@ -500,7 +500,7 @@ function DecorListing({
       : [{ name: "sq.ft", sellingPrice: 0 }],
     category: "Furniture",
     unit: "sq.ft",
-    productInfo: {},
+    productInfo: { id: "fp02" },
   };
 
   const displayList = isFurnitureCategory

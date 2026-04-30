@@ -244,7 +244,7 @@ export default function PlatformPage({
 
         {/* Center col: Image */}
         <div className="flex flex-col gap-6 md:col-span-2 md:px-8 md:mx-6 md:border-x-4 md:border-x-white">
-          <p className="text-2xl font-semibold text-center tracking-wide uppercase">Platform</p>
+          <p className="text-2xl font-semibold text-center tracking-wide uppercase">Platform <span className="text-base font-normal text-gray-400">(fp01)</span></p>
           <div className="max-h-[500px] w-full bg-white flex items-center justify-center rounded-xl overflow-hidden mx-8 md:mx-16">
             <Image
               src={image}

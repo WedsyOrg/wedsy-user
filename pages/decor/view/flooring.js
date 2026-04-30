@@ -259,7 +259,7 @@ export default function FlooringPage({
 
         {/* Center col: Image + flooring selector */}
         <div className="flex flex-col gap-6 md:col-span-2 md:px-8 md:mx-6 md:border-x-4 md:border-x-white">
-          <p className="text-2xl font-semibold text-center tracking-wide uppercase">Flooring</p>
+          <p className="text-2xl font-semibold text-center tracking-wide uppercase">Flooring <span className="text-base font-normal text-gray-400">(fp02)</span></p>
 
           <div className="max-h-[500px] w-full bg-white flex items-center justify-center rounded-xl overflow-hidden mx-8 md:mx-16">
             <Image
@@ -279,7 +279,7 @@ export default function FlooringPage({
                 <button
                   key={f.title}
                   onClick={() => setSelectedFlooring(f)}
-                  className={`relative h-16 w-16 rounded-lg overflow-hidden border-2 transition-all ${
+                  className={`relative h-24 w-24 rounded-lg overflow-hidden border-2 transition-all ${
                     selectedFlooring?.title === f.title
                       ? "border-rose-900 shadow-md"
                       : "border-gray-200 hover:border-gray-400"
@@ -290,7 +290,7 @@ export default function FlooringPage({
                     <img
                       src={f.image}
                       alt={f.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   ) : (
                     <div className="w-full h-full bg-gray-100 flex items-center justify-center">
