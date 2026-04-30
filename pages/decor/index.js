@@ -18,6 +18,7 @@ function Decor({
   user,
   spotlightList = [],
   photoboothDecor = [],
+  allCategories = [],
 }) {
   const [spotlightIndex, setSpotlightIndex] = useState(0);
   const spotlightRef = useRef(null);
@@ -33,18 +34,10 @@ function Decor({
     ReferenceId: "",
     message: "",
   });
-  const [categoryList, setCategoryList] = useState([
-    "Stage",
-    "Pathway",
-    "Entrance",
-    "Photobooth",
-    "Mandap",
-    "Nameboard",
-    "Furniture",
-    "Sound & Light",
-    "Entry Ideas",
-    "Props"
-  ]);
+  const TILE_CATEGORIES = ["Stage", "Pathway", "Entrance", "Photobooth", "Mandap", "Nameboard", "Furniture", "Sound & Light"];
+  const extraCategories = allCategories.filter(
+    (cat) => !TILE_CATEGORIES.some((tile) => tile.toLowerCase() === (cat.name || "").toLowerCase())
+  );
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [bestSellerIndex, setBestSellerIndex] = useState([0, 1, 2, 3]);
   const [popularIndex, setPopularIndex] = useState([0, 1]);
@@ -728,7 +721,7 @@ function Decor({
           </div>
 
           <div className="grid grid-cols-2 gap-4 sm:gap-6 md:gap-8 justify-center w-full max-w-7xl">
-            {categoryList.slice(0, 8).map((item, index) => (
+            {TILE_CATEGORIES.map((item, index) => (
               <div
                 key={index}
                 className="group w-full h-[80px] sm:h-[100px] lg:h-[80px] relative rounded-md overflow-hidden opacity-100 shadow-md transform transition duration-300 hover:scale-[1.03]"
@@ -753,8 +746,8 @@ function Decor({
             ))}
           </div>
 
-          {/* View More/Less Button */}
-          {categoryList.length > 8 && (
+          {/* View More/Less Button — only shown when API returns categories beyond the 8 tiles */}
+          {extraCategories.length > 0 && (
             <div className="flex flex-col items-center w-full max-w-7xl mt-4 sm:mt-6 md:mt-8">
               <div className="flex justify-start md:justify-center w-full sm:px-0">
                 <div
@@ -776,19 +769,15 @@ function Decor({
                   </div>
                 </div>
               </div>
-              
-              {/* more Section – only categories not already shown in tiles */}
+
               {showAllCategories && (
                 <div className="w-full mt-6 bg-white rounded-md shadow-md p-4 md:p-6">
                   <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-                    {categoryList.slice(8).map((item, index) => (
-                      <div
-                        key={index}
-                        className="text-center px-2"
-                      >
-                        <Link href={`/decor/view?category=${encodeURIComponent(item)}`} className="hover:underline">
-                          <span className="text-black text-xs sm:text-sm md:text-base font-medium uppercase tracking-wide whitespace-nowrap">
-                            {item.toUpperCase()}
+                    {extraCategories.map((cat) => (
+                      <div key={cat._id} className="text-center px-2">
+                        <Link href={`/decor/view?category=${encodeURIComponent(cat.name)}`} className="hover:underline">
+                          <span className="text-black text-xs sm:text-sm md:text-base font-medium tracking-wide whitespace-nowrap">
+                            {cat.name.charAt(0).toUpperCase() + cat.name.slice(1).toLowerCase()}
                           </span>
                         </Link>
                       </div>
@@ -2053,6 +2042,7 @@ export async function getServerSideProps(context) {
           popular: [],
           spotlightList: [],
           photoboothDecor: [],
+          allCategories: [],
         },
       };
     }
@@ -2083,6 +2073,7 @@ export async function getServerSideProps(context) {
       popularData,
       spotlightListData,
       photoboothDecorData,
+      allCategoriesData,
     ] = await Promise.all([
       fetchJson(`${apiUrl}/decor?label=bestSeller&category=Stage`),
       fetchJson(`${apiUrl}/decor?category=Entrance`),
@@ -2091,6 +2082,7 @@ export async function getServerSideProps(context) {
       fetchJson(`${apiUrl}/decor?label=popular`),
       fetchJson(`${apiUrl}/decor?spotlight=true&random=false`),
       fetchJson(`${apiUrl}/decor?category=Photobooth&limit=5`),
+      fetchJson(`${apiUrl}/category`),
     ]);
 
     const toList = (data) =>
@@ -2102,6 +2094,11 @@ export async function getServerSideProps(context) {
     const popular = toList(popularData);
     const spotlightList = Array.isArray(spotlightListData?.list) ? spotlightListData.list : [];
     const photoboothDecor = toList(photoboothDecorData).slice(0, 5);
+    const allCategories = Array.isArray(allCategoriesData?.list)
+      ? allCategoriesData.list
+      : Array.isArray(allCategoriesData)
+        ? allCategoriesData
+        : [];
 
     return {
       props: {
@@ -2112,6 +2109,7 @@ export async function getServerSideProps(context) {
         popular,
         spotlightList,
         photoboothDecor,
+        allCategories,
       },
     };
   } catch (error) {
@@ -2125,6 +2123,7 @@ export async function getServerSideProps(context) {
         popular: [],
         spotlightList: [],
         photoboothDecor: [],
+        allCategories: [],
       },
     };
   }
