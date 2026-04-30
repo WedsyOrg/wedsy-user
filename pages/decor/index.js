@@ -17,6 +17,7 @@ function Decor({
   userLoggedIn,
   user,
   spotlightList = [],
+  photoboothDecor = [],
 }) {
   const [spotlightIndex, setSpotlightIndex] = useState(0);
   const spotlightRef = useRef(null);
@@ -894,7 +895,7 @@ function Decor({
                     {[...bestSellerBackdrops.slice(0, 6), ...bestSellerBackdrops.slice(0, 6), ...bestSellerBackdrops.slice(0, 6)].map((decor, index) => (
                   <div 
                     key={`backdrops-${index}`} 
-                    className="carousel-item relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
+                    className="carousel-item relative group w-[451px] max-h-[300px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
                   >
                     <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
                       <DecorCard
@@ -1019,7 +1020,7 @@ function Decor({
                 {[...grandEntry.slice(0, 6), ...grandEntry.slice(0, 6), ...grandEntry.slice(0, 6)].map((decor, index) => (
                   <div 
                     key={`grandEntry-${index}`} 
-                    className="carousel-item relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
+                    className="carousel-item relative group w-[451px] max-h-[300px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
                   >
                     <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
                       <DecorCard
@@ -1304,7 +1305,7 @@ function Decor({
                     {[...bestSellerMandaps.slice(0, 6), ...bestSellerMandaps.slice(0, 6), ...bestSellerMandaps.slice(0, 6)].map((decor, index) => (
                   <div 
                     key={`mandaps-${index}`} 
-                    className="carousel-item relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
+                    className="carousel-item relative group w-[451px] max-h-[300px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
                   >
                     <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
                       <DecorCard
@@ -1429,7 +1430,7 @@ function Decor({
                 {[...furniture.slice(0, 6), ...furniture.slice(0, 6), ...furniture.slice(0, 6)].map((decor, index) => (
                   <div 
                     key={`furniture-${index}`} 
-                    className="carousel-item relative group w-[451px] h-[241px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
+                    className="carousel-item relative group w-[451px] max-h-[300px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
                   >
                     <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
                       <DecorCard
@@ -1540,149 +1541,103 @@ function Decor({
           <div className="hidden md:block max-w-[1180px] mx-auto px-4">
             <div className="grid grid-cols-3 gap-6">
               {/* Large image on the left */}
-              <div className="col-span-1">
-                <div className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-all duration-300">
-                  <img
-                    src="/assets/decor/photobooth-img/pb1.webp"
-                    alt="Photobooth Design 1"
-                    className="w-full h-[400px] object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <h3 className="text-lg font-semibold">Elegant Floral</h3>
-                    <p className="text-sm">Premium Design</p>
+              {photoboothDecor[0] && (
+                <div className="col-span-1">
+                  <Link href={`/decor/view/${photoboothDecor[0]._id}`}>
+                    <div className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-all duration-300">
+                      <img
+                        src={photoboothDecor[0].thumbnail || "/assets/decor/decor-home.webp"}
+                        alt={photoboothDecor[0].name || "Photobooth Design"}
+                        className="w-full h-[400px] object-contain group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <h3 className="text-lg font-semibold">{photoboothDecor[0].name}</h3>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              )}
+
+              {/* Four smaller images on the right */}
+              {photoboothDecor.length > 1 && (
+                <div className="col-span-2 space-y-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    {photoboothDecor.slice(1, 3).map((item) => (
+                      <Link key={item._id} href={`/decor/view/${item._id}`}>
+                        <div className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-all duration-300">
+                          <img
+                            src={item.thumbnail || "/assets/decor/decor-home.webp"}
+                            alt={item.name || "Photobooth Design"}
+                            className="w-full h-[190px] object-contain group-hover:scale-105 transition-transform duration-300"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <h3 className="text-lg font-semibold">{item.name}</h3>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    {photoboothDecor.slice(3, 5).map((item) => (
+                      <Link key={item._id} href={`/decor/view/${item._id}`}>
+                        <div className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-all duration-300">
+                          <img
+                            src={item.thumbnail || "/assets/decor/decor-home.webp"}
+                            alt={item.name || "Photobooth Design"}
+                            className="w-full h-[190px] object-contain group-hover:scale-105 transition-transform duration-300"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <h3 className="text-lg font-semibold">{item.name}</h3>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
                 </div>
-              </div>
-
-              {/* Two medium images on the right */}
-              <div className="col-span-2 space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-all duration-300">
-                    <img
-                      src="/assets/decor/photobooth-img/pb2.webp"
-                      alt="Photobooth Design 2"
-                      className="w-full h-[190px] object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <h3 className="text-lg font-semibold">Modern Minimal</h3>
-                      <p className="text-sm">Contemporary Style</p>
-                    </div>
-                  </div>
-
-                  <div className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-all duration-300">
-                    <img
-                      src="/assets/decor/photobooth-img/pb3.webp"
-                      alt="Photobooth Design 3"
-                      className="w-full h-[190px] object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <h3 className="text-lg font-semibold">Royal Gold</h3>
-                      <p className="text-sm">Luxury Theme</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bottom row with two images */}
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-all duration-300">
-                    <img
-                      src="/assets/decor/photobooth-img/pb4.webp"
-                      alt="Photobooth Design 4"
-                      className="w-full h-[190px] object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <h3 className="text-lg font-semibold">Vintage Charm</h3>
-                      <p className="text-sm">Classic Elegance</p>
-                    </div>
-                  </div>
-
-                  <div className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-all duration-300">
-                    <img
-                      src="/assets/decor/photobooth-img/pb5.webp"
-                      alt="Photobooth Design 5"
-                      className="w-full h-[190px] object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <h3 className="text-lg font-semibold">Nature Inspired</h3>
-                      <p className="text-sm">Organic Beauty</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
 
           {/* Mobile Grid Layout */}
           <div className="md:hidden px-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg hover:shadow-xl transition-all duration-300">
-                <img
-                  src="/assets/decor/photobooth-img/pb1.webp"
-                  alt="Photobooth Design 1"
-                  className="w-full h-[200px] object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute bottom-3 left-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <h3 className="text-sm font-semibold">Elegant Floral</h3>
-                </div>
-              </div>
-
-              <div className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg hover:shadow-xl transition-all duration-300">
-                <img
-                  src="/assets/decor/photobooth-img/pb2.webp"
-                  alt="Photobooth Design 2"
-                  className="w-full h-[200px] object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute bottom-3 left-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <h3 className="text-sm font-semibold">Modern Minimal</h3>
-                </div>
-              </div>
-
-              <div className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg hover:shadow-xl transition-all duration-300">
-                <img
-                  src="/assets/decor/photobooth-img/pb3.webp"
-                  alt="Photobooth Design 3"
-                  className="w-full h-[200px] object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute bottom-3 left-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <h3 className="text-sm font-semibold">Royal Gold</h3>
-                </div>
-              </div>
-
-              <div className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg hover:shadow-xl transition-all duration-300">
-                <img
-                  src="/assets/decor/photobooth-img/pb4.webp"
-                  alt="Photobooth Design 4"
-                  className="w-full h-[200px] object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute bottom-3 left-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <h3 className="text-sm font-semibold">Vintage Charm</h3>
-                </div>
-              </div>
-
-              <div className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg hover:shadow-xl transition-all duration-300 col-span-2">
-                <img
-                  src="/assets/decor/photobooth-img/pb5.webp"
-                  alt="Photobooth Design 5"
-                  className="w-full h-[200px] object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute bottom-3 left-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <h3 className="text-sm font-semibold">Nature Inspired</h3>
-                </div>
-              </div>
+              {photoboothDecor.slice(0, 4).map((item) => (
+                <Link key={item._id} href={`/decor/view/${item._id}`}>
+                  <div className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg hover:shadow-xl transition-all duration-300">
+                    <img
+                      src={item.thumbnail || "/assets/decor/decor-home.webp"}
+                      alt={item.name || "Photobooth Design"}
+                      className="w-full h-[200px] object-contain group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute bottom-3 left-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <h3 className="text-sm font-semibold">{item.name}</h3>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+              {photoboothDecor[4] && (
+                <Link href={`/decor/view/${photoboothDecor[4]._id}`} className="col-span-2">
+                  <div className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg hover:shadow-xl transition-all duration-300">
+                    <img
+                      src={photoboothDecor[4].thumbnail || "/assets/decor/decor-home.webp"}
+                      alt={photoboothDecor[4].name || "Photobooth Design"}
+                      className="w-full h-[200px] object-contain group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute bottom-3 left-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <h3 className="text-sm font-semibold">{photoboothDecor[4].name}</h3>
+                    </div>
+                  </div>
+                </Link>
+              )}
             </div>
             <div className="flex justify-center mt-4">
               <Link
-                href="/decor/view"
+                href="/decor/view?category=Photobooth"
                 className="text-[16px] underline text-black font-medium font-['Montserrat']"
               >
                 See More
@@ -2009,6 +1964,7 @@ export async function getServerSideProps(context) {
           furniture: [],
           popular: [],
           spotlightList: [],
+          photoboothDecor: [],
         },
       };
     }
@@ -2038,6 +1994,7 @@ export async function getServerSideProps(context) {
       furnitureData,
       popularData,
       spotlightListData,
+      photoboothDecorData,
     ] = await Promise.all([
       fetchJson(`${apiUrl}/decor?label=bestSeller&category=Stage`),
       fetchJson(`${apiUrl}/decor?category=Entrance`),
@@ -2045,6 +2002,7 @@ export async function getServerSideProps(context) {
       fetchJson(`${apiUrl}/decor?category=Furniture`),
       fetchJson(`${apiUrl}/decor?label=popular`),
       fetchJson(`${apiUrl}/decor?spotlight=true&random=false`),
+      fetchJson(`${apiUrl}/decor?category=Photobooth&limit=5`),
     ]);
 
     const toList = (data) =>
@@ -2055,6 +2013,7 @@ export async function getServerSideProps(context) {
     const furniture = toList(furnitureData);
     const popular = toList(popularData);
     const spotlightList = Array.isArray(spotlightListData?.list) ? spotlightListData.list : [];
+    const photoboothDecor = toList(photoboothDecorData).slice(0, 5);
 
     return {
       props: {
@@ -2064,6 +2023,7 @@ export async function getServerSideProps(context) {
         furniture,
         popular,
         spotlightList,
+        photoboothDecor,
       },
     };
   } catch (error) {
@@ -2076,6 +2036,7 @@ export async function getServerSideProps(context) {
         furniture: [],
         popular: [],
         spotlightList: [],
+        photoboothDecor: [],
       },
     };
   }
