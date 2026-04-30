@@ -1158,13 +1158,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
       </main>
 
       {/* Makeup Artist Section */}
-      <motion.section
-        className="w-full relative pb-10"
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        viewport={{ once: true, amount: 0.15 }}
-      >
+      <section className="w-full relative pb-10">
         <div className="relative w-full">
           <Image
             src="/assets/landing_v2/makeup_desktop.webp"
@@ -1201,17 +1195,10 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             </Link>
           </div>
         </div>
-      </motion.section>
+      </section>
 
       {/* What our loved ones say section */}
-      <motion.section
-        className="w-full"
-        style={{ backgroundColor: '#F9F8F6' }}
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        viewport={{ once: true, amount: 0.15 }}
-      >
+      <section className="w-full" style={{ backgroundColor: '#F9F8F6' }}>
         <div className="relative w-full">
           {/* Desktop Title Overlay */}
           <div className="hidden md:flex absolute top-20 left-10 lg:left-20 z-10 items-center">
@@ -1336,7 +1323,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             </div>
           </div>
         </div>
-      </motion.section>
+      </section>
 
 
       {/* wedding venue section */}
