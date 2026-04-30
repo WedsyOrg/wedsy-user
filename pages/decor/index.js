@@ -17,7 +17,6 @@ function Decor({
   userLoggedIn,
   user,
   spotlightList = [],
-  photoboothDecor = [],
   allCategories = [],
 }) {
   const [spotlightIndex, setSpotlightIndex] = useState(0);
@@ -71,13 +70,14 @@ function Decor({
 
   // Photobooth flip animation
   const pbTimersRef = useRef([]);
-  const [pbCurrentIdx, setPbCurrentIdx] = useState(
-    Array.from({ length: 5 }, (_, i) => photoboothDecor.length > 0 ? i % photoboothDecor.length : 0)
-  );
+  const pbProductsRef = useRef(Array(5).fill(null));
+  const [pbProducts, setPbProducts] = useState(Array(5).fill(null));
   const [pbMidFlip, setPbMidFlip] = useState(Array(5).fill(false));
 
   // Item width calculation (451px + 24px gap = 475px)
   const itemWidth = 475;
+  // Portrait item width for Grand Entrance and Furniture (280px + 24px gap = 304px)
+  const portraitItemWidth = 304;
 
   const handleEnquiry = () => {
     setEnquiryForm({
@@ -373,7 +373,7 @@ function Decor({
           const len = Math.min(grandEntry.length, 6);
           updates.grandEntry = (prev) => {
             let newX = prev - movementToApply;
-            if (newX <= -len * itemWidth) newX += len * itemWidth;
+            if (newX <= -len * portraitItemWidth) newX += len * portraitItemWidth;
             return newX;
           };
         }
@@ -389,7 +389,7 @@ function Decor({
           const len = Math.min(furniture.length, 6);
           updates.furniture = (prev) => {
             let newX = prev - movementToApply;
-            if (newX <= -len * itemWidth) newX += len * itemWidth;
+            if (newX <= -len * portraitItemWidth) newX += len * portraitItemWidth;
             return newX;
           };
         }
@@ -414,46 +414,75 @@ function Decor({
     itemWidth,
   ]);
 
-  // Photobooth tile flip animation — staggered per tile, repeating every 5s
+  // Photobooth — fetch initial products on mount
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/decor?category=Photobooth&limit=20`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const items = Array.isArray(data?.list) ? data.list : [];
+        if (items.length === 0) return;
+        const shuffled = [...items].sort(() => Math.random() - 0.5);
+        const initial = Array.from({ length: 5 }, (_, i) => shuffled[i % shuffled.length]);
+        pbProductsRef.current = initial;
+        setPbProducts([...initial]);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Photobooth tile flip animation — fetches a fresh product before each flip
   useEffect(() => {
     pbTimersRef.current.forEach(t => { clearTimeout(t); clearInterval(t); });
     pbTimersRef.current = [];
 
-    if (photoboothDecor.length < 2) return;
+    const fetchAndFlip = async (tileIdx) => {
+      // Phase 1: rotate card edge-on (disappears over 350ms)
+      setPbMidFlip(prev => {
+        const next = [...prev];
+        next[tileIdx] = true;
+        return next;
+      });
 
-    for (let i = 0; i < 5; i++) {
-      const tileIdx = i;
+      // Fetch fresh pool during the rotate-out animation
+      let newProduct = null;
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/decor?category=Photobooth&limit=20`);
+        if (res.ok) {
+          const data = await res.json();
+          const items = Array.isArray(data?.list) ? data.list : [];
+          const currentIds = new Set(pbProductsRef.current.filter(Boolean).map(p => p._id));
+          const candidates = items.filter(item => !currentIds.has(item._id));
+          const pool = candidates.length > 0 ? candidates : items;
+          if (pool.length > 0) {
+            newProduct = pool[Math.floor(Math.random() * pool.length)];
+          }
+        }
+      } catch {}
 
-      const flipTile = () => {
-        // Phase 1: rotate card edge-on (disappears over 350ms)
+      // Phase 2: swap product at midpoint, rotate back to face (appears over 350ms)
+      const swapTimer = setTimeout(() => {
+        if (newProduct) {
+          const nextProds = [...pbProductsRef.current];
+          nextProds[tileIdx] = newProduct;
+          pbProductsRef.current = nextProds;
+          setPbProducts([...nextProds]);
+        }
         setPbMidFlip(prev => {
           const next = [...prev];
-          next[tileIdx] = true;
+          next[tileIdx] = false;
           return next;
         });
-        // Phase 2: swap image at midpoint, rotate back to face (appears over 350ms)
-        const swapTimer = setTimeout(() => {
-          setPbCurrentIdx(prev => {
-            const next = [...prev];
-            next[tileIdx] = (next[tileIdx] + 1) % photoboothDecor.length;
-            return next;
-          });
-          setPbMidFlip(prev => {
-            const next = [...prev];
-            next[tileIdx] = false;
-            return next;
-          });
-        }, 380);
-        pbTimersRef.current.push(swapTimer);
-      };
+      }, 380);
+      pbTimersRef.current.push(swapTimer);
+    };
 
-      // Stagger initial flip: tile 0→3s, tile 1→4s, tile 2→5s, tile 3→6s, tile 4→7s
+    // Stagger initial flip: tile 0→3s, tile 1→4s, tile 2→5s, tile 3→6s, tile 4→7s
+    for (let i = 0; i < 5; i++) {
+      const tileIdx = i;
       const startTimer = setTimeout(() => {
-        flipTile();
-        const repeatTimer = setInterval(flipTile, 5000);
+        fetchAndFlip(tileIdx);
+        const repeatTimer = setInterval(() => fetchAndFlip(tileIdx), 5000);
         pbTimersRef.current.push(repeatTimer);
       }, (tileIdx + 3) * 1000);
-
       pbTimersRef.current.push(startTimer);
     }
 
@@ -461,7 +490,7 @@ function Decor({
       pbTimersRef.current.forEach(t => { clearTimeout(t); clearInterval(t); });
       pbTimersRef.current = [];
     };
-  }, [photoboothDecor.length]);
+  }, []);
 
   return (
     <div className="bg-[#F4F4F4] min-h-screen w-full">
@@ -1061,11 +1090,11 @@ function Decor({
             }}
           >
             <div className="flex gap-6 justify-center w-full overflow-hidden carousel-container">
-              <div className="flex gap-6" style={{ transform: `translateX(${grandEntryTranslateX}px)`, width: `${Math.min(grandEntry.length, 6) * 3 * itemWidth}px` }}>
+              <div className="flex gap-6" style={{ transform: `translateX(${grandEntryTranslateX}px)`, width: `${Math.min(grandEntry.length, 6) * 3 * portraitItemWidth}px` }}>
                 {[...grandEntry.slice(0, 6), ...grandEntry.slice(0, 6), ...grandEntry.slice(0, 6)].map((decor, index) => (
-                  <div 
-                    key={`grandEntry-${index}`} 
-                    className="carousel-item relative group w-[451px] h-[280px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
+                  <div
+                    key={`grandEntry-${index}`}
+                    className="carousel-item relative group w-[280px] h-[380px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
                   >
                     <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
                       <DecorCard
@@ -1471,11 +1500,11 @@ function Decor({
             }}
           >
             <div className="flex gap-6 justify-center w-full overflow-hidden carousel-container">
-              <div className="flex gap-6" style={{ transform: `translateX(${furnitureTranslateX}px)`, width: `${Math.min(furniture.length, 6) * 3 * itemWidth}px` }}>
+              <div className="flex gap-6" style={{ transform: `translateX(${furnitureTranslateX}px)`, width: `${Math.min(furniture.length, 6) * 3 * portraitItemWidth}px` }}>
                 {[...furniture.slice(0, 6), ...furniture.slice(0, 6), ...furniture.slice(0, 6)].map((decor, index) => (
-                  <div 
-                    key={`furniture-${index}`} 
-                    className="carousel-item relative group w-[451px] h-[280px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
+                  <div
+                    key={`furniture-${index}`}
+                    className="carousel-item relative group w-[280px] h-[380px] rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out transform hover:scale-105 flex-shrink-0"
                   >
                     <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
                       <DecorCard
@@ -1586,9 +1615,9 @@ function Decor({
           <div className="hidden md:block max-w-[1180px] mx-auto px-4">
             <div className="grid grid-cols-3 gap-6">
               {/* Large image — tile 0 */}
-              {photoboothDecor.length > 0 && (
+              {pbProducts[0] != null && (
                 <div className="col-span-1">
-                  <Link href={`/decor/view/${photoboothDecor[pbCurrentIdx[0]]?._id}`}>
+                  <Link href={`/decor/view/${pbProducts[0]?._id}`}>
                     <div
                       className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-shadow duration-300"
                       style={{
@@ -1597,13 +1626,13 @@ function Decor({
                       }}
                     >
                       <img
-                        src={photoboothDecor[pbCurrentIdx[0]]?.thumbnail || "/assets/decor/decor-home.webp"}
-                        alt={photoboothDecor[pbCurrentIdx[0]]?.name || "Photobooth Design"}
+                        src={pbProducts[0]?.thumbnail || "/assets/decor/decor-home.webp"}
+                        alt={pbProducts[0]?.name || "Photobooth Design"}
                         className="w-full h-[400px] object-contain"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <h3 className="text-lg font-semibold">{photoboothDecor[pbCurrentIdx[0]]?.name}</h3>
+                        <h3 className="text-lg font-semibold">{pbProducts[0]?.name}</h3>
                       </div>
                     </div>
                   </Link>
@@ -1611,11 +1640,11 @@ function Decor({
               )}
 
               {/* Four smaller tiles — tiles 1–4 */}
-              {photoboothDecor.length > 1 && (
+              {pbProducts[1] != null && (
                 <div className="col-span-2 space-y-6">
                   <div className="grid grid-cols-2 gap-6">
                     {[1, 2].map((tileIdx) => (
-                      <Link key={tileIdx} href={`/decor/view/${photoboothDecor[pbCurrentIdx[tileIdx]]?._id}`}>
+                      <Link key={tileIdx} href={`/decor/view/${pbProducts[tileIdx]?._id}`}>
                         <div
                           className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-shadow duration-300"
                           style={{
@@ -1624,13 +1653,13 @@ function Decor({
                           }}
                         >
                           <img
-                            src={photoboothDecor[pbCurrentIdx[tileIdx]]?.thumbnail || "/assets/decor/decor-home.webp"}
-                            alt={photoboothDecor[pbCurrentIdx[tileIdx]]?.name || "Photobooth Design"}
+                            src={pbProducts[tileIdx]?.thumbnail || "/assets/decor/decor-home.webp"}
+                            alt={pbProducts[tileIdx]?.name || "Photobooth Design"}
                             className="w-full h-[190px] object-contain"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                           <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <h3 className="text-lg font-semibold">{photoboothDecor[pbCurrentIdx[tileIdx]]?.name}</h3>
+                            <h3 className="text-lg font-semibold">{pbProducts[tileIdx]?.name}</h3>
                           </div>
                         </div>
                       </Link>
@@ -1638,7 +1667,7 @@ function Decor({
                   </div>
                   <div className="grid grid-cols-2 gap-6">
                     {[3, 4].map((tileIdx) => (
-                      <Link key={tileIdx} href={`/decor/view/${photoboothDecor[pbCurrentIdx[tileIdx]]?._id}`}>
+                      <Link key={tileIdx} href={`/decor/view/${pbProducts[tileIdx]?._id}`}>
                         <div
                           className="relative group cursor-pointer overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl transition-shadow duration-300"
                           style={{
@@ -1647,13 +1676,13 @@ function Decor({
                           }}
                         >
                           <img
-                            src={photoboothDecor[pbCurrentIdx[tileIdx]]?.thumbnail || "/assets/decor/decor-home.webp"}
-                            alt={photoboothDecor[pbCurrentIdx[tileIdx]]?.name || "Photobooth Design"}
+                            src={pbProducts[tileIdx]?.thumbnail || "/assets/decor/decor-home.webp"}
+                            alt={pbProducts[tileIdx]?.name || "Photobooth Design"}
                             className="w-full h-[190px] object-contain"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                           <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <h3 className="text-lg font-semibold">{photoboothDecor[pbCurrentIdx[tileIdx]]?.name}</h3>
+                            <h3 className="text-lg font-semibold">{pbProducts[tileIdx]?.name}</h3>
                           </div>
                         </div>
                       </Link>
@@ -1668,8 +1697,8 @@ function Decor({
           <div className="md:hidden px-4">
             <div className="grid grid-cols-2 gap-4">
               {/* Tiles 0–3 */}
-              {photoboothDecor.length > 0 && [0, 1, 2, 3].map((tileIdx) => (
-                <Link key={tileIdx} href={`/decor/view/${photoboothDecor[pbCurrentIdx[tileIdx]]?._id}`}>
+              {pbProducts[0] != null && [0, 1, 2, 3].map((tileIdx) => (
+                <Link key={tileIdx} href={`/decor/view/${pbProducts[tileIdx]?._id}`}>
                   <div
                     className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg"
                     style={{
@@ -1678,20 +1707,20 @@ function Decor({
                     }}
                   >
                     <img
-                      src={photoboothDecor[pbCurrentIdx[tileIdx]]?.thumbnail || "/assets/decor/decor-home.webp"}
-                      alt={photoboothDecor[pbCurrentIdx[tileIdx]]?.name || "Photobooth Design"}
+                      src={pbProducts[tileIdx]?.thumbnail || "/assets/decor/decor-home.webp"}
+                      alt={pbProducts[tileIdx]?.name || "Photobooth Design"}
                       className="w-full h-[200px] object-contain"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="absolute bottom-3 left-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <h3 className="text-sm font-semibold">{photoboothDecor[pbCurrentIdx[tileIdx]]?.name}</h3>
+                      <h3 className="text-sm font-semibold">{pbProducts[tileIdx]?.name}</h3>
                     </div>
                   </div>
                 </Link>
               ))}
               {/* Tile 4 — full width */}
-              {photoboothDecor.length > 0 && (
-                <Link href={`/decor/view/${photoboothDecor[pbCurrentIdx[4]]?._id}`} className="col-span-2">
+              {pbProducts[0] != null && (
+                <Link href={`/decor/view/${pbProducts[4]?._id}`} className="col-span-2">
                   <div
                     className="relative group cursor-pointer overflow-hidden rounded-[15px] shadow-lg"
                     style={{
@@ -1700,13 +1729,13 @@ function Decor({
                     }}
                   >
                     <img
-                      src={photoboothDecor[pbCurrentIdx[4]]?.thumbnail || "/assets/decor/decor-home.webp"}
-                      alt={photoboothDecor[pbCurrentIdx[4]]?.name || "Photobooth Design"}
+                      src={pbProducts[4]?.thumbnail || "/assets/decor/decor-home.webp"}
+                      alt={pbProducts[4]?.name || "Photobooth Design"}
                       className="w-full h-[200px] object-contain"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="absolute bottom-3 left-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <h3 className="text-sm font-semibold">{photoboothDecor[pbCurrentIdx[4]]?.name}</h3>
+                      <h3 className="text-sm font-semibold">{pbProducts[4]?.name}</h3>
                     </div>
                   </div>
                 </Link>
@@ -2072,7 +2101,6 @@ export async function getServerSideProps(context) {
       furnitureData,
       popularData,
       spotlightListData,
-      photoboothDecorData,
       allCategoriesData,
     ] = await Promise.all([
       fetchJson(`${apiUrl}/decor?label=bestSeller&category=Stage`),
@@ -2081,7 +2109,6 @@ export async function getServerSideProps(context) {
       fetchJson(`${apiUrl}/decor?category=Furniture`),
       fetchJson(`${apiUrl}/decor?label=popular`),
       fetchJson(`${apiUrl}/decor?spotlight=true&random=false`),
-      fetchJson(`${apiUrl}/decor?category=Photobooth&limit=5`),
       fetchJson(`${apiUrl}/category`),
     ]);
 
@@ -2093,7 +2120,6 @@ export async function getServerSideProps(context) {
     const furniture = toList(furnitureData);
     const popular = toList(popularData);
     const spotlightList = Array.isArray(spotlightListData?.list) ? spotlightListData.list : [];
-    const photoboothDecor = toList(photoboothDecorData).slice(0, 5);
     const allCategories = Array.isArray(allCategoriesData?.list)
       ? allCategoriesData.list
       : Array.isArray(allCategoriesData)
@@ -2108,7 +2134,6 @@ export async function getServerSideProps(context) {
         furniture,
         popular,
         spotlightList,
-        photoboothDecor,
         allCategories,
       },
     };
