@@ -4,6 +4,7 @@ import { Avatar } from "flowbite-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
+import { connectSocket } from "@/lib/socket";
 
 export default function ChatSideBar({}) {
   const [chats, setChats] = useState([]);
@@ -31,6 +32,42 @@ export default function ChatSideBar({}) {
   useEffect(() => {
     fetchChats();
   }, []);
+
+  // Live updates: bump unread + lastMessage when a new message arrives.
+  useEffect(() => {
+    const socket = connectSocket();
+    if (!socket) return;
+
+    const onNewMessage = (msg) => {
+      if (!msg || !msg.chat) return;
+      setChats((prev) => {
+        const list = Array.isArray(prev) ? prev : [];
+        let found = false;
+        const updated = list.map((c) => {
+          if (c._id !== msg.chat) return c;
+          found = true;
+          // Don't bump unread for the chat the user is currently viewing.
+          const isOpen = chatId && chatId === msg.chat;
+          return {
+            ...c,
+            lastMessage: msg,
+            unreadCount: isOpen ? 0 : (c.unreadCount || 0) + 1,
+            updatedAt: msg.createdAt || new Date().toISOString(),
+          };
+        });
+        if (!found) fetchChats();
+        updated.sort((a, b) => {
+          const ta = new Date(a?.lastMessage?.createdAt || a?.updatedAt || 0).getTime();
+          const tb = new Date(b?.lastMessage?.createdAt || b?.updatedAt || 0).getTime();
+          return tb - ta;
+        });
+        return updated;
+      });
+    };
+
+    socket.on("message:new", onNewMessage);
+    return () => socket.off("message:new", onNewMessage);
+  }, [chatId]);
 
   return (
     <>
@@ -71,7 +108,7 @@ export default function ChatSideBar({}) {
                 />
               </div>
               <div className="min-w-0 flex-1 flex flex-col py-4 justify-start h-full border-b">
-                <div className="flex flex-row mb-auto gap-2">
+                <div className="flex flex-row mb-auto gap-2 items-center">
                   <p className="text-lg font-medium text-gray-900 dark:text-white grow">
                     {chat?.vendor?.name}
                   </p>
@@ -79,6 +116,11 @@ export default function ChatSideBar({}) {
                     <p className="flex-shrink-0 text-[#FF307E]">
                       {formatMessageTime(chat?.lastMessage?.createdAt)}
                     </p>
+                  )}
+                  {chat?.unreadCount > 0 && (
+                    <span className="flex-shrink-0 bg-[#FF307E] text-white text-xs rounded-full min-w-[20px] h-5 px-1.5 inline-flex items-center justify-center">
+                      {chat.unreadCount}
+                    </span>
                   )}
                 </div>
                 <p className="truncate text-sm text-gray-500 dark:text-gray-400">

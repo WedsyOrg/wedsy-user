@@ -1,8 +1,9 @@
 import { toPriceString } from "@/utils/text";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { VscSend } from "react-icons/vsc";
 import ChatMessage from "./ChatMessage";
+import { connectSocket, getSocket } from "@/lib/socket";
 
 export default function ChatWindow({ user }) {
   const [chat, setChat] = useState([]);
@@ -17,6 +18,9 @@ export default function ChatWindow({ user }) {
   const [blockingBidding, setBlockingBidding] = useState(null);
   const [ctaLoading, setCtaLoading] = useState(false);
   const [ctaError, setCtaError] = useState("");
+  const [isOtherTyping, setIsOtherTyping] = useState(false);
+  const typingEmitTimerRef = useRef(null);
+  const typingHideTimerRef = useRef(null);
   const router = useRouter();
   const { chatId } = router.query;
 
@@ -171,6 +175,60 @@ export default function ChatWindow({ user }) {
       fetchChatMessages();
     }
   }, [chatId]);
+
+  // Real-time WebSocket: live message receive + typing indicators.
+  useEffect(() => {
+    if (!chatId) return;
+    const socket = connectSocket();
+    if (!socket) return;
+
+    const onNewMessage = (msg) => {
+      if (!msg || msg.chat !== chatId) return;
+      setChat((prev) => {
+        const existing = prev?.messages || [];
+        if (existing.some((m) => m?._id === msg._id)) return prev;
+        const next = { ...prev, messages: [msg, ...existing] };
+        evaluatePaymentStatus(next);
+        return next;
+      });
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (apiUrl) {
+        fetch(`${apiUrl}/chat/${encodeURIComponent(chatId)}/mark-read`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }).catch(() => {});
+      }
+    };
+
+    const onTypingStart = (data) => {
+      if (!data || data.chatId !== chatId) return;
+      if (typingHideTimerRef.current) clearTimeout(typingHideTimerRef.current);
+      setIsOtherTyping(true);
+      typingHideTimerRef.current = setTimeout(() => setIsOtherTyping(false), 3000);
+    };
+
+    const onTypingStop = (data) => {
+      if (!data || data.chatId !== chatId) return;
+      if (typingHideTimerRef.current) clearTimeout(typingHideTimerRef.current);
+      setIsOtherTyping(false);
+    };
+
+    socket.on("message:new", onNewMessage);
+    socket.on("typing:start", onTypingStart);
+    socket.on("typing:stop", onTypingStop);
+
+    return () => {
+      socket.off("message:new", onNewMessage);
+      socket.off("typing:start", onTypingStart);
+      socket.off("typing:stop", onTypingStop);
+      try { socket.emit("typing:stop", { chatId }); } catch (_) {}
+      if (typingEmitTimerRef.current) clearTimeout(typingEmitTimerRef.current);
+      if (typingHideTimerRef.current) clearTimeout(typingHideTimerRef.current);
+    };
+  }, [chatId, evaluatePaymentStatus]);
 
   useEffect(() => {
     if (!paymentRequired || !blockingMessageId || !chat?.messages) {
@@ -539,6 +597,9 @@ export default function ChatWindow({ user }) {
           </div>
         )}
         <div className="p-4 flex flex-col md:flex-row md:items-center gap-2 bg-white border-t border-gray-200">
+          {isOtherTyping && (
+            <div className="px-2 -mt-2 text-xs text-gray-500 italic">typing…</div>
+          )}
           <div className="w-full flex flex-row gap-2">
             <input
               id="messageInput"
@@ -550,6 +611,14 @@ export default function ChatWindow({ user }) {
                 setContent(e.target.value);
                 if (sendError) {
                   setSendError("");
+                }
+                const sock = getSocket();
+                if (sock && chatId) {
+                  sock.emit("typing:start", { chatId });
+                  if (typingEmitTimerRef.current) clearTimeout(typingEmitTimerRef.current);
+                  typingEmitTimerRef.current = setTimeout(() => {
+                    sock.emit("typing:stop", { chatId });
+                  }, 2000);
                 }
               }}
               onKeyDown={(e) => {
