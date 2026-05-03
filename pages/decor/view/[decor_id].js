@@ -1513,6 +1513,7 @@ function DecorListing({
                 {displayImage && (
                   <div
                     className="max-h-[500px] w-full bg-white flex items-center justify-center rounded-xl overflow-hidden shadow-lg decor-detail-image cursor-pointer"
+                    style={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
                     onClick={() => {
                       const images = getAllImages();
                       const index = images.findIndex((img) => img === displayImage);
@@ -1525,7 +1526,7 @@ function DecorListing({
                       width={0}
                       height={0}
                       sizes="100vw"
-                      style={{ width: "100%", height: "100%", maxHeight: "500px", objectFit: "contain" }}
+                      style={{ maxWidth: "100%", height: "auto", maxHeight: "500px", objectFit: "contain" }}
                       className="transition-transform duration-300 hover:scale-105"
                     />
                   </div>
