@@ -1730,10 +1730,10 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             </motion.div>
 
             {/* Points with Timeline */}
-            <div className="relative mb-12 flex flex-row">
+            <div className="relative mb-12 flex flex-row overflow-x-hidden">
               {/* Vertical Bar Image */}
-              <motion.div 
-                className="flex-shrink-0 mr-4" 
+              <motion.div
+                className="flex-shrink-0 mr-4"
                 style={{ height: '300px', overflow: 'hidden' }}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -1922,9 +1922,9 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               </motion.div>
 
               {/* Points with Timeline */}
-              <div className="relative flex flex-row">
+              <div className="relative flex flex-row overflow-x-hidden">
                 {/* Vertical Bar Image */}
-                <motion.div 
+                <motion.div
                   className="flex-shrink-0 mr-6" 
                   style={{ height: '400px', overflow: 'hidden' }}
                   initial={{ opacity: 0, scale: 0.9 }}
