@@ -1467,7 +1467,7 @@ function DecorListing({
               <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none hidden md:block" />
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 py-8 md:pt-6 bg-[#F4F4F4]">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 py-8 md:pt-6 bg-[#F4F4F4] overflow-x-hidden max-w-full">
             <div className="hidden md:flex flex-col gap-6">
               <p className="text-xl font-medium text-center">DESCRIPTION</p>
               <div className="rounded-r-3xl bg-white shadow-md flex flex-col gap-2 p-4 px-6">
@@ -1493,7 +1493,7 @@ function DecorListing({
                 </ul>
               </div>
             </div>
-            <div className="flex flex-col gap-6 md:col-span-3">
+            <div className="flex flex-col gap-6 md:col-span-3 min-w-0 max-w-full overflow-hidden">
               <div className="hidden md:flex items-center gap-3">
                 <p className="text-2xl font-semibold tracking-wide uppercase">
                   {decor.category}
@@ -1509,11 +1509,11 @@ function DecorListing({
               <p className="md:hidden text-xl font-semibold mb-2 text-center">
                 {decor.name} ({decor?.productInfo.id})
               </p>
-              <div>
+              <div className="w-full overflow-hidden">
                 {displayImage && (
                   <div
                     className="max-h-[500px] w-full bg-white flex items-center justify-center rounded-xl overflow-hidden shadow-lg decor-detail-image cursor-pointer"
-                    style={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
+                    style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
                     onClick={() => {
                       const images = getAllImages();
                       const index = images.findIndex((img) => img === displayImage);
@@ -1523,11 +1523,11 @@ function DecorListing({
                     <Image
                       src={displayImage}
                       alt={decor.name}
-                      width={0}
-                      height={0}
+                      width={800}
+                      height={600}
                       sizes="100vw"
                       style={{ maxWidth: "100%", height: "auto", maxHeight: "500px", objectFit: "contain" }}
-                      className="transition-transform duration-300 hover:scale-105"
+                      className="w-full h-auto object-contain transition-transform duration-300 hover:scale-105"
                     />
                   </div>
                 )}
