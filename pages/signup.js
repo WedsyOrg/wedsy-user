@@ -337,7 +337,12 @@ export default function Signup({ CheckLogin }) {
                   maxLength={5}
                   onChange={(e) => {
                     const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
-                    setData({ ...data, customCountryCode: "+" + digits });
+                    const newCustom = "+" + digits;
+                    if (newCustom === "+91") {
+                      setData({ ...data, countryCode: "+91", customCountryCode: "+" });
+                    } else {
+                      setData({ ...data, customCountryCode: newCustom });
+                    }
                   }}
                   disabled={data.otpSent}
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"

@@ -287,7 +287,12 @@ export default function LoginModal({
                       maxLength={5}
                       onChange={(e) => {
                         const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
-                        setData({ ...data, customCountryCode: "+" + digits });
+                        const newCustom = "+" + digits;
+                        if (newCustom === "+91") {
+                          setData({ ...data, countryCode: "+91", customCountryCode: "+" });
+                        } else {
+                          setData({ ...data, customCountryCode: newCustom });
+                        }
                       }}
                       disabled={data.otpSent}
                       className="focus:ring-0 text-center text-black bg-transparent border-0 border-b border-b-black outline-0 placeholder:text-black"
