@@ -5,7 +5,7 @@ import {
   Spinner
 } from "flowbite-react";
 import { useEffect, useState } from "react";
-import { COUNTRIES, getCountry, isIndia, detectCountryCode } from "@/utils/countries";
+import { COUNTRIES, getCountry, isIndia, isOther, isValidCustomCode, effectiveCountryCode, detectCountryCode } from "@/utils/countries";
 
 export default function LoginModal({
   openLoginModal,
@@ -17,6 +17,7 @@ export default function LoginModal({
 }) {
   const [data, setData] = useState({
     countryCode: "+91",
+    customCountryCode: "+",
     phone: "",
     loading: false,
     success: false,
@@ -37,10 +38,15 @@ export default function LoginModal({
   }, []);
 
   const country = getCountry(data.countryCode);
+  const effectiveCC = effectiveCountryCode(data.countryCode, data.customCountryCode);
 
   const SendOTP = () => {
     setData({ ...data, loading: true, message: "" });
-    if (isIndia(data.countryCode)) {
+    if (isOther(data.countryCode) && !isValidCustomCode(data.customCountryCode)) {
+      setData({ ...data, loading: false, message: "Enter a valid country code (e.g. +49)" });
+      return;
+    }
+    if (isIndia(effectiveCC)) {
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -65,7 +71,7 @@ export default function LoginModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           phone: data.phone,
-          countryCode: data.countryCode,
+          countryCode: effectiveCC,
         }),
       })
         .then((r) => r.json())
@@ -87,7 +93,7 @@ export default function LoginModal({
 
   const handleLogin = () => {
     setData({ ...data, loading: true });
-    if (isIndia(data.countryCode)) {
+    if (isIndia(effectiveCC)) {
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -126,7 +132,7 @@ export default function LoginModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           phone: data.phone,
-          countryCode: data.countryCode,
+          countryCode: effectiveCC,
           otp: data.Otp,
           referenceId: data.ReferenceId,
         }),
@@ -181,7 +187,7 @@ export default function LoginModal({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         phone: data.phone,
-        countryCode: data.countryCode,
+        countryCode: effectiveCC,
         name: data.name,
         email: data.email,
         signupToken: data.signupToken,
@@ -220,13 +226,15 @@ export default function LoginModal({
       });
   };
 
-  const isPhoneValid = isIndia(data.countryCode)
+  const isPhoneValid = isIndia(effectiveCC)
     ? /^\d{10}$/.test(data.phone)
     : data.phone.length >= Math.min(8, country.digits);
 
+  const customCodeOK = !isOther(data.countryCode) || isValidCustomCode(data.customCountryCode);
+
   const isDisabled = data.needsSignup
     ? !data.name || !data.email || data.loading
-    : !data.phone || !isPhoneValid || data.loading || (data.otpSent ? !data.Otp : false);
+    : !data.phone || !isPhoneValid || !customCodeOK || data.loading || (data.otpSent ? !data.Otp : false);
 
   return (
     <>
@@ -250,11 +258,11 @@ export default function LoginModal({
                       value={data.countryCode}
                       onChange={(e) => setData({ ...data, countryCode: e.target.value, phone: "" })}
                       disabled={data.otpSent}
-                      className="w-28 text-black bg-transparent border-0 border-b border-b-black focus:ring-0"
+                      className="w-[120px] text-black bg-transparent border-0 border-b border-b-black focus:ring-0"
                     >
                       {COUNTRIES.map((c) => (
                         <option key={`${c.code}-${c.name}`} value={c.code} title={c.name}>
-                          {c.flag} {c.code}
+                          {c.flag} {isOther(c.code) ? "Other" : c.code}
                         </option>
                       ))}
                     </select>
@@ -270,6 +278,21 @@ export default function LoginModal({
                       className="flex-1 min-w-0 focus:ring-0 text-center text-black bg-transparent border-0 border-b border-b-black outline-0 placeholder:text-black"
                     />
                   </div>
+                  {isOther(data.countryCode) && (
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="+49"
+                      value={data.customCountryCode}
+                      maxLength={5}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
+                        setData({ ...data, customCountryCode: "+" + digits });
+                      }}
+                      disabled={data.otpSent}
+                      className="focus:ring-0 text-center text-black bg-transparent border-0 border-b border-b-black outline-0 placeholder:text-black"
+                    />
+                  )}
                   {data.otpSent && (
                     <input
                       type="text"

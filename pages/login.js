@@ -1,5 +1,5 @@
 import { processMobileNumber } from "@/utils/phoneNumber";
-import { COUNTRIES, getCountry, isIndia, detectCountryCode } from "@/utils/countries";
+import { COUNTRIES, getCountry, isIndia, isOther, isValidCustomCode, effectiveCountryCode, detectCountryCode } from "@/utils/countries";
 import { trimTitle } from "@/utils/seo";
 import { Spinner } from "flowbite-react";
 import Head from "next/head";
@@ -10,6 +10,7 @@ export default function Login({ CheckLogin }) {
   const router = useRouter();
   const [data, setData] = useState({
     countryCode: "+91",
+    customCountryCode: "+",
     phone: "",
     loading: false,
     success: false,
@@ -17,7 +18,7 @@ export default function Login({ CheckLogin }) {
     Otp: "",
     ReferenceId: "",
     message: "",
-    // International signup fields (only used when countryCode !== '+91')
+    // International signup fields (only used when effective code !== '+91')
     signupToken: "",
     needsSignup: false,
     name: "",
@@ -31,10 +32,11 @@ export default function Login({ CheckLogin }) {
   }, []);
 
   const country = getCountry(data.countryCode);
+  const effectiveCC = effectiveCountryCode(data.countryCode, data.customCountryCode);
 
   const SendOTP = () => {
     setData({ ...data, loading: true, message: "" });
-    if (isIndia(data.countryCode)) {
+    if (isIndia(effectiveCC)) {
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -59,7 +61,7 @@ export default function Login({ CheckLogin }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           phone: data.phone,
-          countryCode: data.countryCode,
+          countryCode: effectiveCC,
         }),
       })
         .then((r) => r.json())
@@ -81,7 +83,7 @@ export default function Login({ CheckLogin }) {
 
   const handleLogin = () => {
     setData({ ...data, loading: true });
-    if (isIndia(data.countryCode)) {
+    if (isIndia(effectiveCC)) {
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -121,7 +123,7 @@ export default function Login({ CheckLogin }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           phone: data.phone,
-          countryCode: data.countryCode,
+          countryCode: effectiveCC,
           otp: data.Otp,
           referenceId: data.ReferenceId,
         }),
@@ -173,7 +175,7 @@ export default function Login({ CheckLogin }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         phone: data.phone,
-        countryCode: data.countryCode,
+        countryCode: effectiveCC,
         name: data.name,
         email: data.email,
         signupToken: data.signupToken,
@@ -220,6 +222,10 @@ export default function Login({ CheckLogin }) {
         return;
       }
       handleSignup();
+      return;
+    }
+    if (isOther(data.countryCode) && !isValidCustomCode(data.customCountryCode)) {
+      setData({ ...data, message: "Enter a valid country code (e.g. +49)" });
       return;
     }
     if (data.otpSent) {
@@ -286,12 +292,12 @@ export default function Login({ CheckLogin }) {
                     value={data.countryCode}
                     onChange={(e) => setData({ ...data, countryCode: e.target.value, phone: "" })}
                     disabled={data.otpSent}
-                    className="w-28 px-3 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                    className="w-[120px] px-3 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
                     style={{ boxShadow: "0px 4px 4px 0px #00000040" }}
                   >
                     {COUNTRIES.map((c) => (
                       <option key={`${c.code}-${c.name}`} value={c.code} title={c.name}>
-                        {c.flag} {c.code}
+                        {c.flag} {isOther(c.code) ? "Other" : c.code}
                       </option>
                     ))}
                   </select>
@@ -308,6 +314,24 @@ export default function Login({ CheckLogin }) {
                     style={{ boxShadow: "0px 4px 4px 0px #00000040" }}
                   />
                 </div>
+                {isOther(data.countryCode) && (
+                  <div className="relative z-30">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="+49"
+                      value={data.customCountryCode}
+                      maxLength={5}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
+                        setData({ ...data, customCountryCode: "+" + digits });
+                      }}
+                      disabled={data.otpSent}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
+                      style={{ boxShadow: "0px 4px 4px 0px #00000040" }}
+                    />
+                  </div>
+                )}
                 {data.otpSent && (
                   <div className="relative z-30">
                     <input

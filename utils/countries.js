@@ -1,3 +1,5 @@
+export const OTHER_CODE = "other";
+
 export const COUNTRIES = [
   { code: "+91", name: "India", flag: "🇮🇳", digits: 10 },
   { code: "+1", name: "USA/Canada", flag: "🇺🇸", digits: 10 },
@@ -5,7 +7,20 @@ export const COUNTRIES = [
   { code: "+971", name: "UAE", flag: "🇦🇪", digits: 9 },
   { code: "+65", name: "Singapore", flag: "🇸🇬", digits: 8 },
   { code: "+61", name: "Australia", flag: "🇦🇺", digits: 9 },
+  { code: OTHER_CODE, name: "Other", flag: "🌍", digits: 10 },
 ];
+
+export function isOther(code) {
+  return code === OTHER_CODE;
+}
+
+export function isValidCustomCode(code) {
+  return /^\+\d{1,4}$/.test(code || "");
+}
+
+export function effectiveCountryCode(selected, custom) {
+  return selected === OTHER_CODE ? custom : selected;
+}
 
 const ISO_TO_CODE = {
   IN: "+91",
