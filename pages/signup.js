@@ -295,12 +295,12 @@ export default function Signup({ CheckLogin }) {
                 value={data.countryCode}
                 onChange={(e) => setData({ ...data, countryCode: e.target.value, phone: "" })}
                 disabled={data.otpSent}
-                className="px-3 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                className="w-28 px-3 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
                 style={{ boxShadow: "0px 4px 4px 0px #00000040" }}
               >
                 {COUNTRIES.map((c) => (
-                  <option key={`${c.code}-${c.name}`} value={c.code}>
-                    {c.flag} {c.code} {c.name}
+                  <option key={`${c.code}-${c.name}`} value={c.code} title={c.name}>
+                    {c.flag} {c.code}
                   </option>
                 ))}
               </select>

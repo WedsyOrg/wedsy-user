@@ -250,10 +250,10 @@ export default function LoginModal({
                       value={data.countryCode}
                       onChange={(e) => setData({ ...data, countryCode: e.target.value, phone: "" })}
                       disabled={data.otpSent}
-                      className="text-black bg-transparent border-0 border-b border-b-black focus:ring-0"
+                      className="w-28 text-black bg-transparent border-0 border-b border-b-black focus:ring-0"
                     >
                       {COUNTRIES.map((c) => (
-                        <option key={`${c.code}-${c.name}`} value={c.code}>
+                        <option key={`${c.code}-${c.name}`} value={c.code} title={c.name}>
                           {c.flag} {c.code}
                         </option>
                       ))}
