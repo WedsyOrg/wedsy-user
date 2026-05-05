@@ -256,18 +256,52 @@ export default function LoginModalv2({
               {!data.needsSignup && (
                 <>
                   <div className="flex gap-2">
-                    <select
-                      value={data.countryCode}
-                      onChange={(e) => setData({ ...data, countryCode: e.target.value, phone: "" })}
-                      disabled={data.otpSent}
-                      className="w-[120px] text-black bg-transparent border-0 border-b border-b-black focus:ring-0"
-                    >
-                      {COUNTRIES.map((c) => (
-                        <option key={`${c.code}-${c.name}`} value={c.code} title={c.name}>
-                          {c.flag} {isOther(c.code) ? "Other" : c.code}
-                        </option>
-                      ))}
-                    </select>
+                    {isOther(data.countryCode) ? (
+                      <div className="w-[120px] flex items-center border-b border-b-black">
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="+49"
+                          value={data.customCountryCode}
+                          maxLength={5}
+                          autoFocus
+                          onChange={(e) => {
+                            const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
+                            const newCustom = "+" + digits;
+                            if (newCustom === "+91") {
+                              setData({ ...data, countryCode: "+91", customCountryCode: "+" });
+                            } else {
+                              setData({ ...data, customCountryCode: newCustom });
+                            }
+                          }}
+                          disabled={data.otpSent}
+                          className="flex-1 min-w-0 focus:ring-0 text-center text-black bg-transparent border-0 outline-0 placeholder:text-black"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setData({ ...data, countryCode: "+91", customCountryCode: "+" })}
+                          disabled={data.otpSent}
+                          title="Back to country list"
+                          aria-label="Back to country list"
+                          className="text-gray-500 hover:text-black text-lg leading-none px-1"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ) : (
+                      <select
+                        value={data.countryCode}
+                        onChange={(e) => setData({ ...data, countryCode: e.target.value, phone: "" })}
+                        disabled={data.otpSent}
+                        className="w-[120px] text-black bg-transparent border-0 border-b border-b-black focus:ring-0"
+                      >
+                        {COUNTRIES.map((c) => (
+                          <option key={`${c.code}-${c.name}`} value={c.code} title={c.name}>
+                            {c.flag} {isOther(c.code) ? "Other" : c.code}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                     <input
                       type="tel"
                       inputMode="numeric"
@@ -280,26 +314,7 @@ export default function LoginModalv2({
                       className="flex-1 min-w-0 focus:ring-0 text-center text-black bg-transparent border-0 border-b border-b-black outline-0 placeholder:text-black"
                     />
                   </div>
-                  {isOther(data.countryCode) && (
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="+49"
-                      value={data.customCountryCode}
-                      maxLength={5}
-                      onChange={(e) => {
-                        const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
-                        const newCustom = "+" + digits;
-                        if (newCustom === "+91") {
-                          setData({ ...data, countryCode: "+91", customCountryCode: "+" });
-                        } else {
-                          setData({ ...data, customCountryCode: newCustom });
-                        }
-                      }}
-                      disabled={data.otpSent}
-                      className="focus:ring-0 text-center text-black bg-transparent border-0 border-b border-b-black outline-0 placeholder:text-black"
-                    />
-                  )}
+
                   {data.otpSent && (
                     <input
                       type="text"

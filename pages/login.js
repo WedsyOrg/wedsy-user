@@ -288,19 +288,56 @@ export default function Login({ CheckLogin }) {
             {!data.needsSignup && (
               <>
                 <div className="flex gap-2 relative z-30">
-                  <select
-                    value={data.countryCode}
-                    onChange={(e) => setData({ ...data, countryCode: e.target.value, phone: "" })}
-                    disabled={data.otpSent}
-                    className="w-[120px] px-3 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
-                    style={{ boxShadow: "0px 4px 4px 0px #00000040" }}
-                  >
-                    {COUNTRIES.map((c) => (
-                      <option key={`${c.code}-${c.name}`} value={c.code} title={c.name}>
-                        {c.flag} {isOther(c.code) ? "Other" : c.code}
-                      </option>
-                    ))}
-                  </select>
+                  {isOther(data.countryCode) ? (
+                    <div
+                      className="w-[120px] flex items-center px-2 rounded-lg border border-gray-300 bg-white focus-within:ring-2 focus-within:ring-red-600"
+                      style={{ boxShadow: "0px 4px 4px 0px #00000040" }}
+                    >
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="+49"
+                        value={data.customCountryCode}
+                        maxLength={5}
+                        autoFocus
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
+                          const newCustom = "+" + digits;
+                          if (newCustom === "+91") {
+                            setData({ ...data, countryCode: "+91", customCountryCode: "+" });
+                          } else {
+                            setData({ ...data, customCountryCode: newCustom });
+                          }
+                        }}
+                        disabled={data.otpSent}
+                        className="flex-1 min-w-0 py-3 bg-transparent border-0 focus:outline-none focus:ring-0"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setData({ ...data, countryCode: "+91", customCountryCode: "+" })}
+                        disabled={data.otpSent}
+                        title="Back to country list"
+                        aria-label="Back to country list"
+                        className="text-gray-500 hover:text-gray-800 text-lg leading-none px-1"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <select
+                      value={data.countryCode}
+                      onChange={(e) => setData({ ...data, countryCode: e.target.value, phone: "" })}
+                      disabled={data.otpSent}
+                      className="w-[120px] px-3 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                      style={{ boxShadow: "0px 4px 4px 0px #00000040" }}
+                    >
+                      {COUNTRIES.map((c) => (
+                        <option key={`${c.code}-${c.name}`} value={c.code} title={c.name}>
+                          {c.flag} {isOther(c.code) ? "Other" : c.code}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                   <input
                     type="tel"
                     inputMode="numeric"
@@ -314,29 +351,6 @@ export default function Login({ CheckLogin }) {
                     style={{ boxShadow: "0px 4px 4px 0px #00000040" }}
                   />
                 </div>
-                {isOther(data.countryCode) && (
-                  <div className="relative z-30">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="+49"
-                      value={data.customCountryCode}
-                      maxLength={5}
-                      onChange={(e) => {
-                        const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
-                        const newCustom = "+" + digits;
-                        if (newCustom === "+91") {
-                          setData({ ...data, countryCode: "+91", customCountryCode: "+" });
-                        } else {
-                          setData({ ...data, customCountryCode: newCustom });
-                        }
-                      }}
-                      disabled={data.otpSent}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
-                      style={{ boxShadow: "0px 4px 4px 0px #00000040" }}
-                    />
-                  </div>
-                )}
                 {data.otpSent && (
                   <div className="relative z-30">
                     <input
