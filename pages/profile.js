@@ -1,3 +1,4 @@
+import ProfileHero from "@/components/profile/ProfileHero";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -28,26 +29,12 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
         <title>Profile · Wedsy</title>
       </Head>
       <div className="wedsy-screen-container">
-        <div style={{ padding: "60px 24px", textAlign: "center" }}>
-          <p className="wedsy-eyebrow">WELCOME</p>
-          <h1
-            className="wedsy-title"
-            style={{ fontSize: "32px", marginTop: "12px" }}
-          >
-            Hello, {user.name || "friend"}
-          </h1>
-          <p className="wedsy-italic-em" style={{ marginTop: "8px" }}>
-            Your wedding journey, in one place
-          </p>
-          <div
-            className="wedsy-ornament-divider"
-            style={{ margin: "24px auto" }}
-          ></div>
-          <p className="wedsy-subtitle" style={{ marginTop: "16px" }}>
-            We&apos;re rebuilding your dashboard. Check back soon for the full
-            experience.
-          </p>
-        </div>
+        <ProfileHero
+          coupleName="Rohaan & Asiya"
+          weddingDate="2026-05-21"
+          eventDayCount={3}
+          eventDayNames={["Mehendi", "Sangeet", "Wedding"]}
+        />
       </div>
     </>
   );
