@@ -7,6 +7,7 @@ import { EventPageSkeleton } from "@/components/skeletons/event";
 import { BiddingPageSkeleton, MakeupAndBeautyPageSkeleton, MakeupArtistsPageSkeleton, WedsyPackagesPageSkeleton } from "@/components/skeletons/makeup-store";
 import { DecorPageSkeleton } from "@/components/skeletons/wedding-store";
 import "@/styles/globals.css";
+import "@/styles/wedsy-design-system.css";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import { Spinner } from "flowbite-react";
 import Head from "next/head";

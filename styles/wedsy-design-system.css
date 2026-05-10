@@ -1,0 +1,55 @@
+/*
+ * Design system for the new Profile-tab redesign.
+ * Scoped via .wedsy-screen-container — does not affect existing pages.
+ */
+
+.wedsy-screen-container {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #FBF7F2;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+.wedsy-screen-bg {
+  background: #F5EFE6;
+}
+
+.wedsy-eyebrow {
+  letter-spacing: 2px;
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: #9C4A38;
+}
+
+.wedsy-title {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 400;
+}
+
+.wedsy-italic-em {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-weight: 300;
+  color: #9C4A38;
+}
+
+.wedsy-subtitle {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 13px;
+  color: #8B7E72;
+}
+
+.wedsy-ornament-divider {
+  display: block;
+  width: 30px;
+  height: 0.5px;
+  margin: 0 auto;
+  background-color: #5B1F1A;
+  opacity: 0.3;
+  border: 0;
+}
