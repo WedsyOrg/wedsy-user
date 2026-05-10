@@ -24,7 +24,7 @@ function App({ Component, pageProps }) {
   const [openLoginModalv2, setOpenLoginModalv2] = useState(false);
   const [loginSource, setLoginSource] = useState("");
   const restrictedPaths = [
-    "/wishlist", "/my-account", "/event", "/payments", "/my-orders", "/my-bids", "/chat",
+    "/wishlist", "/my-account", "/event", "/payments", "/my-orders", "/my-bids", "/chat", "/profile",
     "/makeup-and-beauty/wedsy-packages/checkout",
   ];
 
