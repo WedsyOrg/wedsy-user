@@ -1,6 +1,8 @@
+import AccountList from "@/components/profile/AccountList";
 import EmptyStateStep1 from "@/components/profile/EmptyStateStep1";
 import EmptyStateStep2 from "@/components/profile/EmptyStateStep2";
 import EventDaysCarousel from "@/components/profile/EventDaysCarousel";
+import InspirationCard from "@/components/profile/InspirationCard";
 import ProfileHero from "@/components/profile/ProfileHero";
 import StatsGrid from "@/components/profile/StatsGrid";
 import TimelineCard from "@/components/profile/TimelineCard";
@@ -26,6 +28,21 @@ const MOCK_STATS = [
   { label: "Vendors booked", value: 5, sublabel: "of 7 expected" },
   { label: "Paid", value: "₹4.2L", sublabel: "of ₹6.8L total" },
   { label: "Open milestones", value: 3 },
+];
+
+const MOCK_INSPIRATION = {
+  imageSrc: "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80",
+  tagline: "CURATED FOR YOU",
+  headline: "Stories of weddings like yours",
+  ctaLabel: "Explore",
+};
+
+const MOCK_ACCOUNT_ITEMS = [
+  { label: "Orders", href: "/my-orders", iconName: "Package" },
+  { label: "Payments", href: "/my-payments", iconName: "CreditCard" },
+  { label: "My Bids", href: "/my-bids", iconName: "Hammer", badge: "3 new" },
+  { label: "Wishlist", href: "/wishlist", iconName: "Heart" },
+  { label: "Support", href: "#", iconName: "MessageCircle", onTap: () => console.log("Mock support") },
 ];
 
 export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginModalv2 }) {
@@ -89,6 +106,17 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
             />
             <EventDaysCarousel eventDays={MOCK_EVENT_DAYS} />
             <StatsGrid stats={MOCK_STATS} />
+            <InspirationCard
+              imageSrc={MOCK_INSPIRATION.imageSrc}
+              tagline={MOCK_INSPIRATION.tagline}
+              headline={MOCK_INSPIRATION.headline}
+              ctaLabel={MOCK_INSPIRATION.ctaLabel}
+              onTap={() => console.log("Mock inspiration tap")}
+            />
+            <AccountList
+              items={MOCK_ACCOUNT_ITEMS}
+              onSignOut={() => console.log("Mock sign out")}
+            />
           </>
         )}
       </div>
