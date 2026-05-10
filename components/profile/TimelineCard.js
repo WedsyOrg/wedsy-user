@@ -83,7 +83,8 @@ export default function TimelineCard({
         disabled={regenerating}
         className="mt-4 text-[11px] tracking-[2px] uppercase font-medium text-wedsy-rose-600 disabled:text-wedsy-ink-3 disabled:cursor-not-allowed"
       >
-        ↻ {regenerating ? "Regenerating…" : "Regenerate"}
+        <span className={`inline-block ${regenerating ? "animate-spin" : ""}`}>↻</span>{" "}
+        {regenerating ? "Regenerating…" : "Regenerate"}
       </button>
     </section>
   );

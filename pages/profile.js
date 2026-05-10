@@ -8,14 +8,7 @@ import StatsGrid from "@/components/profile/StatsGrid";
 import TimelineCard from "@/components/profile/TimelineCard";
 import useProfileData from "@/hooks/useProfileData";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-
-const MOCK_EVENT_DAYS = [
-  { name: "Mehendi", date: "2026-05-19", time: "4:00 PM", venue: "Bangalore International Centre" },
-  { name: "Sangeet", date: "2026-05-20", time: "7:00 PM", venue: "Bangalore International Centre" },
-  { name: "Wedding", date: "2026-05-21", time: "11:00 AM", venue: "Bangalore International Centre" },
-];
 
 const MOCK_STATS = [
   { label: "Days to wedding", value: 11 },
@@ -39,10 +32,31 @@ const MOCK_ACCOUNT_ITEMS = [
   { label: "Support", href: "#", iconName: "MessageCircle", onTap: () => console.log("Mock support") },
 ];
 
+function deriveCoupleName(event) {
+  return event?.name || "Your wedding";
+}
+
+function deriveWeddingDate(event) {
+  if (!event?.eventDays?.length) return null;
+  const dates = event.eventDays.map((d) => d.date).filter(Boolean).sort();
+  return dates[dates.length - 1] || null;
+}
+
+function deriveEventDayNames(event) {
+  return event?.eventDays?.map((d) => d.name).filter(Boolean) || [];
+}
+
+function shouldShowEmpty1(event, eventLoading) {
+  return !eventLoading && !event;
+}
+
+function shouldShowEmpty2(event, eventLoading) {
+  return !eventLoading && !!event && (!event.eventDays || event.eventDays.length === 0);
+}
+
 export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginModalv2 }) {
-  const router = useRouter();
-  const [step1Data, setStep1Data] = useState({ eventName: "", community: "" });
   const [token, setToken] = useState(null);
+  const [regenerating, setRegenerating] = useState(false);
 
   useEffect(() => {
     CheckLogin();
@@ -54,26 +68,32 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
     }
   }, []);
 
-  const eventIdFromUrl = router.query.eventId || null;
-  const { milestones, milestonesLoading, milestonesError } = useProfileData({
-    eventId: eventIdFromUrl,
-    token,
-  });
+  const {
+    event,
+    eventLoading,
+    eventError,
+    milestones,
+    milestonesLoading,
+    milestonesError,
+    refetchMilestones,
+  } = useProfileData({ token });
 
   if (!user?.name) {
     return (
       <div className="wedsy-screen-container">
-        <p
-          className="wedsy-subtitle"
-          style={{ padding: "60px 24px", textAlign: "center" }}
-        >
-          Loading…
-        </p>
+        <p className="wedsy-subtitle" style={{ padding: "60px 24px", textAlign: "center" }}>Loading…</p>
       </div>
     );
   }
 
-  const previewState = router.query.state;
+  const handleRegenerate = () => {
+    setRegenerating(true);
+    setTimeout(() => {
+      refetchMilestones();
+      setRegenerating(false);
+      console.log("Mock regenerate complete (real Anthropic call deferred to 1.4.C)");
+    }, 1500);
+  };
 
   return (
     <>
@@ -81,47 +101,38 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
         <title>Profile · Wedsy</title>
       </Head>
       <div className="wedsy-screen-container">
-        {previewState === "empty1" ? (
+        {eventLoading ? (
+          <p className="wedsy-subtitle" style={{ padding: "60px 24px", textAlign: "center" }}>Loading…</p>
+        ) : eventError ? (
+          <p className="font-serif italic text-[13px] text-wedsy-ink-3 text-center" style={{ padding: "60px 24px" }}>Unable to load your wedding. Please reload.</p>
+        ) : shouldShowEmpty1(event, eventLoading) ? (
           <EmptyStateStep1
-            onContinue={(data) => {
-              setStep1Data(data);
-              router.push("/profile?state=empty2");
-            }}
+            onContinue={(data) => console.log("Mock create event step 1:", data)}
           />
-        ) : previewState === "empty2" ? (
+        ) : shouldShowEmpty2(event, eventLoading) ? (
           <EmptyStateStep2
-            eventName={step1Data.eventName || "Your wedding"}
-            community={step1Data.community || "Hindu"}
-            onBack={() => router.push("/profile?state=empty1")}
-            onComplete={(data) => {
-              console.log("Mock create event:", data);
-              router.push("/profile");
-            }}
+            eventName={event.name || "Your wedding"}
+            community={event.community || "Hindu"}
+            onBack={() => console.log("Mock back from step 2")}
+            onComplete={(data) => console.log("Mock complete event days:", data)}
           />
         ) : (
           <>
             <ProfileHero
-              coupleName="Rohaan & Asiya"
-              weddingDate="2026-05-21"
-              eventDayCount={3}
-              eventDayNames={["Mehendi", "Sangeet", "Wedding"]}
+              coupleName={deriveCoupleName(event)}
+              weddingDate={deriveWeddingDate(event)}
+              eventDayCount={event.eventDays?.length || 0}
+              eventDayNames={deriveEventDayNames(event)}
             />
             <TimelineCard
               milestones={milestones}
-              onRegenerate={() => console.log("Mock regenerate (wired in 1.4.B)")}
+              onRegenerate={handleRegenerate}
               onViewAll={() => console.log("Mock view all")}
+              regenerating={regenerating}
             />
-            {milestonesLoading && (
-              <p className="px-6 -mt-4 mb-6 font-serif italic text-[12px] text-wedsy-ink-3 text-center">
-                Loading timeline…
-              </p>
-            )}
-            {milestonesError && (
-              <p className="px-6 -mt-4 mb-6 font-serif italic text-[12px] text-wedsy-ink-3 text-center">
-                Unable to load timeline. Please reload.
-              </p>
-            )}
-            <EventDaysCarousel eventDays={MOCK_EVENT_DAYS} />
+            {milestonesLoading && <p className="px-6 -mt-4 mb-6 font-serif italic text-[12px] text-wedsy-ink-3 text-center">Loading timeline…</p>}
+            {milestonesError && <p className="px-6 -mt-4 mb-6 font-serif italic text-[12px] text-wedsy-ink-3 text-center">Unable to load timeline. Please reload.</p>}
+            <EventDaysCarousel eventDays={event.eventDays || []} />
             <StatsGrid stats={MOCK_STATS} />
             <InspirationCard
               imageSrc={MOCK_INSPIRATION.imageSrc}
