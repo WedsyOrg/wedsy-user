@@ -6,16 +6,10 @@ import InspirationCard from "@/components/profile/InspirationCard";
 import ProfileHero from "@/components/profile/ProfileHero";
 import StatsGrid from "@/components/profile/StatsGrid";
 import TimelineCard from "@/components/profile/TimelineCard";
+import useProfileData from "@/hooks/useProfileData";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-
-const MOCK_MILESTONES = [
-  { _id: "m1", title: "Final venue walkthrough", dueDate: "2026-05-14", status: "PENDING", source: "Custom" },
-  { _id: "m2", title: "Confirm guest count", dueDate: "2026-05-15", status: "PENDING", source: "AI" },
-  { _id: "m3", title: "Pickup outfits", dueDate: "2026-05-18", status: "PENDING", source: "Custom" },
-  { _id: "m4", title: "Book photographer", dueDate: "2026-04-10", status: "COMPLETED", source: "AI" },
-];
 
 const MOCK_EVENT_DAYS = [
   { name: "Mehendi", date: "2026-05-19", time: "4:00 PM", venue: "Bangalore International Centre" },
@@ -48,10 +42,23 @@ const MOCK_ACCOUNT_ITEMS = [
 export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginModalv2 }) {
   const router = useRouter();
   const [step1Data, setStep1Data] = useState({ eventName: "", community: "" });
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
     CheckLogin();
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setToken(localStorage.getItem("token"));
+    }
+  }, []);
+
+  const eventIdFromUrl = router.query.eventId || null;
+  const { milestones, milestonesLoading, milestonesError } = useProfileData({
+    eventId: eventIdFromUrl,
+    token,
+  });
 
   if (!user?.name) {
     return (
@@ -100,10 +107,20 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
               eventDayNames={["Mehendi", "Sangeet", "Wedding"]}
             />
             <TimelineCard
-              milestones={MOCK_MILESTONES}
-              onRegenerate={() => console.log("Mock regenerate")}
+              milestones={milestones}
+              onRegenerate={() => console.log("Mock regenerate (wired in 1.4.B)")}
               onViewAll={() => console.log("Mock view all")}
             />
+            {milestonesLoading && (
+              <p className="px-6 -mt-4 mb-6 font-serif italic text-[12px] text-wedsy-ink-3 text-center">
+                Loading timeline…
+              </p>
+            )}
+            {milestonesError && (
+              <p className="px-6 -mt-4 mb-6 font-serif italic text-[12px] text-wedsy-ink-3 text-center">
+                Unable to load timeline. Please reload.
+              </p>
+            )}
             <EventDaysCarousel eventDays={MOCK_EVENT_DAYS} />
             <StatsGrid stats={MOCK_STATS} />
             <InspirationCard
