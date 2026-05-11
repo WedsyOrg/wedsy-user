@@ -281,7 +281,7 @@ function App({ Component, pageProps }) {
       )}
 
         <div className="flex flex-col min-h-screen">
-          <header className="contents">
+          <header className={router.pathname === "/profile" ? "contents lg:hidden" : "contents"}>
             <Header userLoggedIn={!logIn} user={user} Logout={Logout} />
           </header>
           <LoginModal openLoginModal={openLoginModal} setOpenLoginModal={setOpenLoginModal} user={user} logIn={logIn} setLogIn={setLogIn} CheckLogin={CheckLogin} />
@@ -317,7 +317,7 @@ function App({ Component, pageProps }) {
               </motion.div>
             </AnimatePresence>
           </main>
-          <footer className="contents">
+          <footer className={router.pathname === "/profile" ? "contents lg:hidden" : "contents"}>
             <Footer />
             <MobileStickyFooter />
           </footer>
