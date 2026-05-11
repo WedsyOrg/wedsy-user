@@ -78,7 +78,8 @@ export default function useProfileData({ token }) {
   }, [token, loadMilestones]);
 
   const refetchMilestones = useCallback(() => {
-    if (event?._id) loadMilestones(event._id);
+    if (event?._id) return loadMilestones(event._id);
+    return Promise.resolve();
   }, [event, loadMilestones]);
 
   return {

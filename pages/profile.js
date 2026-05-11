@@ -7,7 +7,9 @@ import ProfileHero from "@/components/profile/ProfileHero";
 import StatsGrid from "@/components/profile/StatsGrid";
 import TimelineCard from "@/components/profile/TimelineCard";
 import useProfileData from "@/hooks/useProfileData";
+import { regenerateTimeline } from "@/utils/api/wedding-timeline";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 const MOCK_STATS = [
@@ -23,6 +25,8 @@ const MOCK_INSPIRATION = {
   headline: "Stories of weddings like yours",
   ctaLabel: "Explore",
 };
+
+const REGEN_ERROR_MESSAGES = { SERVICE_UNAVAILABLE: "AI is taking a moment — please try again.", BAD_REQUEST: "Something's off with your event data. Please reload." };
 
 const MOCK_ACCOUNT_ITEMS = [
   { label: "Orders", href: "/my-orders", iconName: "Package" },
@@ -55,8 +59,11 @@ function shouldShowEmpty2(event, eventLoading) {
 }
 
 export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginModalv2 }) {
+  const router = useRouter();
   const [token, setToken] = useState(null);
   const [regenerating, setRegenerating] = useState(false);
+  const [regenerateError, setRegenerateError] = useState(null);
+  const [regenerateResult, setRegenerateResult] = useState(null);
 
   useEffect(() => {
     CheckLogin();
@@ -86,14 +93,21 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
     );
   }
 
-  const handleRegenerate = () => {
+  const handleRegenerate = async () => {
+    if (!event?._id || !token) return;
     setRegenerating(true);
-    setTimeout(() => {
-      refetchMilestones();
-      setRegenerating(false);
-      console.log("Mock regenerate complete (real Anthropic call deferred to 1.4.C)");
-    }, 1500);
+    setRegenerateError(null);
+    setRegenerateResult(null);
+    const { data, error } = await regenerateTimeline(event._id, token);
+    if (error) setRegenerateError(error);
+    else { setRegenerateResult(data?.suggestions || { add: [], adjust: [], remove: [] }); await refetchMilestones(); }
+    setRegenerating(false);
   };
+  const explicitEmptyState = router.query.state;
+  const weddingDate = deriveWeddingDate(event);
+  const isEventPast = weddingDate ? new Date(weddingDate) < new Date() : false;
+  const showPastEventCard = isEventPast && !!regenerateResult && !regenerateResult.add?.length && !regenerateResult.adjust?.length && !regenerateResult.remove?.length;
+  const handleCreateNewEvent = () => router.push("/profile?state=empty1");
 
   return (
     <>
@@ -105,11 +119,11 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
           <p className="wedsy-subtitle" style={{ padding: "60px 24px", textAlign: "center" }}>Loading…</p>
         ) : eventError ? (
           <p className="font-serif italic text-[13px] text-wedsy-ink-3 text-center" style={{ padding: "60px 24px" }}>Unable to load your wedding. Please reload.</p>
-        ) : shouldShowEmpty1(event, eventLoading) ? (
+        ) : explicitEmptyState === "empty1" || shouldShowEmpty1(event, eventLoading) ? (
           <EmptyStateStep1
             onContinue={(data) => console.log("Mock create event step 1:", data)}
           />
-        ) : shouldShowEmpty2(event, eventLoading) ? (
+        ) : explicitEmptyState === "empty2" || shouldShowEmpty2(event, eventLoading) ? (
           <EmptyStateStep2
             eventName={event.name || "Your wedding"}
             community={event.community || "Hindu"}
@@ -132,6 +146,14 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
             />
             {milestonesLoading && <p className="px-6 -mt-4 mb-6 font-serif italic text-[12px] text-wedsy-ink-3 text-center">Loading timeline…</p>}
             {milestonesError && <p className="px-6 -mt-4 mb-6 font-serif italic text-[12px] text-wedsy-ink-3 text-center">Unable to load timeline. Please reload.</p>}
+            {regenerateError && <p className="px-6 -mt-4 mb-6 font-serif italic text-[12px] text-wedsy-ink-3 text-center">{REGEN_ERROR_MESSAGES[regenerateError.code] || "Couldn't regenerate. Please try again."}</p>}
+            {showPastEventCard && (
+              <div className="px-6 mt-4 mb-8 text-center">
+                <p className="font-serif italic text-[15px] text-wedsy-ink leading-snug">Your celebration is complete — we hope it was unforgettable.</p>
+                <p className="font-sans text-[12px] text-wedsy-ink-3 mt-3 mb-3">Planning another?</p>
+                <button onClick={handleCreateNewEvent} className="text-[11px] tracking-[2px] uppercase font-medium text-wedsy-rose-600">Create a new event →</button>
+              </div>
+            )}
             <EventDaysCarousel eventDays={event.eventDays || []} />
             <StatsGrid stats={MOCK_STATS} />
             <InspirationCard
