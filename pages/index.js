@@ -465,9 +465,8 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
       .then((response) => {
         // Use EXACT same check as login
         if (response.message === "Login Successful" && response.token) {
-          // OTP verified successfully (user created/logged in, but we'll just submit form)
-          // Don't store the token, just proceed with form submission
-          submitWeddingForm();
+          // OTP verified successfully - pass true for Verified
+          submitWeddingForm(true);
         } else {
           // Use EXACT same error handling as login
           setOtpError(response.message || "Invalid OTP. Please try again.");
@@ -482,7 +481,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
       });
   };
 
-  const submitWeddingForm = async () => {
+  const submitWeddingForm = async (isVerified = false) => {
     const budgetMap = {
       "5-10": 750000,
       "10-15": 1250000,
@@ -496,7 +495,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
     formDataToSend.append('phone', `${countryCode}${weddingFormData.phone}` || '');
     formDataToSend.append('budget', budgetValue.toString());
     formDataToSend.append('date', weddingFormData.date || '');
-    formDataToSend.append('formType', 'wedding-requirements');
+    formDataToSend.append('Verified', isVerified ? "Verified" : "Pending");
 
     await fetch(
       `${process.env.NEXT_PUBLIC_SHEET_URL}`,
@@ -542,10 +541,10 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
     if (countryCode === "+91") {
       await sendOTP();
     } else {
-      // For non-India, submit directly
+      // For non-India, submit directly - pass false for Pending
       setIsWeddingSubmitting(true);
       try {
-        await submitWeddingForm();
+        await submitWeddingForm(false);
       } catch (error) {
         console.error("Error submitting form:", error);
         setToast({ show: true, message: "Error submitting form. Please try again.", type: "error" });
@@ -752,7 +751,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
         }
         setDecorIndex(item);
       }
-    }, 2000);
+    }, 4000);
     return () => {
       clearInterval(intervalId);
     };
@@ -1326,7 +1325,7 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
         </div>
       </section>
 
-      
+
       {/* wedding venue section */}
 {/* 
       <section className="w-full py-6 md:py-24 px-6 md:px-40  md:mt-10">
@@ -1731,10 +1730,10 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
             </motion.div>
 
             {/* Points with Timeline */}
-            <div className="relative mb-12 flex flex-row">
+            <div className="relative mb-12 flex flex-row overflow-x-hidden">
               {/* Vertical Bar Image */}
-              <motion.div 
-                className="flex-shrink-0 mr-4" 
+              <motion.div
+                className="flex-shrink-0 mr-4"
                 style={{ height: '300px', overflow: 'hidden' }}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -1923,9 +1922,9 @@ function Home({ packages, userLoggedIn, setOpenLoginModalv2, setSource }) {
               </motion.div>
 
               {/* Points with Timeline */}
-              <div className="relative flex flex-row">
+              <div className="relative flex flex-row overflow-x-hidden">
                 {/* Vertical Bar Image */}
-                <motion.div 
+                <motion.div
                   className="flex-shrink-0 mr-6" 
                   style={{ height: '400px', overflow: 'hidden' }}
                   initial={{ opacity: 0, scale: 0.9 }}

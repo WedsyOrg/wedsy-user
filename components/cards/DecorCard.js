@@ -1,8 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-// Add a 'size' prop with a default value of 'normal'
-export default function DecorCard({ decor = {}, size = "normal" }) {
+export default function DecorCard({ decor = {}, size = "normal", hideInfo = false, fillContainer = false }) {
   if (!decor || !decor._id) return null;
 
   const {
@@ -24,27 +23,22 @@ export default function DecorCard({ decor = {}, size = "normal" }) {
 
   const unitSuffix = category === "Pathway" && unit ? `/ ${unit}` : "";
 
-  // Conditionally set the height class based on the 'size' prop
-  const imageHeightClass = size === "small" ? "min-h-[200px]" : "min-h-[280px]";
-
   return (
     <Link
       href={`/decor/view/${_id}`}
-      className="group block h-full w-full flex flex-col"
+      className="group block h-full w-full flex flex-col hover:shadow-xl active:scale-95 transition-all duration-300"
       target="_blank"
       rel="noopener noreferrer"
     >
       {/* IMAGE SECTION */}
-      {/* Apply the conditional height class here */}
-      <div
-        className={`relative w-full ${imageHeightClass} overflow-hidden rounded-2xl`}
-      >
+      <div className={`relative w-full overflow-hidden rounded-2xl ${fillContainer ? 'h-full' : ''}`}>
         <Image
           src={thumbnail || "/placeholder.webp"}
           alt={name}
-          fill
+          width={0}
+          height={0}
           sizes="(max-width: 768px) 50vw, 33vw"
-          style={{ objectFit: "cover" }}
+          style={{ objectFit: "contain", width: "100%", height: fillContainer ? "100%" : "auto" }}
           className="transition-transform duration-500 ease-in-out md:group-hover:scale-110"
           placeholder="blur"
           blurDataURL="/placeholder.webp"
@@ -66,15 +60,17 @@ export default function DecorCard({ decor = {}, size = "normal" }) {
         </div>
       </div>
 
-      {/* DESKTOP: Name & Price section */}
-      <div className="mt-2 w-full flex justify-between items-center gap-2 bg-white rounded-xl px-3 py-2 md:flex hidden">
-        <p className="font-semibold text-gray-800 truncate min-w-0 flex-shrink" title={name}>
-          {name}
-        </p>
-        <p className="text-sm font-medium text-rose-900 flex-shrink-0 whitespace-nowrap">
-          ₹ {displayPrice} {unitSuffix}
-        </p>
-      </div>
+      {/* DESKTOP: Name & Price section — hidden when inside carousel */}
+      {!hideInfo && (
+        <div className="mt-2 w-full flex justify-between items-center gap-2 bg-white rounded-xl px-3 py-2 md:flex hidden">
+          <p className="font-semibold text-gray-800 truncate min-w-0 flex-shrink" title={name}>
+            {name}
+          </p>
+          <p className="text-sm font-medium text-rose-900 flex-shrink-0 whitespace-nowrap">
+            ₹ {displayPrice} {unitSuffix}
+          </p>
+        </div>
+      )}
     </Link>
   );
 }

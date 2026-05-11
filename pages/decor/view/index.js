@@ -1,7 +1,6 @@
 import Breadcrumbs from "@/components/Breadcrumbs";
 import DecorCard from "@/components/cards/DecorCard";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
-import { SpecificCategorySkeleton } from "@/components/skeletons/wedding-store/specific-category";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import { Dropdown } from "flowbite-react";
 import Head from "next/head";
@@ -44,6 +43,8 @@ function DecorListing({
   initialData,
   categoryList,
   totalPages: initialTotalPages,
+  platformConfig,
+  flooringConfig,
 }) {
   const router = useRouter();
   const { category, page: queryPage } = router.query;
@@ -84,20 +85,27 @@ function DecorListing({
   const filterButtonRef = useRef(null);
   const filterDropdownContentRef = useRef(null);
 
-  const allOccasions = [
-    "Reception",
-    "Engagement",
-    "Sangeet",
-    "Wedding",
-    "Haldi",
-    "Mehendi",
-    "Muhurtham",
-  ];
+  const [allOccasions, setAllOccasions] = useState([]);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/attribute/public`)
+      .then((r) => r.json())
+      .then((attrs) => {
+        const attr = attrs.find((a) => a.name === "Occasion");
+        if (attr?.list?.length) {
+          setAllOccasions(
+            attr.list.map((o) => o.charAt(0).toUpperCase() + o.slice(1).toLowerCase())
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const isStageOrBackdrop =
     (filters.category || "").toLowerCase() === "stage" ||
     (filters.category || "").toLowerCase() === "backdrop";
   const occasionList = isStageOrBackdrop
-    ? allOccasions.filter((o) => o !== "Muhurtham")
+    ? allOccasions.filter((o) => o.toLowerCase() !== "muhurtham")
     : allOccasions;
 
   const coloursList = [
@@ -226,18 +234,14 @@ function DecorListing({
       setLoading(true);
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        limit: "14",
+        limit: "32",
         displayVisible: "true",
         displayAvailable: "true",
       });
 
       if (filters.category) params.append("category", filters.category);
-      if (
-        filters.sort &&
-        filters.sort !== "Sort" &&
-        filters.sort !== "New-Arrivals"
-      ) {
-        params.append("sort", filters.sort);
+      if (filters.sort && filters.sort !== "Sort") {
+        params.append("sort", filters.sort === "New-Arrivals" ? "Newest-First" : filters.sort);
       }
       // For categories with full filters only: occasion, colours, type, size
       if (hasFullFilters) {
@@ -322,12 +326,6 @@ function DecorListing({
           });
         }
         
-        if (filters.sort === "New-Arrivals") {
-          sortedList = [...sortedList].sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          );
-        }
-
         setList(sortedList);
         setTotalPages(data.totalPages || 1);
       } catch (error) {
@@ -480,22 +478,35 @@ function DecorListing({
 
   const dynamicHeading = filters.category ? `${filters.category}` : "All Decor";
 
-  const gridClasses = [
-    "md:col-span-2 md:row-span-2",
-    "md:col-span-4 md:row-span-2 md:col-start-3",
-    "md:col-span-2 md:row-span-2 md:col-start-7",
-    "md:col-span-2 md:row-span-2 md:row-start-3",
-    "md:col-span-3 md:row-span-2 md:col-start-3 md:row-start-3",
-    "md:col-span-3 md:row-span-2 md:col-start-6 md:row-start-3",
-    "md:col-span-4 md:row-span-3 md:row-start-5",
-    "md:col-span-4 md:row-span-3 md:col-start-5 md:row-start-5",
-    "md:col-span-4 md:row-span-2 md:row-start-8",
-    "md:col-span-4 md:row-span-2 md:col-start-5 md:row-start-8",
-    "md:col-span-3 md:row-span-2 md:row-start-10",
-    "md:col-span-4 md:row-span-2 md:col-start-4 md:row-start-10",
-    "md:col-span-4 md:row-span-2 md:row-start-12",
-    "md:col-span-3 md:row-span-2 md:col-start-5 md:row-start-12",
-  ];
+  const isFurnitureCategory = (filters.category || "").toLowerCase() === "furniture";
+
+  const platformCard = {
+    _id: "platform",
+    thumbnail: platformConfig?.data?.image || "/assets/images/platform.webp",
+    name: "Platform",
+    productTypes: [{ name: "sq.ft", sellingPrice: parseInt(platformConfig?.data?.price || 0) }],
+    category: "Furniture",
+    unit: "sq.ft",
+    productInfo: { id: "fp01" },
+  };
+
+  const _flooringList = flooringConfig?.data?.flooringList || [];
+  const flooringCard = {
+    _id: "flooring",
+    thumbnail: _flooringList[0]?.image || "/assets/images/carpet.webp",
+    name: "Flooring",
+    productTypes: _flooringList.length
+      ? _flooringList.map((f) => ({ name: f.title, sellingPrice: parseInt(f.price || 0) }))
+      : [{ name: "sq.ft", sellingPrice: 0 }],
+    category: "Furniture",
+    unit: "sq.ft",
+    productInfo: { id: "fp02" },
+  };
+
+  const displayList = isFurnitureCategory
+    ? [platformCard, flooringCard, ...list]
+    : list;
+
 
   const renderPaginationNumbers = () => {
     const numbers = [];
@@ -1241,17 +1252,35 @@ function DecorListing({
           </h1>
 
           {loading ? (
-            <SpecificCategorySkeleton />
-          ) : list.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="flex flex-col gap-2">
+                  <div className={`relative overflow-hidden rounded-2xl bg-gray-200 ${
+                    i % 4 === 0 || i % 4 === 3 ? 'h-40' : 'h-52'
+                  }`}>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer" />
+                  </div>
+                  <div className="hidden md:flex gap-2 px-1">
+                    <div className="relative flex-1 overflow-hidden h-3 rounded bg-gray-200">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer" />
+                    </div>
+                    <div className="relative overflow-hidden h-3 w-16 rounded bg-gray-200">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : displayList.length > 0 ? (
             <>
               {/* Mobile Grid */}
               <div className="block md:hidden">
                 <Masonry
-                  breakpointCols={2}
+                  breakpointCols={{ default: 4, 1280: 4, 1024: 3, 768: 2, 500: 2 }}
                   className="my-masonry-grid"
                   columnClassName="my-masonry-grid_column"
                 >
-                  {list.map((item, index) => (
+                  {displayList.map((item, index) => (
                     <div key={item._id}>
                       <DecorCard
                         decor={item}
@@ -1266,18 +1295,18 @@ function DecorListing({
                 </Masonry>
               </div>
 
-              <div className="hidden md:grid grid-cols-2 sm:grid-cols-3 md:grid-cols-8 md:grid-rows-13 gap-2 md:gap-4 min-h-[1600px]">
-                {list.map((item, index) => (
-                  <div
-                    key={item._id}
-                    className={
-                      gridClasses[index] ||
-                      "col-span-1 sm:col-span-1 md:col-span-3 md:row-span-2"
-                    }
-                  >
-                    <DecorCard decor={item} />
-                  </div>
-                ))}
+              <div className="hidden md:block">
+                <Masonry
+                  breakpointCols={{ default: 4, 1280: 4, 1024: 3, 768: 2, 500: 2 }}
+                  className="my-masonry-grid"
+                  columnClassName="my-masonry-grid_column"
+                >
+                  {displayList.map((item) => (
+                    <div key={item._id}>
+                      <DecorCard decor={item} />
+                    </div>
+                  ))}
+                </Masonry>
               </div>
 
               <div className="flex flex-col items-center mt-12 gap-4" role="navigation" aria-label="Decor listing pagination">
@@ -1377,31 +1406,44 @@ export async function getServerSideProps(context) {
     const currentPage = query.page || "1";
     const params = new URLSearchParams({
       page: currentPage,
-      limit: "14",
+      limit: "32",
       displayVisible: "true",
       displayAvailable: "true",
     });
     const categoryToFetch = query.category || "Stage";
     params.append("category", categoryToFetch);
-    const decorResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/decor?${params.toString()}`
-    );
-    const decorData = await decorResponse.json();
-    const categoryResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/category`
-    );
-    const categoryList = await categoryResponse.json();
+    const isFurniture = categoryToFetch.toLowerCase() === "furniture";
+
+    const fetches = [
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/decor?${params.toString()}`),
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/category`),
+    ];
+    if (isFurniture) {
+      fetches.push(fetch(`${process.env.NEXT_PUBLIC_API_URL}/config?code=platform`));
+      fetches.push(fetch(`${process.env.NEXT_PUBLIC_API_URL}/config?code=flooring`));
+    }
+
+    const responses = await Promise.all(fetches);
+    const [decorData, categoryList] = await Promise.all([
+      responses[0].json(),
+      responses[1].json(),
+    ]);
+    const platformConfig = isFurniture ? await responses[2].json() : {};
+    const flooringConfig = isFurniture ? await responses[3].json() : {};
+
     return {
       props: {
         initialData: decorData.list || [],
         categoryList: categoryList || [],
         totalPages: decorData.totalPages || 1,
+        platformConfig: platformConfig || {},
+        flooringConfig: flooringConfig || {},
       },
     };
   } catch (error) {
     console.error("Error fetching initial data:", error);
     return {
-      props: { initialData: [], categoryList: [], totalPages: 1 },
+      props: { initialData: [], categoryList: [], totalPages: 1, platformConfig: {}, flooringConfig: {} },
     };
   }
 }

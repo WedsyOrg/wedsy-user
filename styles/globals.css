@@ -5,6 +5,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* NProgress bar — Wedsy brand color */
+#nprogress .bar {
+  background: #840032 !important;
+  height: 3px !important;
+}
+#nprogress .peg {
+  box-shadow: 0 0 10px #840032, 0 0 5px #840032 !important;
+}
+
 /* Dream Avenue Font */
 @font-face {
   font-family: "Dream Avenue";
@@ -237,6 +246,11 @@ body {
 
 html,
 body {
+  max-width: 100vw;
   overflow-x: hidden;
   scroll-behavior: smooth;
+}
+
+* {
+  box-sizing: border-box;
 }

@@ -1467,7 +1467,7 @@ function DecorListing({
               <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none hidden md:block" />
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 py-8 md:pt-6 bg-[#F4F4F4]">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 py-8 md:pt-6 bg-[#F4F4F4] overflow-x-hidden max-w-full">
             <div className="hidden md:flex flex-col gap-6">
               <p className="text-xl font-medium text-center">DESCRIPTION</p>
               <div className="rounded-r-3xl bg-white shadow-md flex flex-col gap-2 p-4 px-6">
@@ -1493,7 +1493,7 @@ function DecorListing({
                 </ul>
               </div>
             </div>
-            <div className="flex flex-col gap-6 md:col-span-3">
+            <div className="flex flex-col gap-6 md:col-span-3 min-w-0 max-w-full overflow-hidden">
               <div className="hidden md:flex items-center gap-3">
                 <p className="text-2xl font-semibold tracking-wide uppercase">
                   {decor.category}
@@ -1509,10 +1509,11 @@ function DecorListing({
               <p className="md:hidden text-xl font-semibold mb-2 text-center">
                 {decor.name} ({decor?.productInfo.id})
               </p>
-              <div className={`relative pt-[56.25%] `}>
+              <div className="w-full overflow-hidden">
                 {displayImage && (
                   <div
-                    className="md:rounded-xl overflow-hidden shadow-lg decor-detail-image cursor-pointer absolute inset-0 w-full h-full"
+                    className="max-h-[500px] w-full bg-white flex items-center justify-center rounded-xl overflow-hidden shadow-lg decor-detail-image cursor-pointer"
+                    style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
                     onClick={() => {
                       const images = getAllImages();
                       const index = images.findIndex((img) => img === displayImage);
@@ -1522,16 +1523,18 @@ function DecorListing({
                     <Image
                       src={displayImage}
                       alt={decor.name}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 60vw"
-                      className="object-cover transition-transform duration-300 hover:scale-105"
+                      width={800}
+                      height={600}
+                      sizes="100vw"
+                      style={{ maxWidth: "100%", height: "auto", maxHeight: "500px", objectFit: "contain" }}
+                      className="w-full h-auto object-contain transition-transform duration-300 hover:scale-105"
                     />
                   </div>
                 )}
                 {displayVideo && (
                   <video
                     src={displayVideo}
-                    className="md:rounded-xl w-full h-full object-contain overflow-hidden absolute top-0"
+                    className="rounded-xl w-full object-contain overflow-hidden"
                     controls
                     autoPlay
                     muted
@@ -1794,8 +1797,8 @@ function DecorListing({
               <p className="text-2xl font-semibold text-center tracking-wide uppercase">
                 {decor.name} ({decor?.productInfo.id})
               </p>
-              <div 
-                className={`relative pt-[75%] mx-8 md:mx-16 cursor-pointer`}
+              <div
+                className="max-h-[500px] w-full bg-white flex items-center justify-center rounded-xl overflow-hidden mx-8 md:mx-16 cursor-pointer"
                 onClick={() => {
                   const currentImage = productVariant
                     ? decor.productVariants.find(
@@ -1803,7 +1806,6 @@ function DecorListing({
                       )?.image
                     : decor?.image;
                   const images = getAllImages();
-                  // If current image is from variant, use it; otherwise find index
                   const index = currentImage && images.includes(currentImage)
                     ? images.findIndex((img) => img === currentImage)
                     : 0;
@@ -1819,9 +1821,11 @@ function DecorListing({
                       : decor?.image
                   }
                   alt={decor.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover md:rounded-xl transition-transform duration-300 hover:scale-105"
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  style={{ width: "100%", height: "100%", maxHeight: "500px", objectFit: "contain" }}
+                  className="transition-transform duration-300 hover:scale-105"
                 />
               </div>
             </div>
@@ -2013,11 +2017,48 @@ export async function getServerSideProps(context) {
       };
     }
     
-    // Fetch similar decor filtered by the same category
-    const similarDecorResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/decor?similarDecorFor=${decor_id}&category=${encodeURIComponent(decor.category)}`
-    );
-    const similarDecor = await similarDecorResponse.json();
+    // Extract productVariation fields safely
+    const occasions = (decor.productVariation?.occassion || []).filter(Boolean);
+    const colors = (decor.productVariation?.colors || []).filter(Boolean);
+    const style = decor.productVariation?.style || "";
+
+    // Step 1 — strict: same category + occasion + color + style
+    const step1Params = new URLSearchParams({ similarDecorFor: decor_id, category: decor.category, limit: "20" });
+    if (occasions.length) step1Params.set("occassion", occasions.join("|"));
+    if (colors.length) step1Params.set("color", colors.join("|"));
+    if (style && style !== "Both") step1Params.set("style", style);
+
+    const step1Response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/decor?${step1Params}`);
+    const step1Data = await step1Response.json();
+    let combined = step1Data.list || [];
+
+    const mergeInto = (list) => {
+      const seenIds = new Set(combined.map((i) => String(i._id)));
+      for (const item of list) {
+        if (!seenIds.has(String(item._id))) {
+          combined.push(item);
+          seenIds.add(String(item._id));
+        }
+      }
+    };
+
+    // Step 1.5 — drop color/style, keep occasion (only when Step 1 was strict and still < 20)
+    if (combined.length < 20 && occasions.length && (colors.length || (style && style !== "Both"))) {
+      const step15Params = new URLSearchParams({ similarDecorFor: decor_id, category: decor.category, occassion: occasions.join("|"), limit: "20" });
+      const step15Response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/decor?${step15Params}`);
+      const step15Data = await step15Response.json();
+      mergeInto(step15Data.list || []);
+    }
+
+    // Step 2 — category only (fires if still < 20 after steps 1 and 1.5)
+    if (combined.length < 20) {
+      const step2Params = new URLSearchParams({ similarDecorFor: decor_id, category: decor.category, limit: "20" });
+      const step2Response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/decor?${step2Params}`);
+      const step2Data = await step2Response.json();
+      mergeInto(step2Data.list || []);
+    }
+
+    const similarDecorList = combined.filter((i) => String(i._id) !== String(decor_id)).slice(0, 20);
     
     const categoryResponse = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/category`
@@ -2026,7 +2067,7 @@ export async function getServerSideProps(context) {
     const category = categoryList.find((i) => i.name === decor.category);
     return {
       props: {
-        similarDecor: similarDecor.list,
+        similarDecor: similarDecorList,
         decor,
         category,
         categoryList,

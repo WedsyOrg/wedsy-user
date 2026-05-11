@@ -313,7 +313,7 @@ const ClipboardVisual = React.memo(() => (
       alt="Clipboard"
       width={450}
       height={600}
-      className="z-10 relative object-contain"
+      className="z-10 relative object-contain max-w-full h-auto"
     />
   </div>
 ));
