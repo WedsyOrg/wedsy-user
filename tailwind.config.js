@@ -55,6 +55,36 @@ module.exports = {
           "50%": { transform: "scale(1)" },
         },
       },
+      colors: {
+        wedsy: {
+          ivory: "#FBF7F2",
+          "ivory-2": "#F5EFE6",
+          rose: {
+            50: "#FAEEEA",
+            100: "#F2D9D1",
+            200: "#E8B8A8",
+            400: "#C97A65",
+            600: "#9C4A38",
+          },
+          burgundy: {
+            DEFAULT: "#5B1F1A",
+            soft: "#7A2E26",
+          },
+          ink: {
+            DEFAULT: "#1F1A17",
+            2: "#4A4038",
+            3: "#8B7E72",
+          },
+          gold: "#B08A4A",
+          green: "#4A7A4F",
+          amber: "#B07A2A",
+          danger: "#9C3A3A",
+        },
+      },
+      fontFamily: {
+        serif: ['"Cormorant Garamond"', "Georgia", "serif"],
+        sans: ["Inter", "Montserrat", "system-ui", "sans-serif"],
+      },
     },
   },
   plugins: [require("flowbite/plugin")],

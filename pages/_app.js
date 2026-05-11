@@ -7,6 +7,7 @@ import { EventPageSkeleton } from "@/components/skeletons/event";
 import { BiddingPageSkeleton, MakeupAndBeautyPageSkeleton, MakeupArtistsPageSkeleton, WedsyPackagesPageSkeleton } from "@/components/skeletons/makeup-store";
 import { DecorPageSkeleton } from "@/components/skeletons/wedding-store";
 import "@/styles/globals.css";
+import "@/styles/wedsy-design-system.css";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
 import { Spinner } from "flowbite-react";
 import Head from "next/head";
@@ -23,7 +24,7 @@ function App({ Component, pageProps }) {
   const [openLoginModalv2, setOpenLoginModalv2] = useState(false);
   const [loginSource, setLoginSource] = useState("");
   const restrictedPaths = [
-    "/wishlist", "/my-account", "/event", "/payments", "/my-orders", "/my-bids", "/chat",
+    "/wishlist", "/my-account", "/event", "/payments", "/my-orders", "/my-bids", "/chat", "/profile",
     "/makeup-and-beauty/wedsy-packages/checkout",
   ];
 
