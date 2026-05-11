@@ -11,7 +11,7 @@ function pickPrimaryEvent(events) {
   return sorted[0];
 }
 
-export default function useProfileData({ token }) {
+export default function useProfileData({ token, selectedEventId }) {
   const [event, setEvent] = useState(null);
   const [events, setEvents] = useState([]);
   const [eventLoading, setEventLoading] = useState(true);
@@ -68,17 +68,21 @@ export default function useProfileData({ token }) {
         return;
       }
       setEvents(eventList || []);
-      const primary = pickPrimaryEvent(eventList);
-      setEvent(primary);
+      let chosen = null;
+      if (selectedEventId && Array.isArray(eventList)) {
+        chosen = eventList.find((e) => e._id === selectedEventId) || null;
+      }
+      if (!chosen) chosen = pickPrimaryEvent(eventList);
+      setEvent(chosen);
       setEventLoading(false);
-      if (primary?._id) {
-        loadMilestones(primary._id);
+      if (chosen?._id) {
+        loadMilestones(chosen._id);
       } else {
         setMilestones([]);
       }
     };
     loadAll();
-  }, [token, loadMilestones]);
+  }, [token, loadMilestones, selectedEventId]);
 
   const refetchMilestones = useCallback(() => {
     if (event?._id) return loadMilestones(event._id);
