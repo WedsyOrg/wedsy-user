@@ -1,4 +1,5 @@
 import AccountList from "@/components/profile/AccountList";
+import DesktopLayout from "@/components/profile/DesktopLayout";
 import EmptyStateStep1 from "@/components/profile/EmptyStateStep1";
 import EmptyStateStep2 from "@/components/profile/EmptyStateStep2";
 import EventDaysCarousel from "@/components/profile/EventDaysCarousel";
@@ -77,6 +78,7 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
 
   const {
     event,
+    events,
     eventLoading,
     eventError,
     milestones,
@@ -114,7 +116,7 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
       <Head>
         <title>Profile · Wedsy</title>
       </Head>
-      <div className="wedsy-screen-container">
+      <div className="wedsy-screen-container wedsy-desktop-container">
         {eventLoading ? (
           <p className="wedsy-subtitle" style={{ padding: "60px 24px", textAlign: "center" }}>Loading…</p>
         ) : eventError ? (
@@ -131,7 +133,7 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
             onComplete={(data) => console.log("Mock complete event days:", data)}
           />
         ) : (
-          <>
+          <DesktopLayout event={event} events={events}>
             <ProfileHero
               coupleName={deriveCoupleName(event)}
               weddingDate={deriveWeddingDate(event)}
@@ -167,7 +169,7 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
               items={MOCK_ACCOUNT_ITEMS}
               onSignOut={() => console.log("Mock sign out")}
             />
-          </>
+          </DesktopLayout>
         )}
       </div>
     </>

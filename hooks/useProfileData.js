@@ -13,6 +13,7 @@ function pickPrimaryEvent(events) {
 
 export default function useProfileData({ token }) {
   const [event, setEvent] = useState(null);
+  const [events, setEvents] = useState([]);
   const [eventLoading, setEventLoading] = useState(true);
   const [eventError, setEventError] = useState(null);
   const [milestones, setMilestones] = useState([]);
@@ -57,15 +58,17 @@ export default function useProfileData({ token }) {
         setEventLoading(true);
         setEventError(null);
       }
-      const { data: events, error } = await fetchEvents(token);
+      const { data: eventList, error } = await fetchEvents(token);
       if (!isMountedRef.current) return;
       if (error) {
         setEventError(error);
         setEvent(null);
+        setEvents([]);
         setEventLoading(false);
         return;
       }
-      const primary = pickPrimaryEvent(events);
+      setEvents(eventList || []);
+      const primary = pickPrimaryEvent(eventList);
       setEvent(primary);
       setEventLoading(false);
       if (primary?._id) {
@@ -84,6 +87,7 @@ export default function useProfileData({ token }) {
 
   return {
     event,
+    events,
     eventLoading,
     eventError,
     milestones,
