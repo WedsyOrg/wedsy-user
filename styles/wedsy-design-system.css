@@ -53,3 +53,9 @@
   opacity: 0.3;
   border: 0;
 }
+
+@media (min-width: 1024px) {
+  .wedsy-desktop-container {
+    max-width: none;
+  }
+}
