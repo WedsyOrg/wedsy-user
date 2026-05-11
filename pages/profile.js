@@ -65,6 +65,7 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
   const [regenerating, setRegenerating] = useState(false);
   const [regenerateError, setRegenerateError] = useState(null);
   const [regenerateResult, setRegenerateResult] = useState(null);
+  const [selectedEventId, setSelectedEventId] = useState(null);
 
   useEffect(() => {
     CheckLogin();
@@ -76,6 +77,16 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
     }
   }, []);
 
+  useEffect(() => {
+    if (!router.isReady) return;
+    const urlId = typeof router.query.eventId === "string" ? router.query.eventId : "";
+    try {
+      const id = urlId || localStorage.getItem("wedsy.selectedEventId");
+      if (id) setSelectedEventId(id);
+      if (urlId) localStorage.setItem("wedsy.selectedEventId", urlId);
+    } catch {}
+  }, [router.isReady, router.query.eventId]);
+
   const {
     event,
     events,
@@ -85,7 +96,7 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
     milestonesLoading,
     milestonesError,
     refetchMilestones,
-  } = useProfileData({ token });
+  } = useProfileData({ token, selectedEventId });
 
   if (!user?.name) {
     return (
@@ -110,6 +121,8 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
   const isEventPast = weddingDate ? new Date(weddingDate) < new Date() : false;
   const showPastEventCard = isEventPast && !!regenerateResult && !regenerateResult.add?.length && !regenerateResult.adjust?.length && !regenerateResult.remove?.length;
   const handleCreateNewEvent = () => router.push("/profile?state=empty1");
+  const handleSwitchEvent = (eventId) => router.push({ pathname: "/profile", query: { eventId } }, undefined, { shallow: true });
+  const handleManageAll = () => router.push("/event");
 
   return (
     <>
@@ -133,7 +146,7 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
             onComplete={(data) => console.log("Mock complete event days:", data)}
           />
         ) : (
-          <DesktopLayout event={event} events={events}>
+          <DesktopLayout event={event} events={events} onSwitchEvent={handleSwitchEvent} onCreateNewEvent={handleCreateNewEvent} onManageAllEvents={handleManageAll}>
             <ProfileHero
               coupleName={deriveCoupleName(event)}
               weddingDate={deriveWeddingDate(event)}

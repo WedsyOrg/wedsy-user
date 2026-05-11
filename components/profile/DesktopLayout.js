@@ -1,7 +1,7 @@
+import EventSwitcherDropdown from "@/components/profile/EventSwitcherDropdown";
 import {
   Bookmark,
   CalendarRange,
-  ChevronDown,
   CreditCard,
   Hammer,
   Heart,
@@ -23,16 +23,6 @@ function deriveMonogram(event) {
     .map((w) => w[0]?.toUpperCase() || "")
     .join("");
   return initials || "W";
-}
-
-function deriveEventMeta(event, events) {
-  const count = events?.length || 1;
-  const lastDay = event?.eventDays?.[event.eventDays.length - 1];
-  const countLabel = `${count} event${count === 1 ? "" : "s"}`;
-  if (!lastDay?.date) return countLabel;
-  const d = new Date(lastDay.date);
-  const month = d.toLocaleString("en-GB", { month: "short" });
-  return `${d.getDate()} ${month} ${d.getFullYear()} · ${countLabel}`;
 }
 
 const NAV_ICON_PROPS = { size: 16, strokeWidth: 1.5 };
@@ -75,9 +65,15 @@ function PlaceholderCard({ eyebrow, label }) {
   );
 }
 
-export default function DesktopLayout({ event, events, children }) {
+export default function DesktopLayout({
+  event,
+  events,
+  onSwitchEvent,
+  onCreateNewEvent,
+  onManageAllEvents,
+  children,
+}) {
   const monogram = deriveMonogram(event);
-  const eventMeta = deriveEventMeta(event, events);
 
   return (
     <div className="lg:grid lg:grid-cols-[240px_minmax(0,1fr)_320px] lg:min-h-screen">
@@ -85,17 +81,13 @@ export default function DesktopLayout({ event, events, children }) {
         <div className="text-center pb-4 border-b border-wedsy-rose-100">
           <span className="font-serif text-[36px] tracking-[4px] text-wedsy-burgundy">{monogram}</span>
         </div>
-        <div className="py-5 border-b border-wedsy-rose-100 cursor-pointer">
-          <div className="flex items-center justify-between">
-            <div className="min-w-0">
-              <div className="font-serif text-[19px] leading-tight text-wedsy-ink truncate">
-                {event?.name || "Your wedding"}
-              </div>
-              <div className="text-[11px] text-wedsy-ink-3 mt-1">{eventMeta}</div>
-            </div>
-            <ChevronDown size={14} className="text-wedsy-rose-600 shrink-0 ml-2" />
-          </div>
-        </div>
+        <EventSwitcherDropdown
+          event={event}
+          events={events}
+          onSwitch={onSwitchEvent}
+          onCreateNew={onCreateNewEvent}
+          onManageAll={onManageAllEvents}
+        />
         <nav className="flex-1 mt-2">
           <SectionLabel>This wedding</SectionLabel>
           <NavRow icon={LayoutDashboard} label="Dashboard" active />
