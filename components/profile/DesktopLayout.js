@@ -10,6 +10,8 @@ import {
   LogOut,
   MessageCircle,
   Package,
+  Sparkles,
+  Store,
   UserCircle,
 } from "lucide-react";
 import Link from "next/link";
@@ -27,13 +29,13 @@ function deriveMonogram(event) {
 
 const NAV_ICON_PROPS = { size: 16, strokeWidth: 1.5 };
 
-function NavRow({ icon: Icon, label, active = false, badge }) {
+function NavRow({ icon: Icon, label, active = false, badge, href }) {
   const base = "flex items-center justify-between gap-3 px-3 py-2 text-[13px] transition-colors";
   const tone = active
     ? "bg-wedsy-rose-50 text-wedsy-ink font-medium"
     : "text-wedsy-ink-2 hover:bg-wedsy-rose-50/40";
-  return (
-    <Link href="#" className={`${base} ${tone}`}>
+  const content = (
+    <>
       <span className="flex items-center gap-3">
         <Icon {...NAV_ICON_PROPS} className="text-wedsy-rose-600" />
         {label}
@@ -43,8 +45,9 @@ function NavRow({ icon: Icon, label, active = false, badge }) {
           {badge}
         </span>
       )}
-    </Link>
+    </>
   );
+  return <Link href={href || "#"} className={`${base} ${tone}`}>{content}</Link>;
 }
 
 function SectionLabel({ children }) {
@@ -101,6 +104,9 @@ export default function DesktopLayout({
           <SectionLabel>Discover</SectionLabel>
           <NavRow icon={Bookmark} label="Inspiration" />
           <NavRow icon={MessageCircle} label="Support" />
+          <SectionLabel>Browse</SectionLabel>
+          <NavRow icon={Store} label="Wedding Store" href="/wedding-store" />
+          <NavRow icon={Sparkles} label="Makeup & Beauty" href="/makeup-and-beauty" />
         </nav>
         <div className="pt-4 border-t border-wedsy-rose-100 mt-2">
           <NavRow icon={UserCircle} label="Account" />
