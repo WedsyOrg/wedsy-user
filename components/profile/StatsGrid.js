@@ -6,7 +6,7 @@ export default function StatsGrid({ stats = [] }) {
       <p className="wedsy-eyebrow">AT A GLANCE</p>
       <h2 className="wedsy-title text-[24px] mt-2 text-wedsy-ink">How things stand</h2>
 
-      <div className="grid grid-cols-2 gap-3 mt-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-5">
         {stats.map((s, i) => (
           <div key={i} className="bg-wedsy-ivory-2 border border-wedsy-rose-100 p-4">
             <p className="text-[10px] tracking-[1px] uppercase font-medium text-wedsy-rose-600">
