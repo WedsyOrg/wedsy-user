@@ -6,6 +6,7 @@ import EventDaysCarousel from "@/components/profile/EventDaysCarousel";
 import InspirationCard from "@/components/profile/InspirationCard";
 import ProfileHero from "@/components/profile/ProfileHero";
 import StatsGrid from "@/components/profile/StatsGrid";
+import TimelineCanvas from "@/components/profile/TimelineCanvas";
 import TimelineCard from "@/components/profile/TimelineCard";
 import useProfileData from "@/hooks/useProfileData";
 import { regenerateTimeline } from "@/utils/api/wedding-timeline";
@@ -153,12 +154,12 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
               eventDayCount={event.eventDays?.length || 0}
               eventDayNames={deriveEventDayNames(event)}
             />
-            <TimelineCard
-              milestones={milestones}
-              onRegenerate={handleRegenerate}
-              onViewAll={() => console.log("Mock view all")}
-              regenerating={regenerating}
-            />
+            <div className="lg:hidden">
+              <TimelineCard milestones={milestones} onRegenerate={handleRegenerate} onViewAll={() => console.log("Mock view all")} regenerating={regenerating} />
+            </div>
+            <div className="hidden lg:block">
+              <TimelineCanvas milestones={milestones} weddingDate={deriveWeddingDate(event)} loading={milestonesLoading} error={milestonesError} regenerating={regenerating} onRegenerate={handleRegenerate} />
+            </div>
             {milestonesLoading && <p className="px-6 -mt-4 mb-6 font-serif italic text-[12px] text-wedsy-ink-3 text-center">Loading timeline…</p>}
             {milestonesError && <p className="px-6 -mt-4 mb-6 font-serif italic text-[12px] text-wedsy-ink-3 text-center">Unable to load timeline. Please reload.</p>}
             {regenerateError && <p className="px-6 -mt-4 mb-6 font-serif italic text-[12px] text-wedsy-ink-3 text-center">{REGEN_ERROR_MESSAGES[regenerateError.code] || "Couldn't regenerate. Please try again."}</p>}
