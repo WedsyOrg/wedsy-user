@@ -39,6 +39,9 @@ const MOCK_ACCOUNT_ITEMS = [
 ];
 
 function deriveCoupleName(event) {
+  if (event?.brideName && event?.groomName) {
+    return `${event.groomName} x ${event.brideName}`;
+  }
   return event?.name || "Your wedding";
 }
 
@@ -141,6 +144,8 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
           />
         ) : explicitEmptyState === "empty2" || shouldShowEmpty2(event, eventLoading) ? (
           <EmptyStateStep2
+            groomName={event.groomName}
+            brideName={event.brideName}
             eventName={event.name || "Your wedding"}
             community={event.community || "Hindu"}
             onBack={() => console.log("Mock back from step 2")}
