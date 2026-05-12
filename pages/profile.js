@@ -164,10 +164,10 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
             {milestonesError && <p className="px-6 -mt-4 mb-6 font-serif italic text-[12px] text-wedsy-ink-3 text-center">Unable to load timeline. Please reload.</p>}
             {regenerateError && <p className="px-6 -mt-4 mb-6 font-serif italic text-[12px] text-wedsy-ink-3 text-center">{REGEN_ERROR_MESSAGES[regenerateError.code] || "Couldn't regenerate. Please try again."}</p>}
             {showPastEventCard && (
-              <div className="px-6 mt-4 mb-8 text-center">
-                <p className="font-serif italic text-[15px] text-wedsy-ink leading-snug">Your celebration is complete — we hope it was unforgettable.</p>
-                <p className="font-sans text-[12px] text-wedsy-ink-3 mt-3 mb-3">Planning another?</p>
-                <button onClick={handleCreateNewEvent} className="text-[11px] tracking-[2px] uppercase font-medium text-wedsy-rose-600">Create a new event →</button>
+              <div className="px-6 mt-4 mb-8 text-center lg:max-w-[720px] lg:mx-auto lg:py-16">
+                <p className="font-serif italic text-[15px] text-wedsy-ink leading-snug lg:text-[20px] lg:leading-[1.4]">Your celebration is complete — we hope it was unforgettable.</p>
+                <p className="font-sans text-[12px] text-wedsy-ink-3 mt-3 mb-3 lg:text-[14px] lg:mt-6 lg:mb-5">Planning another?</p>
+                <button onClick={handleCreateNewEvent} className="text-[11px] tracking-[2px] uppercase font-medium text-wedsy-rose-600 lg:text-[12px] lg:tracking-[3px] hover:text-wedsy-burgundy">Create a new event →</button>
               </div>
             )}
             <EventDaysCarousel eventDays={event.eventDays || []} />
