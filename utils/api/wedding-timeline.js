@@ -68,3 +68,12 @@ export async function regenerateTimeline(eventId, token) {
 export async function fetchEvents(token) {
   return authedRequest("GET", `/event`, token);
 }
+
+export async function markMilestoneComplete(eventId, milestoneId, token) {
+  return authedRequest(
+    "PATCH",
+    `/event/${eventId}/wedding-timeline/${milestoneId}`,
+    token,
+    { status: "COMPLETED" }
+  );
+}

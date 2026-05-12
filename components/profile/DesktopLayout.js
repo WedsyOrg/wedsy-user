@@ -1,4 +1,7 @@
 import EventSwitcherDropdown from "@/components/profile/EventSwitcherDropdown";
+import InspirationCard from "@/components/profile/InspirationCard";
+import NextUpCard from "@/components/profile/NextUpCard";
+import ThisWeekList from "@/components/profile/ThisWeekList";
 import {
   Bookmark,
   CalendarRange,
@@ -58,22 +61,18 @@ function SectionLabel({ children }) {
   );
 }
 
-function PlaceholderCard({ eyebrow, label }) {
-  return (
-    <div className="bg-white border border-wedsy-rose-100 rounded p-6">
-      <p className="text-[10px] tracking-[2px] uppercase font-medium text-wedsy-rose-600">{eyebrow}</p>
-      <p className="font-serif text-[16px] text-wedsy-ink mt-2">{label}</p>
-      <p className="font-serif italic text-[12px] text-wedsy-ink-3 mt-1">(coming in 1.5.E)</p>
-    </div>
-  );
-}
-
 export default function DesktopLayout({
   event,
   events,
+  milestones,
+  eventId,
+  token,
+  inspiration,
   onSwitchEvent,
   onCreateNewEvent,
   onManageAllEvents,
+  onMilestoneComplete,
+  onInspirationTap,
   children,
 }) {
   const monogram = deriveMonogram(event);
@@ -117,11 +116,22 @@ export default function DesktopLayout({
       <main className="lg:py-12 lg:px-14">{children}</main>
 
       <aside className="hidden lg:block bg-wedsy-ivory border-l border-wedsy-rose-100 px-7 py-14">
-        <div className="space-y-6">
-          <PlaceholderCard eyebrow="NEXT UP" label="Next-up callout" />
-          <PlaceholderCard eyebrow="INSPIRATION" label="Inspiration card" />
-          <PlaceholderCard eyebrow="THIS WEEK" label="This week" />
-        </div>
+        <NextUpCard
+          milestones={milestones}
+          eventId={eventId}
+          token={token}
+          onComplete={onMilestoneComplete}
+        />
+        {inspiration && (
+          <InspirationCard
+            imageSrc={inspiration.imageSrc}
+            tagline={inspiration.tagline}
+            headline={inspiration.headline}
+            ctaLabel={inspiration.ctaLabel}
+            onTap={onInspirationTap}
+          />
+        )}
+        <ThisWeekList milestones={milestones} />
       </aside>
     </div>
   );

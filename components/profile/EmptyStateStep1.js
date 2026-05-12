@@ -14,12 +14,12 @@ export default function EmptyStateStep1({ onContinue }) {
   };
 
   return (
-    <section className="text-center pt-12 pb-10 px-6">
+    <section className="text-center pt-12 pb-10 px-6 lg:max-w-[600px] lg:mx-auto lg:py-16">
       <p className="wedsy-eyebrow">STEP 1 OF 2</p>
-      <h1 className="wedsy-title text-[36px] leading-[1.1] mt-3 text-wedsy-ink">
+      <h1 className="wedsy-title text-[36px] leading-[1.1] mt-3 text-wedsy-ink lg:text-[44px]">
         Tell us about your wedding
       </h1>
-      <p className="wedsy-italic-em text-[15px] mt-2">
+      <p className="wedsy-italic-em text-[15px] mt-2 lg:text-[16px]">
         We&apos;ll build your dashboard around this
       </p>
       <div className="wedsy-ornament-divider my-6 mx-auto"></div>
@@ -71,7 +71,7 @@ export default function EmptyStateStep1({ onContinue }) {
         type="button"
         disabled={!canContinue}
         onClick={handleContinue}
-        className="mt-10 w-full py-3 bg-wedsy-rose-600 text-white text-[13px] tracking-[2px] uppercase font-medium disabled:bg-wedsy-ink-3 disabled:cursor-not-allowed transition-colors"
+        className="mt-10 w-full py-3 bg-wedsy-rose-600 text-white text-[13px] tracking-[2px] uppercase font-medium disabled:bg-wedsy-ink-3 disabled:cursor-not-allowed transition-colors lg:w-auto lg:px-12 lg:mx-auto lg:block"
       >
         Continue
       </button>
