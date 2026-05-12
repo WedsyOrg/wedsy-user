@@ -20,9 +20,9 @@ export default function EventDaysCarousel({ eventDays = [] }) {
       <p className="wedsy-eyebrow px-6">YOUR EVENTS</p>
       <h2 className="wedsy-title text-[24px] mt-2 text-wedsy-ink px-6">{heading}</h2>
 
-      <div className="mt-5 flex gap-3 overflow-x-auto scrollbar-hide px-6">
+      <div className="mt-5 flex gap-3 overflow-x-auto scrollbar-hide px-6 lg:grid lg:grid-cols-3 lg:gap-4 lg:overflow-visible">
         {eventDays.length === 0 ? (
-          <div className="w-[260px] shrink-0 bg-wedsy-ivory-2 border border-wedsy-rose-100 p-5">
+          <div className="w-[260px] shrink-0 bg-wedsy-ivory-2 border border-wedsy-rose-100 p-5 lg:w-auto lg:col-span-3">
             <p className="wedsy-italic-em text-[13px] text-wedsy-ink-3 text-center">
               Add your event days to see them here
             </p>
@@ -31,7 +31,7 @@ export default function EventDaysCarousel({ eventDays = [] }) {
           eventDays.map((day, i) => (
             <article
               key={i}
-              className="w-[260px] shrink-0 bg-wedsy-ivory-2 border border-wedsy-rose-100 p-5"
+              className="w-[260px] shrink-0 bg-wedsy-ivory-2 border border-wedsy-rose-100 p-5 lg:w-auto"
             >
               <p className="text-[10px] tracking-[1px] uppercase font-medium text-wedsy-rose-600">
                 Day {i + 1}
