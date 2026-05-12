@@ -22,7 +22,7 @@ export default function InspirationCard({
         type="button"
         onClick={onTap}
         style={cardStyle}
-        className={`relative w-full aspect-[4/3] mt-5 border border-wedsy-rose-100 overflow-hidden text-left ${
+        className={`relative w-full aspect-[4/3] lg:aspect-[3/4] mt-5 border border-wedsy-rose-100 overflow-hidden text-left ${
           imageSrc ? "" : "bg-wedsy-rose-100"
         }`}
       >

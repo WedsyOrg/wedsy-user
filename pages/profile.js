@@ -147,7 +147,7 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
             onComplete={(data) => console.log("Mock complete event days:", data)}
           />
         ) : (
-          <DesktopLayout event={event} events={events} onSwitchEvent={handleSwitchEvent} onCreateNewEvent={handleCreateNewEvent} onManageAllEvents={handleManageAll}>
+          <DesktopLayout event={event} events={events} milestones={milestones} eventId={event?._id} token={token} inspiration={MOCK_INSPIRATION} onSwitchEvent={handleSwitchEvent} onCreateNewEvent={handleCreateNewEvent} onManageAllEvents={handleManageAll} onMilestoneComplete={refetchMilestones} onInspirationTap={() => console.log("Mock inspiration tap")}>
             <ProfileHero
               coupleName={deriveCoupleName(event)}
               weddingDate={deriveWeddingDate(event)}
@@ -172,17 +172,12 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
             )}
             <EventDaysCarousel eventDays={event.eventDays || []} />
             <StatsGrid stats={MOCK_STATS} />
-            <InspirationCard
-              imageSrc={MOCK_INSPIRATION.imageSrc}
-              tagline={MOCK_INSPIRATION.tagline}
-              headline={MOCK_INSPIRATION.headline}
-              ctaLabel={MOCK_INSPIRATION.ctaLabel}
-              onTap={() => console.log("Mock inspiration tap")}
-            />
-            <AccountList
-              items={MOCK_ACCOUNT_ITEMS}
-              onSignOut={() => console.log("Mock sign out")}
-            />
+            <div className="lg:hidden">
+              <InspirationCard imageSrc={MOCK_INSPIRATION.imageSrc} tagline={MOCK_INSPIRATION.tagline} headline={MOCK_INSPIRATION.headline} ctaLabel={MOCK_INSPIRATION.ctaLabel} onTap={() => console.log("Mock inspiration tap")} />
+            </div>
+            <div className="lg:hidden">
+              <AccountList items={MOCK_ACCOUNT_ITEMS} onSignOut={() => console.log("Mock sign out")} />
+            </div>
           </DesktopLayout>
         )}
       </div>
