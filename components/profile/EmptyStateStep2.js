@@ -31,11 +31,11 @@ export default function EmptyStateStep2({ eventName, community, onBack, onComple
   };
 
   return (
-    <section className="pt-12 pb-10 px-6">
+    <section className="pt-12 pb-10 px-6 lg:max-w-[720px] lg:mx-auto lg:py-16">
       <div className="text-center">
         <p className="wedsy-eyebrow">STEP 2 OF 2</p>
-        <h1 className="wedsy-title text-[36px] leading-[1.1] mt-3 text-wedsy-ink">Your celebration days</h1>
-        <p className="wedsy-italic-em text-[15px] mt-2">Add each event of your wedding</p>
+        <h1 className="wedsy-title text-[36px] leading-[1.1] mt-3 text-wedsy-ink lg:text-[44px]">Your celebration days</h1>
+        <p className="wedsy-italic-em text-[15px] mt-2 lg:text-[16px]">Add each event of your wedding</p>
         <div className="wedsy-ornament-divider my-6 mx-auto"></div>
         <p className="text-[12px] tracking-[1px] uppercase text-wedsy-ink-3 font-medium">{eventName} · {community}</p>
       </div>
@@ -67,7 +67,7 @@ export default function EmptyStateStep2({ eventName, community, onBack, onComple
         </div>
       )}
 
-      <div className="mt-6 space-y-4">
+      <div className="mt-6 space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
         {eventDays.map((day, idx) => (
           <div key={idx} className="relative bg-wedsy-ivory-2 border border-wedsy-rose-100 p-4">
             <button
@@ -106,7 +106,7 @@ export default function EmptyStateStep2({ eventName, community, onBack, onComple
       <button
         type="button"
         onClick={addDay}
-        className="mt-4 w-full py-2 border border-wedsy-rose-400 text-wedsy-rose-600 text-[12px] tracking-[1px] uppercase font-medium hover:bg-wedsy-rose-50 transition-colors"
+        className="mt-4 w-full py-2 border border-wedsy-rose-400 text-wedsy-rose-600 text-[12px] tracking-[1px] uppercase font-medium hover:bg-wedsy-rose-50 transition-colors lg:w-auto lg:px-8 lg:mx-auto lg:block"
       >
         + Add another day
       </button>
