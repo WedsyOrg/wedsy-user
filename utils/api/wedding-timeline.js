@@ -77,3 +77,7 @@ export async function markMilestoneComplete(eventId, milestoneId, token) {
     { status: "COMPLETED" }
   );
 }
+
+export async function updateEvent(eventId, payload, token) {
+  return authedRequest("PUT", `/event/${eventId}`, token, payload);
+}

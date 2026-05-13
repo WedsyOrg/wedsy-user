@@ -3,6 +3,7 @@ import DesktopLayout from "@/components/profile/DesktopLayout";
 import EmptyStateStep1 from "@/components/profile/EmptyStateStep1";
 import EmptyStateStep2 from "@/components/profile/EmptyStateStep2";
 import EventDaysCarousel from "@/components/profile/EventDaysCarousel";
+import EventDaysEditor from "@/components/profile/EventDaysEditor";
 import InspirationCard from "@/components/profile/InspirationCard";
 import ProfileHero from "@/components/profile/ProfileHero";
 import StatsGrid from "@/components/profile/StatsGrid";
@@ -11,6 +12,7 @@ import TimelineCard from "@/components/profile/TimelineCard";
 import useProfileData from "@/hooks/useProfileData";
 import { regenerateTimeline } from "@/utils/api/wedding-timeline";
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -70,6 +72,8 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
   const [regenerateError, setRegenerateError] = useState(null);
   const [regenerateResult, setRegenerateResult] = useState(null);
   const [selectedEventId, setSelectedEventId] = useState(null);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorFocusIndex, setEditorFocusIndex] = useState(null);
 
   useEffect(() => {
     CheckLogin();
@@ -100,6 +104,7 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
     milestonesLoading,
     milestonesError,
     refetchMilestones,
+    refetchEvent,
   } = useProfileData({ token, selectedEventId });
 
   if (!user?.name) {
@@ -153,12 +158,7 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
           />
         ) : (
           <DesktopLayout event={event} events={events} milestones={milestones} eventId={event?._id} token={token} inspiration={MOCK_INSPIRATION} onSwitchEvent={handleSwitchEvent} onCreateNewEvent={handleCreateNewEvent} onManageAllEvents={handleManageAll} onMilestoneComplete={refetchMilestones} onInspirationTap={() => console.log("Mock inspiration tap")}>
-            <ProfileHero
-              coupleName={deriveCoupleName(event)}
-              weddingDate={deriveWeddingDate(event)}
-              eventDayCount={event.eventDays?.length || 0}
-              eventDayNames={deriveEventDayNames(event)}
-            />
+            <ProfileHero coupleName={deriveCoupleName(event)} weddingDate={deriveWeddingDate(event)} eventDayCount={event.eventDays?.length || 0} eventDayNames={deriveEventDayNames(event)} />
             <div className="lg:hidden">
               <TimelineCard milestones={milestones} onRegenerate={handleRegenerate} onViewAll={() => console.log("Mock view all")} regenerating={regenerating} />
             </div>
@@ -175,7 +175,15 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
                 <button onClick={handleCreateNewEvent} className="text-[11px] tracking-[2px] uppercase font-medium text-wedsy-rose-600 lg:text-[12px] lg:tracking-[3px] hover:text-wedsy-burgundy">Create a new event →</button>
               </div>
             )}
-            <EventDaysCarousel eventDays={event.eventDays || []} />
+            <EventDaysCarousel eventDays={event.eventDays || []} onCardClick={(i) => { setEditorFocusIndex(i); setEditorOpen(true); }} />
+            {editorOpen && event._id && (
+              <EventDaysEditor eventDays={event.eventDays || []} eventId={event._id} token={token} focusIndex={editorFocusIndex} onSave={async () => { await refetchEvent(); setEditorOpen(false); setEditorFocusIndex(null); }} onCancel={() => { setEditorOpen(false); setEditorFocusIndex(null); }} />
+            )}
+            {!editorOpen && event._id && (
+              <div className="mt-4 text-center">
+                <Link href={`/event/${event._id}/planner`} className="inline-block text-[11px] tracking-[2px] uppercase text-wedsy-rose-600 hover:text-wedsy-burgundy font-medium">View event planner →</Link>
+              </div>
+            )}
             <StatsGrid stats={MOCK_STATS} />
             <div className="lg:hidden">
               <InspirationCard imageSrc={MOCK_INSPIRATION.imageSrc} tagline={MOCK_INSPIRATION.tagline} headline={MOCK_INSPIRATION.headline} ctaLabel={MOCK_INSPIRATION.ctaLabel} onTap={() => console.log("Mock inspiration tap")} />
