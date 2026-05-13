@@ -9,7 +9,7 @@ function formatDay(isoDate) {
 const SPELLED = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
 const spell = (n) => (n < SPELLED.length ? SPELLED[n] : String(n));
 
-export default function EventDaysCarousel({ eventDays = [] }) {
+export default function EventDaysCarousel({ eventDays = [], onCardClick }) {
   const heading =
     eventDays.length === 1
       ? "One day of celebration"
@@ -31,7 +31,10 @@ export default function EventDaysCarousel({ eventDays = [] }) {
           eventDays.map((day, i) => (
             <article
               key={i}
-              className="w-[260px] shrink-0 bg-wedsy-ivory-2 border border-wedsy-rose-100 p-5 lg:w-auto"
+              onClick={onCardClick ? () => onCardClick(i) : undefined}
+              className={`w-[260px] shrink-0 bg-wedsy-ivory-2 border border-wedsy-rose-100 p-5 lg:w-auto ${
+                onCardClick ? "cursor-pointer lg:hover:border-wedsy-rose-600 lg:transition-colors" : ""
+              }`}
             >
               <p className="text-[10px] tracking-[1px] uppercase font-medium text-wedsy-rose-600">
                 Day {i + 1}
