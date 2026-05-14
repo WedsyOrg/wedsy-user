@@ -8,10 +8,10 @@ const NAME_INPUT_CLASS =
 const NAME_LABEL_CLASS =
   "block text-[11px] tracking-[1px] uppercase text-wedsy-ink-3 font-medium mb-2";
 
-export default function EmptyStateStep1({ onContinue }) {
-  const [groomName, setGroomName] = useState("");
-  const [brideName, setBrideName] = useState("");
-  const [community, setCommunity] = useState("");
+export default function EmptyStateStep1({ onContinue, initialValues }) {
+  const [groomName, setGroomName] = useState(initialValues?.groomName || "");
+  const [brideName, setBrideName] = useState(initialValues?.brideName || "");
+  const [community, setCommunity] = useState(initialValues?.community || "");
 
   const canContinue =
     groomName.trim().length > 0 &&

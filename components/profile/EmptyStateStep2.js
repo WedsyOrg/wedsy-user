@@ -13,6 +13,8 @@ export default function EmptyStateStep2({ groomName, brideName, eventName, commu
   const [sameVenue, setSameVenue] = useState(true);
   const [commonVenue, setCommonVenue] = useState("");
   const [eventDays, setEventDays] = useState([blankDay()]);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   const updateDay = (idx, patch) =>
     setEventDays((days) => days.map((d, i) => (i === idx ? { ...d, ...patch } : d)));
@@ -26,12 +28,19 @@ export default function EmptyStateStep2({ groomName, brideName, eventName, commu
     return eventDays.every((d) => d.venue.trim().length > 0);
   })();
 
-  const handleCreate = () => {
-    if (!isValid) return;
+  const handleCreate = async () => {
+    if (!isValid || submitting) return;
     const finalDays = sameVenue
       ? eventDays.map((d) => ({ ...d, venue: commonVenue.trim() }))
       : eventDays;
-    onComplete({ eventDays: finalDays });
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      await onComplete({ eventDays: finalDays });
+    } catch (err) {
+      setSubmitError(err?.message || "Couldn't create your event. Please try again.");
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -119,19 +128,25 @@ export default function EmptyStateStep2({ groomName, brideName, eventName, commu
         <button
           type="button"
           onClick={onBack}
-          className="flex-1 py-3 border border-wedsy-rose-400 text-wedsy-rose-600 text-[13px] tracking-[2px] uppercase font-medium hover:bg-wedsy-rose-50 transition-colors"
+          disabled={submitting}
+          className="flex-1 py-3 border border-wedsy-rose-400 text-wedsy-rose-600 text-[13px] tracking-[2px] uppercase font-medium hover:bg-wedsy-rose-50 transition-colors disabled:opacity-50"
         >
           Back
         </button>
         <button
           type="button"
-          disabled={!isValid}
+          disabled={!isValid || submitting}
           onClick={handleCreate}
           className="flex-1 py-3 bg-wedsy-rose-600 text-white text-[13px] tracking-[2px] uppercase font-medium disabled:bg-wedsy-ink-3 disabled:cursor-not-allowed transition-colors"
         >
-          Create
+          {submitting ? "Creating…" : "Create"}
         </button>
       </div>
+      {submitError && (
+        <p className="mt-4 font-serif italic text-[12px] text-wedsy-burgundy text-center">
+          {submitError}
+        </p>
+      )}
     </section>
   );
 }

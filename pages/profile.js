@@ -2,6 +2,7 @@ import AccountList from "@/components/profile/AccountList";
 import DesktopLayout from "@/components/profile/DesktopLayout";
 import EmptyStateStep1 from "@/components/profile/EmptyStateStep1";
 import EmptyStateStep2 from "@/components/profile/EmptyStateStep2";
+import EmptyStateWelcome from "@/components/profile/EmptyStateWelcome";
 import EventDaysCarousel from "@/components/profile/EventDaysCarousel";
 import EventDaysEditor from "@/components/profile/EventDaysEditor";
 import InspirationCard from "@/components/profile/InspirationCard";
@@ -10,11 +11,13 @@ import StatsGrid from "@/components/profile/StatsGrid";
 import TimelineCanvas from "@/components/profile/TimelineCanvas";
 import TimelineCard from "@/components/profile/TimelineCard";
 import useProfileData from "@/hooks/useProfileData";
-import { regenerateTimeline } from "@/utils/api/wedding-timeline";
+import { createEvent, regenerateTimeline, updateEvent } from "@/utils/api/wedding-timeline";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+
+const CREATION_DRAFT_KEY = "wedsy.creationDraft";
 
 const MOCK_STATS = [
   { label: "Days to wedding", value: 11 },
@@ -74,6 +77,16 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorFocusIndex, setEditorFocusIndex] = useState(null);
+  const [creationDraft, setCreationDraft] = useState(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const stored = window.sessionStorage.getItem(CREATION_DRAFT_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     CheckLogin();
@@ -107,7 +120,7 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
     refetchEvent,
   } = useProfileData({ token, selectedEventId });
 
-  if (!user?.name) {
+  if (!user?.phone) {
     return (
       <div className="wedsy-screen-container">
         <p className="wedsy-subtitle" style={{ padding: "60px 24px", textAlign: "center" }}>Loading…</p>
@@ -133,6 +146,62 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
   const handleSwitchEvent = (eventId) => router.push({ pathname: "/profile", query: { eventId } }, undefined, { shallow: true });
   const handleManageAll = () => router.push("/event");
 
+  const handleWelcomeCreateEvent = () => router.push("/profile?state=empty1");
+
+  const handleStep1Continue = (data) => {
+    const nextDraft = { ...(creationDraft || {}), ...data };
+    try {
+      window.sessionStorage.setItem(CREATION_DRAFT_KEY, JSON.stringify(nextDraft));
+    } catch {}
+    setCreationDraft(nextDraft);
+    router.push("/profile?state=empty2");
+  };
+
+  const handleStep2Back = () => router.push("/profile?state=empty1");
+
+  const handleStep2Complete = async (data) => {
+    if (!token) throw new Error("Not authenticated");
+    if (!creationDraft) throw new Error("Missing event details");
+    const days = data.eventDays || [];
+    if (!days.length) throw new Error("No event days");
+
+    setCreating(true);
+    try {
+      const firstDay = days[0];
+      const postPayload = {
+        groomName: creationDraft.groomName,
+        brideName: creationDraft.brideName,
+        community: creationDraft.community,
+        eventDay: firstDay.name,
+        date: firstDay.date,
+        time: firstDay.time,
+        venue: firstDay.venue,
+      };
+      const { data: postData, error: postError } = await createEvent(postPayload, token);
+      if (postError || !postData?._id) {
+        throw new Error("Couldn't create your event. Please try again.");
+      }
+      const newEventId = postData._id;
+
+      if (days.length > 1) {
+        const { error: putError } = await updateEvent(newEventId, { eventDays: days }, token);
+        if (putError) {
+          throw new Error("Event created but couldn't save all days. Please try again.");
+        }
+      }
+
+      try {
+        window.sessionStorage.removeItem(CREATION_DRAFT_KEY);
+      } catch {}
+      setCreationDraft(null);
+      setCreating(false);
+      router.push(`/profile?eventId=${newEventId}`);
+    } catch (err) {
+      setCreating(false);
+      throw err;
+    }
+  };
+
   return (
     <>
       <Head>
@@ -143,19 +212,42 @@ export default function Profile({ user, userLoggedIn, CheckLogin, setOpenLoginMo
           <p className="wedsy-subtitle" style={{ padding: "60px 24px", textAlign: "center" }}>Loading…</p>
         ) : eventError ? (
           <p className="font-serif italic text-[13px] text-wedsy-ink-3 text-center" style={{ padding: "60px 24px" }}>Unable to load your wedding. Please reload.</p>
-        ) : explicitEmptyState === "empty1" || shouldShowEmpty1(event, eventLoading) ? (
+        ) : explicitEmptyState === "empty1" ? (
           <EmptyStateStep1
-            onContinue={(data) => console.log("Mock create event step 1:", data)}
+            onContinue={handleStep1Continue}
+            initialValues={creationDraft}
           />
-        ) : explicitEmptyState === "empty2" || shouldShowEmpty2(event, eventLoading) ? (
+        ) : explicitEmptyState === "empty2" ? (
+          <EmptyStateStep2
+            groomName={creationDraft?.groomName || event?.groomName}
+            brideName={creationDraft?.brideName || event?.brideName}
+            eventName={event?.name || "Your wedding"}
+            community={creationDraft?.community || event?.community || "Hindu"}
+            onBack={handleStep2Back}
+            onComplete={handleStep2Complete}
+          />
+        ) : shouldShowEmpty2(event, eventLoading) ? (
           <EmptyStateStep2
             groomName={event.groomName}
             brideName={event.brideName}
             eventName={event.name || "Your wedding"}
             community={event.community || "Hindu"}
-            onBack={() => console.log("Mock back from step 2")}
-            onComplete={(data) => console.log("Mock complete event days:", data)}
+            onBack={handleStep2Back}
+            onComplete={handleStep2Complete}
           />
+        ) : shouldShowEmpty1(event, eventLoading) ? (
+          <DesktopLayout
+            event={null}
+            events={[]}
+            milestones={[]}
+            inspiration={MOCK_INSPIRATION}
+            onCreateNewEvent={handleCreateNewEvent}
+            onManageAllEvents={handleManageAll}
+            onInspirationTap={() => console.log("Mock inspiration tap")}
+            rightRailMode="minimal"
+          >
+            <EmptyStateWelcome onCreateEvent={handleWelcomeCreateEvent} />
+          </DesktopLayout>
         ) : (
           <DesktopLayout event={event} events={events} milestones={milestones} eventId={event?._id} token={token} inspiration={MOCK_INSPIRATION} onSwitchEvent={handleSwitchEvent} onCreateNewEvent={handleCreateNewEvent} onManageAllEvents={handleManageAll} onMilestoneComplete={refetchMilestones} onInspirationTap={() => console.log("Mock inspiration tap")}>
             <ProfileHero coupleName={deriveCoupleName(event)} weddingDate={deriveWeddingDate(event)} eventDayCount={event.eventDays?.length || 0} eventDayNames={deriveEventDayNames(event)} />
