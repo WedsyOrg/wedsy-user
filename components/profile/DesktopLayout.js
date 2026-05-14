@@ -73,6 +73,7 @@ export default function DesktopLayout({
   onManageAllEvents,
   onMilestoneComplete,
   onInspirationTap,
+  rightRailMode = "full",
   children,
 }) {
   const monogram = deriveMonogram(event);
@@ -116,12 +117,14 @@ export default function DesktopLayout({
       <main className="lg:py-12 lg:px-14">{children}</main>
 
       <aside className="hidden lg:block bg-wedsy-ivory border-l border-wedsy-rose-100 px-7 py-14">
-        <NextUpCard
-          milestones={milestones}
-          eventId={eventId}
-          token={token}
-          onComplete={onMilestoneComplete}
-        />
+        {rightRailMode === "full" && (
+          <NextUpCard
+            milestones={milestones}
+            eventId={eventId}
+            token={token}
+            onComplete={onMilestoneComplete}
+          />
+        )}
         {inspiration && (
           <InspirationCard
             imageSrc={inspiration.imageSrc}
@@ -131,7 +134,7 @@ export default function DesktopLayout({
             onTap={onInspirationTap}
           />
         )}
-        <ThisWeekList milestones={milestones} />
+        {rightRailMode === "full" && <ThisWeekList milestones={milestones} />}
       </aside>
     </div>
   );
