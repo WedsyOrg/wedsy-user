@@ -4275,7 +4275,7 @@ Tell us about your Wedding
 
 export async function getServerSideProps(context) {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8090';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     
     if (!apiUrl) {
       console.warn("NEXT_PUBLIC_API_URL not configured; returning empty packages list");

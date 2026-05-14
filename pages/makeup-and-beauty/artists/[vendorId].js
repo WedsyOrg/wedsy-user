@@ -107,9 +107,8 @@ function MakeupAndBeauty({ userLoggedIn, setOpenLoginModalv2, setSource, initial
   useEffect(() => {
     const generateShortUrl = async () => {
       try {
-        //change the localhost to your domain name when deploying
         const response = await fetch(
-          `https://tinyurl.com/api-create.php?url=http://localhost:3000/makeup-and-beauty/artists/${vendorId}`
+          `https://tinyurl.com/api-create.php?url=https://wedsy.in/makeup-and-beauty/artists/${vendorId}`
         );
         const shortLink = await response.text();
         setShortUrl(shortLink + "#reviews");
