@@ -48,12 +48,9 @@ export default function useProfileData({ token, selectedEventId }) {
     [token]
   );
 
-  useEffect(() => {
-    const loadAll = async () => {
-      if (!token) {
-        // Idle until a real token arrives. Initial eventLoading=true holds.
-        return;
-      }
+  const loadEvent = useCallback(
+    async ({ loadMilestonesAfter = true } = {}) => {
+      if (!token) return;
       if (isMountedRef.current) {
         setEventLoading(true);
         setEventError(null);
@@ -75,19 +72,27 @@ export default function useProfileData({ token, selectedEventId }) {
       if (!chosen) chosen = pickPrimaryEvent(eventList);
       setEvent(chosen);
       setEventLoading(false);
-      if (chosen?._id) {
+      if (loadMilestonesAfter && chosen?._id) {
         loadMilestones(chosen._id);
-      } else {
+      } else if (loadMilestonesAfter) {
         setMilestones([]);
       }
-    };
-    loadAll();
-  }, [token, loadMilestones, selectedEventId]);
+    },
+    [token, selectedEventId, loadMilestones]
+  );
+
+  useEffect(() => {
+    loadEvent();
+  }, [loadEvent]);
 
   const refetchMilestones = useCallback(() => {
     if (event?._id) return loadMilestones(event._id);
     return Promise.resolve();
   }, [event, loadMilestones]);
+
+  const refetchEvent = useCallback(() => {
+    return loadEvent({ loadMilestonesAfter: false });
+  }, [loadEvent]);
 
   return {
     event,
@@ -98,5 +103,6 @@ export default function useProfileData({ token, selectedEventId }) {
     milestonesLoading,
     milestonesError,
     refetchMilestones,
+    refetchEvent,
   };
 }

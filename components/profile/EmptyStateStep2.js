@@ -5,10 +5,16 @@ const blankDay = () => ({ name: "", date: "", time: "", venue: "" });
 const fieldClass =
   "w-full bg-transparent border-b border-wedsy-rose-100 px-0 py-2 text-wedsy-ink placeholder:font-serif placeholder:italic placeholder:text-wedsy-ink-3 focus:outline-none focus:border-wedsy-burgundy-soft transition-colors";
 
-export default function EmptyStateStep2({ eventName, community, onBack, onComplete }) {
+export default function EmptyStateStep2({ groomName, brideName, eventName, community, onBack, onComplete }) {
+  const displayName =
+    groomName && brideName
+      ? `${groomName} x ${brideName}`
+      : eventName || "Your wedding";
   const [sameVenue, setSameVenue] = useState(true);
   const [commonVenue, setCommonVenue] = useState("");
   const [eventDays, setEventDays] = useState([blankDay()]);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   const updateDay = (idx, patch) =>
     setEventDays((days) => days.map((d, i) => (i === idx ? { ...d, ...patch } : d)));
@@ -22,12 +28,19 @@ export default function EmptyStateStep2({ eventName, community, onBack, onComple
     return eventDays.every((d) => d.venue.trim().length > 0);
   })();
 
-  const handleCreate = () => {
-    if (!isValid) return;
+  const handleCreate = async () => {
+    if (!isValid || submitting) return;
     const finalDays = sameVenue
       ? eventDays.map((d) => ({ ...d, venue: commonVenue.trim() }))
       : eventDays;
-    onComplete({ eventDays: finalDays });
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      await onComplete({ eventDays: finalDays });
+    } catch (err) {
+      setSubmitError(err?.message || "Couldn't create your event. Please try again.");
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -37,7 +50,7 @@ export default function EmptyStateStep2({ eventName, community, onBack, onComple
         <h1 className="wedsy-title text-[36px] leading-[1.1] mt-3 text-wedsy-ink lg:text-[44px]">Your celebration days</h1>
         <p className="wedsy-italic-em text-[15px] mt-2 lg:text-[16px]">Add each event of your wedding</p>
         <div className="wedsy-ornament-divider my-6 mx-auto"></div>
-        <p className="text-[12px] tracking-[1px] uppercase text-wedsy-ink-3 font-medium">{eventName} · {community}</p>
+        <p className="text-[12px] tracking-[1px] uppercase text-wedsy-ink-3 font-medium">{displayName} · {community}</p>
       </div>
 
       <div className="mt-8 flex items-center justify-between">
@@ -115,19 +128,25 @@ export default function EmptyStateStep2({ eventName, community, onBack, onComple
         <button
           type="button"
           onClick={onBack}
-          className="flex-1 py-3 border border-wedsy-rose-400 text-wedsy-rose-600 text-[13px] tracking-[2px] uppercase font-medium hover:bg-wedsy-rose-50 transition-colors"
+          disabled={submitting}
+          className="flex-1 py-3 border border-wedsy-rose-400 text-wedsy-rose-600 text-[13px] tracking-[2px] uppercase font-medium hover:bg-wedsy-rose-50 transition-colors disabled:opacity-50"
         >
           Back
         </button>
         <button
           type="button"
-          disabled={!isValid}
+          disabled={!isValid || submitting}
           onClick={handleCreate}
           className="flex-1 py-3 bg-wedsy-rose-600 text-white text-[13px] tracking-[2px] uppercase font-medium disabled:bg-wedsy-ink-3 disabled:cursor-not-allowed transition-colors"
         >
-          Create
+          {submitting ? "Creating…" : "Create"}
         </button>
       </div>
+      {submitError && (
+        <p className="mt-4 font-serif italic text-[12px] text-wedsy-burgundy text-center">
+          {submitError}
+        </p>
+      )}
     </section>
   );
 }

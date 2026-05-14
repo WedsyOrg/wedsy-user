@@ -2,15 +2,29 @@ import { useState } from "react";
 
 const COMMUNITIES = ["Hindu", "Muslim", "Christian", "Sikh", "Jain", "Jewish", "Other"];
 
-export default function EmptyStateStep1({ onContinue }) {
-  const [eventName, setEventName] = useState("");
-  const [community, setCommunity] = useState("");
+const NAME_INPUT_CLASS =
+  "w-full bg-wedsy-ivory-2 border border-wedsy-rose-100 px-4 py-3 text-wedsy-ink placeholder:font-serif placeholder:italic placeholder:text-wedsy-ink-3 focus:outline-none focus:border-wedsy-burgundy-soft transition-colors";
 
-  const canContinue = eventName.trim().length > 0 && community.length > 0;
+const NAME_LABEL_CLASS =
+  "block text-[11px] tracking-[1px] uppercase text-wedsy-ink-3 font-medium mb-2";
+
+export default function EmptyStateStep1({ onContinue, initialValues }) {
+  const [groomName, setGroomName] = useState(initialValues?.groomName || "");
+  const [brideName, setBrideName] = useState(initialValues?.brideName || "");
+  const [community, setCommunity] = useState(initialValues?.community || "");
+
+  const canContinue =
+    groomName.trim().length > 0 &&
+    brideName.trim().length > 0 &&
+    community.length > 0;
 
   const handleContinue = () => {
     if (!canContinue) return;
-    onContinue({ eventName: eventName.trim(), community });
+    onContinue({
+      groomName: groomName.trim(),
+      brideName: brideName.trim(),
+      community,
+    });
   };
 
   return (
@@ -25,28 +39,37 @@ export default function EmptyStateStep1({ onContinue }) {
       <div className="wedsy-ornament-divider my-6 mx-auto"></div>
 
       <div className="text-left mt-8 space-y-6">
-        <div>
-          <label
-            htmlFor="profile-event-name"
-            className="block text-[11px] tracking-[1px] uppercase text-wedsy-ink-3 font-medium mb-2"
-          >
-            What should we call this celebration?
-          </label>
-          <input
-            id="profile-event-name"
-            type="text"
-            value={eventName}
-            onChange={(e) => setEventName(e.target.value)}
-            placeholder="e.g., Rohaan & Asiya"
-            className="w-full bg-wedsy-ivory-2 border border-wedsy-rose-100 px-4 py-3 text-wedsy-ink placeholder:font-serif placeholder:italic placeholder:text-wedsy-ink-3 focus:outline-none focus:border-wedsy-burgundy-soft transition-colors"
-          />
+        <div className="space-y-6 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+          <div>
+            <label htmlFor="profile-groom-name" className={NAME_LABEL_CLASS}>
+              Groom&apos;s name
+            </label>
+            <input
+              id="profile-groom-name"
+              type="text"
+              value={groomName}
+              onChange={(e) => setGroomName(e.target.value)}
+              placeholder="e.g., Rohaan"
+              className={NAME_INPUT_CLASS}
+            />
+          </div>
+          <div>
+            <label htmlFor="profile-bride-name" className={NAME_LABEL_CLASS}>
+              Bride&apos;s name
+            </label>
+            <input
+              id="profile-bride-name"
+              type="text"
+              value={brideName}
+              onChange={(e) => setBrideName(e.target.value)}
+              placeholder="e.g., Asiya"
+              className={NAME_INPUT_CLASS}
+            />
+          </div>
         </div>
 
         <div>
-          <label
-            htmlFor="profile-community"
-            className="block text-[11px] tracking-[1px] uppercase text-wedsy-ink-3 font-medium mb-2"
-          >
+          <label htmlFor="profile-community" className={NAME_LABEL_CLASS}>
             Community
           </label>
           <select
