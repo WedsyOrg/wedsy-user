@@ -1,4 +1,5 @@
 import Breadcrumbs from "@/components/Breadcrumbs";
+import ComingSoonPage from "@/components/ComingSoonPage";
 import DecorCard from "@/components/cards/DecorCard";
 import DecorDisclaimer from "@/components/marquee/DecorDisclaimer";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
@@ -8,7 +9,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { BsInstagram } from "react-icons/bs";
 
-function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
+function WeddingStore({ bestSeller, popular, spotlightList, categoryList, showComingSoon = false }) {
   const [spotlightIndex, setSpotlightIndex] = useState(0);
   const spotlightRef = useRef(null);
   const spotlightHorizontalRef = useRef(null);
@@ -114,6 +115,10 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
       }
     ]
   };
+
+  if (showComingSoon) {
+    return <ComingSoonPage pageName="wedding-store" />;
+  }
 
   return (
     <>
@@ -460,6 +465,12 @@ function WeddingStore({ bestSeller, popular, spotlightList, categoryList }) {
 }
 
 export async function getServerSideProps(context) {
+  const previewKey = process.env.PREVIEW_KEY;
+  const isPreview = context.query.preview === previewKey;
+  if (!isPreview) {
+    return { props: { showComingSoon: true } };
+  }
+
   try {
     const bestSellerResponse = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/decor?label=bestSeller`
