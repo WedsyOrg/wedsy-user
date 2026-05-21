@@ -1,5 +1,4 @@
 import Breadcrumbs from "@/components/Breadcrumbs";
-import ComingSoonPage from "@/components/ComingSoonPage";
 import DecorCard from "@/components/cards/DecorCard";
 import { processMobileNumber } from "@/utils/phoneNumber";
 import { trimTitle, trimDescription, OG_IMAGES } from "@/utils/seo";
@@ -19,7 +18,6 @@ function Decor({
   user,
   spotlightList = [],
   allCategories = [],
-  showComingSoon = false,
 }) {
   const [spotlightIndex, setSpotlightIndex] = useState(0);
   const spotlightRef = useRef(null);
@@ -493,10 +491,6 @@ function Decor({
       pbTimersRef.current = [];
     };
   }, []);
-
-  if (showComingSoon) {
-    return <ComingSoonPage pageName="decor" />;
-  }
 
   return (
     <div className="bg-[#F4F4F4] min-h-screen w-full">
@@ -2064,12 +2058,6 @@ function Decor({
 }
 
 export async function getServerSideProps(context) {
-  const previewKey = process.env.PREVIEW_KEY;
-  const isPreview = context.query.preview === previewKey;
-  if (!isPreview) {
-    return { props: { showComingSoon: true } };
-  }
-
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     if (!apiUrl) {
