@@ -78,45 +78,9 @@ export default function ComingSoon() {
                   textShadow: '1px 1px 4px rgba(0,0,0,0.5)',
                 }}
               >
-                We're meticulously crafting a new digital experience for WEDSY.
+                We're meticulously crafting a new digital experience for WEDSY. 
                 Soon, your dream wedding and makeup experiences will be just a click away.
               </motion.p>
-
-              {/* Contact block */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6, duration: 1 }}
-                className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-2"
-                style={{
-                  fontFamily: "'Montserrat', sans-serif",
-                }}
-              >
-                <a
-                  href="mailto:hello@wedsy.in"
-                  className="text-sm text-white/80 hover:text-white transition-colors"
-                  style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.5)' }}
-                >
-                  hello@wedsy.in
-                </a>
-                <span className="hidden sm:inline text-white/40">·</span>
-                <a
-                  href="tel:+916364849765"
-                  className="text-sm text-white/80 hover:text-white transition-colors"
-                  style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.5)' }}
-                >
-                  +91 63648 49765
-                </a>
-                <a
-                  href="https://wa.me/916364849765"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-white/30 rounded-full text-xs text-white/90 hover:bg-white/10 hover:border-white/50 transition-all uppercase tracking-wider"
-                  style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.5)' }}
-                >
-                  WhatsApp
-                </a>
-              </motion.div>
             </motion.div>
 
             {/* Back to Homepage Button */}
