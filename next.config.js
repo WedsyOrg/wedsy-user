@@ -5,8 +5,6 @@ const nextConfig = {
     return [
       // Add 301 redirects for old or broken URLs. Example:
       // { source: '/old-path', destination: '/new-path', permanent: true },
-      { source: '/decor', destination: '/coming-soon', permanent: false },
-      { source: '/wedding-store', destination: '/coming-soon', permanent: false },
     ];
   },
   images: {
