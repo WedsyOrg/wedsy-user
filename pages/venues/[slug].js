@@ -112,6 +112,9 @@ export default function VenueDetailPage({ venue, similar = [] }) {
   const [guestCount, setGuestCount] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
   if (!venue) {
     return (
@@ -347,7 +350,28 @@ export default function VenueDetailPage({ venue, similar = [] }) {
                     ))}
                   </div>
                 </div>
-                <button style={S.chatBtn}>💬 Start conversation</button>
+                <button
+    style={{...S.chatBtn, opacity: submitting ? 0.7 : 1}}
+    disabled={submitting}
+    onClick={async () => {
+      if (!name || !phone) { setError('Please enter your name and phone'); return; }
+      setSubmitting(true); setError('');
+      try {
+        const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/venues/' + venue.slug + '/enquiry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, phone, eventDate, guestCount: parseInt(guestCount) || null, vibe: selectedVibes })
+        });
+        const data = await res.json();
+        if (res.ok) { setSubmitted(true); } else { setError(data.message || 'Something went wrong'); }
+      } catch(e) { setError('Could not send. Please try again.'); }
+      setSubmitting(false);
+    }}
+  >
+    {submitting ? '⏳ Sending...' : submitted ? '✓ Conversation started!' : '💬 Start conversation'}
+  </button>
+  {error && <div style={{fontSize:11,color:'#c0392b',textAlign:'center',marginTop:4}}>{error}</div>}
+  {submitted && <div style={{fontSize:12,color:'#2d6a4f',textAlign:'center',marginTop:6,lineHeight:1.5}}>✓ Your details have been shared with the venue. They will respond shortly.</div>}
                 <div style={S.cbTrust}>
                   <div style={S.trustItem}>🔒 Private</div>
                   <div style={S.trustItem}>✓ Free</div>
