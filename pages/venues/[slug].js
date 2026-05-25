@@ -411,7 +411,12 @@ export default function VenueDetailPage({ venue, similar = [] }) {
             </div>
 
             {/* Wedsy secured note */}
-            <div style={S.wsNote}>
+            <div style={{textAlign:'center',marginBottom:14}}>
+    <a href={'/venues/claim/' + venue.slug} style={{fontSize:12,color:'#b09080',textDecoration:'none',borderBottom:'0.5px solid #e8d8c4',paddingBottom:2}}>
+      Is this your venue? Claim it →
+    </a>
+  </div>
+  <div style={S.wsNote}>
               <span style={{ fontSize: 13, color: "#6b1e2e", flexShrink: 0 }}>🛡</span>
               <div style={S.wsText}><strong style={{ color: "#7a5a48" }}>Conversation secured by Wedsy.</strong> If this venue doesn't respond within 24 hours, our team steps in to help.</div>
             </div>
