@@ -1,17 +1,18 @@
 import Head from "next/head";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 
 export default function ClaimVenuePage() {
+  const router = useRouter();
   const [slug, setSlug] = useState("");
   const [venue, setVenue] = useState(null);
   const [claimInfo, setClaimInfo] = useState(null);
   const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
-    const path = window.location.pathname;
-    const parts = path.split("/");
-    const s = parts[parts.length - 1];
+    if (!router.isReady) return;
+    const s = router.query.slug;
     setSlug(s);
     Promise.all([
       fetch(process.env.NEXT_PUBLIC_API_URL + "/venues/" + s).then(r => r.json()),
@@ -21,7 +22,7 @@ export default function ClaimVenuePage() {
       setClaimInfo(claimData);
       setPageLoading(false);
     }).catch(() => setPageLoading(false));
-  }, []);
+  }, [router.isReady, router.query.slug]);
 
   if (pageLoading) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"#fdf6ec",fontSize:14,color:"#7a5a48"}}>Loading...</div>;
   if (!venue) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"#fdf6ec",fontSize:14,color:"#7a5a48"}}>Venue not found. <Link href="/venues" style={{color:"#6b1e2e",marginLeft:6}}>Back to venues</Link></div>;

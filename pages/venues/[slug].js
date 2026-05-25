@@ -412,7 +412,7 @@ export default function VenueDetailPage({ venue, similar = [] }) {
 
             {/* Wedsy secured note */}
             <div style={{textAlign:'center',marginBottom:14}}>
-    <a href={'/venues/claim/' + venue.slug} style={{fontSize:12,color:'#b09080',textDecoration:'none',borderBottom:'0.5px solid #e8d8c4',paddingBottom:2}}>
+    <a href={'/venue-claim/' + venue.slug} style={{fontSize:12,color:'#b09080',textDecoration:'none',borderBottom:'0.5px solid #e8d8c4',paddingBottom:2}}>
       Is this your venue? Claim it →
     </a>
   </div>
