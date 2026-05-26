@@ -805,6 +805,11 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                           <div style={{ fontSize: 12, fontWeight: 500, color: "#2c1810", marginBottom: 3, lineHeight: 1.25 }}>
                             {hotel.name}
                           </div>
+                          {typeof hotel.distanceKm === "number" && (
+                            <div style={{ fontSize: 10, color: "#b09080", marginBottom: 3, lineHeight: 1.4 }}>
+                              {hotel.distanceKm} km away
+                            </div>
+                          )}
                           {vicinityShort && (
                             <div style={{ fontSize: 10, color: "#b09080", marginBottom: 6, lineHeight: 1.4 }}>
                               {vicinityShort}
