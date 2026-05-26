@@ -158,6 +158,46 @@ export default function VenueDetailPage({ venue, similar = [], setOpenLoginModal
     return () => { cancelled = true; clearInterval(id); };
   }, [authUser]);
 
+  // Anonymous → identified upgrade. If the couple submits anonymously and
+  // then signs in, re-POST the enquiry with userId so the backend creates a
+  // matching VenueConversation. The UI then flips to "View your conversation →"
+  // without any further user action.
+  useEffect(() => {
+    if (!authUser || !submitted || conversationId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const body = {
+          name,
+          phone,
+          eventDate,
+          guestCount: parseInt(guestCount) || null,
+          vibe: selectedVibes,
+          userId: authUser._id,
+        };
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/venues/${venue.slug}/enquiry`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled && data && data.conversationId) {
+          setConversationId(data.conversationId);
+        }
+      } catch (e) {
+        // silent — couple can retry with a fresh enquiry
+      }
+    })();
+    return () => { cancelled = true; };
+    // Deps intentionally limited to authUser/submitted — the form values are
+    // captured at submit time and should not refire on subsequent edits.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authUser, submitted]);
+
   const openLogin = () => {
     if (setSource) setSource("venue_enquiry");
     if (setOpenLoginModalv2) setOpenLoginModalv2(true);
