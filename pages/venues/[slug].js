@@ -105,8 +105,10 @@ const S = {
   // --- Gallery v2: 5-photo grid + lightbox modal + category tabs ---
   gallV2_wrap: { padding: "0 2rem", background: "#fffaf4", borderBottom: "0.5px solid #e8d8c4" },
   gallV2_tabs: { display: "flex", flexWrap: "wrap", gap: 6, padding: "12px 0 10px" },
-  gallV2_tab: { fontSize: 11, fontWeight: 500, padding: "5px 12px", borderRadius: 100, border: "0.5px solid #e8d8c4", background: "#fffaf4", color: "#7a5a48", cursor: "pointer", letterSpacing: 0.3 },
-  gallV2_tabOn: { fontSize: 11, fontWeight: 500, padding: "5px 12px", borderRadius: 100, border: "0.5px solid #6b1e2e", background: "#6b1e2e", color: "#fdf6ec", cursor: "pointer", letterSpacing: 0.3 },
+  gallV2_tab: { fontSize: 11, fontWeight: 500, padding: "5px 10px 5px 12px", borderRadius: 100, border: "0.5px solid rgba(255,255,255,0.3)", background: "rgba(0,0,0,0.35)", color: "#fdf6ec", cursor: "pointer", letterSpacing: 0.3, display: "inline-flex", alignItems: "center", gap: 6 },
+  gallV2_tabOn: { fontSize: 11, fontWeight: 500, padding: "5px 10px 5px 12px", borderRadius: 100, border: "0.5px solid #b8852a", background: "#6b1e2e", color: "#fdf6ec", cursor: "pointer", letterSpacing: 0.3, display: "inline-flex", alignItems: "center", gap: 6 },
+  gallV2_tabBadge: { fontSize: 9, fontWeight: 600, color: "#fdf6ec", background: "rgba(255,255,255,0.18)", borderRadius: 100, padding: "1px 6px", minWidth: 18, textAlign: "center", letterSpacing: 0.2 },
+  gallV2_tabBadgeOn: { fontSize: 9, fontWeight: 600, color: "#6b1e2e", background: "#b8852a", borderRadius: 100, padding: "1px 6px", minWidth: 18, textAlign: "center", letterSpacing: 0.2 },
   gallV2_grid: { display: "grid", gridTemplateColumns: "1.8fr 1fr 1fr", gridTemplateRows: "200px 200px", gap: 4, paddingBottom: 14 },
   gallV2_main: { gridColumn: "1/2", gridRow: "1/3", background: "#f0e2c8", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", cursor: "pointer", borderRadius: 4 },
   gallV2_cell: { background: "#f0e2c8", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", cursor: "pointer", borderRadius: 4 },
@@ -119,9 +121,9 @@ const S = {
   gallV2_overlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" },
   gallV2_stage: { position: "relative", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: "60px 70px" },
   gallV2_stageImg: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" },
-  gallV2_close: { position: "absolute", top: 18, right: 22, width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "0.5px solid rgba(255,255,255,0.25)", color: "#fff", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 },
-  gallV2_counter: { position: "absolute", top: 22, left: "50%", transform: "translateX(-50%)", color: "#fff", fontSize: 13, fontWeight: 500, letterSpacing: 0.5, background: "rgba(0,0,0,0.45)", padding: "6px 14px", borderRadius: 100, border: "0.5px solid rgba(255,255,255,0.18)" },
-  gallV2_chev: { position: "absolute", top: "50%", transform: "translateY(-50%)", width: 46, height: 46, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "0.5px solid rgba(255,255,255,0.25)", color: "#fff", fontSize: 22, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 },
+  gallV2_close: { position: "absolute", top: 18, right: 22, width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "0.5px solid rgba(255,255,255,0.25)", color: "#fff", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, zIndex: 9999 },
+  gallV2_counter: { position: "absolute", top: 22, left: "50%", transform: "translateX(-50%)", color: "#fff", fontSize: 13, fontWeight: 500, letterSpacing: 0.5, background: "rgba(0,0,0,0.45)", padding: "6px 14px", borderRadius: 100, border: "0.5px solid rgba(255,255,255,0.18)", zIndex: 9998 },
+  gallV2_chev: { position: "absolute", top: "50%", transform: "translateY(-50%)", width: 46, height: 46, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "0.5px solid rgba(255,255,255,0.25)", color: "#fff", fontSize: 22, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, zIndex: 9998 },
   gallV2_chevLeft: { left: 18 },
   gallV2_chevRight: { right: 18 },
   // --- v3 redesign: hero, sticky bar, sections, etc. ---
@@ -151,6 +153,12 @@ const S = {
   bodyV3: { display: "grid", gridTemplateColumns: "1fr 320px", gap: "2.5rem", alignItems: "start", maxWidth: 1400, margin: "0 auto", padding: "2.5rem 2rem 0" },
   mainV3: { minWidth: 0 },
   sidebarV3: { position: "sticky", top: 80, display: "flex", flexDirection: "column", gap: 14 },
+  // Full-width section wrappers — used by Reviews / Nearby / Similar / FAQ
+  // that sit OUTSIDE the two-column grid so their background spans edge-to-edge.
+  fwBand: { width: "100%", padding: "3rem 2rem", marginTop: "2rem" },
+  fwBandWhite: { background: "#fffaf4" },
+  fwBandIvory: { background: "#fdf6ec" },
+  fwBandInner: { maxWidth: 1400, margin: "0 auto" },
   section: { marginBottom: "3rem" },
   // about + highlights split
   abSplit: { display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 28, alignItems: "start" },
@@ -474,10 +482,15 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
           []
         );
       } else if (Array.isArray(raw[galleryTab])) {
-        list = raw[galleryTab];
+        list = raw[galleryTab].slice();
       }
     } else if (Array.isArray(raw)) {
-      list = raw;
+      list = raw.slice();
+    }
+    // Mirror the allPhotos derivation: the cover photo is part of the "all"
+    // view if it isn't already in any category list.
+    if (galleryTab === "all" && venue?.coverPhoto && !list.includes(venue.coverPhoto)) {
+      list = [venue.coverPhoto, ...list];
     }
     const len = list.length;
     if (len === 0) {
@@ -536,11 +549,18 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
         { key: "spaces", label: "Spaces", list: Array.isArray(rawPhotos.spaces) ? rawPhotos.spaces : [] },
       ].filter((c) => c.list.length > 0)
     : [];
-  const allPhotos = isPhotosV2
-    ? photoCats.reduce((acc, c) => acc.concat(c.list), [])
-    : Array.isArray(rawPhotos)
-    ? rawPhotos
-    : [];
+  const allPhotos = (() => {
+    const list = isPhotosV2
+      ? photoCats.reduce((acc, c) => acc.concat(c.list), [])
+      : Array.isArray(rawPhotos)
+      ? [...rawPhotos]
+      : [];
+    // Ensure the cover photo is part of the gallery (prepended if not already present).
+    if (venue.coverPhoto && !list.includes(venue.coverPhoto)) {
+      return [venue.coverPhoto, ...list];
+    }
+    return list;
+  })();
   // Photos visible after the active tab filter (drives both grid + modal)
   const activeCat = isPhotosV2 ? photoCats.find((c) => c.key === galleryTab) : null;
   const photos = activeCat ? activeCat.list : allPhotos;
@@ -853,13 +873,14 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
               ✕
             </button>
             {showTabs && (
-              <div style={{ position: "absolute", top: 22, left: 22, display: "flex", flexWrap: "wrap", gap: 6, maxWidth: "55%" }}>
+              <div style={{ position: "absolute", top: 22, left: 22, display: "flex", flexWrap: "wrap", gap: 6, maxWidth: "55%", zIndex: 9998 }}>
                 <button
                   type="button"
                   style={galleryTab === "all" ? S.gallV2_tabOn : S.gallV2_tab}
                   onClick={(e) => { e.stopPropagation(); setGalleryTab("all"); }}
                 >
-                  All ({allPhotos.length})
+                  <span>All</span>
+                  <span style={galleryTab === "all" ? S.gallV2_tabBadgeOn : S.gallV2_tabBadge}>{allPhotos.length}</span>
                 </button>
                 {photoCats.map((c) => (
                   <button
@@ -868,7 +889,8 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                     style={galleryTab === c.key ? S.gallV2_tabOn : S.gallV2_tab}
                     onClick={(e) => { e.stopPropagation(); setGalleryTab(c.key); }}
                   >
-                    {c.label} ({c.list.length})
+                    <span>{c.label}</span>
+                    <span style={galleryTab === c.key ? S.gallV2_tabBadgeOn : S.gallV2_tabBadge}>{c.list.length}</span>
                   </button>
                 ))}
               </div>
@@ -1268,190 +1290,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
               </section>
             )}
 
-            {/* ───── 11. FAQ / ASK DIRECTLY ───── */}
-            <section style={S.section}>
-              <div style={S.sTitleWrap}>
-                <div style={S.sTitle}>Ask the venue directly</div>
-                <div style={S.sTitleRule} />
-                <div style={S.sTitleSub}>Tap any question to send it when you start the chat.</div>
-              </div>
-              <div style={S.faqList}>
-                {faqEntries.map((item, i) => (
-                  <div
-                    key={i}
-                    style={S.faqCard}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderLeftColor = "#6b1e2e"; e.currentTarget.style.transform = "translateX(2px)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderLeftColor = "transparent"; e.currentTarget.style.transform = "translateX(0)"; }}
-                  >
-                    <div style={S.faqText}>{item.q}</div>
-                    <span style={S.faqArrow} aria-hidden="true">→</span>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* ───── 12. GOOGLE REVIEWS ───── */}
-            {reviewsList.length > 0 && (
-              <section style={S.section}>
-                <div style={S.sTitleWrap}>
-                  <div style={S.sTitle}>What couples say</div>
-                  <div style={S.sTitleRule} />
-                  <div style={S.sTitleSub}>
-                    {reviews?.rating ? <><span style={{ color: "#b8852a" }}>★</span> <strong style={{ color: "#2c1810", fontWeight: 500 }}>{reviews.rating}</strong></> : null}
-                    {reviews?.rating && reviews?.total ? <span style={{ color: "#e8d8c4", margin: "0 6px" }}>·</span> : null}
-                    {reviews?.total ? <span>{reviews.total} reviews on Google</span> : null}
-                  </div>
-                </div>
-                <div style={S.reviewScroller}>
-                  {reviewsList.slice(0, 8).map((r, i) => {
-                    const isExpanded = !!expandedReviews[i];
-                    const text = r.text || "";
-                    const needsTruncate = text.length > REVIEW_PREVIEW_CHARS;
-                    const shownText = !needsTruncate || isExpanded ? text : text.slice(0, REVIEW_PREVIEW_CHARS).trimEnd() + "…";
-                    const rating = Math.round(Number(r.rating) || 0);
-                    const avatarBg = reviewAvatarColors[i % reviewAvatarColors.length];
-                    return (
-                      <article key={i} style={S.reviewCard}>
-                        <div style={S.reviewHead}>
-                          <div style={{ ...S.reviewAvatar, background: avatarBg }}>{initialsFromName(r.authorName)}</div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={S.reviewerName}>{r.authorName || "Anonymous"}</div>
-                            <div style={S.reviewMeta}>
-                              <span style={S.reviewStars}>
-                                {"★★★★★".slice(0, rating)}
-                                <span style={S.reviewStarsOff}>{"★★★★★".slice(rating)}</span>
-                              </span>
-                              <span style={{ color: "#e8d8c4" }}>·</span>
-                              <span>{formatRelativeTime(r.time)}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div style={S.reviewText}>
-                          {shownText}
-                          {needsTruncate && (
-                            <>
-                              {" "}
-                              <button
-                                type="button"
-                                onClick={() => setExpandedReviews((prev) => ({ ...prev, [i]: !prev[i] }))}
-                                style={S.reviewMoreBtn}
-                              >
-                                {isExpanded ? "Show less" : "Read more"}
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
-                <div style={S.reviewFooter}>
-                  <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: "#b09080" }}>Reviews powered by Google</div>
-                  {venue.googlePlaceId && (
-                    <a
-                      href={`https://www.google.com/maps/place/?q=place_id:${venue.googlePlaceId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ fontSize: 12, color: "#6b1e2e", textDecoration: "none", fontWeight: 500 }}
-                    >
-                      See all reviews on Google Maps →
-                    </a>
-                  )}
-                </div>
-              </section>
-            )}
-
-            {/* ───── 13. NEARBY ACCOMMODATION ───── */}
-            {nearbySorted.length > 0 && (
-              <section style={S.section}>
-                <div style={S.sTitleWrap}>
-                  <div style={S.sTitle}>Nearby stays for your guests</div>
-                  <div style={S.sTitleRule} />
-                </div>
-                <div style={S.nearbyIntro}>For your guests · Within 5km of this venue</div>
-                <div style={S.nearbyGrid}>
-                  {nearbySorted.slice(0, 6).map((hotel, i) => {
-                    const vicinityShort = hotel.vicinity && hotel.vicinity.length > 60
-                      ? hotel.vicinity.slice(0, 60).trimEnd() + "…"
-                      : (hotel.vicinity || "");
-                    const priceTier = (() => {
-                      const lvl = hotel.priceLevel;
-                      if (typeof lvl !== "number" || lvl <= 0) return null;
-                      const clamped = Math.max(1, Math.min(4, lvl));
-                      const label = ["Budget", "Mid-range", "Upscale", "Luxury"][clamped - 1];
-                      return { symbols: "₹".repeat(clamped), label };
-                    })();
-                    return (
-                      <a
-                        key={hotel.placeId || i}
-                        href={`https://www.google.com/maps/place/?q=place_id:${hotel.placeId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={S.nearbyCard}
-                        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-                      >
-                        <div style={S.nearbyImg}>
-                          {hotel.photoReference ? (
-                            <img
-                              src={`/api/places-photo?ref=${encodeURIComponent(hotel.photoReference)}`}
-                              alt={hotel.name || "Hotel"}
-                              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                            />
-                          ) : (
-                            <span style={{ fontSize: 28, opacity: 0.25 }}>🏨</span>
-                          )}
-                          {typeof hotel.distanceKm === "number" && (
-                            <span style={S.nearbyDistance}>{hotel.distanceKm} km</span>
-                          )}
-                        </div>
-                        <div style={S.nearbyBody}>
-                          <div style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2c1810", marginBottom: 4, lineHeight: 1.3 }}>
-                            {hotel.name}
-                          </div>
-                          {vicinityShort && (
-                            <div style={{ fontSize: 11, color: "#b09080", marginBottom: 8, lineHeight: 1.4 }}>
-                              {vicinityShort}
-                            </div>
-                          )}
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 4 }}>
-                            {typeof hotel.rating === "number" ? (
-                              <span style={{ fontSize: 12, color: "#b8852a", fontWeight: 500 }}>★ {hotel.rating}</span>
-                            ) : <span />}
-                            {priceTier && (
-                              <span
-                                title={priceTier.label}
-                                style={{
-                                  fontSize: 11,
-                                  color: "#b8852a",
-                                  fontWeight: 600,
-                                  background: "rgba(184,133,42,0.10)",
-                                  border: "0.5px solid rgba(184,133,42,0.35)",
-                                  borderRadius: 100,
-                                  padding: "2px 9px",
-                                  letterSpacing: 0.3,
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: 4,
-                                }}
-                              >
-                                <span>{priceTier.symbols}</span>
-                                <span style={{ fontSize: 9, color: "#7a5a48", fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                                  {priceTier.label}
-                                </span>
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </a>
-                    );
-                  })}
-                </div>
-                <div style={{ marginTop: 14, fontSize: 10, color: "#b09080", textAlign: "right", letterSpacing: 0.3 }}>
-                  Powered by Google
-                </div>
-              </section>
-            )}
+            {/* FAQ / Reviews / Nearby / Similar moved to full-width bands below the grid (rendered after </div> closing bodyV3). */}
           </div>
 
           {/* SIDEBAR (320px sticky) */}
@@ -1606,41 +1445,234 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
           </aside>
         </div>
 
-        {/* ───── 14. SIMILAR VENUES ───── */}
-        {similar.length > 0 && (
-          <section style={{ maxWidth: 1400, margin: "2rem auto 0", padding: "0 2rem 3rem" }}>
-            <div style={S.sTitleWrap}>
-              <div style={S.sTitle}>You might also love</div>
-              <div style={S.sTitleRule} />
-              <div style={S.sTitleSub}>Similar venues nearby</div>
-            </div>
-            <div style={S.simGrid}>
-              {similar.map((v) => (
-                <Link
-                  key={v._id}
-                  href={`/venues/${v.slug}`}
-                  style={S.simCardV3}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(107,30,46,0.14)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 16px rgba(107,30,46,0.06)"; }}
-                >
-                  <div style={{ ...S.simImgV3, background: v.venueType === "farmhouse" ? "#deeade" : v.venueType === "resort" ? "#f0e2c8" : "#e8e0f0" }}>
-                    {v.coverPhoto ? <img src={v.coverPhoto} alt={v.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 36 }}>🏡</span>}
-                  </div>
-                  <div style={S.simBodyV3}>
-                    <div style={S.simNameV3}>{v.name}</div>
-                    <div style={{ fontSize: 12, color: "#b09080", marginBottom: 10, letterSpacing: 0.2 }}>
-                      {v.address?.split(",")[0] || "Bangalore"} · {v.venueType}
-                    </div>
-                    <div style={S.simFoot}>
-                      <div style={S.simPrice}>{v.pricing?.note || "Price on request"}</div>
-                      {v.googleRating && <div style={{ fontSize: 12, color: "#b8852a", fontWeight: 500 }}>★ {v.googleRating}</div>}
-                    </div>
-                  </div>
-                </Link>
-              ))}
+        {/* ───── 12. GOOGLE REVIEWS — full-width band (white) ───── */}
+        {reviewsList.length > 0 && (
+          <section style={{ ...S.fwBand, ...S.fwBandWhite }}>
+            <div style={S.fwBandInner}>
+              <div style={S.sTitleWrap}>
+                <div style={S.sTitle}>What couples say</div>
+                <div style={S.sTitleRule} />
+                <div style={S.sTitleSub}>
+                  {reviews?.rating ? <><span style={{ color: "#b8852a" }}>★</span> <strong style={{ color: "#2c1810", fontWeight: 500 }}>{reviews.rating}</strong></> : null}
+                  {reviews?.rating && reviews?.total ? <span style={{ color: "#e8d8c4", margin: "0 6px" }}>·</span> : null}
+                  {reviews?.total ? <span>{reviews.total} reviews on Google</span> : null}
+                </div>
+              </div>
+              <div style={S.reviewScroller}>
+                {reviewsList.slice(0, 8).map((r, i) => {
+                  const isExpanded = !!expandedReviews[i];
+                  const text = r.text || "";
+                  const needsTruncate = text.length > REVIEW_PREVIEW_CHARS;
+                  const shownText = !needsTruncate || isExpanded ? text : text.slice(0, REVIEW_PREVIEW_CHARS).trimEnd() + "…";
+                  const rating = Math.round(Number(r.rating) || 0);
+                  const avatarBg = reviewAvatarColors[i % reviewAvatarColors.length];
+                  return (
+                    <article key={i} style={S.reviewCard}>
+                      <div style={S.reviewHead}>
+                        <div style={{ ...S.reviewAvatar, background: avatarBg }}>{initialsFromName(r.authorName)}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={S.reviewerName}>{r.authorName || "Anonymous"}</div>
+                          <div style={S.reviewMeta}>
+                            <span style={S.reviewStars}>
+                              {"★★★★★".slice(0, rating)}
+                              <span style={S.reviewStarsOff}>{"★★★★★".slice(rating)}</span>
+                            </span>
+                            <span style={{ color: "#e8d8c4" }}>·</span>
+                            <span>{formatRelativeTime(r.time)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div style={S.reviewText}>
+                        {shownText}
+                        {needsTruncate && (
+                          <>
+                            {" "}
+                            <button
+                              type="button"
+                              onClick={() => setExpandedReviews((prev) => ({ ...prev, [i]: !prev[i] }))}
+                              style={S.reviewMoreBtn}
+                            >
+                              {isExpanded ? "Show less" : "Read more"}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+              <div style={S.reviewFooter}>
+                <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: "#b09080" }}>Reviews powered by Google</div>
+                {venue.googlePlaceId && (
+                  <a
+                    href={`https://www.google.com/maps/place/?q=place_id:${venue.googlePlaceId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ fontSize: 12, color: "#6b1e2e", textDecoration: "none", fontWeight: 500 }}
+                  >
+                    See all reviews on Google Maps →
+                  </a>
+                )}
+              </div>
             </div>
           </section>
         )}
+
+        {/* ───── 13. NEARBY ACCOMMODATION — full-width band (ivory) ───── */}
+        {nearbySorted.length > 0 && (
+          <section style={{ ...S.fwBand, ...S.fwBandIvory }}>
+            <div style={S.fwBandInner}>
+              <div style={S.sTitleWrap}>
+                <div style={S.sTitle}>Nearby stays for your guests</div>
+                <div style={S.sTitleRule} />
+              </div>
+              <div style={S.nearbyIntro}>For your guests · Within 5km of this venue</div>
+              <div style={S.nearbyGrid}>
+                {nearbySorted.slice(0, 6).map((hotel, i) => {
+                  const vicinityShort = hotel.vicinity && hotel.vicinity.length > 60
+                    ? hotel.vicinity.slice(0, 60).trimEnd() + "…"
+                    : (hotel.vicinity || "");
+                  const priceTier = (() => {
+                    const lvl = hotel.priceLevel;
+                    if (typeof lvl !== "number" || lvl <= 0) return null;
+                    const clamped = Math.max(1, Math.min(4, lvl));
+                    const label = ["Budget", "Mid-range", "Upscale", "Luxury"][clamped - 1];
+                    return { symbols: "₹".repeat(clamped), label };
+                  })();
+                  return (
+                    <a
+                      key={hotel.placeId || i}
+                      href={`https://www.google.com/maps/place/?q=place_id:${hotel.placeId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={S.nearbyCard}
+                      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+                    >
+                      <div style={S.nearbyImg}>
+                        {hotel.photoReference ? (
+                          <img
+                            src={`/api/places-photo?ref=${encodeURIComponent(hotel.photoReference)}`}
+                            alt={hotel.name || "Hotel"}
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                        ) : (
+                          <span style={{ fontSize: 28, opacity: 0.25 }}>🏨</span>
+                        )}
+                        {typeof hotel.distanceKm === "number" && (
+                          <span style={S.nearbyDistance}>{hotel.distanceKm} km</span>
+                        )}
+                      </div>
+                      <div style={S.nearbyBody}>
+                        <div style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2c1810", marginBottom: 4, lineHeight: 1.3 }}>
+                          {hotel.name}
+                        </div>
+                        {vicinityShort && (
+                          <div style={{ fontSize: 11, color: "#b09080", marginBottom: 8, lineHeight: 1.4 }}>
+                            {vicinityShort}
+                          </div>
+                        )}
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 4 }}>
+                          {typeof hotel.rating === "number" ? (
+                            <span style={{ fontSize: 12, color: "#b8852a", fontWeight: 500 }}>★ {hotel.rating}</span>
+                          ) : <span />}
+                          {priceTier && (
+                            <span
+                              title={priceTier.label}
+                              style={{
+                                fontSize: 11,
+                                color: "#b8852a",
+                                fontWeight: 600,
+                                background: "rgba(184,133,42,0.10)",
+                                border: "0.5px solid rgba(184,133,42,0.35)",
+                                borderRadius: 100,
+                                padding: "2px 9px",
+                                letterSpacing: 0.3,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 4,
+                              }}
+                            >
+                              <span>{priceTier.symbols}</span>
+                              <span style={{ fontSize: 9, color: "#7a5a48", fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                                {priceTier.label}
+                              </span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+              <div style={{ marginTop: 14, fontSize: 10, color: "#b09080", textAlign: "right", letterSpacing: 0.3 }}>
+                Powered by Google
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ───── 14. SIMILAR VENUES — full-width band (white) ───── */}
+        {similar.length > 0 && (
+          <section style={{ ...S.fwBand, ...S.fwBandWhite }}>
+            <div style={S.fwBandInner}>
+              <div style={S.sTitleWrap}>
+                <div style={S.sTitle}>You might also love</div>
+                <div style={S.sTitleRule} />
+                <div style={S.sTitleSub}>Similar venues nearby</div>
+              </div>
+              <div style={S.simGrid}>
+                {similar.map((v) => (
+                  <Link
+                    key={v._id}
+                    href={`/venues/${v.slug}`}
+                    style={S.simCardV3}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(107,30,46,0.14)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 16px rgba(107,30,46,0.06)"; }}
+                  >
+                    <div style={{ ...S.simImgV3, background: v.venueType === "farmhouse" ? "#deeade" : v.venueType === "resort" ? "#f0e2c8" : "#e8e0f0" }}>
+                      {v.coverPhoto ? <img src={v.coverPhoto} alt={v.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 36 }}>🏡</span>}
+                    </div>
+                    <div style={S.simBodyV3}>
+                      <div style={S.simNameV3}>{v.name}</div>
+                      <div style={{ fontSize: 12, color: "#b09080", marginBottom: 10, letterSpacing: 0.2 }}>
+                        {v.address?.split(",")[0] || "Bangalore"} · {v.venueType}
+                      </div>
+                      <div style={S.simFoot}>
+                        <div style={S.simPrice}>{v.pricing?.note || "Price on request"}</div>
+                        {v.googleRating && <div style={{ fontSize: 12, color: "#b8852a", fontWeight: 500 }}>★ {v.googleRating}</div>}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ───── 11. FAQ / ASK DIRECTLY — full-width band (white) ───── */}
+        <section style={{ ...S.fwBand, ...S.fwBandWhite }}>
+          <div style={S.fwBandInner}>
+            <div style={S.sTitleWrap}>
+              <div style={S.sTitle}>Ask the venue directly</div>
+              <div style={S.sTitleRule} />
+              <div style={S.sTitleSub}>Tap any question to send it when you start the chat.</div>
+            </div>
+            <div style={S.faqList}>
+              {faqEntries.map((item, i) => (
+                <div
+                  key={i}
+                  style={S.faqCard}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderLeftColor = "#6b1e2e"; e.currentTarget.style.transform = "translateX(2px)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderLeftColor = "transparent"; e.currentTarget.style.transform = "translateX(0)"; }}
+                >
+                  <div style={S.faqText}>{item.q}</div>
+                  <span style={S.faqArrow} aria-hidden="true">→</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
     </>
   );
