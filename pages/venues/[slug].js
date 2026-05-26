@@ -106,7 +106,7 @@ const S = {
 
 const VIBES = ["Traditional", "Contemporary", "Outdoor", "Intimate", "Grand"];
 
-export default function VenueDetailPage({ venue, similar = [] }) {
+export default function VenueDetailPage({ venue, similar = [], setOpenLoginModalv2, setSource }) {
   const [selectedVibes, setSelectedVibes] = useState(["Traditional", "Outdoor"]);
   const [eventDate, setEventDate] = useState("");
   const [guestCount, setGuestCount] = useState("");
@@ -115,29 +115,53 @@ export default function VenueDetailPage({ venue, similar = [] }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
-  // Auth + conversation handoff. _app.js short-circuits auth for /venues
-  // (public path), so we look up the logged-in couple ourselves from the same
-  // /auth/ endpoint _app.js uses.
+  // _app.js short-circuits its own CheckLogin for /venues (public path), so
+  // user/userLoggedIn props from the parent are unreliable here — we look the
+  // couple up ourselves from the same /auth/ endpoint _app.js uses.
   const [authUser, setAuthUser] = useState(null);
   const [conversationId, setConversationId] = useState(null);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  const fetchAuthUser = async () => {
+    if (typeof window === "undefined") return null;
     const token = localStorage.getItem("token");
-    if (!token) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data && data._id) setAuthUser(data);
-      })
-      .catch(() => {});
+    if (!token) return null;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json", authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data && data._id ? data : null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    fetchAuthUser().then((u) => { if (u) setAuthUser(u); });
   }, []);
+
+  // After the LoginModalv2 succeeds, the parent updates the token in
+  // localStorage but doesn't notify us directly. Poll briefly while not
+  // authed so the form reactively picks up a fresh login.
+  useEffect(() => {
+    if (authUser) return;
+    let cancelled = false;
+    const id = setInterval(async () => {
+      if (cancelled) return;
+      if (typeof window === "undefined") return;
+      if (!localStorage.getItem("token")) return;
+      const u = await fetchAuthUser();
+      if (!cancelled && u) setAuthUser(u);
+    }, 1500);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [authUser]);
+
+  const openLogin = () => {
+    if (setSource) setSource("venue_enquiry");
+    if (setOpenLoginModalv2) setOpenLoginModalv2(true);
+  };
 
   if (!venue) {
     return (
@@ -377,19 +401,25 @@ export default function VenueDetailPage({ venue, similar = [] }) {
     style={{...S.chatBtn, opacity: submitting ? 0.7 : 1}}
     disabled={submitting}
     onClick={async () => {
-      // If the couple isn't logged in, surface a sign-in prompt before
-      // submitting so the resulting conversation can be tracked in their
-      // inbox. We still allow them to proceed via the inline link if they
-      // want to enquire anonymously.
+      // Not logged in → open the global LoginModalv2 inline. Form state is
+      // preserved across the modal, so after login the couple can click again
+      // to submit. No redirect to /login.
       if (typeof window !== 'undefined' && !localStorage.getItem('token')) {
-        setError('Please sign in to start a conversation.');
+        openLogin();
         return;
       }
       if (!name || !phone) { setError('Please enter your name and phone'); return; }
       setSubmitting(true); setError('');
       try {
+        // If we have a token but authUser isn't loaded yet (e.g. just logged in
+        // via modal), refresh it so the enquiry is tied to the couple.
+        let userObj = authUser;
+        if (!userObj) {
+          userObj = await fetchAuthUser();
+          if (userObj) setAuthUser(userObj);
+        }
         const body = { name, phone, eventDate, guestCount: parseInt(guestCount) || null, vibe: selectedVibes };
-        if (authUser && authUser._id) body.userId = authUser._id;
+        if (userObj && userObj._id) body.userId = userObj._id;
         const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/venues/' + venue.slug + '/enquiry', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -407,13 +437,17 @@ export default function VenueDetailPage({ venue, similar = [] }) {
     {submitting ? '⏳ Sending...' : submitted ? '✓ Conversation started!' : '💬 Start conversation'}
   </button>
   {error && <div style={{fontSize:11,color:'#c0392b',textAlign:'center',marginTop:4}}>{error}</div>}
-  {/* Not-logged-in prompt: shows BEFORE submission when the couple has
-      no token. Once they click Start conversation, the handler above
-      sets the error to "Please sign in…" and this block links them
-      straight to /login. */}
+  {/* Inline sign-in prompt — opens LoginModalv2 over this page so form
+      state is preserved and the couple can submit straight after login. */}
   {!submitted && !authUser && (
     <div style={{fontSize:11,color:'#7a5a48',textAlign:'center',marginTop:8,lineHeight:1.5}}>
-      <Link href="/login" style={{color:'#6b1e2e',textDecoration:'underline'}}>Sign in</Link>
+      <button
+        type="button"
+        onClick={openLogin}
+        style={{background:'none',border:'none',padding:0,color:'#6b1e2e',textDecoration:'underline',cursor:'pointer',font:'inherit'}}
+      >
+        Sign in
+      </button>
       {' '}to start a conversation and track it in your inbox.
     </div>
   )}
@@ -432,7 +466,13 @@ export default function VenueDetailPage({ venue, similar = [] }) {
   )}
   {submitted && !conversationId && !authUser && (
     <div style={{fontSize:11,color:'#7a5a48',textAlign:'center',marginTop:8,lineHeight:1.5}}>
-      <Link href="/login" style={{color:'#6b1e2e',textDecoration:'underline'}}>Sign in</Link>
+      <button
+        type="button"
+        onClick={openLogin}
+        style={{background:'none',border:'none',padding:0,color:'#6b1e2e',textDecoration:'underline',cursor:'pointer',font:'inherit'}}
+      >
+        Sign in
+      </button>
       {' '}to track this conversation in your inbox.
     </div>
   )}
