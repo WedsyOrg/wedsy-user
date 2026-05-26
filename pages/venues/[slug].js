@@ -1,6 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { trimTitle, trimDescription } from "@/utils/seo";
 
 const S = {
@@ -115,6 +115,29 @@ export default function VenueDetailPage({ venue, similar = [] }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  // Auth + conversation handoff. _app.js short-circuits auth for /venues
+  // (public path), so we look up the logged-in couple ourselves from the same
+  // /auth/ endpoint _app.js uses.
+  const [authUser, setAuthUser] = useState(null);
+  const [conversationId, setConversationId] = useState(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data._id) setAuthUser(data);
+      })
+      .catch(() => {});
+  }, []);
 
   if (!venue) {
     return (
@@ -354,16 +377,29 @@ export default function VenueDetailPage({ venue, similar = [] }) {
     style={{...S.chatBtn, opacity: submitting ? 0.7 : 1}}
     disabled={submitting}
     onClick={async () => {
+      // If the couple isn't logged in, surface a sign-in prompt before
+      // submitting so the resulting conversation can be tracked in their
+      // inbox. We still allow them to proceed via the inline link if they
+      // want to enquire anonymously.
+      if (typeof window !== 'undefined' && !localStorage.getItem('token')) {
+        setError('Please sign in to start a conversation.');
+        return;
+      }
       if (!name || !phone) { setError('Please enter your name and phone'); return; }
       setSubmitting(true); setError('');
       try {
+        const body = { name, phone, eventDate, guestCount: parseInt(guestCount) || null, vibe: selectedVibes };
+        if (authUser && authUser._id) body.userId = authUser._id;
         const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/venues/' + venue.slug + '/enquiry', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, phone, eventDate, guestCount: parseInt(guestCount) || null, vibe: selectedVibes })
+          body: JSON.stringify(body)
         });
         const data = await res.json();
-        if (res.ok) { setSubmitted(true); } else { setError(data.message || 'Something went wrong'); }
+        if (res.ok) {
+          setSubmitted(true);
+          if (data && data.conversationId) setConversationId(data.conversationId);
+        } else { setError(data.message || 'Something went wrong'); }
       } catch(e) { setError('Could not send. Please try again.'); }
       setSubmitting(false);
     }}
@@ -371,7 +407,35 @@ export default function VenueDetailPage({ venue, similar = [] }) {
     {submitting ? '⏳ Sending...' : submitted ? '✓ Conversation started!' : '💬 Start conversation'}
   </button>
   {error && <div style={{fontSize:11,color:'#c0392b',textAlign:'center',marginTop:4}}>{error}</div>}
+  {/* Not-logged-in prompt: shows BEFORE submission when the couple has
+      no token. Once they click Start conversation, the handler above
+      sets the error to "Please sign in…" and this block links them
+      straight to /login. */}
+  {!submitted && !authUser && (
+    <div style={{fontSize:11,color:'#7a5a48',textAlign:'center',marginTop:8,lineHeight:1.5}}>
+      <Link href="/login" style={{color:'#6b1e2e',textDecoration:'underline'}}>Sign in</Link>
+      {' '}to start a conversation and track it in your inbox.
+    </div>
+  )}
   {submitted && <div style={{fontSize:12,color:'#2d6a4f',textAlign:'center',marginTop:6,lineHeight:1.5}}>✓ Your details have been shared with the venue. They will respond shortly.</div>}
+  {submitted && conversationId && (
+    <Link
+      href={`/chats/venue/${conversationId}`}
+      style={{
+        display: 'block', marginTop: 10, padding: '10px 14px',
+        background: '#fdf4e6', border: '0.5px solid #6b1e2e', borderRadius: 100,
+        color: '#6b1e2e', textDecoration: 'none', textAlign: 'center', fontSize: 13, fontWeight: 500,
+      }}
+    >
+      View your conversation →
+    </Link>
+  )}
+  {submitted && !conversationId && !authUser && (
+    <div style={{fontSize:11,color:'#7a5a48',textAlign:'center',marginTop:8,lineHeight:1.5}}>
+      <Link href="/login" style={{color:'#6b1e2e',textDecoration:'underline'}}>Sign in</Link>
+      {' '}to track this conversation in your inbox.
+    </div>
+  )}
                 <div style={S.cbTrust}>
                   <div style={S.trustItem}>🔒 Private</div>
                   <div style={S.trustItem}>✓ Free</div>
