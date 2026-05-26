@@ -99,6 +99,19 @@ const styles = {
   cardRating: { fontSize: 12, color: "#b09080", display: "flex", alignItems: "center", gap: 3 },
   cardRatingStar: { color: "#b8852a", fontSize: 11 },
   empty: { textAlign: "center", padding: "4rem 2rem", color: "#7a5a48" },
+  ownerFooter: {
+    borderTop: "0.5px solid #e8d8c4",
+    background: "#fffaf4",
+    padding: "1.5rem 2rem",
+    textAlign: "center",
+  },
+  ownerFooterText: { fontSize: 12, color: "#b09080", marginRight: 6 },
+  ownerFooterLink: {
+    fontSize: 12,
+    color: "#6b1e2e",
+    textDecoration: "none",
+    fontWeight: 500,
+  },
 };
 
 function VenueCard({ venue }) {
@@ -304,9 +317,16 @@ export default function VenuesPage({ venues = [], total = 0 }) {
             )}
           </div>
         </div>
+
+        <div style={styles.ownerFooter}>
+          <span style={styles.ownerFooterText}>Own a wedding venue?</span>
+          <Link href="/venues/join" style={styles.ownerFooterLink}>
+            List your venue →
+          </Link>
+        </div>
       </main>
 
-      
+
     </>
   );
 }

@@ -221,6 +221,25 @@ export default function VenueDetailPage({ venue, similar = [], setOpenLoginModal
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authUser, submitted]);
 
+  // Fire-and-forget view tracking. Pings the server once we know which couple
+  // is viewing this venue. The server dedups within a 30-min window.
+  useEffect(() => {
+    if (!authUser || !venue?.slug) return;
+    try {
+      fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/venues/${venue.slug}/view`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      ).catch(() => {});
+    } catch (e) {
+      // swallow — view tracking must never affect the page
+    }
+  }, [authUser, venue?.slug]);
+
   const openLogin = () => {
     if (setSource) setSource("venue_enquiry");
     if (setOpenLoginModalv2) setOpenLoginModalv2(true);
