@@ -102,11 +102,33 @@ const S = {
   simRating: { fontSize: 11, color: "#b09080" },
   wsNote: { padding: "1rem 1.25rem", borderTop: "0.5px solid #e8d8c4", display: "flex", alignItems: "flex-start", gap: 6 },
   wsText: { fontSize: 11, color: "#b09080", lineHeight: 1.6 },
+  // --- Gallery v2: 5-photo grid + lightbox modal + category tabs ---
+  gallV2_wrap: { padding: "0 2rem", background: "#fffaf4", borderBottom: "0.5px solid #e8d8c4" },
+  gallV2_tabs: { display: "flex", flexWrap: "wrap", gap: 6, padding: "12px 0 10px" },
+  gallV2_tab: { fontSize: 11, fontWeight: 500, padding: "5px 12px", borderRadius: 100, border: "0.5px solid #e8d8c4", background: "#fffaf4", color: "#7a5a48", cursor: "pointer", letterSpacing: 0.3 },
+  gallV2_tabOn: { fontSize: 11, fontWeight: 500, padding: "5px 12px", borderRadius: 100, border: "0.5px solid #6b1e2e", background: "#6b1e2e", color: "#fdf6ec", cursor: "pointer", letterSpacing: 0.3 },
+  gallV2_grid: { display: "grid", gridTemplateColumns: "1.8fr 1fr 1fr", gridTemplateRows: "200px 200px", gap: 4, paddingBottom: 14 },
+  gallV2_main: { gridColumn: "1/2", gridRow: "1/3", background: "#f0e2c8", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", cursor: "pointer", borderRadius: 4 },
+  gallV2_cell: { background: "#f0e2c8", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", cursor: "pointer", borderRadius: 4 },
+  gallV2_cellEmpty: { background: "#f7edda", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", borderRadius: 4, border: "0.5px dashed #e8d8c4" },
+  gallV2_img: { width: "100%", height: "100%", objectFit: "cover", display: "block" },
+  gallV2_more: { position: "absolute", inset: 0, background: "rgba(44,24,16,0.55)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fdf6ec", fontSize: 14, fontWeight: 500, letterSpacing: 0.3, cursor: "pointer" },
+  gallV2_emptyIcon: { fontSize: 32, opacity: 0.18 },
+  gallV2_viewAllBtn: { position: "absolute", bottom: 14, right: 14, background: "rgba(253,246,236,0.94)", border: "0.5px solid #e8d8c4", borderRadius: 100, padding: "6px 13px", fontSize: 11, color: "#6b1e2e", cursor: "pointer", fontWeight: 500, display: "flex", alignItems: "center", gap: 6 },
+  // Modal
+  gallV2_overlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" },
+  gallV2_stage: { position: "relative", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: "60px 70px" },
+  gallV2_stageImg: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" },
+  gallV2_close: { position: "absolute", top: 18, right: 22, width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "0.5px solid rgba(255,255,255,0.25)", color: "#fff", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 },
+  gallV2_counter: { position: "absolute", top: 22, left: "50%", transform: "translateX(-50%)", color: "#fff", fontSize: 13, fontWeight: 500, letterSpacing: 0.5, background: "rgba(0,0,0,0.45)", padding: "6px 14px", borderRadius: 100, border: "0.5px solid rgba(255,255,255,0.18)" },
+  gallV2_chev: { position: "absolute", top: "50%", transform: "translateY(-50%)", width: 46, height: 46, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "0.5px solid rgba(255,255,255,0.25)", color: "#fff", fontSize: 22, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 },
+  gallV2_chevLeft: { left: 18 },
+  gallV2_chevRight: { right: 18 },
 };
 
 const VIBES = ["Traditional", "Contemporary", "Outdoor", "Intimate", "Grand"];
 
-export default function VenueDetailPage({ venue, similar = [], setOpenLoginModalv2, setSource }) {
+export default function VenueDetailPage({ venue, similar = [], nearby = [], reviews = null, setOpenLoginModalv2, setSource }) {
   const [selectedVibes, setSelectedVibes] = useState(["Traditional", "Outdoor"]);
   const [eventDate, setEventDate] = useState("");
   const [guestCount, setGuestCount] = useState("");
@@ -120,6 +142,12 @@ export default function VenueDetailPage({ venue, similar = [], setOpenLoginModal
   // couple up ourselves from the same /auth/ endpoint _app.js uses.
   const [authUser, setAuthUser] = useState(null);
   const [conversationId, setConversationId] = useState(null);
+  // Gallery v2 state — modal lightbox + category tab filter
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
+  const [galleryTab, setGalleryTab] = useState("all");
+  // "What couples say" — track which review cards are expanded (read more)
+  const [expandedReviews, setExpandedReviews] = useState({});
 
   // The server's GET /auth/ returns { name, phone, email, event } — no _id.
   // The JWT payload (signed by /auth/otp verify) carries { _id, isAdmin, isVendor },
@@ -245,6 +273,57 @@ export default function VenueDetailPage({ venue, similar = [], setOpenLoginModal
     if (setOpenLoginModalv2) setOpenLoginModalv2(true);
   };
 
+  // Gallery v2 modal — keyboard nav + body scroll lock while open.
+  // Computes the active photo list inside the effect so this hook stays above
+  // the early `if (!venue)` return (hooks can't be conditional).
+  useEffect(() => {
+    if (!galleryOpen) return undefined;
+    const raw = venue?.photos;
+    const v2 =
+      !!raw &&
+      !Array.isArray(raw) &&
+      typeof raw === "object" &&
+      (Array.isArray(raw.venue) ||
+        Array.isArray(raw.decor) ||
+        Array.isArray(raw.rooms) ||
+        Array.isArray(raw.spaces));
+    let list = [];
+    if (v2) {
+      if (galleryTab === "all") {
+        list = ["venue", "decor", "rooms", "spaces"].reduce(
+          (acc, k) => (Array.isArray(raw[k]) ? acc.concat(raw[k]) : acc),
+          []
+        );
+      } else if (Array.isArray(raw[galleryTab])) {
+        list = raw[galleryTab];
+      }
+    } else if (Array.isArray(raw)) {
+      list = raw;
+    }
+    const len = list.length;
+    if (len === 0) {
+      setGalleryOpen(false);
+      return undefined;
+    }
+    const onKey = (e) => {
+      if (e.key === "Escape") setGalleryOpen(false);
+      else if (e.key === "ArrowRight") setGalleryIndex((i) => (i + 1) % len);
+      else if (e.key === "ArrowLeft") setGalleryIndex((i) => (i - 1 + len) % len);
+    };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [galleryOpen, galleryTab, venue]);
+
+  // Keep galleryIndex within bounds when the active tab changes.
+  useEffect(() => {
+    setGalleryIndex(0);
+  }, [galleryTab]);
+
   if (!venue) {
     return (
       <div style={{ textAlign: "center", padding: "4rem 2rem" }}>
@@ -258,10 +337,79 @@ export default function VenueDetailPage({ venue, similar = [], setOpenLoginModal
   const toggleVibe = (v) => setSelectedVibes((prev) => prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]);
   const isVerified = venue.status === "verified";
   const vType = venue.venueType === "farmhouse" ? "Farmhouse" : "Resort";
-  const photos = venue.photos || [];
+  // Photo shape detection — supports two backend formats:
+  //   V1: venue.photos is a flat string[] (legacy)
+  //   V2: venue.photos is { venue, decor, rooms, spaces } each a string[]
+  const rawPhotos = venue.photos;
+  const isPhotosV2 =
+    !!rawPhotos &&
+    !Array.isArray(rawPhotos) &&
+    typeof rawPhotos === "object" &&
+    (Array.isArray(rawPhotos.venue) ||
+      Array.isArray(rawPhotos.decor) ||
+      Array.isArray(rawPhotos.rooms) ||
+      Array.isArray(rawPhotos.spaces));
+  const photoCats = isPhotosV2
+    ? [
+        { key: "venue", label: "Venue", list: Array.isArray(rawPhotos.venue) ? rawPhotos.venue : [] },
+        { key: "decor", label: "Decor", list: Array.isArray(rawPhotos.decor) ? rawPhotos.decor : [] },
+        { key: "rooms", label: "Rooms", list: Array.isArray(rawPhotos.rooms) ? rawPhotos.rooms : [] },
+        { key: "spaces", label: "Spaces", list: Array.isArray(rawPhotos.spaces) ? rawPhotos.spaces : [] },
+      ].filter((c) => c.list.length > 0)
+    : [];
+  const allPhotos = isPhotosV2
+    ? photoCats.reduce((acc, c) => acc.concat(c.list), [])
+    : Array.isArray(rawPhotos)
+    ? rawPhotos
+    : [];
+  // Photos visible after the active tab filter (drives both grid + modal)
+  const activeCat = isPhotosV2 ? photoCats.find((c) => c.key === galleryTab) : null;
+  const photos = activeCat ? activeCat.list : allPhotos;
+  const showTabs = isPhotosV2 && photoCats.length > 0;
+  const totalPhotos = photos.length;
+  const gridSlots = [0, 1, 2, 3, 4];
+  const remainingBeyondGrid = Math.max(0, totalPhotos - 5);
+  const openGalleryAt = (i) => {
+    if (totalPhotos === 0) return;
+    setGalleryIndex(Math.min(Math.max(i, 0), totalPhotos - 1));
+    setGalleryOpen(true);
+  };
+  const closeGallery = () => setGalleryOpen(false);
+  const gallStep = (dir) => {
+    if (totalPhotos === 0) return;
+    setGalleryIndex((idx) => (idx + dir + totalPhotos) % totalPhotos);
+  };
   const capacityText = venue.capacity?.max > 0 ? `${venue.capacity.min || 0}–${venue.capacity.max}` : null;
   const rooms = venue.accommodation?.rooms > 0 ? `${venue.accommodation.rooms} rooms` : null;
   const catText = venue.catering === "in_house_only" ? "In-house only" : venue.catering === "outside_allowed" ? "Outside allowed" : venue.catering === "both" ? "Both" : "Ask venue";
+
+  // --- "What couples say" helpers ---
+  // Relative time string from a Unix-seconds timestamp (Google Places format).
+  // Coarse buckets only — Google's own reviews UI does the same ("3 weeks ago").
+  const formatRelativeTime = (unixSeconds) => {
+    if (!unixSeconds) return "";
+    const diffSec = Math.max(0, Math.floor(Date.now() / 1000 - unixSeconds));
+    const min = 60, hr = 3600, day = 86400, week = 604800, month = 2592000, year = 31536000;
+    if (diffSec < min) return "just now";
+    if (diffSec < hr) { const n = Math.floor(diffSec / min); return `${n} minute${n === 1 ? "" : "s"} ago`; }
+    if (diffSec < day) { const n = Math.floor(diffSec / hr); return `${n} hour${n === 1 ? "" : "s"} ago`; }
+    if (diffSec < week) { const n = Math.floor(diffSec / day); return `${n} day${n === 1 ? "" : "s"} ago`; }
+    if (diffSec < month) { const n = Math.floor(diffSec / week); return `${n} week${n === 1 ? "" : "s"} ago`; }
+    if (diffSec < year) { const n = Math.floor(diffSec / month); return `${n} month${n === 1 ? "" : "s"} ago`; }
+    const n = Math.floor(diffSec / year);
+    return `${n} year${n === 1 ? "" : "s"} ago`;
+  };
+  // Initials for the circular avatar — avoids loading profile_photo_url which
+  // Google requires to be proxied (auth + size). Keep it simple, no images.
+  const initialsFromName = (name) => {
+    if (!name) return "?";
+    const parts = String(name).trim().split(/\s+/);
+    const first = parts[0] ? parts[0][0] : "";
+    const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
+    return (first + last).toUpperCase() || "?";
+  };
+  const reviewsList = Array.isArray(reviews?.reviews) ? reviews.reviews : [];
+  const REVIEW_PREVIEW_CHARS = 200;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -296,21 +444,130 @@ export default function VenueDetailPage({ venue, similar = [], setOpenLoginModal
           <span>{venue.name}</span>
         </div>
 
-        {/* Gallery */}
-        <div style={S.gallery}>
-          <div style={S.gMain}>
-            {photos[0] ? <img src={photos[0]} alt={venue.name} style={S.gMainImg} /> : <span style={{ fontSize: 80, opacity: 0.15 }}>🏡</span>}
-            {isVerified && <div style={S.verifiedPill}>✓ Wedsy Verified</div>}
-            <div style={S.popularPill}>🔥 Active listing</div>
-            <div style={S.galleryCount}>⊞ View all {photos.length} photos</div>
-          </div>
-          <div style={S.gSub}>
-            {photos[1] ? <img src={photos[1]} alt={venue.name} style={S.gSubImg} /> : <span style={{ fontSize: 40, opacity: 0.2 }}>🌿</span>}
-          </div>
-          <div style={{ ...S.gSub, background: "#e8e0f0" }}>
-            {photos[2] ? <img src={photos[2]} alt={venue.name} style={S.gSubImg} /> : <span style={{ fontSize: 40, opacity: 0.2 }}>✨</span>}
+        {/* Gallery v2 — up-to-5-photo grid with optional category tabs */}
+        <div style={S.gallV2_wrap}>
+          {showTabs && (
+            <div style={S.gallV2_tabs} role="tablist" aria-label="Photo categories">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={galleryTab === "all"}
+                style={galleryTab === "all" ? S.gallV2_tabOn : S.gallV2_tab}
+                onClick={() => setGalleryTab("all")}
+              >
+                All ({allPhotos.length})
+              </button>
+              {photoCats.map((c) => (
+                <button
+                  key={c.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={galleryTab === c.key}
+                  style={galleryTab === c.key ? S.gallV2_tabOn : S.gallV2_tab}
+                  onClick={() => setGalleryTab(c.key)}
+                >
+                  {c.label} ({c.list.length})
+                </button>
+              ))}
+            </div>
+          )}
+          <div style={S.gallV2_grid}>
+            {gridSlots.map((slot) => {
+              const photo = photos[slot];
+              const isMain = slot === 0;
+              const cellStyle = isMain ? S.gallV2_main : S.gallV2_cell;
+              const isLastVisible = slot === 4;
+              const showMoreOverlay = isLastVisible && remainingBeyondGrid > 0 && photo;
+              if (!photo) {
+                return (
+                  <div key={slot} style={isMain ? { ...S.gallV2_main, cursor: "default" } : S.gallV2_cellEmpty} aria-hidden="true">
+                    <span style={S.gallV2_emptyIcon}>{isMain ? "🏡" : "✦"}</span>
+                  </div>
+                );
+              }
+              return (
+                <div
+                  key={slot}
+                  style={cellStyle}
+                  onClick={() => openGalleryAt(slot)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openGalleryAt(slot); } }}
+                  aria-label={`Open photo ${slot + 1} of ${totalPhotos}`}
+                >
+                  <img src={photo} alt={`${venue.name} photo ${slot + 1}`} style={S.gallV2_img} />
+                  {isMain && isVerified && <div style={S.verifiedPill}>✓ Wedsy Verified</div>}
+                  {isMain && <div style={S.popularPill}>🔥 Active listing</div>}
+                  {isMain && totalPhotos > 1 && (
+                    <button
+                      type="button"
+                      style={S.gallV2_viewAllBtn}
+                      onClick={(e) => { e.stopPropagation(); openGalleryAt(0); }}
+                    >
+                      ⊞ View all {totalPhotos} photos
+                    </button>
+                  )}
+                  {showMoreOverlay && (
+                    <div
+                      style={S.gallV2_more}
+                      onClick={(e) => { e.stopPropagation(); openGalleryAt(slot); }}
+                    >
+                      +{remainingBeyondGrid} more
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
+
+        {/* Gallery v2 — lightbox modal */}
+        {galleryOpen && photos[galleryIndex] && (
+          <div
+            style={S.gallV2_overlay}
+            onClick={closeGallery}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Photo gallery"
+          >
+            <div style={S.gallV2_counter}>{galleryIndex + 1} of {totalPhotos}</div>
+            <button
+              type="button"
+              style={S.gallV2_close}
+              aria-label="Close gallery"
+              onClick={(e) => { e.stopPropagation(); closeGallery(); }}
+            >
+              ✕
+            </button>
+            {totalPhotos > 1 && (
+              <button
+                type="button"
+                style={{ ...S.gallV2_chev, ...S.gallV2_chevLeft }}
+                aria-label="Previous photo"
+                onClick={(e) => { e.stopPropagation(); gallStep(-1); }}
+              >
+                ‹
+              </button>
+            )}
+            <div style={S.gallV2_stage} onClick={(e) => e.stopPropagation()}>
+              <img
+                src={photos[galleryIndex]}
+                alt={`${venue.name} photo ${galleryIndex + 1} of ${totalPhotos}`}
+                style={S.gallV2_stageImg}
+              />
+            </div>
+            {totalPhotos > 1 && (
+              <button
+                type="button"
+                style={{ ...S.gallV2_chev, ...S.gallV2_chevRight }}
+                aria-label="Next photo"
+                onClick={(e) => { e.stopPropagation(); gallStep(1); }}
+              >
+                ›
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Insight bar */}
         <div style={S.insightBar}>
@@ -354,6 +611,74 @@ export default function VenueDetailPage({ venue, similar = [], setOpenLoginModal
               <div style={S.sc}>
                 <div style={S.scH}>✨ About this venue</div>
                 <p style={S.desc}>{venue.description}</p>
+              </div>
+            )}
+
+            {/* What couples say — Google Reviews */}
+            {reviewsList.length > 0 && (
+              <div style={S.sc}>
+                <div style={S.scH}>💬 What couples say</div>
+                <div style={{ fontSize: 12, color: "#b8852a", marginTop: -6, marginBottom: 14, letterSpacing: 0.3 }}>
+                  {reviews?.rating ? <><span style={{ color: "#b8852a" }}>★</span> <strong style={{ color: "#2c1810", fontWeight: 500 }}>{reviews.rating}</strong></> : null}
+                  {reviews?.rating && reviews?.total ? <span style={{ color: "#e8d8c4", margin: "0 6px" }}>·</span> : null}
+                  {reviews?.total ? <span style={{ color: "#7a5a48" }}>{reviews.total} reviews on Google</span> : null}
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {reviewsList.slice(0, 5).map((r, i) => {
+                    const isExpanded = !!expandedReviews[i];
+                    const text = r.text || "";
+                    const needsTruncate = text.length > REVIEW_PREVIEW_CHARS;
+                    const shownText = !needsTruncate || isExpanded ? text : text.slice(0, REVIEW_PREVIEW_CHARS).trimEnd() + "…";
+                    const rating = Math.round(Number(r.rating) || 0);
+                    return (
+                      <div key={i} style={{ background: "#fdf4e6", border: "0.5px solid #f0e4d0", borderRadius: 12, padding: "14px 16px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 10 }}>
+                          <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#6b1e2e", color: "#fdf6ec", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 500, letterSpacing: 0.5, flexShrink: 0 }}>
+                            {initialsFromName(r.authorName)}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 500, color: "#2c1810", marginBottom: 2 }}>{r.authorName || "Anonymous"}</div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#b09080" }}>
+                              <span style={{ color: "#b8852a", letterSpacing: 1 }}>
+                                {"★★★★★".slice(0, rating)}<span style={{ color: "#f0e4d0" }}>{"★★★★★".slice(rating)}</span>
+                              </span>
+                              <span style={{ color: "#e8d8c4" }}>·</span>
+                              <span>{formatRelativeTime(r.time)}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 13, color: "#7a5a48", lineHeight: 1.7 }}>
+                          {shownText}
+                          {needsTruncate && (
+                            <>
+                              {" "}
+                              <button
+                                type="button"
+                                onClick={() => setExpandedReviews((prev) => ({ ...prev, [i]: !prev[i] }))}
+                                style={{ background: "none", border: "none", padding: 0, color: "#6b1e2e", cursor: "pointer", fontSize: 12, fontWeight: 500, font: "inherit", textDecoration: "underline" }}
+                              >
+                                {isExpanded ? "Show less" : "Read more"}
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ marginTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+                  <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: "#b09080" }}>Reviews powered by Google</div>
+                  {venue.googlePlaceId && (
+                    <a
+                      href={`https://www.google.com/maps/place/?q=place_id:${venue.googlePlaceId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ fontSize: 12, color: "#6b1e2e", textDecoration: "none", fontWeight: 500 }}
+                    >
+                      See all reviews on Google Maps →
+                    </a>
+                  )}
+                </div>
               </div>
             )}
 
@@ -434,6 +759,75 @@ export default function VenueDetailPage({ venue, similar = [], setOpenLoginModal
                 ))}
               </div>
             </div>
+
+            {/* Nearby accommodation */}
+            {nearby.length > 0 && (
+              <div style={S.sc}>
+                <div style={S.scH}>🏨 Nearby accommodation</div>
+                <div style={{ fontSize: 12, color: "#b09080", marginBottom: 12 }}>Within 5km</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+                  {nearby.slice(0, 6).map((hotel, i) => {
+                    const vicinityShort = hotel.vicinity && hotel.vicinity.length > 60
+                      ? hotel.vicinity.slice(0, 60).trimEnd() + "…"
+                      : (hotel.vicinity || "");
+                    const priceDollars = typeof hotel.priceLevel === "number"
+                      ? "$".repeat(Math.max(0, Math.min(4, hotel.priceLevel)))
+                      : "";
+                    return (
+                      <a
+                        key={hotel.placeId || i}
+                        href={`https://www.google.com/maps/place/?q=place_id:${hotel.placeId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          border: "0.5px solid #e8d8c4",
+                          borderRadius: 10,
+                          overflow: "hidden",
+                          background: "#fdf4e6",
+                          textDecoration: "none",
+                          color: "inherit",
+                          display: "flex",
+                          flexDirection: "column",
+                        }}
+                      >
+                        <div style={{ height: 84, background: "#f0e2c8", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                          {hotel.photoReference ? (
+                            <img
+                              src={`/api/places-photo?ref=${encodeURIComponent(hotel.photoReference)}`}
+                              alt={hotel.name || "Hotel"}
+                              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            />
+                          ) : (
+                            <span style={{ fontSize: 26, opacity: 0.25 }}>🏨</span>
+                          )}
+                        </div>
+                        <div style={{ padding: "9px 11px 11px" }}>
+                          <div style={{ fontSize: 12, fontWeight: 500, color: "#2c1810", marginBottom: 3, lineHeight: 1.25 }}>
+                            {hotel.name}
+                          </div>
+                          {vicinityShort && (
+                            <div style={{ fontSize: 10, color: "#b09080", marginBottom: 6, lineHeight: 1.4 }}>
+                              {vicinityShort}
+                            </div>
+                          )}
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 4 }}>
+                            {typeof hotel.rating === "number" ? (
+                              <span style={{ fontSize: 11, color: "#b8852a", fontWeight: 500 }}>{hotel.rating} ★</span>
+                            ) : <span />}
+                            {priceDollars && (
+                              <span style={{ fontSize: 11, color: "#2d6a4f", fontWeight: 500 }}>{priceDollars}</span>
+                            )}
+                          </div>
+                        </div>
+                      </a>
+                    );
+                  })}
+                </div>
+                <div style={{ marginTop: 12, fontSize: 10, color: "#b09080", textAlign: "right", letterSpacing: 0.3 }}>
+                  Powered by Google
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -633,7 +1027,20 @@ export async function getServerSideProps({ params }) {
     const { venue } = await venueRes.json();
     const { venues: allVenues = [] } = await allRes.json();
     const similar = allVenues.filter((v) => v.slug !== slug).slice(0, 3);
-    return { props: { venue, similar } };
+    let nearby = [];
+    try {
+      const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venues/${slug}/nearby`, { method: "POST" });
+      if (r.ok) {
+        const j = await r.json();
+        nearby = Array.isArray(j.results) ? j.results : [];
+      }
+    } catch (e) {}
+    let reviews = { reviews: [], rating: null, total: 0 };
+    try {
+      const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venues/${slug}/reviews`, { method: "POST" });
+      if (r.ok) reviews = await r.json();
+    } catch (e) {}
+    return { props: { venue, similar, nearby, reviews } };
   } catch (err) {
     console.error("Venue detail SSR error:", err.message);
     return { notFound: true };
