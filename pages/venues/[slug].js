@@ -124,9 +124,188 @@ const S = {
   gallV2_chev: { position: "absolute", top: "50%", transform: "translateY(-50%)", width: 46, height: 46, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "0.5px solid rgba(255,255,255,0.25)", color: "#fff", fontSize: 22, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 },
   gallV2_chevLeft: { left: 18 },
   gallV2_chevRight: { right: 18 },
+  // --- v3 redesign: hero, sticky bar, sections, etc. ---
+  hero: { position: "relative", width: "100%", minHeight: "65vh", display: "flex", alignItems: "flex-end", background: "#2c1810", overflow: "hidden" },
+  heroImg: { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" },
+  heroOverlay: { position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.6) 100%)" },
+  heroFade: { position: "absolute", left: 0, right: 0, bottom: 0, height: 80, background: "linear-gradient(180deg, rgba(253,246,236,0) 0%, #fdf6ec 100%)", pointerEvents: "none" },
+  heroInner: { position: "relative", width: "100%", maxWidth: 1400, margin: "0 auto", padding: "4rem 2rem 3rem", color: "#fdf6ec", zIndex: 2 },
+  heroEyebrow: { display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 },
+  heroChip: { display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 100, background: "rgba(253,246,236,0.16)", border: "0.5px solid rgba(253,246,236,0.28)", fontSize: 11, color: "#fdf6ec", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" },
+  heroName: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 56, fontWeight: 400, lineHeight: 1.02, letterSpacing: -1, color: "#fdf6ec", textShadow: "0 2px 24px rgba(0,0,0,0.35)", marginBottom: 14 },
+  heroSub: { fontSize: 14, color: "rgba(253,246,236,0.9)", display: "flex", alignItems: "center", gap: 8, marginBottom: 6 },
+  heroVerified: { position: "absolute", top: 22, left: 22, display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 100, background: "rgba(107,30,46,0.92)", color: "#fdf6ec", fontSize: 11, fontWeight: 500, letterSpacing: 0.3, zIndex: 3, boxShadow: "0 2px 16px rgba(107,30,46,0.35)" },
+  heroViewAll: { position: "absolute", top: 22, right: 22, display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 100, background: "rgba(253,246,236,0.92)", color: "#6b1e2e", fontSize: 12, fontWeight: 500, border: "0.5px solid rgba(253,246,236,0.5)", cursor: "pointer", zIndex: 3, backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" },
+  // sticky quick-facts bar
+  stickyBar: { position: "sticky", top: 0, zIndex: 9, background: "#6b1e2e", borderBottom: "0.5px solid rgba(232,196,122,0.18)" },
+  stickyBarInner: { maxWidth: 1400, margin: "0 auto", padding: "10px 2rem", display: "flex", alignItems: "center", gap: 18, overflowX: "auto", whiteSpace: "nowrap", scrollbarWidth: "none" },
+  stickyChip: { display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "rgba(253,246,236,0.85)", flexShrink: 0 },
+  stickyChipNum: { color: "#e8c47a", fontWeight: 500 },
+  stickyDivider: { width: 0.5, height: 14, background: "rgba(232,196,122,0.22)", flexShrink: 0 },
+  // section title (Georgia + gold underline)
+  sTitleWrap: { marginBottom: 18 },
+  sTitle: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 26, fontWeight: 400, color: "#2c1810", letterSpacing: -0.4, lineHeight: 1.2, marginBottom: 8 },
+  sTitleSub: { fontSize: 13, color: "#7a5a48", marginTop: 6, lineHeight: 1.5 },
+  sTitleRule: { width: 40, height: 2, background: "#b8852a", borderRadius: 2 },
+  // body grid v3 (320 sidebar)
+  bodyV3: { display: "grid", gridTemplateColumns: "1fr 320px", gap: "2.5rem", alignItems: "start", maxWidth: 1400, margin: "0 auto", padding: "2.5rem 2rem 0" },
+  mainV3: { minWidth: 0 },
+  sidebarV3: { position: "sticky", top: 80, display: "flex", flexDirection: "column", gap: 14 },
+  section: { marginBottom: "3rem" },
+  // about + highlights split
+  abSplit: { display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 28, alignItems: "start" },
+  dropCap: { float: "left", fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 56, lineHeight: 0.9, color: "#b8852a", paddingRight: 10, paddingTop: 4, fontWeight: 400 },
+  aboutText: { fontSize: 15, color: "#3a2820", lineHeight: 1.85, fontFamily: "Georgia, 'Times New Roman', serif" },
+  highlightsCard: { background: "#fdf4e6", borderLeft: "3px solid #b8852a", borderRadius: 8, padding: "1.25rem 1.25rem 1.25rem 1.1rem", boxShadow: "0 2px 16px rgba(107,30,46,0.06)" },
+  highlightsTitle: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 16, fontWeight: 400, color: "#2c1810", marginBottom: 12, letterSpacing: -0.2 },
+  highlightItem: { display: "flex", alignItems: "flex-start", gap: 9, padding: "6px 0", fontSize: 13, color: "#3a2820", lineHeight: 1.45 },
+  highlightIcon: { fontSize: 14, lineHeight: 1.2, flexShrink: 0, marginTop: 1 },
+  // event spaces horizontal scroller
+  spacesScroller: { display: "flex", gap: 14, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "thin", marginLeft: -4, marginRight: -4, paddingLeft: 4, paddingRight: 4 },
+  spaceCard: { flex: "0 0 300px", background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.1rem 1.15rem", boxShadow: "0 2px 16px rgba(107,30,46,0.06)", display: "flex", flexDirection: "column", gap: 10 },
+  spaceTopRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 },
+  spaceName: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 18, color: "#2c1810", fontWeight: 400, letterSpacing: -0.2 },
+  spaceTypeBadge: { display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 100, background: "#fdf4e6", border: "0.5px solid #e8d8c4", fontSize: 10, color: "#7a5a48", fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.5, flexShrink: 0 },
+  spaceStatRow: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 },
+  spaceStat: { background: "#fdf4e6", border: "0.5px solid #f0e4d0", borderRadius: 10, padding: "8px 10px", textAlign: "center" },
+  spaceStatVal: { fontSize: 16, fontWeight: 500, color: "#2c1810", fontFamily: "Georgia, serif" },
+  spaceStatLbl: { fontSize: 9, textTransform: "uppercase", letterSpacing: 0.8, color: "#b09080", marginTop: 2 },
+  spaceTagRow: { display: "flex", flexWrap: "wrap", gap: 5 },
+  spaceTag: { fontSize: 10, padding: "3px 9px", borderRadius: 100, fontWeight: 500, letterSpacing: 0.3 },
+  spaceDesc: { fontSize: 12, color: "#7a5a48", lineHeight: 1.55 },
+  // accommodation
+  roomGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 14 },
+  roomCard: { background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.1rem 1.15rem", boxShadow: "0 2px 16px rgba(107,30,46,0.06)" },
+  roomNameRow: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 },
+  roomName: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 16, color: "#2c1810", fontWeight: 400 },
+  roomCountBadge: { fontSize: 10, fontWeight: 500, padding: "3px 9px", borderRadius: 100, background: "#6b1e2e", color: "#fdf6ec", letterSpacing: 0.3 },
+  roomMeta: { fontSize: 12, color: "#7a5a48", marginBottom: 4 },
+  roomPrice: { fontFamily: "Georgia, serif", fontSize: 18, color: "#b8852a", fontWeight: 500, marginTop: 6 },
+  roomPriceLbl: { fontSize: 10, color: "#b09080", textTransform: "uppercase", letterSpacing: 0.5, marginLeft: 4 },
+  totalCapNote: { marginTop: 14, padding: "10px 14px", background: "#fdf4e6", borderRadius: 10, border: "0.5px solid #e8d8c4", fontSize: 12, color: "#7a5a48" },
+  simpleAccomCard: { background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.4rem 1.5rem", boxShadow: "0 2px 16px rgba(107,30,46,0.06)", display: "flex", alignItems: "center", gap: 18 },
+  simpleAccomNum: { fontFamily: "Georgia, serif", fontSize: 40, color: "#b8852a", fontWeight: 400, lineHeight: 1 },
+  // pricing
+  pricingBadge: { display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 100, background: "#fdf4e6", border: "0.5px solid #e8d8c4", fontSize: 11, color: "#7a5a48", fontWeight: 500, marginBottom: 14 },
+  tierGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 14 },
+  tierCard: { background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.1rem 1.15rem", boxShadow: "0 2px 16px rgba(107,30,46,0.06)", textAlign: "center" },
+  tierHours: { fontSize: 11, textTransform: "uppercase", letterSpacing: 1, color: "#b09080", marginBottom: 6 },
+  tierPrice: { fontFamily: "Georgia, serif", fontSize: 28, color: "#b8852a", fontWeight: 500, letterSpacing: -0.5 },
+  perPlateRow: { display: "flex", gap: 12, marginBottom: 12, flexWrap: "wrap" },
+  perPlateCard: { flex: "1 1 160px", background: "#fdf4e6", borderRadius: 12, padding: "12px 14px", border: "0.5px solid #e8d8c4" },
+  perPlateLbl: { fontSize: 10, textTransform: "uppercase", letterSpacing: 0.8, color: "#b09080", marginBottom: 4 },
+  perPlateVal: { fontFamily: "Georgia, serif", fontSize: 18, color: "#2c1810" },
+  pricingChips: { display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 },
+  pricingChip: { fontSize: 11, padding: "5px 12px", borderRadius: 100, background: "#fdf4e6", border: "0.5px solid #e8d8c4", color: "#7a5a48" },
+  pricingChipWarn: { fontSize: 11, padding: "5px 12px", borderRadius: 100, background: "#fff4dc", border: "0.5px solid #e8c47a", color: "#8a5a1a", fontWeight: 500 },
+  pricingFoot: { fontSize: 11, color: "#b09080", textAlign: "center", paddingTop: 10, borderTop: "0.5px solid #f0e4d0", fontStyle: "italic" },
+  pricingNote: { background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.5rem 1.75rem", fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 15, color: "#3a2820", lineHeight: 1.75, boxShadow: "0 2px 16px rgba(107,30,46,0.06)", fontStyle: "italic" },
+  // policies 2x2
+  policyGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 },
+  policyCard: { background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.25rem 1.35rem", boxShadow: "0 2px 16px rgba(107,30,46,0.06)" },
+  policyCardSoft: { background: "#f3f9f3", border: "0.5px solid #d4e4d4", borderRadius: 14, padding: "1.25rem 1.35rem", boxShadow: "0 2px 16px rgba(107,30,46,0.06)" },
+  policyCardWarn: { background: "#fff8ec", border: "0.5px solid #e8d4a8", borderRadius: 14, padding: "1.25rem 1.35rem", boxShadow: "0 2px 16px rgba(107,30,46,0.06)" },
+  policyIcon: { fontSize: 22, marginBottom: 8 },
+  policyKicker: { fontSize: 10, textTransform: "uppercase", letterSpacing: 1.4, color: "#b8852a", fontWeight: 500, marginBottom: 6 },
+  policyHeadline: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 18, color: "#2c1810", fontWeight: 400, marginBottom: 10, letterSpacing: -0.2 },
+  policyRow: { fontSize: 12, color: "#7a5a48", lineHeight: 1.65, marginBottom: 5 },
+  policyChipRow: { display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 },
+  policyChip: { fontSize: 10, padding: "3px 9px", borderRadius: 100, background: "#fdf4e6", border: "0.5px solid #e8d8c4", color: "#7a5a48" },
+  policyRestriction: { fontSize: 12, color: "#8a5a1a", fontStyle: "italic", marginTop: 8, lineHeight: 1.6 },
+  // amenities icon grid
+  amSubGroup: { marginBottom: 18 },
+  amSubH: { fontSize: 10, textTransform: "uppercase", letterSpacing: 1.4, color: "#b8852a", fontWeight: 500, marginBottom: 10 },
+  amIconGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 10 },
+  amIconItem: { display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", borderRadius: 8 },
+  amIconItemOff: { display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", borderRadius: 8, opacity: 0.4 },
+  amIcon: { fontSize: 15, color: "#6b1e2e", flexShrink: 0, width: 18, textAlign: "center" },
+  amIconOff: { fontSize: 15, color: "#b09080", flexShrink: 0, width: 18, textAlign: "center" },
+  amLabel: { fontSize: 12, color: "#3a2820" },
+  amLabelOff: { fontSize: 12, color: "#7a5a48", textDecoration: "line-through" },
+  // contact
+  contactCard: { background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.5rem 1.75rem", boxShadow: "0 2px 16px rgba(107,30,46,0.06)" },
+  contactName: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 20, color: "#2c1810", fontWeight: 400, letterSpacing: -0.2, marginBottom: 4 },
+  contactRole: { fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: "#b8852a", fontWeight: 500, marginBottom: 14 },
+  contactLink: { display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 13px", borderRadius: 100, background: "#fdf4e6", border: "0.5px solid #e8d8c4", color: "#6b1e2e", textDecoration: "none", fontSize: 13, fontWeight: 500, marginRight: 8, marginBottom: 8 },
+  contactChips: { display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 },
+  contactChip: { fontSize: 10, padding: "3px 9px", borderRadius: 100, background: "#fdf4e6", border: "0.5px solid #e8d8c4", color: "#7a5a48", letterSpacing: 0.3 },
+  contactTag: { fontSize: 13, color: "#7a5a48", marginTop: 14, fontFamily: "Georgia, serif", fontStyle: "italic", paddingTop: 12, borderTop: "0.5px solid #f0e4d0" },
+  // FAQ cards
+  faqList: { display: "flex", flexDirection: "column", gap: 10 },
+  faqCard: { display: "flex", alignItems: "center", gap: 10, padding: "13px 16px", background: "#ffffff", border: "0.5px solid #e8d8c4", borderLeft: "3px solid transparent", borderRadius: 12, cursor: "pointer", boxShadow: "0 2px 16px rgba(107,30,46,0.04)", transition: "transform 0.18s ease, border-color 0.18s ease", textDecoration: "none", color: "inherit" },
+  faqText: { fontSize: 13, color: "#3a2820", flex: 1, lineHeight: 1.4 },
+  faqArrow: { fontSize: 14, color: "#6b1e2e", flexShrink: 0 },
+  // reviews v3
+  reviewScroller: { display: "flex", gap: 14, overflowX: "auto", paddingBottom: 8, paddingLeft: 4, paddingRight: 4, marginLeft: -4, marginRight: -4 },
+  reviewCard: { flex: "0 0 320px", background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.25rem 1.3rem", boxShadow: "0 2px 16px rgba(107,30,46,0.06)" },
+  reviewAvatar: { width: 42, height: 42, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 500, letterSpacing: 0.5, color: "#fdf6ec", flexShrink: 0 },
+  reviewHead: { display: "flex", alignItems: "center", gap: 11, marginBottom: 12 },
+  reviewerName: { fontSize: 13, fontWeight: 500, color: "#2c1810", marginBottom: 2 },
+  reviewMeta: { display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#b09080" },
+  reviewStars: { color: "#b8852a", letterSpacing: 1 },
+  reviewStarsOff: { color: "#f0e4d0" },
+  reviewText: { fontSize: 13, color: "#3a2820", lineHeight: 1.7, fontFamily: "Georgia, serif" },
+  reviewMoreBtn: { background: "none", border: "none", padding: 0, color: "#6b1e2e", cursor: "pointer", fontSize: 12, fontWeight: 500, textDecoration: "underline" },
+  reviewFooter: { display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginTop: 16, paddingTop: 14, borderTop: "0.5px solid #f0e4d0" },
+  // nearby v3
+  nearbyIntro: { fontSize: 13, color: "#7a5a48", marginBottom: 14, fontFamily: "Georgia, serif", fontStyle: "italic" },
+  nearbyGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 14 },
+  nearbyCard: { display: "flex", flexDirection: "column", background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 16px rgba(107,30,46,0.06)", textDecoration: "none", color: "inherit", transition: "transform 0.18s ease" },
+  nearbyImg: { height: 120, background: "#f0e2c8", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" },
+  nearbyDistance: { position: "absolute", top: 10, left: 10, padding: "4px 10px", borderRadius: 100, background: "#b8852a", color: "#fff", fontSize: 11, fontWeight: 500, letterSpacing: 0.3 },
+  nearbyBody: { padding: "12px 14px 14px" },
+  // similar v3
+  simCardV3: { display: "block", background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, overflow: "hidden", textDecoration: "none", color: "inherit", boxShadow: "0 2px 16px rgba(107,30,46,0.06)", transition: "transform 0.2s ease, box-shadow 0.2s ease" },
+  simImgV3: { height: 160, background: "#f0e2c8", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  simBodyV3: { padding: "14px 16px 16px" },
+  simNameV3: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 18, color: "#2c1810", fontWeight: 400, letterSpacing: -0.2, marginBottom: 4 },
+  // sidebar v3
+  sideCard: { background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 16px rgba(107,30,46,0.08)" },
+  sideChatHeader: { background: "linear-gradient(135deg, #6b1e2e 0%, #4a1520 100%)", padding: "1.35rem 1.35rem 1.25rem" },
+  sideAvatarBig: { width: 56, height: 56, borderRadius: "50%", background: "#b8852a", color: "#fdf6ec", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Georgia, serif", fontSize: 24, fontWeight: 500, position: "relative", marginBottom: 12, border: "2px solid rgba(253,246,236,0.2)" },
+  sideOnlineDot: { position: "absolute", bottom: 1, right: 1, width: 12, height: 12, borderRadius: "50%", background: "#6fcf97", border: "2px solid #6b1e2e" },
+  sideVname: { fontFamily: "Georgia, serif", fontSize: 17, color: "#fdf6ec", fontWeight: 400, letterSpacing: -0.2, marginBottom: 3 },
+  sideStatus: { fontSize: 11, color: "rgba(253,246,236,0.7)", display: "flex", alignItems: "center", gap: 5 },
+  sideQfCard: { background: "#fffaf4", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.25rem", boxShadow: "0 2px 16px rgba(107,30,46,0.06)" },
+  sideQfTitle: { fontFamily: "Georgia, serif", fontSize: 14, color: "#2c1810", fontWeight: 400, marginBottom: 12, paddingBottom: 8, borderBottom: "0.5px solid #f0e4d0" },
+  sideQfItem: { display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: "0.5px solid #f7eedb" },
+  sideQfIcon: { fontSize: 15, lineHeight: 1.3, color: "#b8852a", flexShrink: 0, width: 18 },
+  sideQfQ: { fontSize: 11, color: "#b09080", marginBottom: 2 },
+  sideQfA: { fontSize: 12, color: "#2c1810", fontWeight: 500 },
+  sideConcierge: { background: "linear-gradient(135deg, #fdf4e6 0%, #f7edda 100%)", border: "0.5px solid #e8d4a8", borderRadius: 14, padding: "1.25rem", boxShadow: "0 2px 16px rgba(184,133,42,0.1)" },
+  sideConciergeH: { fontFamily: "Georgia, serif", fontSize: 14, color: "#2c1810", fontWeight: 400, marginBottom: 6, letterSpacing: -0.2 },
+  sideConciergeBody: { fontSize: 11, color: "#7a5a48", lineHeight: 1.55, marginBottom: 10 },
+  sideConciergeLink: { display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "#6b1e2e", textDecoration: "none", fontWeight: 500, borderBottom: "0.5px solid #b8852a", paddingBottom: 2 },
+  sideSecurity: { fontSize: 10, color: "#b09080", textAlign: "center", lineHeight: 1.55, padding: "0 0.5rem" },
 };
 
 const VIBES = ["Traditional", "Contemporary", "Outdoor", "Intimate", "Grand"];
+
+// Format INR currency without paise — used for prices, deposits, per-plate.
+const formatINR = (n) => {
+  if (typeof n !== "number" || !isFinite(n) || n <= 0) return null;
+  try {
+    return n.toLocaleString("en-IN");
+  } catch (e) {
+    return String(n);
+  }
+};
+
+// Space "Best for" tag → color mapping per spec
+const SPACE_TAG_COLORS = {
+  ceremony: { bg: "#6b1e2e", color: "#fdf6ec" },
+  reception: { bg: "#b8852a", color: "#fdf6ec" },
+  sangeet: { bg: "#7a3d7a", color: "#fdf6ec" },
+  mehendi: { bg: "#3a7a4d", color: "#fdf6ec" },
+  haldi: { bg: "#d4a017", color: "#3a2820" },
+  cocktail: { bg: "#3a6b8a", color: "#fdf6ec" },
+};
+
+const SPACE_TYPE_LABEL = {
+  outdoor: { icon: "🌿", label: "Outdoor" },
+  indoor: { icon: "🏛", label: "Indoor" },
+  "semi-outdoor": { icon: "⛅", label: "Semi-outdoor" },
+};
 
 export default function VenueDetailPage({ venue, similar = [], nearby = [], reviews = null, setOpenLoginModalv2, setSource }) {
   const [selectedVibes, setSelectedVibes] = useState(["Traditional", "Outdoor"]);
@@ -383,6 +562,110 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
   const rooms = venue.accommodation?.rooms > 0 ? `${venue.accommodation.rooms} rooms` : null;
   const catText = venue.catering === "in_house_only" ? "In-house only" : venue.catering === "outside_allowed" ? "Outside allowed" : venue.catering === "both" ? "Both" : "Ask venue";
 
+  // --- v3 redesign derivations ---
+  // Hero cover photo: prefer explicit coverPhoto, then featurePhoto, then first available photo
+  const heroCover = venue.coverPhoto || venue.featurePhoto || (allPhotos.length > 0 ? allPhotos[0] : null);
+
+  // Catering policy — schema lives under cateringPolicy.type; older code used venue.catering
+  const catPolicyType = venue.cateringPolicy?.type || venue.catering || "unknown";
+  const catPolicyLabel = catPolicyType === "in_house_only"
+    ? "In-house only"
+    : catPolicyType === "outside_allowed"
+    ? "Outside allowed"
+    : catPolicyType === "both"
+    ? "Both options available"
+    : "Ask the venue";
+  const catPolicyHeadline = catPolicyType === "in_house_only"
+    ? "In-house kitchen only"
+    : catPolicyType === "outside_allowed"
+    ? "Outside caterers welcome"
+    : catPolicyType === "both"
+    ? "In-house or outside caterers"
+    : "Catering — to be confirmed";
+
+  // Capacity derivation — schema doesn't have venue.capacity, derive from spaces
+  const spaces = Array.isArray(venue.spaces) ? venue.spaces : [];
+  const totalSeated = spaces.reduce((acc, s) => acc + (Number(s.capacitySeated) || 0), 0);
+  const totalStanding = spaces.reduce((acc, s) => acc + (Number(s.capacityStanding) || 0), 0);
+  const maxSpaceSeated = spaces.reduce((acc, s) => Math.max(acc, Number(s.capacitySeated) || 0), 0);
+  const maxSpaceStanding = spaces.reduce((acc, s) => Math.max(acc, Number(s.capacityStanding) || 0), 0);
+  // Best estimate of "max guests" across all spaces — prefer the largest single space
+  const guestsMax = Math.max(maxSpaceSeated, maxSpaceStanding, Number(venue.capacity?.max) || 0);
+  const guestsMin = Number(venue.capacity?.min) || 0;
+  const guestsRange = guestsMax > 0
+    ? (guestsMin > 0 && guestsMin < guestsMax ? `${guestsMin}-${guestsMax}` : `up to ${guestsMax}`)
+    : null;
+
+  // Accommodation derivations
+  const acc = venue.accommodation || {};
+  const accRoomTypes = Array.isArray(acc.roomTypes) ? acc.roomTypes : [];
+  const accTotalRooms = accRoomTypes.reduce((sum, rt) => sum + (Number(rt.count) || 0), 0)
+    || (Number(acc.rooms) || 0);
+  const accTotalCap = Number(acc.totalCapacity) || accRoomTypes.reduce((sum, rt) => sum + ((Number(rt.count) || 0) * (Number(rt.maxPeoplePerRoom) || Number(rt.occupancyPerRoom) || 0)), 0);
+
+  // Pricing derivations
+  const pricing = venue.pricing || {};
+  const tiers = Array.isArray(pricing.tiers) ? pricing.tiers.filter((t) => t && (t.hours || t.price)) : [];
+  const lowestTierPrice = tiers.length > 0 ? Math.min(...tiers.map((t) => Number(t.price) || Infinity).filter((p) => isFinite(p))) : null;
+  const perPlateVeg = Number(pricing.perPlate?.veg) || 0;
+  const perPlateNonVeg = Number(pricing.perPlate?.nonVeg) || 0;
+  const securityDeposit = Number(pricing.securityDeposit) || 0;
+  const advancePercent = Number(pricing.advancePercent) || 0;
+  const peakMarkup = Number(pricing.peakSeasonMarkup) || 0;
+  const minDuration = Number(pricing.minimumDuration) || 0;
+  const hasTieredPricing = tiers.length > 0;
+  const hasPricingNote = !!(pricing.note && String(pricing.note).trim().length > 0);
+  const showPricingSection = hasTieredPricing || hasPricingNote;
+
+  // Music policy
+  const mp = venue.musicPolicy || {};
+  const musicPermissive = mp.djAllowed !== false && mp.liveMusicAllowed !== false;
+
+  // Amenities — schema has them as an object of booleans (not the legacy array)
+  const am = venue.amenities && typeof venue.amenities === "object" && !Array.isArray(venue.amenities) ? venue.amenities : null;
+  // Legacy array form support (older docs may still use this)
+  const amenitiesArrayLegacy = Array.isArray(venue.amenities) ? venue.amenities : null;
+
+  // Build the highlights list dynamically — only items the venue actually has
+  const highlights = [];
+  if (am?.swimmingPool) highlights.push({ icon: "🏊", text: "Swimming pool on premises" });
+  if (am?.garden || spaces.some((s) => s.type === "outdoor" || s.type === "semi-outdoor")) highlights.push({ icon: "🌿", text: "Beautiful outdoor ceremony spaces" });
+  if (mp.djAllowed !== false || mp.liveMusicAllowed !== false) highlights.push({ icon: "🎵", text: "DJ and live music welcome" });
+  if (am?.outsideAlcohol === "yes") highlights.push({ icon: "🍷", text: "Outside alcohol permitted" });
+  if (acc.available) highlights.push({ icon: "🛏", text: "On-site accommodation for guests" });
+  if (am?.dayOfCoordinator) highlights.push({ icon: "📋", text: "Dedicated day-of coordinator" });
+  // Cap to 6
+  const highlightsTrimmed = highlights.slice(0, 6);
+
+  // Sticky-bar quick facts — only render the chips we actually have data for
+  const stickyChips = [];
+  if (vType) stickyChips.push({ icon: "🏠", text: vType });
+  if (guestsRange) stickyChips.push({ icon: "👥", text: <><span style={S.stickyChipNum}>{guestsRange}</span> guests</> });
+  if (accTotalRooms > 0) stickyChips.push({ icon: "🛏", text: <><span style={S.stickyChipNum}>{accTotalRooms}</span> rooms</> });
+  if (venue.googleRating) stickyChips.push({ icon: "⭐", text: <><span style={S.stickyChipNum}>{venue.googleRating}</span> rating</> });
+  stickyChips.push({ icon: "🍽", text: catPolicyLabel });
+  if (mp.outdoorCurfew) stickyChips.push({ icon: "🎵", text: <>Outdoor till <span style={S.stickyChipNum}>{mp.outdoorCurfew}</span></> });
+  if (lowestTierPrice) stickyChips.push({ icon: "💰", text: <>from <span style={S.stickyChipNum}>₹{formatINR(lowestTierPrice)}</span></> });
+
+  // FAQ entries — pre-fill from venue data where possible, keep tappable
+  const faqEntries = [
+    { q: "Is your date available for our guest count?", a: "Ask the venue directly to confirm date + capacity." },
+    { q: "Can we do a site visit this weekend?", a: "Coordinate a visit in chat." },
+    { q: "What is the all-in cost for a 2-day wedding?", a: hasTieredPricing && lowestTierPrice ? `Tiered pricing starts from ₹${formatINR(lowestTierPrice)} — ask for a 2-day quote.` : "Ask for a full quote in chat." },
+    { q: "Do you have a coordinator on event day?", a: am?.dayOfCoordinator ? "Yes — dedicated day-of coordinator available." : "Confirm with the venue." },
+    { q: "Are there any hidden charges we should know about?", a: "Ask about kitchen fee, peak markup, security deposit." },
+  ];
+
+  // Sort nearby by distanceKm client-side (defensive — server should already do this)
+  const nearbySorted = [...(Array.isArray(nearby) ? nearby : [])].sort((a, b) => {
+    const da = typeof a?.distanceKm === "number" ? a.distanceKm : Infinity;
+    const db = typeof b?.distanceKm === "number" ? b.distanceKm : Infinity;
+    return da - db;
+  });
+
+  // Initials for venue chat avatar
+  const venueInitial = (venue.name || "?").trim().charAt(0).toUpperCase() || "?";
+
   // --- "What couples say" helpers ---
   // Relative time string from a Unix-seconds timestamp (Google Places format).
   // Coarse buckets only — Google's own reviews UI does the same ("3 weeks ago").
@@ -411,6 +694,49 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
   const reviewsList = Array.isArray(reviews?.reviews) ? reviews.reviews : [];
   const REVIEW_PREVIEW_CHARS = 200;
 
+  // Build a stable palette for review avatars (alternates burgundy/gold tones)
+  const reviewAvatarColors = ["#6b1e2e", "#b8852a", "#8a3045", "#a07020", "#4a1520"];
+
+  // Amenity icon map — drives the amenities grid below
+  const AMENITY_ICONS = {
+    swimmingPool: { icon: "🏊", label: "Swimming pool" },
+    generatorBackup: { icon: "🔌", label: "Generator backup" },
+    parking: { icon: "🅿️", label: "Parking" },
+    helipad: { icon: "🚁", label: "Helipad" },
+    garden: { icon: "🌳", label: "Garden" },
+    airConditioning: { icon: "❄️", label: "Air conditioning" },
+    cctv: { icon: "📹", label: "CCTV" },
+    wifi: { icon: "📶", label: "WiFi" },
+    elevator: { icon: "🛗", label: "Elevator" },
+    bridalSuite: { icon: "👰", label: "Bridal suite" },
+    groomRoom: { icon: "🤵", label: "Groom room" },
+    makeupRoom: { icon: "💄", label: "Makeup room" },
+    changingRooms: { icon: "🚪", label: "Changing rooms" },
+    prayerRoom: { icon: "🛕", label: "Prayer room" },
+    fireNOC: { icon: "🧯", label: "Fire NOC" },
+    liquorLicense: { icon: "🍾", label: "Liquor license" },
+    dayOfCoordinator: { icon: "📋", label: "Day-of coordinator" },
+    securityStaff: { icon: "🛡", label: "Security staff" },
+    housekeeping: { icon: "🧹", label: "Housekeeping" },
+    valetParking: { icon: "🚗", label: "Valet parking" },
+    shuttleService: { icon: "🚐", label: "Shuttle service" },
+    petFriendly: { icon: "🐾", label: "Pet friendly" },
+  };
+  const AMENITY_GROUPS = [
+    {
+      title: "Facilities",
+      keys: ["swimmingPool", "garden", "airConditioning", "elevator", "wifi", "generatorBackup", "cctv", "parking", "helipad"],
+    },
+    {
+      title: "Wedding Facilities",
+      keys: ["bridalSuite", "groomRoom", "makeupRoom", "changingRooms", "prayerRoom"],
+    },
+    {
+      title: "Services",
+      keys: ["dayOfCoordinator", "housekeeping", "securityStaff", "valetParking", "shuttleService", "fireNOC", "liquorLicense", "petFriendly"],
+    },
+  ];
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": ["LocalBusiness", "EventVenue"],
@@ -422,6 +748,10 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
     image: venue.coverPhoto || "",
     aggregateRating: venue.googleRating ? { "@type": "AggregateRating", ratingValue: venue.googleRating, reviewCount: venue.googleReviewCount || 0 } : undefined,
   };
+
+  // First letter of description for the drop-cap — only when there's meaningful body text
+  const descRest = venue.description && venue.description.length > 1 ? venue.description.slice(1) : "";
+  const descFirst = venue.description && venue.description.length > 0 ? venue.description.charAt(0) : "";
 
   return (
     <>
@@ -439,89 +769,72 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
       <main style={S.page}>
         {/* Breadcrumb */}
         <div style={S.bc}>
-          <Link href="/" style={S.bcLink}>Home</Link> › 
-          <Link href="/venues" style={S.bcLink}>Venues</Link> › 
+          <Link href="/" style={S.bcLink}>Home</Link> ›{" "}
+          <Link href="/venues" style={S.bcLink}>Venues</Link> ›{" "}
           <span>{venue.name}</span>
         </div>
 
-        {/* Gallery v2 — up-to-5-photo grid with optional category tabs */}
-        <div style={S.gallV2_wrap}>
-          {showTabs && (
-            <div style={S.gallV2_tabs} role="tablist" aria-label="Photo categories">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={galleryTab === "all"}
-                style={galleryTab === "all" ? S.gallV2_tabOn : S.gallV2_tab}
-                onClick={() => setGalleryTab("all")}
-              >
-                All ({allPhotos.length})
-              </button>
-              {photoCats.map((c) => (
-                <button
-                  key={c.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={galleryTab === c.key}
-                  style={galleryTab === c.key ? S.gallV2_tabOn : S.gallV2_tab}
-                  onClick={() => setGalleryTab(c.key)}
-                >
-                  {c.label} ({c.list.length})
-                </button>
-              ))}
+        {/* ───────────────────────────── 1. HERO ───────────────────────────── */}
+        <section style={S.hero} aria-label={`${venue.name} cover`}>
+          {heroCover ? (
+            <img src={heroCover} alt={`${venue.name} cover photo`} style={S.heroImg} />
+          ) : (
+            <div style={{ ...S.heroImg, background: "linear-gradient(135deg, #4a1520 0%, #2c1810 100%)" }} />
+          )}
+          <div style={S.heroOverlay} />
+          {isVerified && (
+            <div style={S.heroVerified}>
+              <span aria-hidden="true">✓</span> Wedsy Verified
             </div>
           )}
-          <div style={S.gallV2_grid}>
-            {gridSlots.map((slot) => {
-              const photo = photos[slot];
-              const isMain = slot === 0;
-              const cellStyle = isMain ? S.gallV2_main : S.gallV2_cell;
-              const isLastVisible = slot === 4;
-              const showMoreOverlay = isLastVisible && remainingBeyondGrid > 0 && photo;
-              if (!photo) {
-                return (
-                  <div key={slot} style={isMain ? { ...S.gallV2_main, cursor: "default" } : S.gallV2_cellEmpty} aria-hidden="true">
-                    <span style={S.gallV2_emptyIcon}>{isMain ? "🏡" : "✦"}</span>
-                  </div>
-                );
-              }
-              return (
-                <div
-                  key={slot}
-                  style={cellStyle}
-                  onClick={() => openGalleryAt(slot)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openGalleryAt(slot); } }}
-                  aria-label={`Open photo ${slot + 1} of ${totalPhotos}`}
-                >
-                  <img src={photo} alt={`${venue.name} photo ${slot + 1}`} style={S.gallV2_img} />
-                  {isMain && isVerified && <div style={S.verifiedPill}>✓ Wedsy Verified</div>}
-                  {isMain && <div style={S.popularPill}>🔥 Active listing</div>}
-                  {isMain && totalPhotos > 1 && (
-                    <button
-                      type="button"
-                      style={S.gallV2_viewAllBtn}
-                      onClick={(e) => { e.stopPropagation(); openGalleryAt(0); }}
-                    >
-                      ⊞ View all {totalPhotos} photos
-                    </button>
-                  )}
-                  {showMoreOverlay && (
-                    <div
-                      style={S.gallV2_more}
-                      onClick={(e) => { e.stopPropagation(); openGalleryAt(slot); }}
-                    >
-                      +{remainingBeyondGrid} more
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          {totalPhotos > 0 && (
+            <button
+              type="button"
+              style={S.heroViewAll}
+              onClick={() => openGalleryAt(0)}
+              aria-label={`View all ${totalPhotos} photos`}
+            >
+              <span aria-hidden="true">⊞</span> View all {totalPhotos} photos
+            </button>
+          )}
+          <div style={S.heroInner}>
+            <div style={S.heroEyebrow}>
+              <span style={S.heroChip}>📍 {venue.address?.split(",")[0] || venue.city || "Bangalore"}</span>
+              <span style={S.heroChip}>🌿 {vType}</span>
+              {venue.googleRating && (
+                <span style={S.heroChip}>
+                  <span style={{ color: "#e8c47a" }}>★</span> {venue.googleRating}
+                  {venue.googleReviewCount > 0 && <span style={{ opacity: 0.7 }}> · {venue.googleReviewCount} reviews</span>}
+                </span>
+              )}
+            </div>
+            <h1 style={S.heroName}>{venue.name}</h1>
+            {venue.tagline && (
+              <div style={{ fontSize: 15, color: "rgba(253,246,236,0.85)", fontFamily: "Georgia, serif", fontStyle: "italic", maxWidth: 640 }}>
+                {venue.tagline}
+              </div>
+            )}
           </div>
-        </div>
+          <div style={S.heroFade} />
+        </section>
 
-        {/* Gallery v2 — lightbox modal */}
+        {/* ───────────────────── 2. STICKY QUICK FACTS BAR ───────────────────── */}
+        {stickyChips.length > 0 && (
+          <div style={S.stickyBar} aria-label="Quick facts">
+            <div style={S.stickyBarInner}>
+              {stickyChips.map((chip, i) => (
+                <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
+                  <span style={S.stickyChip}>
+                    <span aria-hidden="true">{chip.icon}</span> {chip.text}
+                  </span>
+                  {i < stickyChips.length - 1 && <span style={S.stickyDivider} />}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Gallery v2 — lightbox modal (kept fully intact, opened from the hero "view all" button) */}
         {galleryOpen && photos[galleryIndex] && (
           <div
             style={S.gallV2_overlay}
@@ -539,6 +852,27 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
             >
               ✕
             </button>
+            {showTabs && (
+              <div style={{ position: "absolute", top: 22, left: 22, display: "flex", flexWrap: "wrap", gap: 6, maxWidth: "55%" }}>
+                <button
+                  type="button"
+                  style={galleryTab === "all" ? S.gallV2_tabOn : S.gallV2_tab}
+                  onClick={(e) => { e.stopPropagation(); setGalleryTab("all"); }}
+                >
+                  All ({allPhotos.length})
+                </button>
+                {photoCats.map((c) => (
+                  <button
+                    key={c.key}
+                    type="button"
+                    style={galleryTab === c.key ? S.gallV2_tabOn : S.gallV2_tab}
+                    onClick={(e) => { e.stopPropagation(); setGalleryTab(c.key); }}
+                  >
+                    {c.label} ({c.list.length})
+                  </button>
+                ))}
+              </div>
+            )}
             {totalPhotos > 1 && (
               <button
                 type="button"
@@ -569,85 +903,430 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
           </div>
         )}
 
-        {/* Insight bar */}
-        <div style={S.insightBar}>
-          <div style={S.ibItem}>👁 <strong style={S.ibStrong}>Active</strong> listing</div>
-          <div style={S.ibDivider} />
-          <div style={S.ibItem}>⏱ Avg response: <strong style={S.ibStrong}>2 hours</strong></div>
-          <div style={S.ibDivider} />
-          {venue.googleRating && <><div style={S.ibItem}>⭐ <strong style={S.ibStrong}>{venue.googleRating}</strong> on Google</div><div style={S.ibDivider} /></>}
-          <div style={S.ibItem}>💬 <strong style={S.ibStrong}>Chat directly</strong> with venue</div>
-        </div>
-
-        <div style={S.body}>
-          {/* Main */}
-          <div style={S.main}>
-            {/* Venue header */}
-            <div style={S.vnameBlock}>
-              <div style={S.eyebrow}>
-                <span style={S.eyebrowItem}>🌿 {vType}</span>
-                <span style={S.eyebrowDot} />
-                <span style={S.eyebrowItem}>Bangalore</span>
-                {venue.googleReviewCount > 0 && <><span style={S.eyebrowDot} /><span style={S.eyebrowItem}>{venue.googleReviewCount} reviews</span></>}
-              </div>
-              <div style={S.vname}>{venue.name}</div>
-              <div style={S.vloc}>
-                📍 {venue.address || "Bangalore"}
-                <a href={`https://maps.google.com/?q=${encodeURIComponent(venue.name + " " + venue.address)}`} target="_blank" rel="noopener noreferrer" style={S.vlocLink}>View on map →</a>
-              </div>
-            </div>
-
-            {/* Stats strip */}
-            <div style={S.statStrip}>
-              {venue.googleRating && <div style={{ ...S.ssCell }}><div style={S.ssValGold}>{venue.googleRating} ★</div><div style={S.ssLbl}>{venue.googleReviewCount} reviews</div></div>}
-              {capacityText && <div style={S.ssCell}><div style={S.ssVal}>{capacityText}</div><div style={S.ssLbl}>Guests</div></div>}
-              {rooms && <div style={S.ssCell}><div style={S.ssVal}>{rooms}</div><div style={S.ssLbl}>Accommodation</div></div>}
-              <div style={S.ssCell}><div style={S.ssVal}>{catText}</div><div style={S.ssLbl}>Catering</div></div>
-              <div style={{ ...S.ssCell, borderRight: "none" }}><div style={S.ssValGood}>2 hrs</div><div style={S.ssLbl}>Response</div></div>
-            </div>
-
-            {/* About */}
-            {venue.description && (
-              <div style={S.sc}>
-                <div style={S.scH}>✨ About this venue</div>
-                <p style={S.desc}>{venue.description}</p>
-              </div>
+        {/* ───────────────────────── 3. BODY GRID ───────────────────────── */}
+        <div style={S.bodyV3}>
+          {/* MAIN COLUMN */}
+          <div style={S.mainV3}>
+            {/* ───── 4. ABOUT + HIGHLIGHTS ───── */}
+            {(venue.description || highlightsTrimmed.length > 0) && (
+              <section style={S.section}>
+                <div style={S.sTitleWrap}>
+                  <div style={S.sTitle}>About {venue.name}</div>
+                  <div style={S.sTitleRule} />
+                </div>
+                <div style={S.abSplit}>
+                  <div>
+                    {venue.description ? (
+                      <p style={S.aboutText}>
+                        <span style={S.dropCap}>{descFirst}</span>
+                        {descRest}
+                      </p>
+                    ) : (
+                      <p style={S.aboutText}>A premium wedding venue in {venue.city || "Bangalore"} — chat directly with the team to learn more.</p>
+                    )}
+                  </div>
+                  {highlightsTrimmed.length > 0 && (
+                    <aside style={S.highlightsCard}>
+                      <div style={S.highlightsTitle}>Why couples love this venue</div>
+                      <div>
+                        {highlightsTrimmed.map((h, i) => (
+                          <div key={i} style={S.highlightItem}>
+                            <span style={S.highlightIcon} aria-hidden="true">{h.icon}</span>
+                            <span>{h.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </aside>
+                  )}
+                </div>
+              </section>
             )}
 
-            {/* What couples say — Google Reviews */}
-            {reviewsList.length > 0 && (
-              <div style={S.sc}>
-                <div style={S.scH}>💬 What couples say</div>
-                <div style={{ fontSize: 12, color: "#b8852a", marginTop: -6, marginBottom: 14, letterSpacing: 0.3 }}>
-                  {reviews?.rating ? <><span style={{ color: "#b8852a" }}>★</span> <strong style={{ color: "#2c1810", fontWeight: 500 }}>{reviews.rating}</strong></> : null}
-                  {reviews?.rating && reviews?.total ? <span style={{ color: "#e8d8c4", margin: "0 6px" }}>·</span> : null}
-                  {reviews?.total ? <span style={{ color: "#7a5a48" }}>{reviews.total} reviews on Google</span> : null}
+            {/* ───── 5. EVENT SPACES ───── */}
+            {spaces.length > 0 && (
+              <section style={S.section}>
+                <div style={S.sTitleWrap}>
+                  <div style={S.sTitle}>Event Spaces</div>
+                  <div style={S.sTitleRule} />
+                  <div style={S.sTitleSub}>{spaces.length} {spaces.length === 1 ? "space" : "spaces"} available for your wedding</div>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {reviewsList.slice(0, 5).map((r, i) => {
+                <div style={S.spacesScroller}>
+                  {spaces.map((sp, i) => {
+                    const typeInfo = SPACE_TYPE_LABEL[sp.type] || { icon: "✦", label: sp.type || "Space" };
+                    const bestFor = Array.isArray(sp.bestFor) ? sp.bestFor : [];
+                    return (
+                      <article key={i} style={S.spaceCard}>
+                        <div style={S.spaceTopRow}>
+                          <div style={S.spaceName}>{sp.name || `Space ${i + 1}`}</div>
+                          <span style={S.spaceTypeBadge}>{typeInfo.icon} {typeInfo.label}</span>
+                        </div>
+                        {(sp.capacitySeated > 0 || sp.capacityStanding > 0) && (
+                          <div style={S.spaceStatRow}>
+                            <div style={S.spaceStat}>
+                              <div style={S.spaceStatVal}>{sp.capacitySeated || "—"}</div>
+                              <div style={S.spaceStatLbl}>Seated</div>
+                            </div>
+                            <div style={S.spaceStat}>
+                              <div style={S.spaceStatVal}>{sp.capacityStanding || "—"}</div>
+                              <div style={S.spaceStatLbl}>Standing</div>
+                            </div>
+                          </div>
+                        )}
+                        {bestFor.length > 0 && (
+                          <div>
+                            <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 1, color: "#b09080", marginBottom: 6 }}>Best for</div>
+                            <div style={S.spaceTagRow}>
+                              {bestFor.map((tag, ti) => {
+                                const key = String(tag).toLowerCase();
+                                const palette = SPACE_TAG_COLORS[key] || { bg: "#fdf4e6", color: "#7a5a48" };
+                                return (
+                                  <span key={ti} style={{ ...S.spaceTag, background: palette.bg, color: palette.color }}>
+                                    {tag}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                        {sp.description && <div style={S.spaceDesc}>{sp.description}</div>}
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* ───── 6. ACCOMMODATION ───── */}
+            {acc.available === true && (
+              <section style={S.section}>
+                <div style={S.sTitleWrap}>
+                  <div style={S.sTitle}>Stay at the venue</div>
+                  <div style={S.sTitleRule} />
+                  <div style={S.sTitleSub}>Keep your guests close — on-site rooms available</div>
+                </div>
+                {accRoomTypes.length > 0 ? (
+                  <>
+                    <div style={S.roomGrid}>
+                      {accRoomTypes.map((rt, i) => {
+                        const sleeps = rt.maxPeoplePerRoom && rt.maxPeoplePerRoom !== rt.occupancyPerRoom
+                          ? `${rt.occupancyPerRoom || 1}-${rt.maxPeoplePerRoom}`
+                          : `${rt.occupancyPerRoom || rt.maxPeoplePerRoom || 2}`;
+                        return (
+                          <article key={i} style={S.roomCard}>
+                            <div style={S.roomNameRow}>
+                              <div style={S.roomName}>{rt.name || `Room type ${i + 1}`}</div>
+                              {rt.count > 0 && <span style={S.roomCountBadge}>× {rt.count}</span>}
+                            </div>
+                            <div style={S.roomMeta}>Sleeps {sleeps}{rt.isAC ? " · ❄️ AC" : ""}</div>
+                            {rt.description && <div style={{ ...S.roomMeta, fontSize: 11, color: "#b09080", lineHeight: 1.5 }}>{rt.description}</div>}
+                            {rt.pricePerNight > 0 && (
+                              <div>
+                                <span style={S.roomPrice}>₹{formatINR(rt.pricePerNight)}</span>
+                                <span style={S.roomPriceLbl}>/ night</span>
+                              </div>
+                            )}
+                          </article>
+                        );
+                      })}
+                    </div>
+                    {(accTotalCap > 0 || accTotalRooms > 0) && (
+                      <div style={S.totalCapNote}>
+                        {accTotalCap > 0 && <><strong style={{ color: "#2c1810" }}>Total capacity: {accTotalCap} guests</strong></>}
+                        {accTotalCap > 0 && accTotalRooms > 0 && <> across </>}
+                        {accTotalRooms > 0 && <><strong style={{ color: "#2c1810" }}>{accTotalRooms} rooms</strong></>}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  (Number(acc.rooms) > 0 || accTotalCap > 0) && (
+                    <div style={S.simpleAccomCard}>
+                      <div style={S.simpleAccomNum}>{accTotalRooms || acc.rooms || accTotalCap}</div>
+                      <div>
+                        <div style={{ fontFamily: "Georgia, serif", fontSize: 17, color: "#2c1810" }}>
+                          {accTotalRooms || acc.rooms ? `${accTotalRooms || acc.rooms} rooms on-site` : `${accTotalCap} guests can stay`}
+                        </div>
+                        <div style={{ fontSize: 12, color: "#7a5a48", marginTop: 4 }}>Talk to the venue for room types and pricing.</div>
+                      </div>
+                    </div>
+                  )
+                )}
+              </section>
+            )}
+
+            {/* ───── 7. PRICING ───── */}
+            {showPricingSection && (
+              <section style={S.section}>
+                <div style={S.sTitleWrap}>
+                  <div style={S.sTitle}>Pricing</div>
+                  <div style={S.sTitleRule} />
+                  <div style={S.sTitleSub}>Transparent and clear — final pricing subject to package negotiation</div>
+                </div>
+                {hasTieredPricing ? (
+                  <>
+                    {minDuration > 0 && (
+                      <div style={S.pricingBadge}>⏱ Minimum duration: {minDuration} hours</div>
+                    )}
+                    <div style={S.tierGrid}>
+                      {tiers.map((t, i) => (
+                        <div key={i} style={S.tierCard}>
+                          <div style={S.tierHours}>{t.hours ? `${t.hours} hours` : "Package"}</div>
+                          <div style={S.tierPrice}>₹{formatINR(Number(t.price)) || "—"}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {(perPlateVeg > 0 || perPlateNonVeg > 0) && (
+                      <div style={S.perPlateRow}>
+                        {perPlateVeg > 0 && (
+                          <div style={S.perPlateCard}>
+                            <div style={S.perPlateLbl}>Per plate · 🥦 Veg</div>
+                            <div style={S.perPlateVal}>₹{formatINR(perPlateVeg)}</div>
+                          </div>
+                        )}
+                        {perPlateNonVeg > 0 && (
+                          <div style={S.perPlateCard}>
+                            <div style={S.perPlateLbl}>Per plate · 🍖 Non-veg</div>
+                            <div style={S.perPlateVal}>₹{formatINR(perPlateNonVeg)}</div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <div style={S.pricingChips}>
+                      {securityDeposit > 0 && <span style={S.pricingChip}>🔒 Security deposit ₹{formatINR(securityDeposit)}</span>}
+                      {advancePercent > 0 && <span style={S.pricingChip}>📅 Advance {advancePercent}% to book</span>}
+                      {peakMarkup > 0 && <span style={S.pricingChipWarn}>⚡ Peak-season markup +{peakMarkup}%</span>}
+                    </div>
+                    <div style={S.pricingFoot}>All prices in {pricing.currency || "INR"} · Final pricing subject to package negotiation</div>
+                  </>
+                ) : (
+                  hasPricingNote && (
+                    <div style={S.pricingNote}>“{pricing.note}”</div>
+                  )
+                )}
+              </section>
+            )}
+
+            {/* ───── 8. POLICIES — 2×2 GRID ───── */}
+            <section style={S.section}>
+              <div style={S.sTitleWrap}>
+                <div style={S.sTitle}>Policies & Rules</div>
+                <div style={S.sTitleRule} />
+              </div>
+              <div style={S.policyGrid}>
+                {/* CATERING */}
+                <article style={S.policyCard}>
+                  <div style={S.policyIcon} aria-hidden="true">🍽</div>
+                  <div style={S.policyKicker}>Catering</div>
+                  <div style={S.policyHeadline}>{catPolicyHeadline}</div>
+                  {catPolicyType !== "in_house_only" && venue.cateringPolicy?.outsideKitchenFee > 0 && (
+                    <div style={S.policyRow}>Outside kitchen fee: ₹{formatINR(venue.cateringPolicy.outsideKitchenFee)}</div>
+                  )}
+                  {catPolicyType !== "in_house_only" && venue.cateringPolicy?.outsideSetupFrom && (
+                    <div style={S.policyRow}>Caterer setup access: {venue.cateringPolicy.outsideSetupFrom}</div>
+                  )}
+                  {Array.isArray(venue.cateringPolicy?.dietaryOptions) && venue.cateringPolicy.dietaryOptions.length > 0 && (
+                    <div style={S.policyChipRow}>
+                      {venue.cateringPolicy.dietaryOptions.map((d, i) => {
+                        const key = String(d).toLowerCase();
+                        const icon = key === "veg" ? "🥦" : key === "non-veg" || key === "non_veg" || key === "nonveg" ? "🍖" : key === "jain" ? "🫙" : key === "halal" ? "🥩" : "✦";
+                        return <span key={i} style={S.policyChip}>{icon} {d}</span>;
+                      })}
+                    </div>
+                  )}
+                  {Array.isArray(venue.cateringPolicy?.cuisines) && venue.cateringPolicy.cuisines.length > 0 && (
+                    <div style={S.policyChipRow}>
+                      {venue.cateringPolicy.cuisines.slice(0, 6).map((c, i) => <span key={i} style={S.policyChip}>{c}</span>)}
+                    </div>
+                  )}
+                </article>
+
+                {/* DECORATION */}
+                <article style={S.policyCard}>
+                  <div style={S.policyIcon} aria-hidden="true">🎨</div>
+                  <div style={S.policyKicker}>Decoration</div>
+                  <div style={S.policyHeadline}>
+                    {venue.decorPolicy?.outsideAllowed === false
+                      ? "In-house decor only"
+                      : "Outside decorators welcome"}
+                  </div>
+                  {venue.decorPolicy?.inHouseAvailable && (
+                    <div style={S.policyRow}>✓ In-house decor team available</div>
+                  )}
+                  {venue.decorPolicy?.setupAccessFrom && (
+                    <div style={S.policyRow}>Setup access: {venue.decorPolicy.setupAccessFrom}</div>
+                  )}
+                  {venue.decorPolicy?.restrictions && (
+                    <div style={S.policyRestriction}>“{venue.decorPolicy.restrictions}”</div>
+                  )}
+                </article>
+
+                {/* MUSIC */}
+                <article style={musicPermissive ? S.policyCardSoft : S.policyCardWarn}>
+                  <div style={S.policyIcon} aria-hidden="true">🎵</div>
+                  <div style={S.policyKicker}>Music & Sound</div>
+                  <div style={S.policyHeadline}>
+                    {musicPermissive ? "DJ + live music welcome" : "Some restrictions apply"}
+                  </div>
+                  <div style={S.policyRow}>{mp.djAllowed !== false ? "✓" : "✗"} DJ allowed</div>
+                  <div style={S.policyRow}>{mp.liveMusicAllowed !== false ? "✓" : "✗"} Live music allowed</div>
+                  {mp.outdoorCurfew && <div style={S.policyRow}>🌙 Outdoor curfew: {mp.outdoorCurfew}</div>}
+                  {mp.indoorCurfew && <div style={S.policyRow}>🏛 Indoor curfew: {mp.indoorCurfew}</div>}
+                  {mp.inHouseSoundSystem && <div style={S.policyRow}>🔊 In-house sound system</div>}
+                </article>
+
+                {/* STAY & EXTRAS */}
+                <article style={S.policyCard}>
+                  <div style={S.policyIcon} aria-hidden="true">🏘</div>
+                  <div style={S.policyKicker}>Stay & Extras</div>
+                  <div style={S.policyHeadline}>House rules at a glance</div>
+                  <div style={S.policyRow}>
+                    🍷 Outside alcohol: {am?.outsideAlcohol === "yes" ? "Allowed" : am?.outsideAlcohol === "extra_charge" ? "Allowed with extra charge" : "Not allowed"}
+                  </div>
+                  <div style={S.policyRow}>🐾 Pets: {am?.petFriendly ? "Welcome" : "Not allowed"}</div>
+                  <div style={S.policyRow}>🚬 Smoking: {am?.smokingAllowed ? "Designated areas" : "Not allowed indoors"}</div>
+                  {venue.policies?.cancellation && (
+                    <div style={S.policyRestriction}>Cancellation: {String(venue.policies.cancellation).slice(0, 140)}{String(venue.policies.cancellation).length > 140 ? "…" : ""}</div>
+                  )}
+                </article>
+              </div>
+            </section>
+
+            {/* ───── 9. AMENITIES — ICON GRID ───── */}
+            {(am || amenitiesArrayLegacy) && (
+              <section style={S.section}>
+                <div style={S.sTitleWrap}>
+                  <div style={S.sTitle}>Amenities & Facilities</div>
+                  <div style={S.sTitleRule} />
+                </div>
+                {am ? (
+                  AMENITY_GROUPS.map((group) => {
+                    const items = group.keys
+                      .map((k) => ({ key: k, available: am[k] === true, meta: AMENITY_ICONS[k] }))
+                      .filter((it) => it.meta && typeof am[it.key] === "boolean");
+                    if (items.length === 0) return null;
+                    return (
+                      <div key={group.title} style={S.amSubGroup}>
+                        <div style={S.amSubH}>{group.title}</div>
+                        <div style={S.amIconGrid}>
+                          {items.map((it) => (
+                            <div key={it.key} style={it.available ? S.amIconItem : S.amIconItemOff}>
+                              <span style={it.available ? S.amIcon : S.amIconOff} aria-hidden="true">{it.meta.icon}</span>
+                              <span style={it.available ? S.amLabel : S.amLabelOff}>{it.meta.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  // Legacy array-of-strings fallback
+                  <div style={S.amIconGrid}>
+                    {amenitiesArrayLegacy.map((a) => (
+                      <div key={a} style={S.amIconItem}>
+                        <span style={S.amIcon} aria-hidden="true">✦</span>
+                        <span style={S.amLabel}>{String(a).replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* ───── 10. CONTACT ───── */}
+            {venue.contact?.primaryName && (
+              <section style={S.section}>
+                <div style={S.sTitleWrap}>
+                  <div style={S.sTitle}>Speak to someone at {venue.name}</div>
+                  <div style={S.sTitleRule} />
+                </div>
+                <div style={S.contactCard}>
+                  <div style={S.contactName}>{venue.contact.primaryName}</div>
+                  <div style={S.contactRole}>Venue Coordinator</div>
+                  <div>
+                    {venue.contact.primaryPhone && (
+                      <a href={`tel:${venue.contact.primaryPhone}`} style={S.contactLink}>
+                        <span aria-hidden="true">📞</span> {venue.contact.primaryPhone}
+                      </a>
+                    )}
+                    {venue.contact.email && (
+                      <a href={`mailto:${venue.contact.email}`} style={S.contactLink}>
+                        <span aria-hidden="true">✉️</span> {venue.contact.email}
+                      </a>
+                    )}
+                  </div>
+                  {(venue.contact.bestTimeToReach || (Array.isArray(venue.contact.languages) && venue.contact.languages.length > 0)) && (
+                    <div style={S.contactChips}>
+                      {venue.contact.bestTimeToReach && (
+                        <span style={S.contactChip}>🕒 Best time: {venue.contact.bestTimeToReach}</span>
+                      )}
+                      {Array.isArray(venue.contact.languages) && venue.contact.languages.map((l, i) => (
+                        <span key={i} style={S.contactChip}>🗣 {l}</span>
+                      ))}
+                    </div>
+                  )}
+                  <div style={S.contactTag}>Connect directly with {venue.contact.primaryName} at {venue.name}.</div>
+                </div>
+              </section>
+            )}
+
+            {/* ───── 11. FAQ / ASK DIRECTLY ───── */}
+            <section style={S.section}>
+              <div style={S.sTitleWrap}>
+                <div style={S.sTitle}>Ask the venue directly</div>
+                <div style={S.sTitleRule} />
+                <div style={S.sTitleSub}>Tap any question to send it when you start the chat.</div>
+              </div>
+              <div style={S.faqList}>
+                {faqEntries.map((item, i) => (
+                  <div
+                    key={i}
+                    style={S.faqCard}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderLeftColor = "#6b1e2e"; e.currentTarget.style.transform = "translateX(2px)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderLeftColor = "transparent"; e.currentTarget.style.transform = "translateX(0)"; }}
+                  >
+                    <div style={S.faqText}>{item.q}</div>
+                    <span style={S.faqArrow} aria-hidden="true">→</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* ───── 12. GOOGLE REVIEWS ───── */}
+            {reviewsList.length > 0 && (
+              <section style={S.section}>
+                <div style={S.sTitleWrap}>
+                  <div style={S.sTitle}>What couples say</div>
+                  <div style={S.sTitleRule} />
+                  <div style={S.sTitleSub}>
+                    {reviews?.rating ? <><span style={{ color: "#b8852a" }}>★</span> <strong style={{ color: "#2c1810", fontWeight: 500 }}>{reviews.rating}</strong></> : null}
+                    {reviews?.rating && reviews?.total ? <span style={{ color: "#e8d8c4", margin: "0 6px" }}>·</span> : null}
+                    {reviews?.total ? <span>{reviews.total} reviews on Google</span> : null}
+                  </div>
+                </div>
+                <div style={S.reviewScroller}>
+                  {reviewsList.slice(0, 8).map((r, i) => {
                     const isExpanded = !!expandedReviews[i];
                     const text = r.text || "";
                     const needsTruncate = text.length > REVIEW_PREVIEW_CHARS;
                     const shownText = !needsTruncate || isExpanded ? text : text.slice(0, REVIEW_PREVIEW_CHARS).trimEnd() + "…";
                     const rating = Math.round(Number(r.rating) || 0);
+                    const avatarBg = reviewAvatarColors[i % reviewAvatarColors.length];
                     return (
-                      <div key={i} style={{ background: "#fdf4e6", border: "0.5px solid #f0e4d0", borderRadius: 12, padding: "14px 16px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 10 }}>
-                          <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#6b1e2e", color: "#fdf6ec", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 500, letterSpacing: 0.5, flexShrink: 0 }}>
-                            {initialsFromName(r.authorName)}
-                          </div>
+                      <article key={i} style={S.reviewCard}>
+                        <div style={S.reviewHead}>
+                          <div style={{ ...S.reviewAvatar, background: avatarBg }}>{initialsFromName(r.authorName)}</div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 13, fontWeight: 500, color: "#2c1810", marginBottom: 2 }}>{r.authorName || "Anonymous"}</div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#b09080" }}>
-                              <span style={{ color: "#b8852a", letterSpacing: 1 }}>
-                                {"★★★★★".slice(0, rating)}<span style={{ color: "#f0e4d0" }}>{"★★★★★".slice(rating)}</span>
+                            <div style={S.reviewerName}>{r.authorName || "Anonymous"}</div>
+                            <div style={S.reviewMeta}>
+                              <span style={S.reviewStars}>
+                                {"★★★★★".slice(0, rating)}
+                                <span style={S.reviewStarsOff}>{"★★★★★".slice(rating)}</span>
                               </span>
                               <span style={{ color: "#e8d8c4" }}>·</span>
                               <span>{formatRelativeTime(r.time)}</span>
                             </div>
                           </div>
                         </div>
-                        <div style={{ fontSize: 13, color: "#7a5a48", lineHeight: 1.7 }}>
+                        <div style={S.reviewText}>
                           {shownText}
                           {needsTruncate && (
                             <>
@@ -655,18 +1334,18 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                               <button
                                 type="button"
                                 onClick={() => setExpandedReviews((prev) => ({ ...prev, [i]: !prev[i] }))}
-                                style={{ background: "none", border: "none", padding: 0, color: "#6b1e2e", cursor: "pointer", fontSize: 12, fontWeight: 500, font: "inherit", textDecoration: "underline" }}
+                                style={S.reviewMoreBtn}
                               >
                                 {isExpanded ? "Show less" : "Read more"}
                               </button>
                             </>
                           )}
                         </div>
-                      </div>
+                      </article>
                     );
                   })}
                 </div>
-                <div style={{ marginTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+                <div style={S.reviewFooter}>
                   <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: "#b09080" }}>Reviews powered by Google</div>
                   {venue.googlePlaceId && (
                     <a
@@ -679,118 +1358,40 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                     </a>
                   )}
                 </div>
-              </div>
+              </section>
             )}
 
-            {/* Amenities */}
-            {venue.amenities?.length > 0 && (
-              <div style={S.sc}>
-                <div style={S.scH}>✓ Amenities</div>
-                <div style={S.amGrid}>
-                  {venue.amenities.map((a) => (
-                    <div key={a} style={S.am}>
-                      <span style={{ fontSize: 15, color: "#6b1e2e" }}>◆</span>
-                      <span style={S.amTxt}>{a.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}</span>
-                      <span style={S.amChk}>✓</span>
-                    </div>
-                  ))}
+            {/* ───── 13. NEARBY ACCOMMODATION ───── */}
+            {nearbySorted.length > 0 && (
+              <section style={S.section}>
+                <div style={S.sTitleWrap}>
+                  <div style={S.sTitle}>Nearby stays for your guests</div>
+                  <div style={S.sTitleRule} />
                 </div>
-              </div>
-            )}
-
-            {/* Wedsy Score Card */}
-            <div style={S.sc}>
-              <div style={S.scH}>🛡 Wedsy score card</div>
-              <div style={S.scoreGrid}>
-                {[
-                  { label: "Responsiveness", val: 4.6, pct: 92 },
-                  { label: "Hospitality", val: 4.8, pct: 96 },
-                  { label: "Value for money", val: 4.0, pct: 80 },
-                  { label: "Flexibility", val: 3.8, pct: 76 },
-                  { label: "Food quality", val: 4.4, pct: 88 },
-                  { label: "Photo readiness", val: 5.0, pct: 100 },
-                ].map((s) => (
-                  <div key={s.label} style={S.sgItem}>
-                    <div style={S.sgTop}>
-                      <span style={S.sgLabel}>{s.label}</span>
-                      <span style={S.sgVal}>{s.val}</span>
-                    </div>
-                    <div style={S.sgBar}><div style={{ ...S.sgFill, width: `${s.pct}%` }} /></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* FAQ */}
-            <div style={S.sc}>
-              <div style={S.scH}>❓ Everything couples want to know</div>
-              <div style={S.qaList}>
-                {[
-                  { q: "🍽 Catering policy", a: venue.catering === "outside_allowed" ? "Outside caterers fully welcome. No mandatory tie-up with any caterer." : venue.catering === "in_house_only" ? "In-house catering only. Please discuss menu options with the venue." : "Speak to the venue about their catering policy." },
-                  { q: "🎨 Decorator policy", a: "Outside decorators permitted. Discuss setup timing with the venue manager." },
-                  { q: "🔊 Sound curfew", a: "Please confirm with the venue — curfew times vary by location in Bangalore." },
-                  { q: "🧾 Advance to confirm booking", a: "Typically 30% advance to block your date. Confirm exact terms with the venue." },
-                  { q: "🌙 Can guests stay overnight", a: rooms ? `Yes — ${rooms} available on-site. Additional guests can stay at nearby hotels.` : "Contact the venue for accommodation options for your guests." },
-                ].map((item, i) => (
-                  <div key={i} style={{ ...S.qaItem, borderBottom: i < 4 ? "0.5px solid #f0e4d0" : "none", paddingBottom: i < 4 ? 11 : 0 }}>
-                    <div style={S.qaQ}>{item.q}</div>
-                    <div style={S.qaA}>{item.a}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Ask directly */}
-            <div style={{ ...S.sc, background: "#fdf4e6" }}>
-              <div style={S.scH}>💬 Ask the venue directly</div>
-              <div style={{ fontSize: 12, color: "#b09080", marginBottom: 12 }}>Tap any question to send it when you start the chat</div>
-              <div style={S.askList}>
-                {[
-                  "Is your date available for a 350-guest wedding?",
-                  "Can we do a site visit this weekend?",
-                  "What is the all-in cost for a 2-day wedding?",
-                  "Do you have a coordinator on event day?",
-                  "Are there any hidden charges we should know about?",
-                ].map((q, i) => (
-                  <div key={i} style={S.askItem}>
-                    <span style={S.askQ}>{q}</span>
-                    <span style={{ fontSize: 12, color: "#6b1e2e" }}>→</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Nearby accommodation */}
-            {nearby.length > 0 && (
-              <div style={S.sc}>
-                <div style={S.scH}>🏨 Nearby accommodation</div>
-                <div style={{ fontSize: 12, color: "#b09080", marginBottom: 12 }}>Within 5km</div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-                  {nearby.slice(0, 6).map((hotel, i) => {
+                <div style={S.nearbyIntro}>For your guests · Within 5km of this venue</div>
+                <div style={S.nearbyGrid}>
+                  {nearbySorted.slice(0, 6).map((hotel, i) => {
                     const vicinityShort = hotel.vicinity && hotel.vicinity.length > 60
                       ? hotel.vicinity.slice(0, 60).trimEnd() + "…"
                       : (hotel.vicinity || "");
-                    const priceDollars = typeof hotel.priceLevel === "number"
-                      ? "$".repeat(Math.max(0, Math.min(4, hotel.priceLevel)))
-                      : "";
+                    const priceTier = (() => {
+                      const lvl = hotel.priceLevel;
+                      if (typeof lvl !== "number" || lvl <= 0) return null;
+                      const clamped = Math.max(1, Math.min(4, lvl));
+                      const label = ["Budget", "Mid-range", "Upscale", "Luxury"][clamped - 1];
+                      return { symbols: "₹".repeat(clamped), label };
+                    })();
                     return (
                       <a
                         key={hotel.placeId || i}
                         href={`https://www.google.com/maps/place/?q=place_id:${hotel.placeId}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{
-                          border: "0.5px solid #e8d8c4",
-                          borderRadius: 10,
-                          overflow: "hidden",
-                          background: "#fdf4e6",
-                          textDecoration: "none",
-                          color: "inherit",
-                          display: "flex",
-                          flexDirection: "column",
-                        }}
+                        style={S.nearbyCard}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
                       >
-                        <div style={{ height: 84, background: "#f0e2c8", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                        <div style={S.nearbyImg}>
                           {hotel.photoReference ? (
                             <img
                               src={`/api/places-photo?ref=${encodeURIComponent(hotel.photoReference)}`}
@@ -798,29 +1399,47 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                               style={{ width: "100%", height: "100%", objectFit: "cover" }}
                             />
                           ) : (
-                            <span style={{ fontSize: 26, opacity: 0.25 }}>🏨</span>
+                            <span style={{ fontSize: 28, opacity: 0.25 }}>🏨</span>
+                          )}
+                          {typeof hotel.distanceKm === "number" && (
+                            <span style={S.nearbyDistance}>{hotel.distanceKm} km</span>
                           )}
                         </div>
-                        <div style={{ padding: "9px 11px 11px" }}>
-                          <div style={{ fontSize: 12, fontWeight: 500, color: "#2c1810", marginBottom: 3, lineHeight: 1.25 }}>
+                        <div style={S.nearbyBody}>
+                          <div style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2c1810", marginBottom: 4, lineHeight: 1.3 }}>
                             {hotel.name}
                           </div>
-                          {typeof hotel.distanceKm === "number" && (
-                            <div style={{ fontSize: 10, color: "#b09080", marginBottom: 3, lineHeight: 1.4 }}>
-                              {hotel.distanceKm} km away
-                            </div>
-                          )}
                           {vicinityShort && (
-                            <div style={{ fontSize: 10, color: "#b09080", marginBottom: 6, lineHeight: 1.4 }}>
+                            <div style={{ fontSize: 11, color: "#b09080", marginBottom: 8, lineHeight: 1.4 }}>
                               {vicinityShort}
                             </div>
                           )}
                           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 4 }}>
                             {typeof hotel.rating === "number" ? (
-                              <span style={{ fontSize: 11, color: "#b8852a", fontWeight: 500 }}>{hotel.rating} ★</span>
+                              <span style={{ fontSize: 12, color: "#b8852a", fontWeight: 500 }}>★ {hotel.rating}</span>
                             ) : <span />}
-                            {priceDollars && (
-                              <span style={{ fontSize: 11, color: "#2d6a4f", fontWeight: 500 }}>{priceDollars}</span>
+                            {priceTier && (
+                              <span
+                                title={priceTier.label}
+                                style={{
+                                  fontSize: 11,
+                                  color: "#b8852a",
+                                  fontWeight: 600,
+                                  background: "rgba(184,133,42,0.10)",
+                                  border: "0.5px solid rgba(184,133,42,0.35)",
+                                  borderRadius: 100,
+                                  padding: "2px 9px",
+                                  letterSpacing: 0.3,
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 4,
+                                }}
+                              >
+                                <span>{priceTier.symbols}</span>
+                                <span style={{ fontSize: 9, color: "#7a5a48", fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                                  {priceTier.label}
+                                </span>
+                              </span>
                             )}
                           </div>
                         </div>
@@ -828,26 +1447,24 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                     );
                   })}
                 </div>
-                <div style={{ marginTop: 12, fontSize: 10, color: "#b09080", textAlign: "right", letterSpacing: 0.3 }}>
+                <div style={{ marginTop: 14, fontSize: 10, color: "#b09080", textAlign: "right", letterSpacing: 0.3 }}>
                   Powered by Google
                 </div>
-              </div>
+              </section>
             )}
           </div>
 
-          {/* Sidebar */}
-          <div style={S.sidebar}>
+          {/* SIDEBAR (320px sticky) */}
+          <aside style={S.sidebarV3}>
             {/* Chat card */}
-            <div style={S.chatBox}>
-              <div style={S.cbHeader}>
-                <div style={S.cbVenueRow}>
-                  <div style={S.cbAv}>🏡</div>
-                  <div>
-                    <div style={S.cbVname}>{venue.name}</div>
-                    <div style={S.cbStatus}><div style={S.onlineDot} /> Usually responds in 2 hrs</div>
-                  </div>
+            <div style={S.sideCard}>
+              <div style={S.sideChatHeader}>
+                <div style={S.sideAvatarBig}>
+                  {venueInitial}
+                  <span style={S.sideOnlineDot} aria-hidden="true" />
                 </div>
-                <div style={S.cbSub}>Share your details and start a real conversation — no forms into a void.</div>
+                <div style={S.sideVname}>{venue.name}</div>
+                <div style={S.sideStatus}><span style={S.onlineDot} /> Usually replies in 2 hours</div>
               </div>
               <div style={S.cbForm}>
                 <div style={S.cfRow}>
@@ -882,63 +1499,63 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                     - Not logged in: muted "Enquire about this venue" → anonymous enquiry (no userId)
                     - Logged in: full-opacity "💬 Start conversation" → enquiry + conversation */}
                 <button
-    style={{...S.chatBtn, opacity: submitting ? 0.7 : (authUser ? 1 : 0.8)}}
-    disabled={submitting}
-    onClick={async () => {
-      if (!name || !phone) { setError('Please enter your name and phone'); return; }
-      setSubmitting(true); setError('');
-      try {
-        const body = { name, phone, eventDate, guestCount: parseInt(guestCount) || null, vibe: selectedVibes };
-        if (authUser && authUser._id) body.userId = authUser._id;
-        const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/venues/' + venue.slug + '/enquiry', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
-        const data = await res.json();
-        if (res.ok) {
-          setSubmitted(true);
-          if (data && data.conversationId) setConversationId(data.conversationId);
-        } else { setError(data.message || 'Something went wrong'); }
-      } catch(e) { setError('Could not send. Please try again.'); }
-      setSubmitting(false);
-    }}
-  >
-    {submitting
-      ? '⏳ Sending...'
-      : submitted
-        ? (authUser ? '✓ Conversation started!' : '✓ Enquiry sent!')
-        : (authUser ? '💬 Start conversation' : 'Enquire about this venue')}
-  </button>
-  {error && <div style={{fontSize:11,color:'#c0392b',textAlign:'center',marginTop:4}}>{error}</div>}
-  {submitted && authUser && conversationId && (
-    <>
-      <div style={{fontSize:12,color:'#2d6a4f',textAlign:'center',marginTop:6,lineHeight:1.5}}>✓ Your details have been shared with the venue. They will respond shortly.</div>
-      <Link
-        href={`/chats/venue/${conversationId}`}
-        style={{
-          display: 'block', marginTop: 10, padding: '10px 14px',
-          background: '#fdf4e6', border: '0.5px solid #6b1e2e', borderRadius: 100,
-          color: '#6b1e2e', textDecoration: 'none', textAlign: 'center', fontSize: 13, fontWeight: 500,
-        }}
-      >
-        View your conversation →
-      </Link>
-    </>
-  )}
-  {submitted && !authUser && (
-    <div style={{fontSize:12,color:'#7a5a48',textAlign:'center',marginTop:8,lineHeight:1.6}}>
-      <div style={{color:'#2d6a4f',marginBottom:6}}>✓ Enquiry sent! The venue will respond shortly.</div>
-      <button
-        type="button"
-        onClick={openLogin}
-        style={{background:'none',border:'none',padding:0,color:'#6b1e2e',textDecoration:'underline',cursor:'pointer',font:'inherit'}}
-      >
-        Sign in
-      </button>
-      {' '}to track this conversation in your inbox.
-    </div>
-  )}
+                  style={{ ...S.chatBtn, opacity: submitting ? 0.7 : (authUser ? 1 : 0.85), boxShadow: "0 4px 16px rgba(107,30,46,0.25)" }}
+                  disabled={submitting}
+                  onClick={async () => {
+                    if (!name || !phone) { setError('Please enter your name and phone'); return; }
+                    setSubmitting(true); setError('');
+                    try {
+                      const body = { name, phone, eventDate, guestCount: parseInt(guestCount) || null, vibe: selectedVibes };
+                      if (authUser && authUser._id) body.userId = authUser._id;
+                      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/venues/' + venue.slug + '/enquiry', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                      });
+                      const data = await res.json();
+                      if (res.ok) {
+                        setSubmitted(true);
+                        if (data && data.conversationId) setConversationId(data.conversationId);
+                      } else { setError(data.message || 'Something went wrong'); }
+                    } catch(e) { setError('Could not send. Please try again.'); }
+                    setSubmitting(false);
+                  }}
+                >
+                  {submitting
+                    ? '⏳ Sending...'
+                    : submitted
+                      ? (authUser ? '✓ Conversation started!' : '✓ Enquiry sent!')
+                      : (authUser ? '💬 Start conversation' : 'Enquire about this venue')}
+                </button>
+                {error && <div style={{ fontSize: 11, color: '#c0392b', textAlign: 'center', marginTop: 4 }}>{error}</div>}
+                {submitted && authUser && conversationId && (
+                  <>
+                    <div style={{ fontSize: 12, color: '#2d6a4f', textAlign: 'center', marginTop: 6, lineHeight: 1.5 }}>✓ Your details have been shared with the venue. They will respond shortly.</div>
+                    <Link
+                      href={`/chats/venue/${conversationId}`}
+                      style={{
+                        display: 'block', marginTop: 10, padding: '10px 14px',
+                        background: '#fdf4e6', border: '0.5px solid #6b1e2e', borderRadius: 100,
+                        color: '#6b1e2e', textDecoration: 'none', textAlign: 'center', fontSize: 13, fontWeight: 500,
+                      }}
+                    >
+                      View your conversation →
+                    </Link>
+                  </>
+                )}
+                {submitted && !authUser && (
+                  <div style={{ fontSize: 12, color: '#7a5a48', textAlign: 'center', marginTop: 8, lineHeight: 1.6 }}>
+                    <div style={{ color: '#2d6a4f', marginBottom: 6 }}>✓ Enquiry sent! The venue will respond shortly.</div>
+                    <button
+                      type="button"
+                      onClick={openLogin}
+                      style={{ background: 'none', border: 'none', padding: 0, color: '#6b1e2e', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}
+                    >
+                      Sign in
+                    </button>
+                    {' '}to track this conversation in your inbox.
+                  </div>
+                )}
                 <div style={S.cbTrust}>
                   <div style={S.trustItem}>🔒 Private</div>
                   <div style={S.trustItem}>✓ Free</div>
@@ -947,74 +1564,82 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
               </div>
             </div>
 
-            {/* Quick answers */}
-            <div style={S.qaBox}>
-              <div style={S.qaH}>⚡ Quick answers</div>
-              <div style={S.qalist}>
-                {[
-                  { q: "Outside caterer?", a: catText === "Outside allowed" ? "Allowed ✓" : catText },
-                  { q: "Sound curfew?", a: "Confirm with venue" },
-                  { q: "Advance to book?", a: "~30% to confirm date" },
-                  { q: "Outside decorator?", a: "Typically permitted" },
-                ].map((item, i) => (
-                  <div key={i} style={{ ...S.qai, borderBottom: i < 3 ? "0.5px solid #f0e4d0" : "none", paddingBottom: i < 3 ? 10 : 0 }}>
-                    <div style={S.qaiQ}>{item.q}</div>
-                    <div style={S.qaiA}>{item.a}</div>
+            {/* Quick facts card */}
+            <div style={S.sideQfCard}>
+              <div style={S.sideQfTitle}>Quick facts</div>
+              {[
+                { icon: "🍽", q: "Outside caterer?", a: catPolicyLabel },
+                { icon: "🎨", q: "Outside decorator?", a: venue.decorPolicy?.outsideAllowed === false ? "In-house only" : "Permitted" },
+                { icon: "🎵", q: "Sound curfew?", a: mp.outdoorCurfew ? `Outdoor: ${mp.outdoorCurfew}` : "Confirm with venue" },
+                { icon: "🧾", q: "Advance to book?", a: advancePercent > 0 ? `${advancePercent}% to confirm` : "~30% to confirm" },
+              ].map((item, i, arr) => (
+                <div key={i} style={{ ...S.sideQfItem, borderBottom: i < arr.length - 1 ? "0.5px solid #f7eedb" : "none" }}>
+                  <span style={S.sideQfIcon} aria-hidden="true">{item.icon}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={S.sideQfQ}>{item.q}</div>
+                    <div style={S.sideQfA}>{item.a}</div>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* AI Concierge */}
-            <div style={{ background: "#fdf4e6", border: "0.5px solid #f0e4d0", borderRadius: 12, padding: "1rem", marginBottom: 14 }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                <div style={{ width: 32, height: 32, background: "#6b1e2e", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 15 }}>✨</div>
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 500, color: "#2c1810", marginBottom: 3 }}>Not sure if this is the right venue?</div>
-                  <div style={{ fontSize: 11, color: "#7a5a48", lineHeight: 1.6 }}>Tell Wedsy Concierge your exact vision and it will compare this venue against all others.</div>
                 </div>
-              </div>
-              <button style={{ marginTop: 10, width: "100%", border: "0.5px solid #6b1e2e", borderRadius: 100, padding: 8, fontSize: 12, color: "#6b1e2e", background: "transparent", cursor: "pointer" }}>Ask Wedsy Concierge</button>
+              ))}
             </div>
 
-            {/* Wedsy secured note */}
-            <div style={{textAlign:'center',marginBottom:14}}>
-    <a href={'/venue-claim/' + venue.slug} style={{fontSize:12,color:'#b09080',textDecoration:'none',borderBottom:'0.5px solid #e8d8c4',paddingBottom:2}}>
-      Is this your venue? Claim it →
-    </a>
-  </div>
-  <div style={S.wsNote}>
-              <span style={{ fontSize: 13, color: "#6b1e2e", flexShrink: 0 }}>🛡</span>
-              <div style={S.wsText}><strong style={{ color: "#7a5a48" }}>Conversation secured by Wedsy.</strong> If this venue doesn't respond within 24 hours, our team steps in to help.</div>
+            {/* Concierge nudge */}
+            <div style={S.sideConcierge}>
+              <div style={S.sideConciergeH}>Not sure this is right for you?</div>
+              <div style={S.sideConciergeBody}>
+                Tell Wedsy Concierge your vision and we'll match you against every venue in Bangalore.
+              </div>
+              <Link href="/" style={S.sideConciergeLink}>Tell Wedsy Concierge your vision →</Link>
             </div>
-          </div>
+
+            {/* Claim link */}
+            <div style={{ textAlign: 'center' }}>
+              <a href={'/venue-claim/' + venue.slug} style={{ fontSize: 11, color: '#b09080', textDecoration: 'none', borderBottom: '0.5px solid #e8d8c4', paddingBottom: 2 }}>
+                Is this your venue? Claim it →
+              </a>
+            </div>
+
+            {/* Security note */}
+            <div style={S.sideSecurity}>
+              <span aria-hidden="true">🛡</span> Conversation secured by Wedsy. If the venue doesn't respond within 24 hours, our team steps in.
+            </div>
+          </aside>
         </div>
 
-        {/* Similar venues */}
+        {/* ───── 14. SIMILAR VENUES ───── */}
         {similar.length > 0 && (
-          <div style={S.simSection}>
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: "1rem" }}>
-              <span style={{ fontSize: 10, letterSpacing: 2.5, textTransform: "uppercase", color: "#b8852a" }}>Similar venues nearby</span>
-              <Link href="/venues" style={{ fontSize: 12, color: "#6b1e2e", textDecoration: "none" }}>View all →</Link>
+          <section style={{ maxWidth: 1400, margin: "2rem auto 0", padding: "0 2rem 3rem" }}>
+            <div style={S.sTitleWrap}>
+              <div style={S.sTitle}>You might also love</div>
+              <div style={S.sTitleRule} />
+              <div style={S.sTitleSub}>Similar venues nearby</div>
             </div>
             <div style={S.simGrid}>
               {similar.map((v) => (
-                <Link key={v._id} href={`/venues/${v.slug}`} style={S.simCard}>
-                  <div style={{ ...S.simImg, background: v.venueType === "farmhouse" ? "#deeade" : v.venueType === "resort" ? "#f0e2c8" : "#e8e0f0" }}>
-                    {v.coverPhoto ? <img src={v.coverPhoto} alt={v.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span>🏡</span>}
+                <Link
+                  key={v._id}
+                  href={`/venues/${v.slug}`}
+                  style={S.simCardV3}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(107,30,46,0.14)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 16px rgba(107,30,46,0.06)"; }}
+                >
+                  <div style={{ ...S.simImgV3, background: v.venueType === "farmhouse" ? "#deeade" : v.venueType === "resort" ? "#f0e2c8" : "#e8e0f0" }}>
+                    {v.coverPhoto ? <img src={v.coverPhoto} alt={v.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 36 }}>🏡</span>}
                   </div>
-                  <div style={S.simBody}>
-                    <div style={S.simName}>{v.name}</div>
-                    <div style={S.simLoc}>{v.address?.split(",")[0] || "Bangalore"} · {v.venueType}</div>
+                  <div style={S.simBodyV3}>
+                    <div style={S.simNameV3}>{v.name}</div>
+                    <div style={{ fontSize: 12, color: "#b09080", marginBottom: 10, letterSpacing: 0.2 }}>
+                      {v.address?.split(",")[0] || "Bangalore"} · {v.venueType}
+                    </div>
                     <div style={S.simFoot}>
                       <div style={S.simPrice}>{v.pricing?.note || "Price on request"}</div>
-                      {v.googleRating && <div style={S.simRating}>★ {v.googleRating}</div>}
+                      {v.googleRating && <div style={{ fontSize: 12, color: "#b8852a", fontWeight: 500 }}>★ {v.googleRating}</div>}
                     </div>
                   </div>
                 </Link>
               ))}
             </div>
-          </div>
+          </section>
         )}
       </main>
     </>
