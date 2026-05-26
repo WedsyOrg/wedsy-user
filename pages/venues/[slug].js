@@ -397,29 +397,18 @@ export default function VenueDetailPage({ venue, similar = [], setOpenLoginModal
                     ))}
                   </div>
                 </div>
+                {/* Two-state CTA:
+                    - Not logged in: muted "Enquire about this venue" → anonymous enquiry (no userId)
+                    - Logged in: full-opacity "💬 Start conversation" → enquiry + conversation */}
                 <button
-    style={{...S.chatBtn, opacity: submitting ? 0.7 : 1}}
+    style={{...S.chatBtn, opacity: submitting ? 0.7 : (authUser ? 1 : 0.8)}}
     disabled={submitting}
     onClick={async () => {
-      // Not logged in → open the global LoginModalv2 inline. Form state is
-      // preserved across the modal, so after login the couple can click again
-      // to submit. No redirect to /login.
-      if (typeof window !== 'undefined' && !localStorage.getItem('token')) {
-        openLogin();
-        return;
-      }
       if (!name || !phone) { setError('Please enter your name and phone'); return; }
       setSubmitting(true); setError('');
       try {
-        // If we have a token but authUser isn't loaded yet (e.g. just logged in
-        // via modal), refresh it so the enquiry is tied to the couple.
-        let userObj = authUser;
-        if (!userObj) {
-          userObj = await fetchAuthUser();
-          if (userObj) setAuthUser(userObj);
-        }
         const body = { name, phone, eventDate, guestCount: parseInt(guestCount) || null, vibe: selectedVibes };
-        if (userObj && userObj._id) body.userId = userObj._id;
+        if (authUser && authUser._id) body.userId = authUser._id;
         const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/venues/' + venue.slug + '/enquiry', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -434,38 +423,31 @@ export default function VenueDetailPage({ venue, similar = [], setOpenLoginModal
       setSubmitting(false);
     }}
   >
-    {submitting ? '⏳ Sending...' : submitted ? '✓ Conversation started!' : '💬 Start conversation'}
+    {submitting
+      ? '⏳ Sending...'
+      : submitted
+        ? (authUser ? '✓ Conversation started!' : '✓ Enquiry sent!')
+        : (authUser ? '💬 Start conversation' : 'Enquire about this venue')}
   </button>
   {error && <div style={{fontSize:11,color:'#c0392b',textAlign:'center',marginTop:4}}>{error}</div>}
-  {/* Inline sign-in prompt — opens LoginModalv2 over this page so form
-      state is preserved and the couple can submit straight after login. */}
-  {!submitted && !authUser && (
-    <div style={{fontSize:11,color:'#7a5a48',textAlign:'center',marginTop:8,lineHeight:1.5}}>
-      <button
-        type="button"
-        onClick={openLogin}
-        style={{background:'none',border:'none',padding:0,color:'#6b1e2e',textDecoration:'underline',cursor:'pointer',font:'inherit'}}
+  {submitted && authUser && conversationId && (
+    <>
+      <div style={{fontSize:12,color:'#2d6a4f',textAlign:'center',marginTop:6,lineHeight:1.5}}>✓ Your details have been shared with the venue. They will respond shortly.</div>
+      <Link
+        href={`/chats/venue/${conversationId}`}
+        style={{
+          display: 'block', marginTop: 10, padding: '10px 14px',
+          background: '#fdf4e6', border: '0.5px solid #6b1e2e', borderRadius: 100,
+          color: '#6b1e2e', textDecoration: 'none', textAlign: 'center', fontSize: 13, fontWeight: 500,
+        }}
       >
-        Sign in
-      </button>
-      {' '}to start a conversation and track it in your inbox.
-    </div>
+        View your conversation →
+      </Link>
+    </>
   )}
-  {submitted && <div style={{fontSize:12,color:'#2d6a4f',textAlign:'center',marginTop:6,lineHeight:1.5}}>✓ Your details have been shared with the venue. They will respond shortly.</div>}
-  {submitted && conversationId && (
-    <Link
-      href={`/chats/venue/${conversationId}`}
-      style={{
-        display: 'block', marginTop: 10, padding: '10px 14px',
-        background: '#fdf4e6', border: '0.5px solid #6b1e2e', borderRadius: 100,
-        color: '#6b1e2e', textDecoration: 'none', textAlign: 'center', fontSize: 13, fontWeight: 500,
-      }}
-    >
-      View your conversation →
-    </Link>
-  )}
-  {submitted && !conversationId && !authUser && (
-    <div style={{fontSize:11,color:'#7a5a48',textAlign:'center',marginTop:8,lineHeight:1.5}}>
+  {submitted && !authUser && (
+    <div style={{fontSize:12,color:'#7a5a48',textAlign:'center',marginTop:8,lineHeight:1.6}}>
+      <div style={{color:'#2d6a4f',marginBottom:6}}>✓ Enquiry sent! The venue will respond shortly.</div>
       <button
         type="button"
         onClick={openLogin}
