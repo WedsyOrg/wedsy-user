@@ -121,10 +121,31 @@ export default function VenueDetailPage({ venue, similar = [], setOpenLoginModal
   const [authUser, setAuthUser] = useState(null);
   const [conversationId, setConversationId] = useState(null);
 
+  // The server's GET /auth/ returns { name, phone, email, event } — no _id.
+  // The JWT payload (signed by /auth/otp verify) carries { _id, isAdmin, isVendor },
+  // so we decode it client-side to get the couple's user id and merge the
+  // /auth/ response in for name/phone/email enrichment.
+  const decodeJwtPayload = (token) => {
+    try {
+      const part = token.split(".")[1];
+      if (!part) return null;
+      const padded = part.replace(/-/g, "+").replace(/_/g, "/");
+      const pad = padded.length % 4 === 0 ? "" : "=".repeat(4 - (padded.length % 4));
+      const json = typeof atob === "function"
+        ? atob(padded + pad)
+        : Buffer.from(padded + pad, "base64").toString("utf-8");
+      return JSON.parse(json);
+    } catch (e) {
+      return null;
+    }
+  };
+
   const fetchAuthUser = async () => {
     if (typeof window === "undefined") return null;
     const token = localStorage.getItem("token");
     if (!token) return null;
+    const payload = decodeJwtPayload(token);
+    if (!payload || !payload._id || payload.isAdmin || payload.isVendor) return null;
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/`, {
         method: "GET",
@@ -132,7 +153,7 @@ export default function VenueDetailPage({ venue, similar = [], setOpenLoginModal
       });
       if (!res.ok) return null;
       const data = await res.json();
-      return data && data._id ? data : null;
+      return { _id: payload._id, ...data };
     } catch (e) {
       return null;
     }
@@ -140,6 +161,7 @@ export default function VenueDetailPage({ venue, similar = [], setOpenLoginModal
 
   useEffect(() => {
     fetchAuthUser().then((u) => { if (u) setAuthUser(u); });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // After the LoginModalv2 succeeds, the parent updates the token in
@@ -156,6 +178,7 @@ export default function VenueDetailPage({ venue, similar = [], setOpenLoginModal
       if (!cancelled && u) setAuthUser(u);
     }, 1500);
     return () => { cancelled = true; clearInterval(id); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authUser]);
 
   // Anonymous → identified upgrade. If the couple submits anonymously and
