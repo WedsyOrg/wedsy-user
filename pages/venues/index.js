@@ -50,6 +50,17 @@ const ZONE_LABEL = {
   central: "Central Bangalore",
 };
 
+// Top-level category pills in the sticky filter bar. Maps to venue.venueType.
+const CATEGORIES = [
+  { value: "", label: "All" },
+  { value: "resort", label: "Resorts" },
+  { value: "farmhouse", label: "Farmhouses" },
+  { value: "banquet_hall", label: "Banquet Halls" },
+  { value: "hotel", label: "Hotels" },
+  { value: "heritage", label: "Heritage" },
+  { value: "club", label: "Clubs" },
+];
+
 // Amenity filter keys must match the venue.amenities schema so filtering works
 // without a translation step.
 const AMENITY_FILTERS = [
@@ -335,7 +346,7 @@ const S = {
     display: "block",
     transition: "transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease",
   },
-  cardImgWrap: { position: "relative", height: 200, overflow: "hidden", background: "#f0e2c8" },
+  cardImgWrap: { position: "relative", height: 220, overflow: "hidden", background: "#f0e2c8" },
   cardImg: { width: "100%", height: "100%", objectFit: "cover", display: "block" },
   cardImgPlaceholder: { width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, color: "#b8852a", opacity: 0.4 },
   cardBadgeType: {
@@ -433,10 +444,10 @@ Object.assign(S, {
   // SECTION 1 — Couture-style hero. No photography — typography + warm
   // champagne gradient + tiny gold ornament. Cream/ivory continuous with the
   // sections below so the page reads as one editorial spread.
-  heroV3: { position: "relative", width: "100%", minHeight: "92vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "linear-gradient(180deg, #fbf3e2 0%, #fdf6ec 48%, #f7ead0 100%)" },
+  heroV3: { position: "relative", width: "100%", minHeight: "55vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "linear-gradient(180deg, #fbf3e2 0%, #fdf6ec 48%, #f7ead0 100%)" },
   heroV3Bg: { position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "radial-gradient(ellipse 75% 50% at 50% -8%, rgba(184,133,42,0.20), transparent 60%), radial-gradient(circle at 12% 82%, rgba(107,30,46,0.08), transparent 50%), radial-gradient(circle at 88% 76%, rgba(184,133,42,0.14), transparent 55%)" },
   heroV3Glow: { position: "absolute", left: "50%", top: "32%", width: 720, height: 720, transform: "translate(-50%, -50%)", background: "radial-gradient(circle, rgba(255,235,180,0.32) 0%, transparent 65%)", pointerEvents: "none", filter: "blur(40px)" },
-  heroV3Content: { position: "relative", zIndex: 2, textAlign: "center", maxWidth: 920, padding: "8rem 2rem 5rem", margin: "0 auto" },
+  heroV3Content: { position: "relative", zIndex: 2, textAlign: "center", maxWidth: 920, padding: "4rem 2rem 3rem", margin: "0 auto" },
   heroV3OrnamentTop: { display: "flex", justifyContent: "center", marginBottom: 24 },
   heroV3Eyebrow: { fontSize: 11, letterSpacing: 5.5, color: C.gold, textTransform: "uppercase", marginBottom: 32, fontWeight: 500 },
   heroV3Title: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(3rem, 7.4vw, 6rem)", fontWeight: 400, lineHeight: 1.02, letterSpacing: -2, color: "#2c1810", margin: "0 auto 26px", maxWidth: 820 },
@@ -514,6 +525,44 @@ Object.assign(S, {
   ownerCtaBtns: { display: "inline-flex", gap: 12, flexWrap: "wrap", justifyContent: "center" },
   ownerCtaBtnPrimary: { display: "inline-flex", alignItems: "center", padding: "12px 28px", borderRadius: 100, background: C.ivory, color: C.burgundy, textDecoration: "none", fontSize: 14, fontWeight: 500, letterSpacing: 0.3 },
   ownerCtaBtnSecondary: { display: "inline-flex", alignItems: "center", padding: "12px 28px", borderRadius: 100, background: "transparent", color: C.ivory, textDecoration: "none", fontSize: 14, fontWeight: 500, border: "0.5px solid rgba(253,246,236,0.5)", letterSpacing: 0.3 },
+
+  // STICKY FILTER BAR (sits above All Venues, becomes sticky on scroll)
+  filterBar: { position: "sticky", top: 0, zIndex: 100, background: "#ffffff", borderBottom: "0.5px solid #e8d8c4", padding: "0 2rem", boxShadow: "0 1px 16px rgba(107,30,46,0.04)" },
+  filterBarInner: { maxWidth: 1400, margin: "0 auto" },
+  catPillsRow: { display: "flex", gap: 8, overflowX: "auto", padding: "16px 0 12px", scrollbarWidth: "none", msOverflowStyle: "none" },
+  catPill: { flexShrink: 0, padding: "8px 16px", borderRadius: 100, border: "0.5px solid " + C.burgundy, background: C.ivory, color: C.burgundy, fontSize: 13, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap", letterSpacing: 0.2 },
+  catPillOn: { flexShrink: 0, padding: "8px 16px", borderRadius: 100, border: "0.5px solid " + C.burgundy, background: C.burgundy, color: C.ivory, fontSize: 13, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap", letterSpacing: 0.2 },
+  chipsRow: { display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", padding: "0 0 14px" },
+  filterChipWrap: { position: "relative", display: "inline-block" },
+  filterChip: { display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 16px", borderRadius: 100, border: "0.5px solid " + C.burgundy, background: C.ivory, color: C.burgundy, fontSize: 12, fontWeight: 500, cursor: "pointer", letterSpacing: 0.2 },
+  filterChipOn: { display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 16px", borderRadius: 100, border: "0.5px solid " + C.burgundy, background: C.burgundy, color: C.ivory, fontSize: 12, fontWeight: 500, cursor: "pointer", letterSpacing: 0.2 },
+  filterChipX: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 16, height: 16, borderRadius: "50%", background: "rgba(253,246,236,0.25)", color: C.ivory, fontSize: 11, lineHeight: 1, cursor: "pointer", marginLeft: 2, border: "none", padding: 0 },
+  filterChipCaret: { fontSize: 9, opacity: 0.75, marginLeft: 2 },
+  filterDropdown: { position: "absolute", top: "calc(100% + 8px)", left: 0, background: "#ffffff", borderRadius: 12, boxShadow: "0 12px 36px rgba(107,30,46,0.18)", padding: 14, minWidth: 220, zIndex: 110, border: "0.5px solid #e8d8c4" },
+  filterDropdownItem: { display: "flex", alignItems: "center", gap: 10, padding: "8px 6px", cursor: "pointer", fontSize: 13, color: "#3a2820", borderRadius: 6 },
+  resetLink: { marginLeft: "auto", background: "transparent", border: "none", color: C.burgundy, fontSize: 12, fontWeight: 500, cursor: "pointer", textDecoration: "underline", letterSpacing: 0.2 },
+
+  // FULL-WIDTH ALL VENUES SECTION (replaces 2-col sidebar layout)
+  allVenuesSecFull: { background: C.ivory, padding: "2.5rem 2rem 3rem" },
+  allVenuesInnerFull: { maxWidth: 1400, margin: "0 auto" },
+  allVenuesHeader: { display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 22 },
+  allVenuesTitleFull: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 28, fontWeight: 400, color: "#2c1810", letterSpacing: -0.5, margin: 0 },
+  allVenuesCount: { fontSize: 13, color: "#7a5a48" },
+  allVenuesCountStrong: { color: "#2c1810", fontWeight: 500 },
+  sortRow: { display: "flex", justifyContent: "flex-end", marginBottom: 14 },
+  fullWidthGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24 },
+
+  // MINI VENUE CARD (curated horizontal-scroll rows)
+  miniCard: { flexShrink: 0, width: 280, display: "block", textDecoration: "none", color: "inherit", background: "#fffaf4", borderRadius: 10, border: "0.5px solid #e8d8c4", overflow: "hidden", transition: "transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease" },
+  miniCardImgWrap: { width: "100%", height: 180, overflow: "hidden", background: "#f0e2c8" },
+  miniCardImg: { width: "100%", height: "100%", objectFit: "cover", display: "block", borderRadius: "10px 10px 0 0" },
+  miniCardImgPlaceholder: { width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, color: C.gold, opacity: 0.4 },
+  miniCardBody: { padding: "12px 14px 14px" },
+  miniCardName: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 15, color: "#2c1810", fontWeight: 400, letterSpacing: -0.2, marginBottom: 6, lineHeight: 1.25 },
+  miniCardZone: { fontSize: 11, color: "#b09080", display: "flex", alignItems: "center", gap: 4, marginBottom: 10 },
+  miniCardFooter: { display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, paddingTop: 8, borderTop: "0.5px solid #f0e4d0" },
+  miniCardPrice: { fontSize: 13, color: C.gold, fontWeight: 500 },
+  miniCardRating: { fontSize: 12, color: "#7a5a48" },
 });
 
 // ─── Card components ───
@@ -606,6 +655,43 @@ function VenueCard({ venue, featured = false }) {
   );
 }
 
+// Compact card used in the curated horizontal-scroll rows. Same data
+// model as VenueCard, but fixed-width (280px) with a shorter 180px photo.
+function MiniVenueCard({ venue }) {
+  const shortAddr = (venue.address || "Bangalore")
+    .replace(", Bangalore", "")
+    .replace(", Bengaluru", "")
+    .replace("Bangalore", "")
+    .trim() || "Bangalore";
+  return (
+    <Link href={`/venues/${venue.slug}`} style={S.miniCard} className="venue-card">
+      <div style={S.miniCardImgWrap}>
+        {venue.coverPhoto ? (
+          <img src={venue.coverPhoto} alt={venue.name} style={S.miniCardImg} loading="lazy" />
+        ) : (
+          <div style={S.miniCardImgPlaceholder}>🏡</div>
+        )}
+      </div>
+      <div style={S.miniCardBody}>
+        <div style={S.miniCardName}>{venue.name}</div>
+        {venue.zone && ZONE_LABEL[venue.zone] && (
+          <div style={S.miniCardZone}>
+            <span aria-hidden="true">📍</span> {ZONE_LABEL[venue.zone]}
+          </div>
+        )}
+        <div style={S.miniCardFooter}>
+          <div style={S.miniCardPrice}><PriceSignal venue={venue} /></div>
+          {venue.googleRating ? (
+            <div style={S.miniCardRating}>
+              <span style={{ color: C.gold }}>★</span> {venue.googleRating}
+            </div>
+          ) : <span />}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 // ─── Page ───
 export default function VenuesPage({ venues: initialVenues = [], total: initialTotal = 0 }) {
   const [search, setSearch] = useState("");
@@ -622,7 +708,8 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
   // though matching venues exist on the server. Area stays client-side for
   // live-typing feedback and rides along on Load-More fetches.
   const [activeZone, setActiveZone] = useState("all");
-  const [areaSearch, setAreaSearch] = useState("");
+  // Sticky filter bar dropdown — only one open at a time, null when closed.
+  const [openDropdown, setOpenDropdown] = useState(null);
   // Pagination — SSR delivers the first 24, "Load more" appends in 24-chunks.
   // `total` is in state (not just a prop) so zone refetches can update it.
   const [venues, setVenues] = useState(initialVenues);
@@ -638,9 +725,8 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
       skip: String(skip),
     });
     if (activeZone && activeZone !== "all") params.set("zone", activeZone);
-    if (areaSearch.trim()) params.set("area", areaSearch.trim());
     return `${process.env.NEXT_PUBLIC_API_URL}/venues?${params.toString()}`;
-  }, [activeZone, areaSearch]);
+  }, [activeZone]);
 
   const loadMore = useCallback(async () => {
     if (loadMoreBusy || !hasMore) return;
@@ -672,7 +758,6 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
       try {
         const params = new URLSearchParams({ status: "published", limit: "24", skip: "0" });
         if (activeZone && activeZone !== "all") params.set("zone", activeZone);
-        if (areaSearch.trim()) params.set("area", areaSearch.trim());
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venues?${params.toString()}`);
         if (!res.ok) return;
         const data = await res.json();
@@ -685,10 +770,6 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
       }
     })();
     return () => { cancelled = true; };
-    // areaSearch is intentionally omitted: it stays a client-side filter for
-    // live typing. We snapshot whatever the user has typed at the moment the
-    // zone changes — refetching on every keystroke would be wasteful.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeZone]);
 
   const toggleAmenity = useCallback((key) => {
@@ -698,11 +779,11 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
     setSearch("");
     setVenueType("");
     setActiveZone("all");
-    setAreaSearch("");
     setCapacityBucket("");
     setPriceBucket("");
     setAmenitySet({});
     setVerifiedOnly(false);
+    setOpenDropdown(null);
   };
 
   // ─── Animated stat counters — count up from 0 over 1.4s on mount ───
@@ -742,6 +823,42 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
     }
   }, []);
 
+  // ─── Sticky filter bar — click-outside closes the active dropdown. The
+  // chip wrappers carry a [data-filter-dropdown] attribute so we can scope
+  // the "inside" check tightly. ───
+  useEffect(() => {
+    if (!openDropdown) return undefined;
+    const onMouseDown = (e) => {
+      if (!e.target.closest || !e.target.closest("[data-filter-dropdown]")) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
+  }, [openDropdown]);
+
+  const filterActiveFlags = useMemo(() => ({
+    zone: !!activeZone && activeZone !== "all",
+    price: !!priceBucket,
+    capacity: !!capacityBucket,
+    amenities: verifiedOnly || Object.values(amenitySet).some(Boolean),
+  }), [activeZone, priceBucket, capacityBucket, verifiedOnly, amenitySet]);
+
+  const anyFilterActive =
+    !!venueType ||
+    filterActiveFlags.zone ||
+    filterActiveFlags.price ||
+    filterActiveFlags.capacity ||
+    filterActiveFlags.amenities ||
+    !!search;
+
+  const clearFilterGroup = useCallback((group) => {
+    if (group === "zone") setActiveZone("all");
+    else if (group === "price") setPriceBucket("");
+    else if (group === "capacity") setCapacityBucket("");
+    else if (group === "amenities") { setAmenitySet({}); setVerifiedOnly(false); }
+  }, []);
+
   // ─── Section 4 — Area cards (zones). Photo + count from loaded venues. ───
   const ZONE_AREA_DEFS = useMemo(() => [
     { value: "airport", label: "Near Airport" },
@@ -769,15 +886,9 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
     const rows = [
       {
         key: "north-resorts",
-        title: "Best Resorts in North Bangalore",
+        title: "Best in North Bangalore",
         predicate: (v) => (v.zone === "north" || v.zone === "airport") && v.venueType === "resort",
         viewAll: () => { resetFilters(); setActiveZone("north"); setVenueType("resort"); setTimeout(scrollToListing, 60); },
-      },
-      {
-        key: "farmhouses",
-        title: "Top Farmhouses near Bangalore",
-        predicate: (v) => v.venueType === "farmhouse",
-        viewAll: () => { resetFilters(); setVenueType("farmhouse"); setTimeout(scrollToListing, 60); },
       },
       {
         key: "loved",
@@ -785,18 +896,6 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
         predicate: (v) => (v.googleRating || 0) > 0,
         sorted: sortedByRating,
         viewAll: () => { resetFilters(); setSort("rating"); setTimeout(scrollToListing, 60); },
-      },
-      {
-        key: "stay",
-        title: "With On-Site Accommodation",
-        predicate: (v) => v.accommodation?.available === true,
-        viewAll: () => { resetFilters(); setAmenitySet({ accommodation: true }); setTimeout(scrollToListing, 60); },
-      },
-      {
-        key: "banquet",
-        title: "Grand Banquet Halls",
-        predicate: (v) => v.venueType === "banquet_hall",
-        viewAll: () => { resetFilters(); setVenueType("banquet_hall"); setTimeout(scrollToListing, 60); },
       },
     ];
     return rows.map((row) => {
@@ -841,13 +940,6 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
         if (v.zone === undefined) return true;
         return v.zone === activeZone;
       })
-      .filter((v) => {
-        const q = areaSearch.trim().toLowerCase();
-        if (!q) return true;
-        const inLocality = v.locality?.toLowerCase().includes(q);
-        const inAddress = v.address?.toLowerCase().includes(q);
-        return inLocality || inAddress;
-      })
       .filter((v) => inCapacityBucket(venueMaxCapacity(v), capacityBucket))
       .filter((v) => inPriceBucket(venueLowestPrice(v), priceBucket))
       .filter((v) => {
@@ -866,7 +958,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
         }
         return (b.dataCompleteness || 0) - (a.dataCompleteness || 0);
       });
-  }, [venues, search, venueType, activeZone, areaSearch, capacityBucket, priceBucket, amenitySet, verifiedOnly, sort]);
+  }, [venues, search, venueType, activeZone, capacityBucket, priceBucket, amenitySet, verifiedOnly, sort]);
 
   const featured = useMemo(() => {
     return [...venues]
@@ -1014,14 +1106,12 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                 <div style={S.curatedRowHeader}>
                   <h3 style={S.curatedRowTitle}>{row.title}</h3>
                   <button type="button" style={S.curatedRowLink} onClick={row.viewAll}>
-                    View all {row.totalCount} →
+                    See all {row.totalCount} →
                   </button>
                 </div>
-                <div style={S.curatedRowScroll}>
+                <div style={S.curatedRowScroll} className="curated-scroll">
                   {row.venues.map((v) => (
-                    <div key={v._id} style={S.curatedRowCard}>
-                      <VenueCard venue={v} />
-                    </div>
+                    <MiniVenueCard key={v._id} venue={v} />
                   ))}
                 </div>
               </div>
@@ -1029,150 +1119,222 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
           </div>
         </section>
 
-        {/* ────────── 6 — ALL VENUES (existing listing preserved) ────────── */}
-        <div ref={allVenuesRef} style={S.allVenuesInner}>
-          <h2 style={S.allVenuesTitle}>All Venues in Bangalore</h2>
-        </div>
-        <div style={S.body}>
-          <aside style={S.sidebar}>
-            {/* Venue type (radio) */}
-            <div style={S.filterCard}>
-              <div style={S.filterHeader}>Venue type</div>
-              {VENUE_TYPE_TABS.map((t) => (
-                <label key={t.value || "all"} style={S.filterOption}>
-                  <input
-                    type="radio"
-                    name="venueTypeFilter"
-                    checked={venueType === t.value}
-                    onChange={() => setVenueType(t.value)}
-                    style={{ accentColor: C.burgundy }}
-                  />
-                  <span style={S.filterLabel}>{t.label}</span>
-                  <span style={S.filterCount}>{typeCounts[t.value] ?? 0}</span>
-                </label>
+        {/* ────────── 5 — STICKY FILTER BAR ────────── */}
+        <div style={S.filterBar}>
+          <div style={S.filterBarInner}>
+            {/* Row 1 — category pills */}
+            <div className="cat-pills-row" style={S.catPillsRow} role="tablist" aria-label="Filter by venue category">
+              {CATEGORIES.map((c) => (
+                <button
+                  key={c.value || "all"}
+                  type="button"
+                  role="tab"
+                  aria-selected={venueType === c.value}
+                  style={venueType === c.value ? S.catPillOn : S.catPill}
+                  onClick={() => setVenueType(c.value)}
+                >
+                  {c.label}
+                </button>
               ))}
             </div>
 
-            {/* Location — handled by the zone tabs + area search above */}
-            <div style={S.filterCard}>
-              <div style={S.filterHeader}>Location</div>
-              <div style={S.locationNote}>Use the zone tabs and area search above to filter by location.</div>
-            </div>
-
-            {/* Capacity */}
-            <div style={S.filterCard}>
-              <div style={S.filterHeader}>Guest capacity</div>
-              <select style={S.filterSelect} value={capacityBucket} onChange={(e) => setCapacityBucket(e.target.value)}>
-                {CAPACITY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            </div>
-
-            {/* Price range */}
-            <div style={S.filterCard}>
-              <div style={S.filterHeader}>Price range</div>
-              <select style={S.filterSelect} value={priceBucket} onChange={(e) => setPriceBucket(e.target.value)}>
-                {PRICE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            </div>
-
-            {/* Amenities */}
-            <div style={S.filterCard}>
-              <div style={S.filterHeader}>Amenities</div>
-              {AMENITY_FILTERS.map((a) => (
-                <label key={a.key} style={S.filterOption}>
-                  <input
-                    type="checkbox"
-                    checked={!!amenitySet[a.key]}
-                    onChange={() => toggleAmenity(a.key)}
-                    style={{ accentColor: C.burgundy }}
-                  />
-                  <span style={S.filterLabel}>
-                    <span aria-hidden="true" style={{ marginRight: 6 }}>{a.icon}</span>
-                    {a.label}
-                  </span>
-                </label>
-              ))}
-            </div>
-
-            {/* Verified toggle */}
-            <div style={S.filterCard}>
-              <div style={S.filterToggleRow}>
-                <span style={S.filterToggleText}>Verified venues only</span>
+            {/* Row 2 — filter chip dropdowns */}
+            <div style={S.chipsRow}>
+              {/* Zone dropdown */}
+              <div style={S.filterChipWrap} data-filter-dropdown>
                 <button
                   type="button"
-                  aria-pressed={verifiedOnly}
-                  onClick={() => setVerifiedOnly((v) => !v)}
-                  style={{ ...S.filterTogglePill, background: verifiedOnly ? C.burgundy : "#e8d8c4" }}
+                  style={filterActiveFlags.zone ? S.filterChipOn : S.filterChip}
+                  onClick={() => setOpenDropdown(openDropdown === "zone" ? null : "zone")}
+                  aria-expanded={openDropdown === "zone"}
+                  aria-haspopup="listbox"
                 >
-                  <span
-                    style={{
-                      ...S.filterToggleKnob,
-                      transform: verifiedOnly ? "translateX(16px)" : "translateX(0)",
-                      display: "block",
-                    }}
-                  />
+                  <span>Zone</span>
+                  <span style={S.filterChipCaret} aria-hidden="true">▾</span>
+                  {filterActiveFlags.zone && (
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Clear zone filter"
+                      style={S.filterChipX}
+                      onClick={(e) => { e.stopPropagation(); clearFilterGroup("zone"); }}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); clearFilterGroup("zone"); } }}
+                    >×</span>
+                  )}
                 </button>
-              </div>
-            </div>
-
-            <button type="button" style={S.resetBtn} onClick={resetFilters}>Reset filters</button>
-          </aside>
-
-          <div style={S.main}>
-            {/* Two-level location filter — zone tabs + area free-text */}
-            <div style={S.locationFilterWrap}>
-              <div style={S.zoneTabsRow} role="tablist" aria-label="Filter by zone">
-                {ZONES.map((z) => (
-                  <button
-                    key={z.value}
-                    type="button"
-                    role="tab"
-                    aria-selected={activeZone === z.value}
-                    style={activeZone === z.value ? S.zoneTabOn : S.zoneTab}
-                    onClick={() => { setActiveZone(z.value); setAreaSearch(""); }}
-                  >
-                    {z.label}
-                  </button>
-                ))}
-              </div>
-              <div style={S.areaSearchWrap}>
-                <input
-                  type="text"
-                  placeholder="Search by area (e.g. Yelahanka, Whitefield, Koramangala...)"
-                  value={areaSearch}
-                  onChange={(e) => setAreaSearch(e.target.value)}
-                  style={S.areaSearchInput}
-                  aria-label="Search by area"
-                />
-                {areaSearch && (
-                  <button
-                    type="button"
-                    style={S.areaSearchClear}
-                    onClick={() => setAreaSearch("")}
-                    aria-label="Clear area search"
-                  >
-                    ×
-                  </button>
+                {openDropdown === "zone" && (
+                  <div style={S.filterDropdown} role="listbox">
+                    {ZONES.map((z) => (
+                      <label key={z.value} style={S.filterDropdownItem}>
+                        <input
+                          type="radio"
+                          name="zoneFilter"
+                          checked={activeZone === z.value}
+                          onChange={() => { setActiveZone(z.value); setOpenDropdown(null); }}
+                          style={{ accentColor: C.burgundy }}
+                        />
+                        <span>{z.label}</span>
+                      </label>
+                    ))}
+                  </div>
                 )}
               </div>
-            </div>
 
-            <div style={S.resultsHeader}>
-              <div style={S.resultsCount}>
-                Showing <span style={S.resultsCountStrong}>{filtered.length}</span> of {total} venues
+              {/* Price dropdown */}
+              <div style={S.filterChipWrap} data-filter-dropdown>
+                <button
+                  type="button"
+                  style={filterActiveFlags.price ? S.filterChipOn : S.filterChip}
+                  onClick={() => setOpenDropdown(openDropdown === "price" ? null : "price")}
+                  aria-expanded={openDropdown === "price"}
+                  aria-haspopup="listbox"
+                >
+                  <span>Price</span>
+                  <span style={S.filterChipCaret} aria-hidden="true">▾</span>
+                  {filterActiveFlags.price && (
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Clear price filter"
+                      style={S.filterChipX}
+                      onClick={(e) => { e.stopPropagation(); clearFilterGroup("price"); }}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); clearFilterGroup("price"); } }}
+                    >×</span>
+                  )}
+                </button>
+                {openDropdown === "price" && (
+                  <div style={S.filterDropdown} role="listbox">
+                    {PRICE_OPTIONS.map((o) => (
+                      <label key={o.value} style={S.filterDropdownItem}>
+                        <input
+                          type="radio"
+                          name="priceFilter"
+                          checked={priceBucket === o.value}
+                          onChange={() => { setPriceBucket(o.value); setOpenDropdown(null); }}
+                          style={{ accentColor: C.burgundy }}
+                        />
+                        <span>{o.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
               </div>
-              <select style={S.sortSelect} value={sort} onChange={(e) => setSort(e.target.value)}>
+
+              {/* Capacity dropdown */}
+              <div style={S.filterChipWrap} data-filter-dropdown>
+                <button
+                  type="button"
+                  style={filterActiveFlags.capacity ? S.filterChipOn : S.filterChip}
+                  onClick={() => setOpenDropdown(openDropdown === "capacity" ? null : "capacity")}
+                  aria-expanded={openDropdown === "capacity"}
+                  aria-haspopup="listbox"
+                >
+                  <span>Capacity</span>
+                  <span style={S.filterChipCaret} aria-hidden="true">▾</span>
+                  {filterActiveFlags.capacity && (
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Clear capacity filter"
+                      style={S.filterChipX}
+                      onClick={(e) => { e.stopPropagation(); clearFilterGroup("capacity"); }}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); clearFilterGroup("capacity"); } }}
+                    >×</span>
+                  )}
+                </button>
+                {openDropdown === "capacity" && (
+                  <div style={S.filterDropdown} role="listbox">
+                    {CAPACITY_OPTIONS.map((o) => (
+                      <label key={o.value} style={S.filterDropdownItem}>
+                        <input
+                          type="radio"
+                          name="capacityFilter"
+                          checked={capacityBucket === o.value}
+                          onChange={() => { setCapacityBucket(o.value); setOpenDropdown(null); }}
+                          style={{ accentColor: C.burgundy }}
+                        />
+                        <span>{o.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Amenities dropdown (multi-select + Verified only) */}
+              <div style={S.filterChipWrap} data-filter-dropdown>
+                <button
+                  type="button"
+                  style={filterActiveFlags.amenities ? S.filterChipOn : S.filterChip}
+                  onClick={() => setOpenDropdown(openDropdown === "amenities" ? null : "amenities")}
+                  aria-expanded={openDropdown === "amenities"}
+                  aria-haspopup="listbox"
+                >
+                  <span>Amenities</span>
+                  <span style={S.filterChipCaret} aria-hidden="true">▾</span>
+                  {filterActiveFlags.amenities && (
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Clear amenity filters"
+                      style={S.filterChipX}
+                      onClick={(e) => { e.stopPropagation(); clearFilterGroup("amenities"); }}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); clearFilterGroup("amenities"); } }}
+                    >×</span>
+                  )}
+                </button>
+                {openDropdown === "amenities" && (
+                  <div style={S.filterDropdown}>
+                    {AMENITY_FILTERS.filter((a) => a.key !== "accommodation").map((a) => (
+                      <label key={a.key} style={S.filterDropdownItem}>
+                        <input
+                          type="checkbox"
+                          checked={!!amenitySet[a.key]}
+                          onChange={() => toggleAmenity(a.key)}
+                          style={{ accentColor: C.burgundy }}
+                        />
+                        <span>{a.label}</span>
+                      </label>
+                    ))}
+                    <label style={S.filterDropdownItem}>
+                      <input
+                        type="checkbox"
+                        checked={verifiedOnly}
+                        onChange={(e) => setVerifiedOnly(e.target.checked)}
+                        style={{ accentColor: C.burgundy }}
+                      />
+                      <span>Verified only</span>
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              {anyFilterActive && (
+                <button type="button" style={S.resetLink} onClick={resetFilters}>Reset all filters</button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ────────── 6 — ALL VENUES (full-width 3-col grid) ────────── */}
+        <section id="all-venues" ref={allVenuesRef} style={S.allVenuesSecFull}>
+          <div style={S.allVenuesInnerFull}>
+            <div style={S.allVenuesHeader}>
+              <h2 style={S.allVenuesTitleFull}>All venues in Bangalore</h2>
+              <div style={S.allVenuesCount}>
+                Showing <span style={S.allVenuesCountStrong}>{filtered.length}</span> of {total} venues
+              </div>
+            </div>
+            <div style={S.sortRow}>
+              <select style={S.sortSelect} value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort venues">
                 <option value="recommended">Sort: Recommended</option>
                 <option value="rating">Rating: Highest</option>
                 <option value="capacity">Capacity: Largest</option>
                 <option value="price">Price: Low to high</option>
               </select>
             </div>
-
-            {/* 5 — VENUE CARDS */}
             {filtered.length > 0 ? (
               <>
-                <div style={S.grid}>
+                <div className="all-venues-grid" style={S.fullWidthGrid}>
                   {filtered.map((v) => <VenueCard key={v._id} venue={v} />)}
                 </div>
                 {hasMore && (
@@ -1190,16 +1352,15 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                 )}
               </>
             ) : (
-              /* 6 — EMPTY STATE */
               <div style={S.empty}>
                 <div style={S.emptyIcon}>🔍</div>
                 <div style={S.emptyTitle}>No venues match those filters</div>
-                <div style={S.emptyText}>Try widening your capacity, price, or area selection — there's a fit out there.</div>
+                <div style={S.emptyText}>Try widening your capacity, price, or zone selection — there's a fit out there.</div>
                 <button type="button" style={S.emptyBtn} onClick={resetFilters}>Clear filters</button>
               </div>
             )}
           </div>
-        </div>
+        </section>
 
         {/* ────────── 7 — VENUE OWNER CTA ────────── */}
         <section style={S.ownerCtaSec}>
@@ -1239,6 +1400,13 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
         :global(.hero-search)   { animation: heroSlideUp 0.9s ease-out; }
         :global(.hero-stats)    { animation: heroSlideUp 0.9s ease-out; }
         :global(.hero-foot)     { animation: heroSlideUp 0.9s ease-out; }
+        /* Hide scrollbars on horizontal scrollers (category pills, curated rows). */
+        :global(.cat-pills-row)::-webkit-scrollbar,
+        :global(.curated-scroll)::-webkit-scrollbar { display: none; }
+        :global(.cat-pills-row), :global(.curated-scroll) {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
       `}</style>
     </>
   );
