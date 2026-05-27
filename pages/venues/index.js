@@ -28,14 +28,27 @@ const PRICE_OPTIONS = [
   { value: "1000000+", label: "Above ₹10L" },
 ];
 
-const AREAS = [
-  "North Bangalore",
-  "South Bangalore",
-  "Devanahalli",
-  "Nandi Hills",
-  "Electronic City",
-  "Whitefield",
+// Zones map 1:1 to venue.zone enum values on the backend (see models/Venue.js).
+// "all" is the no-filter sentinel — never sent as a query param.
+const ZONES = [
+  { value: "all", label: "All" },
+  { value: "airport", label: "Near Airport" },
+  { value: "north", label: "North" },
+  { value: "east", label: "East" },
+  { value: "south", label: "South" },
+  { value: "west", label: "West" },
+  { value: "central", label: "Central" },
 ];
+
+// Pretty labels for the zone chip on venue cards.
+const ZONE_LABEL = {
+  airport: "Near Airport",
+  north: "North Bangalore",
+  east: "East Bangalore",
+  south: "South Bangalore",
+  west: "West Bangalore",
+  central: "Central Bangalore",
+};
 
 // Amenity filter keys must match the venue.amenities schema so filtering works
 // without a translation step.
@@ -295,6 +308,22 @@ const S = {
   },
   grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 16 },
 
+  // Location two-level filter (zone tabs + area search) — sits above the grid
+  locationFilterWrap: { display: "flex", flexDirection: "column", gap: 12, marginBottom: 18 },
+  zoneTabsRow: { display: "flex", flexWrap: "wrap", gap: 6 },
+  zoneTab: { padding: "7px 14px", borderRadius: 100, border: "0.5px solid #e8d8c4", background: C.ivoryWarm, color: "#7a5a48", fontSize: 12, fontWeight: 500, cursor: "pointer", letterSpacing: 0.2 },
+  zoneTabOn: { padding: "7px 14px", borderRadius: 100, border: "0.5px solid " + C.burgundy, background: C.burgundy, color: C.ivory, fontSize: 12, fontWeight: 500, cursor: "pointer", letterSpacing: 0.2 },
+  areaSearchWrap: { position: "relative", width: "100%" },
+  areaSearchInput: { width: "100%", height: 44, border: "0.5px solid #e8d8c4", background: C.ivoryWarm, borderRadius: 100, padding: "0 44px 0 18px", fontSize: 13, color: "#2c1810", outline: "none", boxSizing: "border-box" },
+  areaSearchClear: { position: "absolute", top: "50%", right: 12, transform: "translateY(-50%)", width: 24, height: 24, borderRadius: "50%", border: "none", background: "#f0e4d0", color: "#7a5a48", fontSize: 14, lineHeight: 1, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" },
+  locationNote: { fontSize: 11, color: "#b09080", lineHeight: 1.55, marginTop: 6 },
+  cardZoneChip: { fontSize: 11, color: "#b09080", display: "flex", alignItems: "center", gap: 4, marginBottom: 10 },
+
+  // Load more pagination
+  loadMoreWrap: { display: "flex", justifyContent: "center", marginTop: 28, marginBottom: 12 },
+  loadMoreBtn: { padding: "12px 32px", borderRadius: 100, border: "0.5px solid " + C.burgundy, background: C.ivoryWarm, color: C.burgundy, fontSize: 13, fontWeight: 500, cursor: "pointer", letterSpacing: 0.3 },
+  loadMoreBtnBusy: { padding: "12px 32px", borderRadius: 100, border: "0.5px solid " + C.burgundy, background: C.ivoryWarm, color: C.burgundy, fontSize: 13, fontWeight: 500, cursor: "default", opacity: 0.55, letterSpacing: 0.3 },
+
   // CARDS
   card: {
     background: C.ivoryWarm,
@@ -467,6 +496,11 @@ function VenueCard({ venue, featured = false }) {
       <div style={S.cardBody}>
         <div style={S.cardName}>{venue.name}</div>
         <div style={S.cardLoc}><span aria-hidden="true">📍</span> {shortAddr}</div>
+        {venue.zone && ZONE_LABEL[venue.zone] && (
+          <div style={S.cardZoneChip}>
+            <span aria-hidden="true">📍</span> {ZONE_LABEL[venue.zone]}
+          </div>
+        )}
         {capacityText && <div style={S.cardCapacityChip}><span aria-hidden="true">👥</span> {capacityText}</div>}
         <PriceSignal venue={venue} />
         <AmenityIcons venue={venue} />
@@ -485,40 +519,71 @@ function VenueCard({ venue, featured = false }) {
 }
 
 // ─── Page ───
-export default function VenuesPage({ venues = [], total = 0 }) {
+export default function VenuesPage({ venues: initialVenues = [], total = 0 }) {
   const [search, setSearch] = useState("");
   const [venueType, setVenueType] = useState("");
-  const [selectedAreas, setSelectedAreas] = useState([]);
   const [capacityBucket, setCapacityBucket] = useState("");
   const [priceBucket, setPriceBucket] = useState("");
   const [amenitySet, setAmenitySet] = useState({});
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [sort, setSort] = useState("recommended");
+  // Location filters — client-side. Both also flow to the server as Load-More
+  // query params so paginated fetches stay pre-filtered.
+  const [activeZone, setActiveZone] = useState("all");
+  const [areaSearch, setAreaSearch] = useState("");
+  // Pagination — SSR delivers the first 24, "Load more" appends in 24-chunks.
+  const [venues, setVenues] = useState(initialVenues);
+  const [page, setPage] = useState(1);
+  const [loadMoreBusy, setLoadMoreBusy] = useState(false);
+  const hasMore = venues.length < total;
 
-  const toggleArea = useCallback((area) => {
-    setSelectedAreas((prev) => prev.includes(area) ? prev.filter((a) => a !== area) : [...prev, area]);
-  }, []);
+  const buildFetchUrl = useCallback((skip) => {
+    const params = new URLSearchParams({
+      status: "published",
+      limit: "24",
+      skip: String(skip),
+    });
+    if (activeZone && activeZone !== "all") params.set("zone", activeZone);
+    if (areaSearch.trim()) params.set("area", areaSearch.trim());
+    return `${process.env.NEXT_PUBLIC_API_URL}/venues?${params.toString()}`;
+  }, [activeZone, areaSearch]);
+
+  const loadMore = useCallback(async () => {
+    if (loadMoreBusy || !hasMore) return;
+    setLoadMoreBusy(true);
+    try {
+      const res = await fetch(buildFetchUrl(page * 24));
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const fresh = Array.isArray(data.venues) ? data.venues : [];
+      if (fresh.length > 0) {
+        setVenues((prev) => [...prev, ...fresh]);
+        setPage((p) => p + 1);
+      }
+    } catch (e) {
+      // Silent — keep the existing list visible; user can retry.
+    } finally {
+      setLoadMoreBusy(false);
+    }
+  }, [page, loadMoreBusy, hasMore, buildFetchUrl]);
+
   const toggleAmenity = useCallback((key) => {
     setAmenitySet((prev) => ({ ...prev, [key]: !prev[key] }));
   }, []);
   const resetFilters = () => {
     setSearch("");
     setVenueType("");
-    setSelectedAreas([]);
+    setActiveZone("all");
+    setAreaSearch("");
     setCapacityBucket("");
     setPriceBucket("");
     setAmenitySet({});
     setVerifiedOnly(false);
   };
 
-  // ─── Counts (per facet — based on the full list, not the filtered set, so
-  // badges remain stable as the user toggles filters) ───
+  // ─── Counts (per facet — based on the loaded slice, so badges grow as the
+  // user paginates) ───
   const verifiedCount = useMemo(() => venues.filter((v) => v.status === "verified").length, [venues]);
-  const areaCounts = useMemo(() => {
-    const m = {};
-    AREAS.forEach((a) => { m[a] = venues.filter((v) => v.address?.includes(a)).length; });
-    return m;
-  }, [venues]);
   const typeCounts = useMemo(() => {
     const m = { "": venues.length };
     VENUE_TYPE_TABS.forEach((t) => {
@@ -537,7 +602,14 @@ export default function VenuesPage({ venues = [], total = 0 }) {
         return v.name?.toLowerCase().includes(q) || v.address?.toLowerCase().includes(q);
       })
       .filter((v) => (venueType ? v.venueType === venueType : true))
-      .filter((v) => (selectedAreas.length > 0 ? selectedAreas.some((a) => v.address?.includes(a)) : true))
+      .filter((v) => (activeZone && activeZone !== "all" ? v.zone === activeZone : true))
+      .filter((v) => {
+        const q = areaSearch.trim().toLowerCase();
+        if (!q) return true;
+        const inLocality = v.locality?.toLowerCase().includes(q);
+        const inAddress = v.address?.toLowerCase().includes(q);
+        return inLocality || inAddress;
+      })
       .filter((v) => inCapacityBucket(venueMaxCapacity(v), capacityBucket))
       .filter((v) => inPriceBucket(venueLowestPrice(v), priceBucket))
       .filter((v) => {
@@ -556,7 +628,7 @@ export default function VenuesPage({ venues = [], total = 0 }) {
         }
         return (b.dataCompleteness || 0) - (a.dataCompleteness || 0);
       });
-  }, [venues, search, venueType, selectedAreas, capacityBucket, priceBucket, amenitySet, verifiedOnly, sort]);
+  }, [venues, search, venueType, activeZone, areaSearch, capacityBucket, priceBucket, amenitySet, verifiedOnly, sort]);
 
   const featured = useMemo(() => {
     return [...venues]
@@ -662,21 +734,10 @@ export default function VenuesPage({ venues = [], total = 0 }) {
               ))}
             </div>
 
-            {/* Area checkboxes */}
+            {/* Location — handled by the zone tabs + area search above */}
             <div style={S.filterCard}>
-              <div style={S.filterHeader}>Area</div>
-              {AREAS.map((a) => (
-                <label key={a} style={S.filterOption}>
-                  <input
-                    type="checkbox"
-                    checked={selectedAreas.includes(a)}
-                    onChange={() => toggleArea(a)}
-                    style={{ accentColor: C.burgundy }}
-                  />
-                  <span style={S.filterLabel}>{a}</span>
-                  <span style={S.filterCount}>{areaCounts[a] ?? 0}</span>
-                </label>
-              ))}
+              <div style={S.filterHeader}>Location</div>
+              <div style={S.locationNote}>Use the zone tabs and area search above to filter by location.</div>
             </div>
 
             {/* Capacity */}
@@ -739,9 +800,47 @@ export default function VenuesPage({ venues = [], total = 0 }) {
           </aside>
 
           <div style={S.main}>
+            {/* Two-level location filter — zone tabs + area free-text */}
+            <div style={S.locationFilterWrap}>
+              <div style={S.zoneTabsRow} role="tablist" aria-label="Filter by zone">
+                {ZONES.map((z) => (
+                  <button
+                    key={z.value}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeZone === z.value}
+                    style={activeZone === z.value ? S.zoneTabOn : S.zoneTab}
+                    onClick={() => { setActiveZone(z.value); setAreaSearch(""); }}
+                  >
+                    {z.label}
+                  </button>
+                ))}
+              </div>
+              <div style={S.areaSearchWrap}>
+                <input
+                  type="text"
+                  placeholder="Search by area (e.g. Yelahanka, Whitefield, Koramangala...)"
+                  value={areaSearch}
+                  onChange={(e) => setAreaSearch(e.target.value)}
+                  style={S.areaSearchInput}
+                  aria-label="Search by area"
+                />
+                {areaSearch && (
+                  <button
+                    type="button"
+                    style={S.areaSearchClear}
+                    onClick={() => setAreaSearch("")}
+                    aria-label="Clear area search"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            </div>
+
             <div style={S.resultsHeader}>
               <div style={S.resultsCount}>
-                Showing <span style={S.resultsCountStrong}>{filtered.length}</span> of {venues.length} venues
+                Showing <span style={S.resultsCountStrong}>{filtered.length}</span> of {total} venues
               </div>
               <select style={S.sortSelect} value={sort} onChange={(e) => setSort(e.target.value)}>
                 <option value="recommended">Sort: Recommended</option>
@@ -753,9 +852,24 @@ export default function VenuesPage({ venues = [], total = 0 }) {
 
             {/* 5 — VENUE CARDS */}
             {filtered.length > 0 ? (
-              <div style={S.grid}>
-                {filtered.map((v) => <VenueCard key={v._id} venue={v} />)}
-              </div>
+              <>
+                <div style={S.grid}>
+                  {filtered.map((v) => <VenueCard key={v._id} venue={v} />)}
+                </div>
+                {hasMore && (
+                  <div style={S.loadMoreWrap}>
+                    <button
+                      type="button"
+                      style={loadMoreBusy ? S.loadMoreBtnBusy : S.loadMoreBtn}
+                      onClick={loadMore}
+                      disabled={loadMoreBusy}
+                      aria-busy={loadMoreBusy}
+                    >
+                      {loadMoreBusy ? "Loading venues..." : "Load more venues"}
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               /* 6 — EMPTY STATE */
               <div style={S.empty}>
@@ -792,7 +906,7 @@ export default function VenuesPage({ venues = [], total = 0 }) {
 export async function getServerSideProps() {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/venues?status=published&limit=100`,
+      `${process.env.NEXT_PUBLIC_API_URL}/venues?status=published&limit=24&skip=0`,
       { headers: { "Content-Type": "application/json" } }
     );
     if (!res.ok) throw new Error("Failed to fetch venues");
