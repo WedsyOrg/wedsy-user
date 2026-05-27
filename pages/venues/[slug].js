@@ -855,10 +855,6 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
       items: [
         { key: "bridalSuite", iconType: "bridal", label: "Bridal Suite" },
         { key: "groomRoom", iconType: "groom", label: "Groom Room" },
-        { key: "makeupRoom", iconType: "makeup", label: "Makeup Room" },
-        { key: "changingRooms", iconType: "changing", label: "Changing Rooms" },
-        { key: "prayerRoom", iconType: "prayer", label: "Prayer Room" },
-        { key: "fireNOC", iconType: "fireNOC", label: "Fire NOC" },
         { key: "liquorLicense", iconType: "liquor", label: "Liquor License" },
       ],
     },
