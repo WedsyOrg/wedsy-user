@@ -180,6 +180,28 @@ const S = {
   highlightsTitle: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 16, fontWeight: 400, color: "#2c1810", marginBottom: 12, letterSpacing: -0.2 },
   highlightItem: { display: "flex", alignItems: "flex-start", gap: 9, padding: "6px 0", fontSize: 13, color: "#3a2820", lineHeight: 1.45 },
   highlightIcon: { fontSize: 14, lineHeight: 1.2, flexShrink: 0, marginTop: 1 },
+  // Option B — magazine editorial about layout
+  aboutMagSection: { paddingBottom: "3rem" },
+  aboutMagSplit: { display: "grid", gridTemplateColumns: "55% 40%", gap: "5%", alignItems: "start" },
+  aboutMagSplitNoPhoto: { display: "block" },
+  aboutMagDropCap: { float: "left", fontSize: 72, color: "#b8852a", fontFamily: "Georgia, 'Times New Roman', serif", lineHeight: 0.8, marginRight: 8, marginTop: 4, fontWeight: 400 },
+  aboutMagBody: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 17, lineHeight: 1.8, color: "#2c1810", margin: 0 },
+  aboutMagPhotoCol: { display: "flex", flexDirection: "column" },
+  aboutMagPhotoGrid3: { display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 6, minHeight: 380 },
+  aboutMagPhotoGrid3Main: { gridRow: "1/3", borderRadius: 8, overflow: "hidden" },
+  aboutMagPhotoGrid3Cell: { borderRadius: 8, overflow: "hidden" },
+  aboutMagPhoto2Wrap: { display: "flex", flexDirection: "column", gap: 6 },
+  aboutMagPhoto2Top: { width: "100%", height: 200, borderRadius: 8, overflow: "hidden" },
+  aboutMagPhoto2BotWrap: { display: "flex", justifyContent: "flex-end" },
+  aboutMagPhoto2Bot: { width: "60%", height: 140, borderRadius: 8, overflow: "hidden" },
+  aboutMagPhoto1: { width: "100%", height: 360, borderRadius: 8, overflow: "hidden" },
+  aboutMagPhotoImg: { width: "100%", height: "100%", objectFit: "cover", display: "block" },
+  aboutMagCaption: { fontSize: 11, color: "#b09080", fontStyle: "italic", marginTop: 8, textAlign: "center" },
+  aboutMagHighlightsCard: { background: "#fdf4e6", borderLeft: "3px solid #b8852a", padding: 20, borderRadius: 10, marginTop: 24 },
+  aboutMagHighlightsTitle: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 16, color: "#2c1810", marginBottom: 12, fontWeight: 400 },
+  aboutMagHighlightItem: { display: "flex", alignItems: "flex-start", gap: 9, padding: "6px 0", fontSize: 13, color: "#5a3a2a", lineHeight: 1.5 },
+  aboutMagVibesRow: { display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14 },
+  aboutMagVibeChip: { fontSize: 11, padding: "4px 11px", borderRadius: 100, border: "0.5px solid #b8852a", color: "#b8852a", background: "#fffaf4" },
   // event spaces horizontal scroller
   spacesScroller: { display: "flex", gap: 14, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "thin", marginLeft: -4, marginRight: -4, paddingLeft: 4, paddingRight: 4 },
   spaceCard: { flex: "0 0 300px", background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.1rem 1.15rem", boxShadow: "0 2px 16px rgba(107,30,46,0.06)", display: "flex", flexDirection: "column", gap: 10 },
@@ -1051,36 +1073,78 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
           <div style={S.mainV3}>
             {/* ───── 4. ABOUT + HIGHLIGHTS ───── */}
             {(venue.description || highlightsTrimmed.length > 0) && (
-              <section style={S.section}>
+              <section style={S.aboutMagSection}>
                 <div style={S.sTitleWrap}>
                   <div style={S.sTitle}>About {venue.name}</div>
                   <div style={S.sTitleRule} />
                 </div>
-                <div style={S.abSplit}>
+                <div style={allPhotos.length > 0 ? S.aboutMagSplit : S.aboutMagSplitNoPhoto}>
                   <div>
                     {venue.description ? (
-                      <p style={S.aboutText}>
-                        <span style={S.dropCap}>{descFirst}</span>
+                      <p style={S.aboutMagBody}>
+                        <span style={S.aboutMagDropCap}>{descFirst}</span>
                         {descRest}
                       </p>
                     ) : (
-                      <p style={S.aboutText}>A premium wedding venue in {venue.city || "Bangalore"} — chat directly with the team to learn more.</p>
+                      <p style={S.aboutMagBody}>A premium wedding venue in {venue.city || "Bangalore"} — chat directly with the team to learn more.</p>
                     )}
                   </div>
-                  {highlightsTrimmed.length > 0 && (
-                    <aside style={S.highlightsCard}>
-                      <div style={S.highlightsTitle}>Why couples love this venue</div>
-                      <div>
-                        {highlightsTrimmed.map((h, i) => (
-                          <div key={i} style={S.highlightItem}>
-                            <span style={S.highlightIcon} aria-hidden="true">{h.icon}</span>
-                            <span>{h.text}</span>
+                  {allPhotos.length > 0 && (
+                    <div style={S.aboutMagPhotoCol}>
+                      {allPhotos.length >= 3 && (
+                        <div style={S.aboutMagPhotoGrid3}>
+                          <div style={S.aboutMagPhotoGrid3Main}>
+                            <img src={allPhotos[0]} alt={`${venue.name} photo 1`} style={S.aboutMagPhotoImg} />
                           </div>
-                        ))}
-                      </div>
-                    </aside>
+                          <div style={S.aboutMagPhotoGrid3Cell}>
+                            <img src={allPhotos[1]} alt={`${venue.name} photo 2`} style={S.aboutMagPhotoImg} />
+                          </div>
+                          <div style={S.aboutMagPhotoGrid3Cell}>
+                            <img src={allPhotos[2]} alt={`${venue.name} photo 3`} style={S.aboutMagPhotoImg} />
+                          </div>
+                        </div>
+                      )}
+                      {allPhotos.length === 2 && (
+                        <div style={S.aboutMagPhoto2Wrap}>
+                          <div style={S.aboutMagPhoto2Top}>
+                            <img src={allPhotos[0]} alt={`${venue.name} photo 1`} style={S.aboutMagPhotoImg} />
+                          </div>
+                          <div style={S.aboutMagPhoto2BotWrap}>
+                            <div style={S.aboutMagPhoto2Bot}>
+                              <img src={allPhotos[1]} alt={`${venue.name} photo 2`} style={S.aboutMagPhotoImg} />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {allPhotos.length === 1 && (
+                        <div style={S.aboutMagPhoto1}>
+                          <img src={allPhotos[0]} alt={`${venue.name} photo 1`} style={S.aboutMagPhotoImg} />
+                        </div>
+                      )}
+                      <div style={S.aboutMagCaption}>At {venue.name}</div>
+                    </div>
                   )}
                 </div>
+                {highlightsTrimmed.length > 0 && (
+                  <aside style={S.aboutMagHighlightsCard}>
+                    <div style={S.aboutMagHighlightsTitle}>Why couples love {venue.name}</div>
+                    <div>
+                      {highlightsTrimmed.map((h, i) => (
+                        <div key={i} style={S.aboutMagHighlightItem}>
+                          <span style={S.highlightIcon} aria-hidden="true">{h.icon}</span>
+                          <span>{h.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {Array.isArray(venue.vibes) && venue.vibes.length > 0 && (
+                      <div style={S.aboutMagVibesRow}>
+                        {venue.vibes.map((v, i) => (
+                          <span key={i} style={S.aboutMagVibeChip}>{v}</span>
+                        ))}
+                      </div>
+                    )}
+                  </aside>
+                )}
               </section>
             )}
 
