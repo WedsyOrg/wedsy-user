@@ -57,8 +57,6 @@ const CATEGORIES = [
   { value: "farmhouse", label: "Farmhouses" },
   { value: "banquet_hall", label: "Banquet Halls" },
   { value: "hotel", label: "Hotels" },
-  { value: "heritage", label: "Heritage" },
-  { value: "club", label: "Clubs" },
 ];
 
 // Amenity filter keys must match the venue.amenities schema so filtering works
@@ -444,7 +442,7 @@ Object.assign(S, {
   // SECTION 1 — Couture-style hero. No photography — typography + warm
   // champagne gradient + tiny gold ornament. Cream/ivory continuous with the
   // sections below so the page reads as one editorial spread.
-  heroV3: { position: "relative", width: "100%", minHeight: "55vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "linear-gradient(180deg, #fbf3e2 0%, #fdf6ec 48%, #f7ead0 100%)" },
+  heroV3: { position: "relative", width: "100%", minHeight: "42vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "linear-gradient(180deg, #fbf3e2 0%, #fdf6ec 48%, #f7ead0 100%)" },
   heroV3Bg: { position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "radial-gradient(ellipse 75% 50% at 50% -8%, rgba(184,133,42,0.20), transparent 60%), radial-gradient(circle at 12% 82%, rgba(107,30,46,0.08), transparent 50%), radial-gradient(circle at 88% 76%, rgba(184,133,42,0.14), transparent 55%)" },
   heroV3Glow: { position: "absolute", left: "50%", top: "32%", width: 720, height: 720, transform: "translate(-50%, -50%)", background: "radial-gradient(circle, rgba(255,235,180,0.32) 0%, transparent 65%)", pointerEvents: "none", filter: "blur(40px)" },
   heroV3Content: { position: "relative", zIndex: 2, textAlign: "center", maxWidth: 920, padding: "4rem 2rem 3rem", margin: "0 auto" },
@@ -526,21 +524,27 @@ Object.assign(S, {
   ownerCtaBtnPrimary: { display: "inline-flex", alignItems: "center", padding: "12px 28px", borderRadius: 100, background: C.ivory, color: C.burgundy, textDecoration: "none", fontSize: 14, fontWeight: 500, letterSpacing: 0.3 },
   ownerCtaBtnSecondary: { display: "inline-flex", alignItems: "center", padding: "12px 28px", borderRadius: 100, background: "transparent", color: C.ivory, textDecoration: "none", fontSize: 14, fontWeight: 500, border: "0.5px solid rgba(253,246,236,0.5)", letterSpacing: 0.3 },
 
-  // STICKY FILTER BAR (sits above All Venues, becomes sticky on scroll)
-  filterBar: { position: "sticky", top: 0, zIndex: 100, background: "#ffffff", borderBottom: "0.5px solid #e8d8c4", padding: "0 2rem", boxShadow: "0 1px 16px rgba(107,30,46,0.04)" },
-  filterBarInner: { maxWidth: 1400, margin: "0 auto" },
-  catPillsRow: { display: "flex", gap: 8, overflowX: "auto", padding: "16px 0 12px", scrollbarWidth: "none", msOverflowStyle: "none" },
-  catPill: { flexShrink: 0, padding: "8px 16px", borderRadius: 100, border: "0.5px solid " + C.burgundy, background: C.ivory, color: C.burgundy, fontSize: 13, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap", letterSpacing: 0.2 },
-  catPillOn: { flexShrink: 0, padding: "8px 16px", borderRadius: 100, border: "0.5px solid " + C.burgundy, background: C.burgundy, color: C.ivory, fontSize: 13, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap", letterSpacing: 0.2 },
-  chipsRow: { display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", padding: "0 0 14px" },
-  filterChipWrap: { position: "relative", display: "inline-block" },
-  filterChip: { display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 16px", borderRadius: 100, border: "0.5px solid " + C.burgundy, background: C.ivory, color: C.burgundy, fontSize: 12, fontWeight: 500, cursor: "pointer", letterSpacing: 0.2 },
-  filterChipOn: { display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 16px", borderRadius: 100, border: "0.5px solid " + C.burgundy, background: C.burgundy, color: C.ivory, fontSize: 12, fontWeight: 500, cursor: "pointer", letterSpacing: 0.2 },
-  filterChipX: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 16, height: 16, borderRadius: "50%", background: "rgba(253,246,236,0.25)", color: C.ivory, fontSize: 11, lineHeight: 1, cursor: "pointer", marginLeft: 2, border: "none", padding: 0 },
-  filterChipCaret: { fontSize: 9, opacity: 0.75, marginLeft: 2 },
+  // STICKY FILTER BAR — one horizontal-scroll row with: search + dividers +
+  // category pills + filter chips. Reset link sits outside the scroller on
+  // the right so it's always visible regardless of scroll position.
+  filterBar: { position: "sticky", top: 0, zIndex: 100, background: "#ffffff", borderBottom: "1px solid #f0e8dc", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" },
+  filterBarFlex: { display: "flex", alignItems: "center", maxWidth: 1400, margin: "0 auto", padding: "10px 2rem", gap: 10 },
+  filterBarRow: { display: "flex", alignItems: "center", gap: 6, overflowX: "auto", flex: 1, minWidth: 0 },
+  filterBarSearch: { flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 8, width: 200, height: 34, padding: "0 14px", borderRadius: 100, border: "1px solid #e8d8c4", background: "#ffffff" },
+  filterBarSearchIcon: { display: "inline-flex", color: "#7a5a48", flexShrink: 0 },
+  filterBarSearchInput: { flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 13, color: "#2c1810", minWidth: 0 },
+  filterDivider: { flexShrink: 0, width: 1, height: 20, background: "#e8d8c4", margin: "0 8px" },
+  // Unified pill/chip dimensions per spec — 34px, padding 0 14px, radius 100.
+  catPill: { flexShrink: 0, height: 34, padding: "0 14px", borderRadius: 100, border: "1px solid #e8d8c4", background: "#ffffff", color: "#5a3a2a", fontSize: 13, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap", letterSpacing: 0.2, transition: "all 150ms ease" },
+  catPillOn: { flexShrink: 0, height: 34, padding: "0 14px", borderRadius: 100, border: "1px solid " + C.burgundy, background: C.burgundy, color: C.ivory, fontSize: 13, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap", letterSpacing: 0.2, boxShadow: "0 2px 8px rgba(107,30,46,0.2)", transition: "all 150ms ease" },
+  filterChipWrap: { flexShrink: 0, position: "relative", display: "inline-block" },
+  filterChip: { display: "inline-flex", alignItems: "center", gap: 4, height: 34, padding: "0 14px", borderRadius: 100, border: "1px solid #e8d8c4", background: "#ffffff", color: "#5a3a2a", fontSize: 13, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap", letterSpacing: 0.2, transition: "all 150ms ease" },
+  filterChipOn: { display: "inline-flex", alignItems: "center", gap: 4, height: 34, padding: "0 14px", borderRadius: 100, border: "1px solid " + C.burgundy, background: C.burgundy, color: C.ivory, fontSize: 13, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap", letterSpacing: 0.2, boxShadow: "0 2px 8px rgba(107,30,46,0.2)", transition: "all 150ms ease" },
+  filterChipCaret: { fontSize: 10, marginLeft: 0, lineHeight: 1 },
+  filterChipX: { display: "inline-flex", alignItems: "center", justifyContent: "center", marginLeft: 0, fontSize: 14, lineHeight: 1, cursor: "pointer", background: "transparent", border: "none", color: "inherit", padding: 0, width: 14, height: 14, borderRadius: "50%" },
   filterDropdown: { position: "absolute", top: "calc(100% + 8px)", left: 0, background: "#ffffff", borderRadius: 12, boxShadow: "0 12px 36px rgba(107,30,46,0.18)", padding: 14, minWidth: 220, zIndex: 110, border: "0.5px solid #e8d8c4" },
   filterDropdownItem: { display: "flex", alignItems: "center", gap: 10, padding: "8px 6px", cursor: "pointer", fontSize: 13, color: "#3a2820", borderRadius: 6 },
-  resetLink: { marginLeft: "auto", background: "transparent", border: "none", color: C.burgundy, fontSize: 12, fontWeight: 500, cursor: "pointer", textDecoration: "underline", letterSpacing: 0.2 },
+  resetLink: { flexShrink: 0, background: "transparent", border: "none", color: C.burgundy, fontSize: 12, fontWeight: 500, cursor: "pointer", letterSpacing: 0.2, padding: "0 4px", whiteSpace: "nowrap" },
 
   // FULL-WIDTH ALL VENUES SECTION (replaces 2-col sidebar layout)
   allVenuesSecFull: { background: C.ivory, padding: "2.5rem 2rem 3rem" },
@@ -694,7 +698,7 @@ function MiniVenueCard({ venue }) {
 
 // ─── Page ───
 export default function VenuesPage({ venues: initialVenues = [], total: initialTotal = 0 }) {
-  const [search, setSearch] = useState("");
+  const [nameSearch, setNameSearch] = useState("");
   const [venueType, setVenueType] = useState("");
   const [capacityBucket, setCapacityBucket] = useState("");
   const [priceBucket, setPriceBucket] = useState("");
@@ -725,8 +729,9 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
       skip: String(skip),
     });
     if (activeZone && activeZone !== "all") params.set("zone", activeZone);
+    if (nameSearch.trim()) params.set("name", nameSearch.trim());
     return `${process.env.NEXT_PUBLIC_API_URL}/venues?${params.toString()}`;
-  }, [activeZone]);
+  }, [activeZone, nameSearch]);
 
   const loadMore = useCallback(async () => {
     if (loadMoreBusy || !hasMore) return;
@@ -776,7 +781,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
     setAmenitySet((prev) => ({ ...prev, [key]: !prev[key] }));
   }, []);
   const resetFilters = () => {
-    setSearch("");
+    setNameSearch("");
     setVenueType("");
     setActiveZone("all");
     setCapacityBucket("");
@@ -850,7 +855,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
     filterActiveFlags.price ||
     filterActiveFlags.capacity ||
     filterActiveFlags.amenities ||
-    !!search;
+    !!nameSearch;
 
   const clearFilterGroup = useCallback((group) => {
     if (group === "zone") setActiveZone("all");
@@ -927,8 +932,8 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
   const filtered = useMemo(() => {
     return venues
       .filter((v) => {
-        if (!search) return true;
-        const q = search.toLowerCase();
+        if (!nameSearch) return true;
+        const q = nameSearch.toLowerCase();
         return v.name?.toLowerCase().includes(q) || v.address?.toLowerCase().includes(q);
       })
       .filter((v) => (venueType ? v.venueType === venueType : true))
@@ -958,7 +963,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
         }
         return (b.dataCompleteness || 0) - (a.dataCompleteness || 0);
       });
-  }, [venues, search, venueType, activeZone, capacityBucket, priceBucket, amenitySet, verifiedOnly, sort]);
+  }, [venues, nameSearch, venueType, activeZone, capacityBucket, priceBucket, amenitySet, verifiedOnly, sort]);
 
   const featured = useMemo(() => {
     return [...venues]
@@ -1014,8 +1019,8 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
               <input
                 style={S.heroV3SearchInput}
                 placeholder="Search by name, area, or vibe…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={nameSearch}
+                onChange={(e) => setNameSearch(e.target.value)}
                 aria-label="Search venues"
               />
               <button type="submit" style={S.heroV3SearchBtn}>Begin →</button>
@@ -1119,11 +1124,31 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
           </div>
         </section>
 
-        {/* ────────── 5 — STICKY FILTER BAR ────────── */}
+        {/* ────────── 5 — STICKY FILTER BAR (single horizontal-scroll row) ────────── */}
         <div style={S.filterBar}>
-          <div style={S.filterBarInner}>
-            {/* Row 1 — category pills */}
-            <div className="cat-pills-row" style={S.catPillsRow} role="tablist" aria-label="Filter by venue category">
+          <div style={S.filterBarFlex}>
+            <div className="filter-bar-row" style={S.filterBarRow}>
+              {/* Live name/address search — 200px pill on the far left. */}
+              <div style={S.filterBarSearch}>
+                <span style={S.filterBarSearchIcon} aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="M21 21l-4.35-4.35" />
+                  </svg>
+                </span>
+                <input
+                  type="search"
+                  style={S.filterBarSearchInput}
+                  placeholder="Search venues..."
+                  value={nameSearch}
+                  onChange={(e) => setNameSearch(e.target.value)}
+                  aria-label="Search venues by name or address"
+                />
+              </div>
+
+              <div style={S.filterDivider} aria-hidden="true" />
+
+              {/* Category pills */}
               {CATEGORIES.map((c) => (
                 <button
                   key={c.value || "all"}
@@ -1136,10 +1161,9 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                   {c.label}
                 </button>
               ))}
-            </div>
 
-            {/* Row 2 — filter chip dropdowns */}
-            <div style={S.chipsRow}>
+              <div style={S.filterDivider} aria-hidden="true" />
+
               {/* Zone dropdown */}
               <div style={S.filterChipWrap} data-filter-dropdown>
                 <button
@@ -1150,8 +1174,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                   aria-haspopup="listbox"
                 >
                   <span>Zone</span>
-                  <span style={S.filterChipCaret} aria-hidden="true">▾</span>
-                  {filterActiveFlags.zone && (
+                  {filterActiveFlags.zone ? (
                     <span
                       role="button"
                       tabIndex={0}
@@ -1160,6 +1183,8 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                       onClick={(e) => { e.stopPropagation(); clearFilterGroup("zone"); }}
                       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); clearFilterGroup("zone"); } }}
                     >×</span>
+                  ) : (
+                    <span style={S.filterChipCaret} aria-hidden="true">▾</span>
                   )}
                 </button>
                 {openDropdown === "zone" && (
@@ -1190,8 +1215,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                   aria-haspopup="listbox"
                 >
                   <span>Price</span>
-                  <span style={S.filterChipCaret} aria-hidden="true">▾</span>
-                  {filterActiveFlags.price && (
+                  {filterActiveFlags.price ? (
                     <span
                       role="button"
                       tabIndex={0}
@@ -1200,6 +1224,8 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                       onClick={(e) => { e.stopPropagation(); clearFilterGroup("price"); }}
                       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); clearFilterGroup("price"); } }}
                     >×</span>
+                  ) : (
+                    <span style={S.filterChipCaret} aria-hidden="true">▾</span>
                   )}
                 </button>
                 {openDropdown === "price" && (
@@ -1230,8 +1256,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                   aria-haspopup="listbox"
                 >
                   <span>Capacity</span>
-                  <span style={S.filterChipCaret} aria-hidden="true">▾</span>
-                  {filterActiveFlags.capacity && (
+                  {filterActiveFlags.capacity ? (
                     <span
                       role="button"
                       tabIndex={0}
@@ -1240,6 +1265,8 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                       onClick={(e) => { e.stopPropagation(); clearFilterGroup("capacity"); }}
                       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); clearFilterGroup("capacity"); } }}
                     >×</span>
+                  ) : (
+                    <span style={S.filterChipCaret} aria-hidden="true">▾</span>
                   )}
                 </button>
                 {openDropdown === "capacity" && (
@@ -1270,8 +1297,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                   aria-haspopup="listbox"
                 >
                   <span>Amenities</span>
-                  <span style={S.filterChipCaret} aria-hidden="true">▾</span>
-                  {filterActiveFlags.amenities && (
+                  {filterActiveFlags.amenities ? (
                     <span
                       role="button"
                       tabIndex={0}
@@ -1280,6 +1306,8 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                       onClick={(e) => { e.stopPropagation(); clearFilterGroup("amenities"); }}
                       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); clearFilterGroup("amenities"); } }}
                     >×</span>
+                  ) : (
+                    <span style={S.filterChipCaret} aria-hidden="true">▾</span>
                   )}
                 </button>
                 {openDropdown === "amenities" && (
@@ -1307,11 +1335,12 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                   </div>
                 )}
               </div>
-
-              {anyFilterActive && (
-                <button type="button" style={S.resetLink} onClick={resetFilters}>Reset all filters</button>
-              )}
             </div>
+
+            {/* Reset link — outside the scroll, always visible on the right */}
+            {anyFilterActive && (
+              <button type="button" style={S.resetLink} onClick={resetFilters}>Reset all</button>
+            )}
           </div>
         </div>
 
@@ -1400,10 +1429,10 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
         :global(.hero-search)   { animation: heroSlideUp 0.9s ease-out; }
         :global(.hero-stats)    { animation: heroSlideUp 0.9s ease-out; }
         :global(.hero-foot)     { animation: heroSlideUp 0.9s ease-out; }
-        /* Hide scrollbars on horizontal scrollers (category pills, curated rows). */
-        :global(.cat-pills-row)::-webkit-scrollbar,
+        /* Hide scrollbars on horizontal scrollers (filter bar, curated rows). */
+        :global(.filter-bar-row)::-webkit-scrollbar,
         :global(.curated-scroll)::-webkit-scrollbar { display: none; }
-        :global(.cat-pills-row), :global(.curated-scroll) {
+        :global(.filter-bar-row), :global(.curated-scroll) {
           scrollbar-width: none;
           -ms-overflow-style: none;
         }
