@@ -456,30 +456,6 @@ const S = {
 
 // ─── Extended styles for the rebuilt page (sections 1-7) ───
 Object.assign(S, {
-  // SECTION 1 — Couture-style hero. No photography — typography + warm
-  // champagne gradient + tiny gold ornament. Cream/ivory continuous with the
-  // sections below so the page reads as one editorial spread.
-  heroV3: { position: "relative", width: "100%", minHeight: "38vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "linear-gradient(180deg, #fbf3e2 0%, #fdf6ec 48%, #f7ead0 100%)" },
-  heroV3Bg: { position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "radial-gradient(ellipse 75% 50% at 50% -8%, rgba(184,133,42,0.20), transparent 60%), radial-gradient(circle at 12% 82%, rgba(107,30,46,0.08), transparent 50%), radial-gradient(circle at 88% 76%, rgba(184,133,42,0.14), transparent 55%)" },
-  heroV3Glow: { position: "absolute", left: "50%", top: "32%", width: 720, height: 720, transform: "translate(-50%, -50%)", background: "radial-gradient(circle, rgba(255,235,180,0.32) 0%, transparent 65%)", pointerEvents: "none", filter: "blur(40px)" },
-  heroV3Content: { position: "relative", zIndex: 2, textAlign: "center", maxWidth: 920, padding: "4rem 2rem 3rem", margin: "0 auto" },
-  heroV3OrnamentTop: { display: "flex", justifyContent: "center", marginBottom: 24 },
-  heroV3Eyebrow: { fontSize: 11, letterSpacing: 5.5, color: C.gold, textTransform: "uppercase", marginBottom: 32, fontWeight: 500 },
-  heroV3Title: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(3rem, 7.4vw, 6rem)", fontWeight: 400, lineHeight: 1.02, letterSpacing: -2, color: "#2c1810", margin: "0 auto 26px", maxWidth: 820 },
-  heroV3TitleEm: { fontStyle: "italic", color: C.gold, fontWeight: 400 },
-  heroV3Sub: { fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: "italic", fontSize: 16, color: "#7a5a48", lineHeight: 1.75, maxWidth: 580, margin: "0 auto 42px" },
-  heroV3SearchBar: { display: "flex", alignItems: "center", background: "#fffaf4", borderRadius: 100, padding: "8px 8px 8px 20px", border: "0.5px solid rgba(184,133,42,0.40)", boxShadow: "0 12px 48px rgba(107,30,46,0.10)", maxWidth: 580, margin: "0 auto 52px", gap: 10 },
-  heroV3SearchIcon: { display: "inline-flex", alignItems: "center", flexShrink: 0 },
-  heroV3SearchInput: { flex: 1, border: "none", outline: "none", padding: "12px 4px", fontSize: 15, color: "#2c1810", background: "transparent", fontFamily: "Georgia, 'Times New Roman', serif" },
-  heroV3SearchBtn: { background: C.burgundy, color: C.ivory, border: "none", borderRadius: 100, padding: "12px 26px", fontSize: 13, fontWeight: 500, cursor: "pointer", letterSpacing: 0.6, whiteSpace: "nowrap", fontFamily: "Georgia, 'Times New Roman', serif" },
-  heroV3Stats: { display: "flex", alignItems: "center", justifyContent: "center", gap: 40, flexWrap: "wrap", marginBottom: 32 },
-  heroV3Stat: { display: "flex", flexDirection: "column", alignItems: "center", gap: 8, minWidth: 110 },
-  heroV3StatNum: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 44, color: C.gold, fontWeight: 400, letterSpacing: -1, lineHeight: 1 },
-  heroV3StatNumWord: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 28, color: C.gold, fontWeight: 400, lineHeight: 1, fontStyle: "italic", paddingTop: 8 },
-  heroV3StatLbl: { fontSize: 10, color: "#7a5a48", letterSpacing: 2.8, textTransform: "uppercase", fontWeight: 500 },
-  heroV3StatRule: { width: 0.5, height: 44, background: "rgba(184,133,42,0.4)" },
-  heroV3Footnote: { fontSize: 10, letterSpacing: 4.5, color: "rgba(184,133,42,0.75)", textTransform: "uppercase", fontWeight: 500 },
-
   // SECTION 2 — Why Wedsy
   whySec: { background: C.ivory, padding: "4rem 2rem" },
   whyInner: { maxWidth: 1200, margin: "0 auto" },
@@ -728,7 +704,11 @@ function MiniVenueCard({ venue }) {
 }
 
 // ─── Page ───
-export default function VenuesPage({ venues: initialVenues = [], total: initialTotal = 0 }) {
+export default function VenuesPage({
+  venues: initialVenues = [],
+  total: initialTotal = 0,
+  zoneCounts = { airport: 0, north: 0, south: 0, east: 0, west: 0, central: 0 },
+}) {
   // Responsive breakpoint flags — drive style overrides in mobile/tablet.
   const viewportWidth = useWindowWidth();
   const isMobile = viewportWidth < 768;
@@ -831,32 +811,13 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
     setOpenDropdown(null);
   };
 
-  // ─── Animated stat counters — count up from 0 over 1.4s on mount ───
-  const verifiedCount = useMemo(
-    () => venues.filter((v) => v.status === "verified").length,
-    [venues]
+  // ─── Hero collage photos — first 4 venues from the SSR prop that have a
+  // coverPhoto. Pinned to initialVenues so zone-refetch doesn't reshuffle
+  // the hero imagery underneath the user.
+  const heroPhotos = useMemo(
+    () => initialVenues.filter((v) => v.coverPhoto).slice(0, 4),
+    [initialVenues]
   );
-  const [statVenues, setStatVenues] = useState(0);
-  const [statVerified, setStatVerified] = useState(0);
-  useEffect(() => {
-    const targetA = total || 0;
-    const targetB = verifiedCount || 0;
-    const steps = 40;
-    const ms = 35;
-    let n = 0;
-    const id = setInterval(() => {
-      n++;
-      const p = n / steps;
-      setStatVenues(Math.round(targetA * p));
-      setStatVerified(Math.round(targetB * p));
-      if (n >= steps) {
-        setStatVenues(targetA);
-        setStatVerified(targetB);
-        clearInterval(id);
-      }
-    }, ms);
-    return () => clearInterval(id);
-  }, [total, verifiedCount]);
 
   // ─── Scroll target for "All Venues" section (vibes + zones jump here) ───
   const allVenuesRef = useRef(null);
@@ -941,9 +902,9 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
   ], []);
   const zoneCards = useMemo(() => ZONE_AREA_DEFS.map((z) => ({
     ...z,
-    count: venues.filter((v) => v.zone === z.value).length,
+    count: zoneCounts[z.value] || 0,
     image: venues.find((v) => v.zone === z.value && v.coverPhoto)?.coverPhoto || "",
-  })), [venues, ZONE_AREA_DEFS]);
+  })), [venues, ZONE_AREA_DEFS, zoneCounts]);
   const applyZone = useCallback((zoneValue) => {
     resetFilters();
     setSelectedZones([zoneValue]);
@@ -1050,65 +1011,363 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
       </Head>
 
       <main style={S.page}>
-        {/* ────────── 1 — COUTURE HERO (typography-led, no imagery) ────────── */}
-        <section style={S.heroV3}>
-          <div style={S.heroV3Bg} aria-hidden="true" />
-          <div style={S.heroV3Glow} aria-hidden="true" />
-          <div style={S.heroV3Content}>
-            <div style={S.heroV3OrnamentTop} aria-hidden="true">
-              <svg className="hero-ornament" width="120" height="20" viewBox="0 0 120 20" fill="none">
-                <line x1="0" y1="10" x2="48" y2="10" stroke="#b8852a" strokeWidth="0.6" strokeLinecap="round" />
-                <path d="M55 10 L60 5 L65 10 L60 15 Z" stroke="#b8852a" strokeWidth="0.7" fill="none" strokeLinejoin="round" />
-                <circle cx="60" cy="10" r="0.8" fill="#b8852a" />
-                <line x1="72" y1="10" x2="120" y2="10" stroke="#b8852a" strokeWidth="0.6" strokeLinecap="round" />
-              </svg>
-            </div>
-            <div className="hero-eyebrow" style={S.heroV3Eyebrow}>An Invitation</div>
-            <h1 className="hero-title" style={S.heroV3Title}>
-              Find where your<br />
-              <em style={S.heroV3TitleEm}>forever</em> begins.
-            </h1>
-            <p className="hero-sub" style={S.heroV3Sub}>
-              An invitation to {total} of Bangalore's most considered wedding venues — visited, photographed, and verified by our team.
-            </p>
-            <form
-              className="hero-search"
-              style={{ ...S.heroV3SearchBar, ...(isMobile ? S.heroV3SearchBarMobile : {}) }}
-              onSubmit={(e) => { e.preventDefault(); scrollToListing(); }}
+        {/* ────────── 1 — HERO (two-column: copy + photo collage) ────────── */}
+        <section
+          style={{
+            display: "flex",
+            flexDirection: isMobile ? "column" : "row",
+            alignItems: "stretch",
+            minHeight: "52vh",
+            background: "#fdf6ec",
+            overflow: "hidden",
+            position: "relative",
+          }}
+        >
+          {/* LEFT — copy + search */}
+          <div
+            style={{
+              width: isMobile ? "100%" : "55%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              padding: isMobile ? "2rem 1.5rem 1rem" : "3.5rem 2rem 3.5rem 3rem",
+            }}
+          >
+            <div
+              style={{
+                display: "inline-flex",
+                width: "fit-content",
+                border: "1px solid #b8852a",
+                color: "#b8852a",
+                borderRadius: 100,
+                padding: "5px 14px",
+                fontSize: 10,
+                letterSpacing: 2.5,
+                textTransform: "uppercase",
+                marginBottom: 24,
+                fontWeight: 500,
+              }}
             >
-              <span style={S.heroV3SearchIcon} aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b8852a" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="M21 21l-4.35-4.35" />
-                </svg>
+              Bangalore's finest wedding venues
+            </div>
+
+            <h1 style={{ fontFamily: "Georgia, 'Times New Roman', serif", margin: 0 }}>
+              <span
+                style={{
+                  color: "#1a0a0a",
+                  fontSize: "clamp(1.9rem, 3.2vw, 3rem)",
+                  fontWeight: 400,
+                  display: "block",
+                  lineHeight: 1.1,
+                }}
+              >
+                Find your
               </span>
+              <span
+                style={{
+                  color: "#b8852a",
+                  fontStyle: "italic",
+                  fontWeight: 400,
+                  fontSize: "clamp(2.6rem, 4.5vw, 4.2rem)",
+                  display: "block",
+                  lineHeight: 1,
+                  marginTop: -4,
+                }}
+              >
+                perfect
+              </span>
+              <span
+                style={{
+                  color: "#1a0a0a",
+                  fontSize: "clamp(1.9rem, 3.2vw, 3rem)",
+                  fontWeight: 400,
+                  display: "block",
+                  lineHeight: 1.1,
+                  marginTop: -4,
+                }}
+              >
+                wedding venue.
+              </span>
+            </h1>
+
+            <p
+              style={{
+                marginTop: 18,
+                color: "#5a3a2a",
+                fontSize: 14,
+                lineHeight: 1.7,
+                maxWidth: 400,
+              }}
+            >
+              {total} handpicked venues across Bangalore — every photo is real, every listing is verified.
+            </p>
+
+            <form
+              onSubmit={(e) => { e.preventDefault(); scrollToListing(); }}
+              style={{
+                marginTop: 24,
+                width: "100%",
+                maxWidth: 440,
+                display: "flex",
+                alignItems: "center",
+                background: "#ffffff",
+                border: "1px solid #e8d8c4",
+                borderRadius: 100,
+                padding: "6px 6px 6px 18px",
+                boxShadow: "0 4px 20px rgba(107,30,46,0.08)",
+              }}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#b8852a"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path d="M21 21l-4.35-4.35" />
+              </svg>
               <input
-                style={S.heroV3SearchInput}
+                style={{
+                  flex: 1,
+                  marginLeft: 10,
+                  border: "none",
+                  outline: "none",
+                  fontSize: 14,
+                  background: "transparent",
+                  color: "#2c1810",
+                }}
                 placeholder="Search by name, area, or vibe…"
                 value={nameSearch}
                 onChange={(e) => setNameSearch(e.target.value)}
                 aria-label="Search venues"
               />
-              <button type="submit" style={S.heroV3SearchBtn}>{isMobile ? "Go" : "Begin →"}</button>
+              <button
+                type="submit"
+                style={{
+                  background: "#6b1e2e",
+                  color: "#fdf6ec",
+                  border: "none",
+                  borderRadius: 100,
+                  padding: "10px 22px",
+                  fontSize: 13,
+                  fontWeight: 500,
+                  cursor: "pointer",
+                  flexShrink: 0,
+                }}
+              >
+                Search →
+              </button>
             </form>
-            <div className="hero-stats" style={{ ...S.heroV3Stats, ...(isMobile ? S.heroV3StatsMobile : {}) }}>
-              <div style={S.heroV3Stat}>
-                <div style={S.heroV3StatNum}>{statVenues}</div>
-                <div style={S.heroV3StatLbl}>Curated venues</div>
+
+            <div
+              style={{
+                marginTop: 20,
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 8,
+              }}
+            >
+              {[
+                {
+                  icon: (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#b8852a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  ),
+                  text: "Free for couples. Always.",
+                },
+                {
+                  icon: (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#b8852a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                      <circle cx="12" cy="13" r="4" />
+                    </svg>
+                  ),
+                  text: "Real photos. No stock.",
+                },
+                {
+                  icon: (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#b8852a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                  ),
+                  text: "Chat directly with venues.",
+                },
+                {
+                  icon: (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#b8852a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                  ),
+                  text: "Personally verified.",
+                },
+              ].map((b, i) => (
+                <span
+                  key={i}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    background: "rgba(107,30,46,0.05)",
+                    border: "1px solid rgba(107,30,46,0.12)",
+                    borderRadius: 100,
+                    padding: "7px 14px",
+                    fontSize: 12,
+                    color: "#3f1020",
+                  }}
+                >
+                  {b.icon}
+                  {b.text}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* RIGHT — photo collage (desktop) / single strip (mobile) */}
+          {isMobile ? (
+            heroPhotos[0]?.coverPhoto && (
+              <div style={{ width: "100%", height: 180, padding: "0 1.5rem 1rem", boxSizing: "border-box" }}>
+                <img
+                  src={heroPhotos[0].coverPhoto}
+                  alt=""
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    borderRadius: 12,
+                    display: "block",
+                  }}
+                />
               </div>
-              {!isMobile && <div style={S.heroV3StatRule} aria-hidden="true" />}
-              <div style={S.heroV3Stat}>
-                <div style={S.heroV3StatNum}>{statVerified}</div>
-                <div style={S.heroV3StatLbl}>Personally verified</div>
-              </div>
-              {!isMobile && <div style={S.heroV3StatRule} aria-hidden="true" />}
-              <div style={S.heroV3Stat}>
-                <div style={S.heroV3StatNumWord}>Always</div>
-                <div style={S.heroV3StatLbl}>Free for couples</div>
+            )
+          ) : (
+            <div style={{ width: "45%", position: "relative", padding: "2rem 3rem 2rem 1rem", boxSizing: "border-box" }}>
+              <div
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "radial-gradient(circle at 65% 35%, rgba(184,133,42,0.07) 0%, transparent 55%)",
+                  pointerEvents: "none",
+                }}
+              />
+              <div
+                style={{
+                  position: "relative",
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                  justifyContent: "center",
+                }}
+              >
+                <div style={{ position: "relative" }}>
+                  {heroPhotos[0]?.coverPhoto && (
+                    <img
+                      src={heroPhotos[0].coverPhoto}
+                      alt=""
+                      style={{
+                        width: "100%",
+                        height: 240,
+                        objectFit: "cover",
+                        borderRadius: 16,
+                        display: "block",
+                      }}
+                    />
+                  )}
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 16,
+                      left: 16,
+                      background: "#ffffff",
+                      borderRadius: 100,
+                      padding: "7px 14px",
+                      fontSize: 12,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
+                      zIndex: 2,
+                    }}
+                  >
+                    <span style={{ color: "#b8852a", fontWeight: 600 }}>★</span>
+                    <span style={{ color: "#2c1810", fontWeight: 500 }}>4.8 avg rating</span>
+                  </div>
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 16,
+                      right: 16,
+                      background: "#6b1e2e",
+                      color: "#fdf6ec",
+                      borderRadius: 100,
+                      padding: "7px 14px",
+                      fontSize: 12,
+                      fontWeight: 500,
+                      zIndex: 2,
+                    }}
+                  >
+                    {total} venues
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                  {heroPhotos[1]?.coverPhoto && (
+                    <img
+                      src={heroPhotos[1].coverPhoto}
+                      alt=""
+                      style={{ flex: 1, height: 148, objectFit: "cover", borderRadius: 12, display: "block" }}
+                    />
+                  )}
+                  {heroPhotos[2]?.coverPhoto && (
+                    <img
+                      src={heroPhotos[2].coverPhoto}
+                      alt=""
+                      style={{ flex: 1, height: 148, objectFit: "cover", borderRadius: 12, display: "block" }}
+                    />
+                  )}
+                </div>
+
+                {heroPhotos[3]?.coverPhoto && (
+                  <img
+                    src={heroPhotos[3].coverPhoto}
+                    alt=""
+                    style={{
+                      position: "absolute",
+                      bottom: 0,
+                      right: -20,
+                      width: 112,
+                      height: 112,
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      border: "4px solid #ffffff",
+                      boxShadow: "0 8px 28px rgba(0,0,0,0.18)",
+                      zIndex: 2,
+                    }}
+                  />
+                )}
+
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    bottom: 40,
+                    left: 0,
+                    width: 60,
+                    height: 60,
+                    background: "radial-gradient(circle, rgba(184,133,42,0.15) 0%, transparent 70%)",
+                    pointerEvents: "none",
+                  }}
+                />
               </div>
             </div>
-            <div className="hero-foot" style={S.heroV3Footnote}>Curated in Bangalore</div>
-          </div>
+          )}
         </section>
 
         {/* ────────── 2 — WHY WEDSY IS DIFFERENT ────────── */}
@@ -1561,16 +1820,26 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
 }
 
 export async function getServerSideProps() {
+  const emptyZoneCounts = { airport: 0, north: 0, south: 0, east: 0, west: 0, central: 0 };
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/venues?status=published&limit=24&skip=0`,
+      `${process.env.NEXT_PUBLIC_API_URL}/venues?status=published&limit=1000&skip=0`,
       { headers: { "Content-Type": "application/json" } }
     );
     if (!res.ok) throw new Error("Failed to fetch venues");
     const data = await res.json();
-    return { props: { venues: data.venues || [], total: data.total || 0 } };
+    const venues = data.venues || [];
+    const zoneCounts = {
+      airport: venues.filter((v) => v.zone === "airport").length,
+      north: venues.filter((v) => v.zone === "north").length,
+      south: venues.filter((v) => v.zone === "south").length,
+      east: venues.filter((v) => v.zone === "east").length,
+      west: venues.filter((v) => v.zone === "west").length,
+      central: venues.filter((v) => v.zone === "central").length,
+    };
+    return { props: { venues, total: data.total || 0, zoneCounts } };
   } catch (err) {
     console.error("Venues SSR error:", err.message);
-    return { props: { venues: [], total: 0 } };
+    return { props: { venues: [], total: 0, zoneCounts: emptyZoneCounts } };
   }
 }
