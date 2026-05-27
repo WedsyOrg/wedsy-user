@@ -777,6 +777,12 @@ export default function VenuesPage({
   const [loadMoreBusy, setLoadMoreBusy] = useState(false);
   const hasMore = venues.length < total;
 
+  // ─── Hero search autocomplete ───
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchRef = useRef(null);
+  const router = useRouter();
+
   const buildFetchUrl = useCallback((skip) => {
     const params = new URLSearchParams({
       status: "published",
@@ -863,6 +869,97 @@ export default function VenuesPage({
       el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, []);
+
+  // ─── Hero autocomplete groups — pure client-side derivation off the
+  // currently-loaded `venues` array. No API calls; results refine themselves
+  // as the user paginates the listing below. Each group is capped per spec.
+  const heroAcGroups = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (q.length < 2) return { venues: [], areas: [], zones: [], types: [] };
+
+    const venueHits = venues
+      .filter((v) => v.name?.toLowerCase().includes(q))
+      .slice(0, 4);
+
+    const localities = [...new Set(venues.map((v) => v.locality).filter(Boolean))];
+    const areaHits = localities
+      .filter((loc) => loc.toLowerCase().includes(q))
+      .slice(0, 4)
+      .map((loc) => ({
+        locality: loc,
+        count: venues.filter((v) => v.locality === loc).length,
+      }));
+
+    const zoneHits = Object.entries(HERO_ZONE_LABELS)
+      .filter(([, label]) => label.toLowerCase().includes(q))
+      .slice(0, 3)
+      .map(([value, label]) => ({
+        value,
+        label,
+        count: venues.filter((v) => v.zone === value).length,
+      }));
+
+    const typeHits = Object.entries(HERO_TYPE_LABELS)
+      .filter(([, label]) => label.toLowerCase().includes(q))
+      .slice(0, 3)
+      .map(([value, label]) => ({
+        value,
+        label,
+        count: venues.filter((v) => v.venueType === value).length,
+      }));
+
+    return { venues: venueHits, areas: areaHits, zones: zoneHits, types: typeHits };
+  }, [searchQuery, venues]);
+
+  const heroAcOpen =
+    searchFocused && searchQuery.trim().length >= 2;
+  const heroAcHasResults =
+    heroAcGroups.venues.length > 0 ||
+    heroAcGroups.areas.length > 0 ||
+    heroAcGroups.zones.length > 0 ||
+    heroAcGroups.types.length > 0;
+
+  const closeHeroAc = useCallback(() => setSearchFocused(false), []);
+
+  // Click-outside closes the autocomplete. Uses the wrapper ref so clicks on
+  // the input itself or on any dropdown row stay "inside".
+  useEffect(() => {
+    if (!heroAcOpen) return undefined;
+    const onMouseDown = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        closeHeroAc();
+      }
+    };
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
+  }, [heroAcOpen, closeHeroAc]);
+
+  // Hero autocomplete result-click handlers — each commits a filter or
+  // navigates, then closes the dropdown and (where applicable) jumps to the
+  // listing so the user sees the change immediately.
+  const onHeroAcPickVenue = useCallback((venue) => {
+    closeHeroAc();
+    router.push(`/venues/${venue.slug}`);
+  }, [closeHeroAc, router]);
+
+  const onHeroAcPickArea = useCallback((locality) => {
+    setNameSearch(locality);
+    setSearchQuery(locality);
+    closeHeroAc();
+    setTimeout(scrollToListing, 60);
+  }, [closeHeroAc, scrollToListing]);
+
+  const onHeroAcPickZone = useCallback((zoneValue) => {
+    setSelectedZones([zoneValue]);
+    closeHeroAc();
+    setTimeout(scrollToListing, 60);
+  }, [closeHeroAc, scrollToListing]);
+
+  const onHeroAcPickType = useCallback((typeValue) => {
+    setVenueType(typeValue);
+    closeHeroAc();
+    setTimeout(scrollToListing, 60);
+  }, [closeHeroAc, scrollToListing]);
 
   // ─── Sticky filter bar — click-outside closes the active dropdown. The
   // chip wrappers carry a [data-filter-dropdown] attribute so we can scope
@@ -1136,67 +1233,180 @@ export default function VenuesPage({
               {total} handpicked venues across Bangalore — every photo is real, every listing is verified.
             </p>
 
-            <form
-              onSubmit={(e) => { e.preventDefault(); scrollToListing(); }}
+            <div
+              ref={searchRef}
               style={{
-                marginTop: 24,
+                position: "relative",
                 width: "100%",
                 maxWidth: 440,
-                display: "flex",
-                alignItems: "center",
-                background: "#ffffff",
-                border: "1px solid #e8d8c4",
-                borderRadius: 100,
-                padding: "6px 6px 6px 18px",
-                boxShadow: "0 4px 20px rgba(107,30,46,0.08)",
+                marginTop: 24,
               }}
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#b8852a"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="M21 21l-4.35-4.35" />
-              </svg>
-              <input
+              <form
+                onSubmit={(e) => { e.preventDefault(); closeHeroAc(); scrollToListing(); }}
                 style={{
-                  flex: 1,
-                  marginLeft: 10,
-                  border: "none",
-                  outline: "none",
-                  fontSize: 14,
-                  background: "transparent",
-                  color: "#2c1810",
-                }}
-                placeholder="Search by name, area, or vibe…"
-                value={nameSearch}
-                onChange={(e) => setNameSearch(e.target.value)}
-                aria-label="Search venues"
-              />
-              <button
-                type="submit"
-                style={{
-                  background: "#6b1e2e",
-                  color: "#fdf6ec",
-                  border: "none",
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  background: "#ffffff",
+                  border: "1px solid #e8d8c4",
                   borderRadius: 100,
-                  padding: "10px 22px",
-                  fontSize: 13,
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  flexShrink: 0,
+                  padding: "6px 6px 6px 18px",
+                  boxShadow: "0 4px 20px rgba(107,30,46,0.08)",
                 }}
               >
-                Search →
-              </button>
-            </form>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#b8852a"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="M21 21l-4.35-4.35" />
+                </svg>
+                <input
+                  style={{
+                    flex: 1,
+                    marginLeft: 10,
+                    border: "none",
+                    outline: "none",
+                    fontSize: 14,
+                    background: "transparent",
+                    color: "#2c1810",
+                  }}
+                  placeholder="Search by name, area, or vibe…"
+                  value={nameSearch}
+                  onChange={(e) => { setNameSearch(e.target.value); setSearchQuery(e.target.value); }}
+                  onFocus={() => setSearchFocused(true)}
+                  onKeyDown={(e) => { if (e.key === "Escape") closeHeroAc(); }}
+                  aria-label="Search venues"
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-expanded={heroAcOpen}
+                  aria-controls="hero-search-suggestions"
+                />
+                <button
+                  type="submit"
+                  style={{
+                    background: "#6b1e2e",
+                    color: "#fdf6ec",
+                    border: "none",
+                    borderRadius: 100,
+                    padding: "10px 22px",
+                    fontSize: 13,
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    flexShrink: 0,
+                  }}
+                >
+                  Search →
+                </button>
+              </form>
+
+              {heroAcOpen && (
+                <div id="hero-search-suggestions" style={S.heroAcDropdown} role="listbox" aria-label="Search suggestions">
+                  {heroAcHasResults ? (
+                    <>
+                      {heroAcGroups.venues.length > 0 && (
+                        <div>
+                          <div style={S.heroAcGroupHeader}>Venues</div>
+                          {heroAcGroups.venues.map((v) => (
+                            <button
+                              key={`v-${v._id || v.slug}`}
+                              type="button"
+                              style={S.heroAcRow}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(107,30,46,0.04)"; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                              onClick={() => onHeroAcPickVenue(v)}
+                            >
+                              {v.coverPhoto ? (
+                                <img src={v.coverPhoto} alt="" style={S.heroAcThumb} />
+                              ) : (
+                                <div style={S.heroAcThumbPlaceholder} aria-hidden="true">🏡</div>
+                              )}
+                              <span style={S.heroAcLabel}>{v.name}</span>
+                              {v.venueType && HERO_TYPE_LABELS[v.venueType] && (
+                                <span style={S.heroAcBadge}>{HERO_TYPE_LABELS[v.venueType]}</span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {heroAcGroups.areas.length > 0 && (
+                        <div>
+                          <div style={S.heroAcGroupHeader}>Areas</div>
+                          {heroAcGroups.areas.map((a) => (
+                            <button
+                              key={`a-${a.locality}`}
+                              type="button"
+                              style={S.heroAcRow}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(107,30,46,0.04)"; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                              onClick={() => onHeroAcPickArea(a.locality)}
+                            >
+                              <div style={S.heroAcIcon} aria-hidden="true">📍</div>
+                              <span style={S.heroAcLabel}>{a.locality}</span>
+                              <span style={S.heroAcCount}>{a.count} {a.count === 1 ? "venue" : "venues"}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {heroAcGroups.zones.length > 0 && (
+                        <div>
+                          <div style={S.heroAcGroupHeader}>Zones</div>
+                          {heroAcGroups.zones.map((z) => (
+                            <button
+                              key={`z-${z.value}`}
+                              type="button"
+                              style={S.heroAcRow}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(107,30,46,0.04)"; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                              onClick={() => onHeroAcPickZone(z.value)}
+                            >
+                              <div style={S.heroAcIcon} aria-hidden="true">🗺</div>
+                              <span style={S.heroAcLabel}>{z.label}</span>
+                              <span style={S.heroAcCount}>{z.count} {z.count === 1 ? "venue" : "venues"}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {heroAcGroups.types.length > 0 && (
+                        <div>
+                          <div style={S.heroAcGroupHeader}>Types</div>
+                          {heroAcGroups.types.map((t) => (
+                            <button
+                              key={`t-${t.value}`}
+                              type="button"
+                              style={S.heroAcRow}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(107,30,46,0.04)"; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                              onClick={() => onHeroAcPickType(t.value)}
+                            >
+                              <div style={S.heroAcIcon} aria-hidden="true">🏛</div>
+                              <span style={S.heroAcLabel}>{t.label}</span>
+                              <span style={S.heroAcCount}>{t.count} {t.count === 1 ? "venue" : "venues"}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div style={S.heroAcEmpty}>No results for &ldquo;{searchQuery}&rdquo;</div>
+                      <div style={S.heroAcEmptyHint}>Press Enter to search all venues →</div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div
               style={{
