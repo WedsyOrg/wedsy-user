@@ -548,13 +548,11 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
         { key: "rooms", label: "Rooms", list: Array.isArray(rawPhotos.rooms) ? rawPhotos.rooms : [] },
         { key: "spaces", label: "Spaces", list: Array.isArray(rawPhotos.spaces) ? rawPhotos.spaces : [] },
       ].filter((c) => c.list.length > 0)
+    : Array.isArray(rawPhotos) && rawPhotos.length > 0
+    ? [{ key: "venue", label: "Venue", list: rawPhotos }]
     : [];
   const allPhotos = (() => {
-    const list = isPhotosV2
-      ? photoCats.reduce((acc, c) => acc.concat(c.list), [])
-      : Array.isArray(rawPhotos)
-      ? [...rawPhotos]
-      : [];
+    const list = photoCats.reduce((acc, c) => acc.concat(c.list), []);
     // Ensure the cover photo is part of the gallery (prepended if not already present).
     if (venue.coverPhoto && !list.includes(venue.coverPhoto)) {
       return [venue.coverPhoto, ...list];
@@ -562,9 +560,9 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
     return list;
   })();
   // Photos visible after the active tab filter (drives both grid + modal)
-  const activeCat = isPhotosV2 ? photoCats.find((c) => c.key === galleryTab) : null;
+  const activeCat = photoCats.find((c) => c.key === galleryTab) || null;
   const photos = activeCat ? activeCat.list : allPhotos;
-  const showTabs = isPhotosV2 && photoCats.length > 0;
+  const showTabs = photoCats.length > 0;
   const totalPhotos = photos.length;
   const gridSlots = [0, 1, 2, 3, 4];
   const remainingBeyondGrid = Math.max(0, totalPhotos - 5);
