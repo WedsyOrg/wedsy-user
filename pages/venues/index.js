@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 
 import { trimTitle, trimDescription } from "@/utils/seo";
@@ -63,6 +64,27 @@ const ZONE_LABEL = {
   south: "South Bangalore",
   west: "West Bangalore",
   central: "Central Bangalore",
+};
+
+// Hero autocomplete vocab — distinct from filter-bar labels so we can tune
+// search-result phrasing independently. Keys map 1:1 to venue.zone /
+// venue.venueType enum values; values are the strings shown in the dropdown
+// AND matched against the user's query.
+const HERO_ZONE_LABELS = {
+  airport: "Near Airport",
+  north: "North Bangalore",
+  south: "South Bangalore",
+  east: "East Bangalore",
+  west: "West Bangalore",
+  central: "Central Bangalore",
+};
+const HERO_TYPE_LABELS = {
+  resort: "Resorts",
+  farmhouse: "Farmhouses",
+  banquet_hall: "Banquet Halls",
+  hotel: "Hotels",
+  heritage: "Heritage",
+  club: "Clubs",
 };
 
 // Top-level category pills in the sticky filter bar. Maps to venue.venueType.
@@ -566,14 +588,27 @@ Object.assign(S, {
   miniCardRating: { fontSize: 12, color: "#7a5a48" },
 
   // ─── Responsive overrides — merged in conditionally via isMobile/isTablet ───
-  heroV3StatsMobile: { flexDirection: "column", gap: 18 },
-  heroV3SearchBarMobile: { maxWidth: "100%", marginLeft: 0, marginRight: 0 },
   filterBarFlexMobile: { flexDirection: "column", alignItems: "stretch", gap: 8, padding: "10px 16px" },
   filterBarRowMobile: { width: "100%", flex: "none" },
   filterBarSearchMobile: { width: "100%" },
   filterDropdownMobile: { top: "auto", bottom: 0, left: 0, right: 0, minWidth: "100%", borderRadius: "16px 16px 0 0", padding: 20, boxShadow: "0 -8px 32px rgba(0,0,0,0.18)" },
   fullWidthGridMobile: { gridTemplateColumns: "1fr", gap: 18 },
   fullWidthGridTablet: { gridTemplateColumns: "repeat(2, 1fr)", gap: 20 },
+
+  // Hero search autocomplete dropdown — anchored to the search-pill wrapper
+  // (which is position: relative). Sits above the page (zIndex 300) so it
+  // never gets clipped by the sticky filter bar appearing on scroll.
+  heroAcDropdown: { position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, zIndex: 300, background: "#ffffff", borderRadius: 16, border: "1px solid #e8d8c4", boxShadow: "0 8px 32px rgba(107,30,46,0.12)", maxHeight: 400, overflowY: "auto", padding: "8px 0" },
+  heroAcGroupHeader: { padding: "8px 16px 4px", fontSize: 10, color: "#b09080", letterSpacing: 1.5, textTransform: "uppercase", fontWeight: 600 },
+  heroAcRow: { display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", cursor: "pointer", fontSize: 14, color: "#2c1810", background: "transparent", border: "none", width: "100%", textAlign: "left", fontFamily: "inherit" },
+  heroAcThumb: { width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 },
+  heroAcThumbPlaceholder: { width: 28, height: 28, borderRadius: "50%", background: "#fdf4e6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: C.gold, flexShrink: 0 },
+  heroAcIcon: { width: 28, height: 28, borderRadius: "50%", background: "#fdf4e6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 },
+  heroAcLabel: { flex: "0 1 auto", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+  heroAcBadge: { fontSize: 10, color: "#7a5a48", background: "#fdf4e6", border: "0.5px solid #f0e4d0", borderRadius: 100, padding: "2px 8px", letterSpacing: 0.3, flexShrink: 0 },
+  heroAcCount: { marginLeft: "auto", fontSize: 12, color: "#b09080", flexShrink: 0 },
+  heroAcEmpty: { padding: "16px", fontSize: 13, color: "#7a5a48" },
+  heroAcEmptyHint: { padding: "0 16px 14px", fontSize: 12, color: C.burgundy, fontWeight: 500 },
 });
 
 // ─── Card components ───
@@ -944,8 +979,7 @@ export default function VenuesPage({
   }, [venues, scrollToListing]);
 
   // ─── Counts (per facet — based on the loaded slice, so badges grow as the
-  // user paginates). verifiedCount is already declared above for the hero
-  // stat counter; reuse it.
+  // user paginates). ───
   const typeCounts = useMemo(() => {
     const m = { "": venues.length };
     VENUE_TYPE_TABS.forEach((t) => {
@@ -1796,17 +1830,6 @@ export default function VenuesPage({
           box-shadow: 0 6px 28px rgba(107, 30, 46, 0.12);
           border-color: ${C.gold} !important;
         }
-        @keyframes heroSlideUp {
-          from { transform: translateY(14px); }
-          to   { transform: translateY(0); }
-        }
-        :global(.hero-ornament) { animation: heroSlideUp 1.2s cubic-bezier(0.22, 1, 0.36, 1); }
-        :global(.hero-eyebrow)  { animation: heroSlideUp 0.9s ease-out; }
-        :global(.hero-title)    { animation: heroSlideUp 1s cubic-bezier(0.22, 1, 0.36, 1); }
-        :global(.hero-sub)      { animation: heroSlideUp 0.9s ease-out; }
-        :global(.hero-search)   { animation: heroSlideUp 0.9s ease-out; }
-        :global(.hero-stats)    { animation: heroSlideUp 0.9s ease-out; }
-        :global(.hero-foot)     { animation: heroSlideUp 0.9s ease-out; }
         /* Hide scrollbars on horizontal scrollers (filter bar, curated rows). */
         :global(.filter-bar-row)::-webkit-scrollbar,
         :global(.curated-scroll)::-webkit-scrollbar { display: none; }
