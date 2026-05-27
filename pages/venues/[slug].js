@@ -141,6 +141,7 @@ const S = {
   // --- v3 redesign: hero, sticky bar, sections, etc. ---
   hero: { position: "relative", width: "100%", minHeight: "65vh", display: "flex", alignItems: "flex-end", background: "#2c1810", overflow: "hidden" },
   heroImg: { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" },
+  heroImgSlide: { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "opacity 1.5s ease-in-out", opacity: 0 },
   heroOverlay: { position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.6) 100%)" },
   heroFade: { position: "absolute", left: 0, right: 0, bottom: 0, height: 80, background: "linear-gradient(180deg, rgba(253,246,236,0) 0%, #fdf6ec 100%)", pointerEvents: "none" },
   heroInner: { position: "relative", width: "100%", maxWidth: 1400, margin: "0 auto", padding: "4rem 2rem 3rem", color: "#fdf6ec", zIndex: 2 },
@@ -374,6 +375,30 @@ const SPACE_TYPE_LABEL = {
   "semi-outdoor": { icon: "⛅", label: "Semi-outdoor" },
 };
 
+// Build the hero carousel photo list: coverPhoto first, then either the V1
+// flat venue.photos array OR (for V2 docs) venue.photos.venue — deduped,
+// capped at 10. Decor/rooms/spaces categories are intentionally excluded —
+// only "venue" photos belong in the atmospheric hero.
+function buildHeroPhotos(v) {
+  if (!v) return [];
+  const raw = v.photos;
+  let base = [];
+  if (Array.isArray(raw)) {
+    base = raw;
+  } else if (raw && typeof raw === "object" && Array.isArray(raw.venue)) {
+    base = raw.venue;
+  }
+  const seen = new Set();
+  const unique = [];
+  for (const url of [v.coverPhoto, ...base]) {
+    if (!url || seen.has(url)) continue;
+    seen.add(url);
+    unique.push(url);
+    if (unique.length >= 10) break;
+  }
+  return unique;
+}
+
 // Stroke-based amenity icons used by the Amenities & Facilities section. Kept
 // inline (not a separate package) so the icon set ships with the page and
 // stays editable alongside the tile mappings below.
@@ -429,6 +454,8 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
   // Pricing calculator state — selected tier index + guest count for catering math
   const [selectedTierIndex, setSelectedTierIndex] = useState(0);
   const [calcGuestCount, setCalcGuestCount] = useState("");
+  // Hero crossfade carousel — current photo index
+  const [heroIndex, setHeroIndex] = useState(0);
 
   // The server's GET /auth/ returns { name, phone, email, event } — no _id.
   // The JWT payload (signed by /auth/otp verify) carries { _id, isAdmin, isVendor },
@@ -615,6 +642,18 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
     setLightboxIndex(0);
   }, [galleryTab]);
 
+  // Hero crossfade carousel — advance every 5s. Skip when there's only one
+  // photo (or none). Recomputes the list inside the effect so this hook stays
+  // above the early `if (!venue)` return.
+  useEffect(() => {
+    const photos = buildHeroPhotos(venue);
+    if (photos.length <= 1) return undefined;
+    const id = setInterval(() => {
+      setHeroIndex((i) => (i + 1) % photos.length);
+    }, 5000);
+    return () => clearInterval(id);
+  }, [venue]);
+
   if (!venue) {
     return (
       <div style={{ textAlign: "center", padding: "4rem 2rem" }}>
@@ -688,8 +727,10 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
   const catText = venue.catering === "in_house_only" ? "In-house only" : venue.catering === "outside_allowed" ? "Outside allowed" : venue.catering === "both" ? "Both" : "Ask venue";
 
   // --- v3 redesign derivations ---
-  // Hero cover photo: prefer explicit coverPhoto, then featurePhoto, then first available photo
-  const heroCover = venue.coverPhoto || venue.featurePhoto || (allPhotos.length > 0 ? allPhotos[0] : null);
+  // Hero carousel photos — cover + venue category, deduped, capped at 10.
+  // Same shape buildHeroPhotos() returns inside the interval effect.
+  const allHeroPhotos = buildHeroPhotos(venue);
+  const activeHeroIndex = allHeroPhotos.length > 0 ? heroIndex % allHeroPhotos.length : 0;
 
   // Catering policy — schema lives under cateringPolicy.type; older code used venue.catering
   const catPolicyType = venue.cateringPolicy?.type || venue.catering || "unknown";
@@ -921,11 +962,21 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
 
         {/* ───────────────────────────── 1. HERO ───────────────────────────── */}
         <section style={S.hero} aria-label={`${venue.name} cover`}>
-          {heroCover ? (
-            <img src={heroCover} alt={`${venue.name} cover photo`} style={S.heroImg} />
-          ) : (
+          {allHeroPhotos.length === 0 && (
             <div style={{ ...S.heroImg, background: "linear-gradient(135deg, #4a1520 0%, #2c1810 100%)" }} />
           )}
+          {allHeroPhotos.length === 1 && (
+            <img src={allHeroPhotos[0]} alt={`${venue.name} cover photo`} style={S.heroImg} />
+          )}
+          {allHeroPhotos.length > 1 && allHeroPhotos.map((url, i) => (
+            <img
+              key={url}
+              src={url}
+              alt=""
+              aria-hidden="true"
+              style={{ ...S.heroImgSlide, opacity: i === activeHeroIndex ? 1 : 0 }}
+            />
+          ))}
           <div style={S.heroOverlay} />
           {isVerified && (
             <div style={S.heroVerified}>
