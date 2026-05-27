@@ -67,6 +67,8 @@ const AMENITY_FILTERS = [
   { key: "generatorBackup", label: "Generator", icon: "🔌", path: ["amenities", "generatorBackup"] },
   { key: "parking", label: "Parking", icon: "🅿️", path: ["amenities", "parking"] },
   { key: "garden", label: "Outdoor lawn", icon: "🌿", path: ["amenities", "garden"] },
+  { key: "kalyanMandap", label: "Kalyani Mandap", icon: "🛕", path: ["amenities", "kalyanMandap"] },
+  { key: "floatingMandap", label: "Floating Mandap", icon: "🪷", path: ["amenities", "floatingMandap"] },
 ];
 
 // Helpers
@@ -442,7 +444,7 @@ Object.assign(S, {
   // SECTION 1 — Couture-style hero. No photography — typography + warm
   // champagne gradient + tiny gold ornament. Cream/ivory continuous with the
   // sections below so the page reads as one editorial spread.
-  heroV3: { position: "relative", width: "100%", minHeight: "42vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "linear-gradient(180deg, #fbf3e2 0%, #fdf6ec 48%, #f7ead0 100%)" },
+  heroV3: { position: "relative", width: "100%", minHeight: "38vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "linear-gradient(180deg, #fbf3e2 0%, #fdf6ec 48%, #f7ead0 100%)" },
   heroV3Bg: { position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "radial-gradient(ellipse 75% 50% at 50% -8%, rgba(184,133,42,0.20), transparent 60%), radial-gradient(circle at 12% 82%, rgba(107,30,46,0.08), transparent 50%), radial-gradient(circle at 88% 76%, rgba(184,133,42,0.14), transparent 55%)" },
   heroV3Glow: { position: "absolute", left: "50%", top: "32%", width: 720, height: 720, transform: "translate(-50%, -50%)", background: "radial-gradient(circle, rgba(255,235,180,0.32) 0%, transparent 65%)", pointerEvents: "none", filter: "blur(40px)" },
   heroV3Content: { position: "relative", zIndex: 2, textAlign: "center", maxWidth: 920, padding: "4rem 2rem 3rem", margin: "0 auto" },
@@ -527,7 +529,7 @@ Object.assign(S, {
   // STICKY FILTER BAR — one horizontal-scroll row with: search + dividers +
   // category pills + filter chips. Reset link sits outside the scroller on
   // the right so it's always visible regardless of scroll position.
-  filterBar: { position: "sticky", top: 0, zIndex: 100, background: "#ffffff", borderBottom: "1px solid #f0e8dc", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" },
+  filterBar: { position: "sticky", top: 0, zIndex: 100, background: "#ffffff", borderBottom: "1px solid #f0e8dc", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" },
   filterBarFlex: { display: "flex", alignItems: "center", maxWidth: 1400, margin: "0 auto", padding: "10px 2rem", gap: 10 },
   filterBarRow: { display: "flex", alignItems: "center", gap: 6, overflowX: "auto", flex: 1, minWidth: 0 },
   filterBarSearch: { flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 8, width: 200, height: 34, padding: "0 14px", borderRadius: 100, border: "1px solid #e8d8c4", background: "#ffffff" },
@@ -542,7 +544,11 @@ Object.assign(S, {
   filterChipOn: { display: "inline-flex", alignItems: "center", gap: 4, height: 34, padding: "0 14px", borderRadius: 100, border: "1px solid " + C.burgundy, background: C.burgundy, color: C.ivory, fontSize: 13, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap", letterSpacing: 0.2, boxShadow: "0 2px 8px rgba(107,30,46,0.2)", transition: "all 150ms ease" },
   filterChipCaret: { fontSize: 10, marginLeft: 0, lineHeight: 1 },
   filterChipX: { display: "inline-flex", alignItems: "center", justifyContent: "center", marginLeft: 0, fontSize: 14, lineHeight: 1, cursor: "pointer", background: "transparent", border: "none", color: "inherit", padding: 0, width: 14, height: 14, borderRadius: "50%" },
-  filterDropdown: { position: "absolute", top: "calc(100% + 8px)", left: 0, background: "#ffffff", borderRadius: 12, boxShadow: "0 12px 36px rgba(107,30,46,0.18)", padding: 14, minWidth: 220, zIndex: 110, border: "0.5px solid #e8d8c4" },
+  // Dropdown is position: fixed (not absolute) so it escapes the filter bar's
+  // overflow-x: auto clipping. The chip's onClick captures its bounding rect
+  // and stores top/left in `dropdownAnchor`; we merge those into the inline
+  // style at render. zIndex 200 sits above the sticky bar (zIndex 100).
+  filterDropdown: { position: "fixed", background: "#ffffff", border: "1px solid #e8d8c4", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", padding: 16, minWidth: 200, zIndex: 200 },
   filterDropdownItem: { display: "flex", alignItems: "center", gap: 10, padding: "8px 6px", cursor: "pointer", fontSize: 13, color: "#3a2820", borderRadius: 6 },
   resetLink: { flexShrink: 0, background: "transparent", border: "none", color: C.burgundy, fontSize: 12, fontWeight: 500, cursor: "pointer", letterSpacing: 0.2, padding: "0 4px", whiteSpace: "nowrap" },
 
@@ -713,7 +719,11 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
   // live-typing feedback and rides along on Load-More fetches.
   const [activeZone, setActiveZone] = useState("all");
   // Sticky filter bar dropdown — only one open at a time, null when closed.
+  // `dropdownAnchor` holds the {top,left} viewport coords captured from the
+  // chip's getBoundingClientRect() at the moment it was clicked; the dropdown
+  // renders position: fixed so it escapes the bar row's overflow clipping.
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [dropdownAnchor, setDropdownAnchor] = useState({ top: 0, left: 0 });
   // Pagination — SSR delivers the first 24, "Load more" appends in 24-chunks.
   // `total` is in state (not just a prop) so zone refetches can update it.
   const [venues, setVenues] = useState(initialVenues);
@@ -830,7 +840,9 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
 
   // ─── Sticky filter bar — click-outside closes the active dropdown. The
   // chip wrappers carry a [data-filter-dropdown] attribute so we can scope
-  // the "inside" check tightly. ───
+  // the "inside" check tightly. Dropdown panels render position: fixed but
+  // remain DOM descendants of the wrapper, so closest() still matches them.
+  // ───
   useEffect(() => {
     if (!openDropdown) return undefined;
     const onMouseDown = (e) => {
@@ -841,6 +853,30 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
     document.addEventListener("mousedown", onMouseDown);
     return () => document.removeEventListener("mousedown", onMouseDown);
   }, [openDropdown]);
+
+  // Close any open dropdown the moment the user scrolls — the dropdown's
+  // fixed coords were captured at open time and would otherwise drift away
+  // from the chip once the sticky bar's chip moves with the scroll.
+  useEffect(() => {
+    if (!openDropdown) return undefined;
+    const close = () => setOpenDropdown(null);
+    window.addEventListener("scroll", close, { passive: true, once: true });
+    return () => window.removeEventListener("scroll", close);
+  }, [openDropdown]);
+
+  // Toggle a filter chip's dropdown. Captures the chip's bounding rect so
+  // the (position: fixed) dropdown panel sits exactly below it regardless
+  // of where the chip is on screen.
+  //
+  // IMPORTANT: rect MUST be captured synchronously here, before any setState
+  // call. React nulls out `event.currentTarget` after the synthetic event
+  // handler returns, so reading it inside a setState updater (which runs
+  // during batch flush) throws and the state update silently fails.
+  const toggleDropdown = useCallback((name, event) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setOpenDropdown((cur) => (cur === name ? null : name));
+    setDropdownAnchor({ top: rect.bottom + 8, left: rect.left });
+  }, []);
 
   const filterActiveFlags = useMemo(() => ({
     zone: !!activeZone && activeZone !== "all",
@@ -1169,7 +1205,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                 <button
                   type="button"
                   style={filterActiveFlags.zone ? S.filterChipOn : S.filterChip}
-                  onClick={() => setOpenDropdown(openDropdown === "zone" ? null : "zone")}
+                  onClick={(e) => toggleDropdown("zone", e)}
                   aria-expanded={openDropdown === "zone"}
                   aria-haspopup="listbox"
                 >
@@ -1188,7 +1224,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                   )}
                 </button>
                 {openDropdown === "zone" && (
-                  <div style={S.filterDropdown} role="listbox">
+                  <div style={{ ...S.filterDropdown, top: dropdownAnchor.top, left: dropdownAnchor.left }} role="listbox">
                     {ZONES.map((z) => (
                       <label key={z.value} style={S.filterDropdownItem}>
                         <input
@@ -1210,7 +1246,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                 <button
                   type="button"
                   style={filterActiveFlags.price ? S.filterChipOn : S.filterChip}
-                  onClick={() => setOpenDropdown(openDropdown === "price" ? null : "price")}
+                  onClick={(e) => toggleDropdown("price", e)}
                   aria-expanded={openDropdown === "price"}
                   aria-haspopup="listbox"
                 >
@@ -1229,7 +1265,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                   )}
                 </button>
                 {openDropdown === "price" && (
-                  <div style={S.filterDropdown} role="listbox">
+                  <div style={{ ...S.filterDropdown, top: dropdownAnchor.top, left: dropdownAnchor.left }} role="listbox">
                     {PRICE_OPTIONS.map((o) => (
                       <label key={o.value} style={S.filterDropdownItem}>
                         <input
@@ -1251,7 +1287,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                 <button
                   type="button"
                   style={filterActiveFlags.capacity ? S.filterChipOn : S.filterChip}
-                  onClick={() => setOpenDropdown(openDropdown === "capacity" ? null : "capacity")}
+                  onClick={(e) => toggleDropdown("capacity", e)}
                   aria-expanded={openDropdown === "capacity"}
                   aria-haspopup="listbox"
                 >
@@ -1270,7 +1306,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                   )}
                 </button>
                 {openDropdown === "capacity" && (
-                  <div style={S.filterDropdown} role="listbox">
+                  <div style={{ ...S.filterDropdown, top: dropdownAnchor.top, left: dropdownAnchor.left }} role="listbox">
                     {CAPACITY_OPTIONS.map((o) => (
                       <label key={o.value} style={S.filterDropdownItem}>
                         <input
@@ -1292,7 +1328,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                 <button
                   type="button"
                   style={filterActiveFlags.amenities ? S.filterChipOn : S.filterChip}
-                  onClick={() => setOpenDropdown(openDropdown === "amenities" ? null : "amenities")}
+                  onClick={(e) => toggleDropdown("amenities", e)}
                   aria-expanded={openDropdown === "amenities"}
                   aria-haspopup="listbox"
                 >
@@ -1311,7 +1347,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                   )}
                 </button>
                 {openDropdown === "amenities" && (
-                  <div style={S.filterDropdown}>
+                  <div style={{ ...S.filterDropdown, top: dropdownAnchor.top, left: dropdownAnchor.left }}>
                     {AMENITY_FILTERS.filter((a) => a.key !== "accommodation").map((a) => (
                       <label key={a.key} style={S.filterDropdownItem}>
                         <input
@@ -1408,16 +1444,27 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
       </main>
 
       <style jsx>{`
+        /* ────────────────────────────────────────────────────────────────
+           RULE: Never use opacity in keyframes or fill-mode "both/forwards"
+                 — causes blank screen on first paint.
+           ────────────────────────────────────────────────────────────────
+           Keyframes here may animate transform ONLY (translateY, scale,
+           rotate). They must never set opacity: 0 in from/to. Animation
+           declarations must omit fill-mode entirely (default "none") so
+           elements show their natural styles before/after the animation
+           runs. If you need a stateful hidden→shown transition, drive it
+           with React state, not CSS animation-fill-mode.
+
+           Past bug: a previous version applied opacity: 0 in @keyframes +
+           animation-fill-mode: both with staggered delays up to 1.1s. The
+           hero's 92vh-tall section then rendered invisible for ~1 second
+           on first paint, which looked exactly like a blank white page.
+           ──────────────────────────────────────────────────────────────── */
         :global(.venue-card):hover {
           transform: translateY(-2px);
           box-shadow: 0 6px 28px rgba(107, 30, 46, 0.12);
           border-color: ${C.gold} !important;
         }
-        /* Hero entrance — slide-only, no opacity fade. Earlier versions used
-           opacity: 0 in the @from frame with animation-fill-mode: both, which
-           left the entire hero invisible for ~1s after page load while the
-           ornament/title/etc. waited for their staggered delays — making the
-           hero look like a blank cream screen on first paint. */
         @keyframes heroSlideUp {
           from { transform: translateY(14px); }
           to   { transform: translateY(0); }
