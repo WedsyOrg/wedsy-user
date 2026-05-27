@@ -126,6 +126,18 @@ const S = {
   gallV2_chev: { position: "absolute", top: "50%", transform: "translateY(-50%)", width: 46, height: 46, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "0.5px solid rgba(255,255,255,0.25)", color: "#fff", fontSize: 22, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, zIndex: 9998 },
   gallV2_chevLeft: { left: 18 },
   gallV2_chevRight: { right: 18 },
+  // Back-to-grid button shown inside the lightbox when stacked on the grid.
+  gallV2_back: { position: "absolute", bottom: 22, left: 22, display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 100, background: "rgba(255,255,255,0.1)", border: "0.5px solid rgba(255,255,255,0.25)", color: "#fff", fontSize: 12, fontWeight: 500, cursor: "pointer", zIndex: 9998 },
+  // Thumbnail grid modal (entry point — opens before the lightbox)
+  tgrid_overlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.9)", zIndex: 1000, display: "flex", flexDirection: "column" },
+  tgrid_topbar: { display: "flex", alignItems: "center", gap: 14, padding: "16px 22px", borderBottom: "0.5px solid rgba(255,255,255,0.08)", flexShrink: 0 },
+  tgrid_topbarLeft: { display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", flex: 1, minWidth: 0 },
+  tgrid_count: { color: "#fff", fontSize: 13, fontWeight: 500, letterSpacing: 0.5, background: "rgba(0,0,0,0.45)", padding: "6px 14px", borderRadius: 100, border: "0.5px solid rgba(255,255,255,0.18)", flexShrink: 0 },
+  tgrid_close: { width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "0.5px solid rgba(255,255,255,0.25)", color: "#fff", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, flexShrink: 0 },
+  tgrid_body: { flex: 1, overflowY: "auto", padding: "22px", scrollBehavior: "smooth" },
+  tgrid_inner: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12, maxWidth: 1400, margin: "0 auto" },
+  tgrid_thumb: { height: 180, borderRadius: 8, overflow: "hidden", cursor: "pointer", background: "#2c1810", border: "2px solid transparent", padding: 0, transition: "transform 0.18s ease, border-color 0.18s ease" },
+  tgrid_img: { width: "100%", height: "100%", objectFit: "cover", display: "block" },
   // --- v3 redesign: hero, sticky bar, sections, etc. ---
   hero: { position: "relative", width: "100%", minHeight: "65vh", display: "flex", alignItems: "flex-end", background: "#2c1810", overflow: "hidden" },
   heroImg: { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" },
@@ -329,9 +341,11 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
   // couple up ourselves from the same /auth/ endpoint _app.js uses.
   const [authUser, setAuthUser] = useState(null);
   const [conversationId, setConversationId] = useState(null);
-  // Gallery v2 state — modal lightbox + category tab filter
-  const [galleryOpen, setGalleryOpen] = useState(false);
-  const [galleryIndex, setGalleryIndex] = useState(0);
+  // Gallery v2 state — thumbnail grid modal → lightbox modal, plus category tab filter.
+  // Thumbnail grid is the entry point; lightbox stacks on top when a thumb is clicked.
+  const [thumbnailGridOpen, setThumbnailGridOpen] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const [galleryTab, setGalleryTab] = useState("all");
   // "What couples say" — track which review cards are expanded (read more)
   const [expandedReviews, setExpandedReviews] = useState({});
@@ -460,47 +474,51 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
     if (setOpenLoginModalv2) setOpenLoginModalv2(true);
   };
 
-  // Gallery v2 modal — keyboard nav + body scroll lock while open.
-  // Computes the active photo list inside the effect so this hook stays above
-  // the early `if (!venue)` return (hooks can't be conditional).
+  // Gallery v2 — body scroll lock when either modal is open + keyboard handler.
+  // Escape: closes the topmost modal only (lightbox first, then grid).
+  // Arrows: only navigate when lightbox is open.
+  // Computes the active photo list inline so this hook stays above the early
+  // `if (!venue)` return (hooks can't be conditional).
   useEffect(() => {
-    if (!galleryOpen) return undefined;
-    const raw = venue?.photos;
-    const v2 =
-      !!raw &&
-      !Array.isArray(raw) &&
-      typeof raw === "object" &&
-      (Array.isArray(raw.venue) ||
-        Array.isArray(raw.decor) ||
-        Array.isArray(raw.rooms) ||
-        Array.isArray(raw.spaces));
-    let list = [];
-    if (v2) {
-      if (galleryTab === "all") {
-        list = ["venue", "decor", "rooms", "spaces"].reduce(
-          (acc, k) => (Array.isArray(raw[k]) ? acc.concat(raw[k]) : acc),
-          []
-        );
-      } else if (Array.isArray(raw[galleryTab])) {
-        list = raw[galleryTab].slice();
+    if (!thumbnailGridOpen && !lightboxOpen) return undefined;
+    let len = 0;
+    if (lightboxOpen) {
+      const raw = venue?.photos;
+      const v2 =
+        !!raw &&
+        !Array.isArray(raw) &&
+        typeof raw === "object" &&
+        (Array.isArray(raw.venue) ||
+          Array.isArray(raw.decor) ||
+          Array.isArray(raw.rooms) ||
+          Array.isArray(raw.spaces));
+      let list = [];
+      if (v2) {
+        if (galleryTab === "all") {
+          list = ["venue", "decor", "rooms", "spaces"].reduce(
+            (acc, k) => (Array.isArray(raw[k]) ? acc.concat(raw[k]) : acc),
+            []
+          );
+        } else if (Array.isArray(raw[galleryTab])) {
+          list = raw[galleryTab].slice();
+        }
+      } else if (Array.isArray(raw)) {
+        list = raw.slice();
       }
-    } else if (Array.isArray(raw)) {
-      list = raw.slice();
-    }
-    // Mirror the allPhotos derivation: the cover photo is part of the "all"
-    // view if it isn't already in any category list.
-    if (galleryTab === "all" && venue?.coverPhoto && !list.includes(venue.coverPhoto)) {
-      list = [venue.coverPhoto, ...list];
-    }
-    const len = list.length;
-    if (len === 0) {
-      setGalleryOpen(false);
-      return undefined;
+      if (galleryTab === "all" && venue?.coverPhoto && !list.includes(venue.coverPhoto)) {
+        list = [venue.coverPhoto, ...list];
+      }
+      len = list.length;
+      if (len === 0) setLightboxOpen(false);
     }
     const onKey = (e) => {
-      if (e.key === "Escape") setGalleryOpen(false);
-      else if (e.key === "ArrowRight") setGalleryIndex((i) => (i + 1) % len);
-      else if (e.key === "ArrowLeft") setGalleryIndex((i) => (i - 1 + len) % len);
+      if (e.key === "Escape") {
+        if (lightboxOpen) setLightboxOpen(false);
+        else if (thumbnailGridOpen) setThumbnailGridOpen(false);
+      } else if (lightboxOpen && len > 0) {
+        if (e.key === "ArrowRight") setLightboxIndex((i) => (i + 1) % len);
+        else if (e.key === "ArrowLeft") setLightboxIndex((i) => (i - 1 + len) % len);
+      }
     };
     window.addEventListener("keydown", onKey);
     const prevOverflow = document.body.style.overflow;
@@ -509,11 +527,12 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
     };
-  }, [galleryOpen, galleryTab, venue]);
+  }, [thumbnailGridOpen, lightboxOpen, galleryTab, venue]);
 
-  // Keep galleryIndex within bounds when the active tab changes.
+  // Reset lightbox index when the active tab changes so we don't land on a
+  // stale out-of-bounds photo from the previous category.
   useEffect(() => {
-    setGalleryIndex(0);
+    setLightboxIndex(0);
   }, [galleryTab]);
 
   if (!venue) {
@@ -566,15 +585,23 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
   const totalPhotos = photos.length;
   const gridSlots = [0, 1, 2, 3, 4];
   const remainingBeyondGrid = Math.max(0, totalPhotos - 5);
-  const openGalleryAt = (i) => {
+  const openThumbnailGrid = () => {
     if (totalPhotos === 0) return;
-    setGalleryIndex(Math.min(Math.max(i, 0), totalPhotos - 1));
-    setGalleryOpen(true);
+    setThumbnailGridOpen(true);
   };
-  const closeGallery = () => setGalleryOpen(false);
-  const gallStep = (dir) => {
+  const openLightboxAt = (i) => {
     if (totalPhotos === 0) return;
-    setGalleryIndex((idx) => (idx + dir + totalPhotos) % totalPhotos);
+    setLightboxIndex(Math.min(Math.max(i, 0), totalPhotos - 1));
+    setLightboxOpen(true);
+  };
+  const closeLightbox = () => setLightboxOpen(false);
+  const closeAll = () => {
+    setLightboxOpen(false);
+    setThumbnailGridOpen(false);
+  };
+  const lightboxStep = (dir) => {
+    if (totalPhotos === 0) return;
+    setLightboxIndex((idx) => (idx + dir + totalPhotos) % totalPhotos);
   };
   const capacityText = venue.capacity?.max > 0 ? `${venue.capacity.min || 0}–${venue.capacity.max}` : null;
   const rooms = venue.accommodation?.rooms > 0 ? `${venue.accommodation.rooms} rooms` : null;
@@ -809,7 +836,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
             <button
               type="button"
               style={S.heroViewAll}
-              onClick={() => openGalleryAt(0)}
+              onClick={openThumbnailGrid}
               aria-label={`View all ${totalPhotos} photos`}
             >
               <span aria-hidden="true">⊞</span> View all {totalPhotos} photos
@@ -852,61 +879,107 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
           </div>
         )}
 
-        {/* Gallery v2 — lightbox modal (kept fully intact, opened from the hero "view all" button) */}
-        {galleryOpen && photos[galleryIndex] && (
+        {/* Gallery v2 — thumbnail grid modal (entry point opened from hero "view all") */}
+        {thumbnailGridOpen && (
           <div
-            style={S.gallV2_overlay}
-            onClick={closeGallery}
+            style={S.tgrid_overlay}
             role="dialog"
             aria-modal="true"
-            aria-label="Photo gallery"
+            aria-label="All photos"
           >
-            <div style={S.gallV2_counter}>{galleryIndex + 1} of {totalPhotos}</div>
+            <div style={S.tgrid_topbar}>
+              <div style={S.tgrid_topbarLeft}>
+                {showTabs && (
+                  <>
+                    <button
+                      type="button"
+                      style={galleryTab === "all" ? S.gallV2_tabOn : S.gallV2_tab}
+                      onClick={() => setGalleryTab("all")}
+                    >
+                      <span>All</span>
+                      <span style={galleryTab === "all" ? S.gallV2_tabBadgeOn : S.gallV2_tabBadge}>{allPhotos.length}</span>
+                    </button>
+                    {photoCats.map((c) => (
+                      <button
+                        key={c.key}
+                        type="button"
+                        style={galleryTab === c.key ? S.gallV2_tabOn : S.gallV2_tab}
+                        onClick={() => setGalleryTab(c.key)}
+                      >
+                        <span>{c.label}</span>
+                        <span style={galleryTab === c.key ? S.gallV2_tabBadgeOn : S.gallV2_tabBadge}>{c.list.length}</span>
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+              <div style={S.tgrid_count}>{totalPhotos} photo{totalPhotos === 1 ? "" : "s"}</div>
+              <button
+                type="button"
+                style={S.tgrid_close}
+                aria-label="Close gallery"
+                onClick={closeAll}
+              >
+                ✕
+              </button>
+            </div>
+            <div style={S.tgrid_body}>
+              <div style={S.tgrid_inner}>
+                {photos.map((p, i) => (
+                  <button
+                    key={`${p}-${i}`}
+                    type="button"
+                    className="tgrid-thumb"
+                    style={S.tgrid_thumb}
+                    onClick={() => openLightboxAt(i)}
+                    aria-label={`Open photo ${i + 1} of ${totalPhotos}`}
+                  >
+                    <img src={p} alt={`${venue.name} photo ${i + 1}`} style={S.tgrid_img} />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <style jsx>{`
+              .tgrid-thumb:hover {
+                transform: scale(1.02);
+                border-color: #6b1e2e !important;
+              }
+            `}</style>
+          </div>
+        )}
+
+        {/* Gallery v2 — lightbox modal (stacks above the thumbnail grid) */}
+        {lightboxOpen && photos[lightboxIndex] && (
+          <div
+            style={{ ...S.gallV2_overlay, zIndex: 1100 }}
+            onClick={closeLightbox}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Photo lightbox"
+          >
+            <div style={S.gallV2_counter}>{lightboxIndex + 1} of {totalPhotos}</div>
             <button
               type="button"
               style={S.gallV2_close}
               aria-label="Close gallery"
-              onClick={(e) => { e.stopPropagation(); closeGallery(); }}
+              onClick={(e) => { e.stopPropagation(); closeAll(); }}
             >
               ✕
             </button>
-            {showTabs && (
-              <div style={{ position: "absolute", top: 22, left: 22, display: "flex", flexWrap: "wrap", gap: 6, maxWidth: "55%", zIndex: 9998 }}>
-                <button
-                  type="button"
-                  style={galleryTab === "all" ? S.gallV2_tabOn : S.gallV2_tab}
-                  onClick={(e) => { e.stopPropagation(); setGalleryTab("all"); }}
-                >
-                  <span>All</span>
-                  <span style={galleryTab === "all" ? S.gallV2_tabBadgeOn : S.gallV2_tabBadge}>{allPhotos.length}</span>
-                </button>
-                {photoCats.map((c) => (
-                  <button
-                    key={c.key}
-                    type="button"
-                    style={galleryTab === c.key ? S.gallV2_tabOn : S.gallV2_tab}
-                    onClick={(e) => { e.stopPropagation(); setGalleryTab(c.key); }}
-                  >
-                    <span>{c.label}</span>
-                    <span style={galleryTab === c.key ? S.gallV2_tabBadgeOn : S.gallV2_tabBadge}>{c.list.length}</span>
-                  </button>
-                ))}
-              </div>
-            )}
             {totalPhotos > 1 && (
               <button
                 type="button"
                 style={{ ...S.gallV2_chev, ...S.gallV2_chevLeft }}
                 aria-label="Previous photo"
-                onClick={(e) => { e.stopPropagation(); gallStep(-1); }}
+                onClick={(e) => { e.stopPropagation(); lightboxStep(-1); }}
               >
                 ‹
               </button>
             )}
             <div style={S.gallV2_stage} onClick={(e) => e.stopPropagation()}>
               <img
-                src={photos[galleryIndex]}
-                alt={`${venue.name} photo ${galleryIndex + 1} of ${totalPhotos}`}
+                src={photos[lightboxIndex]}
+                alt={`${venue.name} photo ${lightboxIndex + 1} of ${totalPhotos}`}
                 style={S.gallV2_stageImg}
               />
             </div>
@@ -915,9 +988,19 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                 type="button"
                 style={{ ...S.gallV2_chev, ...S.gallV2_chevRight }}
                 aria-label="Next photo"
-                onClick={(e) => { e.stopPropagation(); gallStep(1); }}
+                onClick={(e) => { e.stopPropagation(); lightboxStep(1); }}
               >
                 ›
+              </button>
+            )}
+            {thumbnailGridOpen && (
+              <button
+                type="button"
+                style={S.gallV2_back}
+                aria-label="Back to all photos"
+                onClick={(e) => { e.stopPropagation(); closeLightbox(); }}
+              >
+                <span aria-hidden="true">←</span> Back to all photos
               </button>
             )}
           </div>
