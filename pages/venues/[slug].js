@@ -181,27 +181,24 @@ const S = {
   highlightItem: { display: "flex", alignItems: "flex-start", gap: 9, padding: "6px 0", fontSize: 13, color: "#3a2820", lineHeight: 1.45 },
   highlightIcon: { fontSize: 14, lineHeight: 1.2, flexShrink: 0, marginTop: 1 },
   // Option B — magazine editorial about layout
-  aboutMagSection: { paddingBottom: "3rem" },
-  aboutMagSplit: { display: "grid", gridTemplateColumns: "55% 40%", gap: "5%", alignItems: "start" },
-  aboutMagSplitNoPhoto: { display: "block" },
-  aboutMagDropCap: { float: "left", fontSize: 72, color: "#b8852a", fontFamily: "Georgia, 'Times New Roman', serif", lineHeight: 0.8, marginRight: 8, marginTop: 4, fontWeight: 400 },
-  aboutMagBody: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 17, lineHeight: 1.8, color: "#2c1810", margin: 0 },
-  aboutMagPhotoCol: { display: "flex", flexDirection: "column" },
-  aboutMagPhotoGrid3: { display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 6, minHeight: 380 },
-  aboutMagPhotoGrid3Main: { gridRow: "1/3", borderRadius: 8, overflow: "hidden" },
-  aboutMagPhotoGrid3Cell: { borderRadius: 8, overflow: "hidden" },
-  aboutMagPhoto2Wrap: { display: "flex", flexDirection: "column", gap: 6 },
-  aboutMagPhoto2Top: { width: "100%", height: 200, borderRadius: 8, overflow: "hidden" },
-  aboutMagPhoto2BotWrap: { display: "flex", justifyContent: "flex-end" },
-  aboutMagPhoto2Bot: { width: "60%", height: 140, borderRadius: 8, overflow: "hidden" },
-  aboutMagPhoto1: { width: "100%", height: 360, borderRadius: 8, overflow: "hidden" },
-  aboutMagPhotoImg: { width: "100%", height: "100%", objectFit: "cover", display: "block" },
-  aboutMagCaption: { fontSize: 11, color: "#b09080", fontStyle: "italic", marginTop: 8, textAlign: "center" },
-  aboutMagHighlightsCard: { background: "#fdf4e6", borderLeft: "3px solid #b8852a", padding: 20, borderRadius: 10, marginTop: 24 },
-  aboutMagHighlightsTitle: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 16, color: "#2c1810", marginBottom: 12, fontWeight: 400 },
-  aboutMagHighlightItem: { display: "flex", alignItems: "flex-start", gap: 9, padding: "6px 0", fontSize: 13, color: "#5a3a2a", lineHeight: 1.5 },
-  aboutMagVibesRow: { display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14 },
-  aboutMagVibeChip: { fontSize: 11, padding: "4px 11px", borderRadius: 100, border: "0.5px solid #b8852a", color: "#b8852a", background: "#fffaf4" },
+  // About — description block (Part 1: full-width, no card)
+  aboutDescWrap: { padding: "0 2rem 2rem 2rem" },
+  aboutDescEyebrow: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 11, letterSpacing: 3, color: "#b8852a", marginBottom: 8, textTransform: "uppercase" },
+  aboutDescBody: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 18, lineHeight: 1.85, color: "#2c1810", maxWidth: 720, margin: "0 0 24px 0" },
+  aboutDescHighlightsTitle: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 16, color: "#2c1810", marginBottom: 12, fontWeight: 400 },
+  aboutDescHighlight: { display: "inline-flex", alignItems: "flex-start", gap: 8, fontSize: 14, color: "#5a3a2a", marginBottom: 6, lineHeight: 1.5 },
+  aboutDescVibeRow: { display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14 },
+  aboutDescVibeChip: { fontSize: 11, padding: "4px 11px", borderRadius: 100, border: "0.5px solid #b8852a", color: "#b8852a", background: "#fffaf4" },
+  // About — photo grid (Part 2: full-width, alternating-row editorial layout)
+  photoGridWrap: { width: "100%", padding: "0 2rem 3rem 2rem" },
+  photoGridRowSingle: { width: "100%", height: 420, marginBottom: 8 },
+  photoGridRow65_35: { display: "grid", gridTemplateColumns: "65fr 35fr", gap: 8, height: 420, marginBottom: 8 },
+  photoGridRow35_65: { display: "grid", gridTemplateColumns: "35fr 65fr", gap: 8, height: 420, marginBottom: 8 },
+  photoGridRow3: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, height: 280, marginBottom: 8 },
+  photoGridCell: { borderRadius: 8, overflow: "hidden", cursor: "pointer", background: "#f0e2c8", border: "none", padding: 0, display: "block", width: "100%", height: "100%" },
+  photoGridImg: { width: "100%", height: "100%", objectFit: "cover", display: "block" },
+  photoGridViewAllRow: { display: "flex", justifyContent: "flex-end", marginTop: 4 },
+  photoGridViewAllBtn: { background: "transparent", border: "none", padding: 0, fontSize: 12, color: "#b8852a", cursor: "pointer", fontWeight: 500, letterSpacing: 0.3 },
   // event spaces horizontal scroller
   spacesScroller: { display: "flex", gap: 14, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "thin", marginLeft: -4, marginRight: -4, paddingLeft: 4, paddingRight: 4 },
   spaceCard: { flex: "0 0 300px", background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.1rem 1.15rem", boxShadow: "0 2px 16px rgba(107,30,46,0.06)", display: "flex", flexDirection: "column", gap: 10 },
@@ -1071,80 +1068,123 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
         <div style={S.bodyV3}>
           {/* MAIN COLUMN */}
           <div style={S.mainV3}>
-            {/* ───── 4. ABOUT + HIGHLIGHTS ───── */}
-            {(venue.description || highlightsTrimmed.length > 0) && (
-              <section style={S.aboutMagSection}>
-                <div style={S.sTitleWrap}>
-                  <div style={S.sTitle}>About {venue.name}</div>
-                  <div style={S.sTitleRule} />
-                </div>
-                <div style={allPhotos.length > 0 ? S.aboutMagSplit : S.aboutMagSplitNoPhoto}>
-                  <div>
-                    {venue.description ? (
-                      <p style={S.aboutMagBody}>
-                        <span style={S.aboutMagDropCap}>{descFirst}</span>
-                        {descRest}
-                      </p>
-                    ) : (
-                      <p style={S.aboutMagBody}>A premium wedding venue in {venue.city || "Bangalore"} — chat directly with the team to learn more.</p>
-                    )}
-                  </div>
-                  {allPhotos.length > 0 && (
-                    <div style={S.aboutMagPhotoCol}>
-                      {allPhotos.length >= 3 && (
-                        <div style={S.aboutMagPhotoGrid3}>
-                          <div style={S.aboutMagPhotoGrid3Main}>
-                            <img src={allPhotos[0]} alt={`${venue.name} photo 1`} style={S.aboutMagPhotoImg} />
-                          </div>
-                          <div style={S.aboutMagPhotoGrid3Cell}>
-                            <img src={allPhotos[1]} alt={`${venue.name} photo 2`} style={S.aboutMagPhotoImg} />
-                          </div>
-                          <div style={S.aboutMagPhotoGrid3Cell}>
-                            <img src={allPhotos[2]} alt={`${venue.name} photo 3`} style={S.aboutMagPhotoImg} />
-                          </div>
-                        </div>
-                      )}
-                      {allPhotos.length === 2 && (
-                        <div style={S.aboutMagPhoto2Wrap}>
-                          <div style={S.aboutMagPhoto2Top}>
-                            <img src={allPhotos[0]} alt={`${venue.name} photo 1`} style={S.aboutMagPhotoImg} />
-                          </div>
-                          <div style={S.aboutMagPhoto2BotWrap}>
-                            <div style={S.aboutMagPhoto2Bot}>
-                              <img src={allPhotos[1]} alt={`${venue.name} photo 2`} style={S.aboutMagPhotoImg} />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      {allPhotos.length === 1 && (
-                        <div style={S.aboutMagPhoto1}>
-                          <img src={allPhotos[0]} alt={`${venue.name} photo 1`} style={S.aboutMagPhotoImg} />
-                        </div>
-                      )}
-                      <div style={S.aboutMagCaption}>At {venue.name}</div>
-                    </div>
-                  )}
-                </div>
+            {/* ───── 4. ABOUT — Part 1: description block (no card, full-width) ───── */}
+            {(venue.description ||
+              highlightsTrimmed.length > 0 ||
+              (Array.isArray(venue.seoKeywords) && venue.seoKeywords.length > 0)) && (
+              <section style={S.aboutDescWrap}>
+                <div style={S.aboutDescEyebrow}>{venue.name}</div>
+                <p style={S.aboutDescBody}>
+                  {venue.description
+                    ? venue.description
+                    : `A premium wedding venue in ${venue.city || "Bangalore"} — chat directly with the team to learn more.`}
+                </p>
                 {highlightsTrimmed.length > 0 && (
-                  <aside style={S.aboutMagHighlightsCard}>
-                    <div style={S.aboutMagHighlightsTitle}>Why couples love {venue.name}</div>
+                  <>
+                    <div style={S.aboutDescHighlightsTitle}>Why couples love this venue</div>
                     <div>
                       {highlightsTrimmed.map((h, i) => (
-                        <div key={i} style={S.aboutMagHighlightItem}>
-                          <span style={S.highlightIcon} aria-hidden="true">{h.icon}</span>
+                        <div key={i} style={S.aboutDescHighlight}>
+                          <span aria-hidden="true">{h.icon}</span>
                           <span>{h.text}</span>
                         </div>
                       ))}
                     </div>
-                    {Array.isArray(venue.vibes) && venue.vibes.length > 0 && (
-                      <div style={S.aboutMagVibesRow}>
-                        {venue.vibes.map((v, i) => (
-                          <span key={i} style={S.aboutMagVibeChip}>{v}</span>
-                        ))}
-                      </div>
-                    )}
-                  </aside>
+                  </>
                 )}
+                {Array.isArray(venue.seoKeywords) && venue.seoKeywords.length > 0 && (
+                  <div style={S.aboutDescVibeRow}>
+                    {venue.seoKeywords.slice(0, 8).map((v, i) => (
+                      <span key={i} style={S.aboutDescVibeChip}>{v}</span>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* ───── 4b. ABOUT — Part 2: alternating photo grid (max 7 photos) ───── */}
+            {allPhotos.length > 0 && (
+              <section style={S.photoGridWrap}>
+                {/* Row 1 — 1 or 2 photos */}
+                {allPhotos.length === 1 ? (
+                  <div style={S.photoGridRowSingle}>
+                    <button
+                      type="button"
+                      className="venue-photo-cell"
+                      style={S.photoGridCell}
+                      onClick={openThumbnailGrid}
+                      aria-label="View all photos"
+                    >
+                      <img src={allPhotos[0]} alt={`${venue.name} 1`} style={S.photoGridImg} />
+                    </button>
+                  </div>
+                ) : (
+                  <div style={S.photoGridRow65_35}>
+                    {[0, 1].map((i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        className="venue-photo-cell"
+                        style={S.photoGridCell}
+                        onClick={openThumbnailGrid}
+                        aria-label={`View photo ${i + 1}`}
+                      >
+                        <img src={allPhotos[i]} alt={`${venue.name} ${i + 1}`} style={S.photoGridImg} />
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Row 2 — up to 3 equal photos */}
+                {allPhotos.length >= 3 && (
+                  <div style={S.photoGridRow3}>
+                    {allPhotos.slice(2, 5).map((url, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        className="venue-photo-cell"
+                        style={S.photoGridCell}
+                        onClick={openThumbnailGrid}
+                        aria-label={`View photo ${i + 3}`}
+                      >
+                        <img src={url} alt={`${venue.name} ${i + 3}`} style={S.photoGridImg} />
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Row 3 — 35/65 reversed, up to 2 photos */}
+                {allPhotos.length >= 6 && (
+                  <div style={S.photoGridRow35_65}>
+                    {allPhotos.slice(5, 7).map((url, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        className="venue-photo-cell"
+                        style={S.photoGridCell}
+                        onClick={openThumbnailGrid}
+                        aria-label={`View photo ${i + 6}`}
+                      >
+                        <img src={url} alt={`${venue.name} ${i + 6}`} style={S.photoGridImg} />
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div style={S.photoGridViewAllRow}>
+                  <button type="button" style={S.photoGridViewAllBtn} onClick={openThumbnailGrid}>
+                    View all {allPhotos.length} photos →
+                  </button>
+                </div>
+
+                <style jsx>{`
+                  :global(.venue-photo-cell) img {
+                    transition: transform 300ms ease;
+                  }
+                  :global(.venue-photo-cell):hover img {
+                    transform: scale(1.01);
+                  }
+                `}</style>
               </section>
             )}
 
