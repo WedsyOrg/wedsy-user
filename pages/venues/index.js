@@ -1,6 +1,5 @@
 import Head from "next/head";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 
 import { trimTitle, trimDescription } from "@/utils/seo";
@@ -64,27 +63,6 @@ const ZONE_LABEL = {
   south: "South Bangalore",
   west: "West Bangalore",
   central: "Central Bangalore",
-};
-
-// Hero autocomplete vocab — distinct from filter-bar labels so we can tune
-// search-result phrasing independently. Keys map 1:1 to venue.zone /
-// venue.venueType enum values; values are the strings shown in the dropdown
-// AND matched against the user's query.
-const HERO_ZONE_LABELS = {
-  airport: "Near Airport",
-  north: "North Bangalore",
-  south: "South Bangalore",
-  east: "East Bangalore",
-  west: "West Bangalore",
-  central: "Central Bangalore",
-};
-const HERO_TYPE_LABELS = {
-  resort: "Resorts",
-  farmhouse: "Farmhouses",
-  banquet_hall: "Banquet Halls",
-  hotel: "Hotels",
-  heritage: "Heritage",
-  club: "Clubs",
 };
 
 // Top-level category pills in the sticky filter bar. Maps to venue.venueType.
@@ -594,21 +572,6 @@ Object.assign(S, {
   filterDropdownMobile: { top: "auto", bottom: 0, left: 0, right: 0, minWidth: "100%", borderRadius: "16px 16px 0 0", padding: 20, boxShadow: "0 -8px 32px rgba(0,0,0,0.18)" },
   fullWidthGridMobile: { gridTemplateColumns: "1fr", gap: 18 },
   fullWidthGridTablet: { gridTemplateColumns: "repeat(2, 1fr)", gap: 20 },
-
-  // Hero search autocomplete dropdown — anchored to the search-pill wrapper
-  // (which is position: relative). Sits above the page (zIndex 300) so it
-  // never gets clipped by the sticky filter bar appearing on scroll.
-  heroAcDropdown: { position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, zIndex: 300, background: "#ffffff", borderRadius: 16, border: "1px solid #e8d8c4", boxShadow: "0 8px 32px rgba(107,30,46,0.12)", maxHeight: 400, overflowY: "auto", padding: "8px 0" },
-  heroAcGroupHeader: { padding: "8px 16px 4px", fontSize: 10, color: "#b09080", letterSpacing: 1.5, textTransform: "uppercase", fontWeight: 600 },
-  heroAcRow: { display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", cursor: "pointer", fontSize: 14, color: "#2c1810", background: "transparent", border: "none", width: "100%", textAlign: "left", fontFamily: "inherit" },
-  heroAcThumb: { width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 },
-  heroAcThumbPlaceholder: { width: 28, height: 28, borderRadius: "50%", background: "#fdf4e6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: C.gold, flexShrink: 0 },
-  heroAcIcon: { width: 28, height: 28, borderRadius: "50%", background: "#fdf4e6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 },
-  heroAcLabel: { flex: "0 1 auto", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
-  heroAcBadge: { fontSize: 10, color: "#7a5a48", background: "#fdf4e6", border: "0.5px solid #f0e4d0", borderRadius: 100, padding: "2px 8px", letterSpacing: 0.3, flexShrink: 0 },
-  heroAcCount: { marginLeft: "auto", fontSize: 12, color: "#b09080", flexShrink: 0 },
-  heroAcEmpty: { padding: "16px", fontSize: 13, color: "#7a5a48" },
-  heroAcEmptyHint: { padding: "0 16px 14px", fontSize: 12, color: C.burgundy, fontWeight: 500 },
 });
 
 // ─── Card components ───
@@ -777,12 +740,6 @@ export default function VenuesPage({
   const [loadMoreBusy, setLoadMoreBusy] = useState(false);
   const hasMore = venues.length < total;
 
-  // ─── Hero search autocomplete ───
-  const [searchFocused, setSearchFocused] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const searchRef = useRef(null);
-  const router = useRouter();
-
   const buildFetchUrl = useCallback((skip) => {
     const params = new URLSearchParams({
       status: "published",
@@ -852,14 +809,6 @@ export default function VenuesPage({
     setOpenDropdown(null);
   };
 
-  // ─── Hero collage photos — first 4 venues from the SSR prop that have a
-  // coverPhoto. Pinned to initialVenues so zone-refetch doesn't reshuffle
-  // the hero imagery underneath the user.
-  const heroPhotos = useMemo(
-    () => initialVenues.filter((v) => v.coverPhoto).slice(0, 4),
-    [initialVenues]
-  );
-
   // ─── Scroll target for "All Venues" section (vibes + zones jump here) ───
   const allVenuesRef = useRef(null);
   const scrollToListing = useCallback(() => {
@@ -869,97 +818,6 @@ export default function VenuesPage({
       el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, []);
-
-  // ─── Hero autocomplete groups — pure client-side derivation off the
-  // currently-loaded `venues` array. No API calls; results refine themselves
-  // as the user paginates the listing below. Each group is capped per spec.
-  const heroAcGroups = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (q.length < 2) return { venues: [], areas: [], zones: [], types: [] };
-
-    const venueHits = venues
-      .filter((v) => v.name?.toLowerCase().includes(q))
-      .slice(0, 4);
-
-    const localities = [...new Set(venues.map((v) => v.locality).filter(Boolean))];
-    const areaHits = localities
-      .filter((loc) => loc.toLowerCase().includes(q))
-      .slice(0, 4)
-      .map((loc) => ({
-        locality: loc,
-        count: venues.filter((v) => v.locality === loc).length,
-      }));
-
-    const zoneHits = Object.entries(HERO_ZONE_LABELS)
-      .filter(([, label]) => label.toLowerCase().includes(q))
-      .slice(0, 3)
-      .map(([value, label]) => ({
-        value,
-        label,
-        count: venues.filter((v) => v.zone === value).length,
-      }));
-
-    const typeHits = Object.entries(HERO_TYPE_LABELS)
-      .filter(([, label]) => label.toLowerCase().includes(q))
-      .slice(0, 3)
-      .map(([value, label]) => ({
-        value,
-        label,
-        count: venues.filter((v) => v.venueType === value).length,
-      }));
-
-    return { venues: venueHits, areas: areaHits, zones: zoneHits, types: typeHits };
-  }, [searchQuery, venues]);
-
-  const heroAcOpen =
-    searchFocused && searchQuery.trim().length >= 2;
-  const heroAcHasResults =
-    heroAcGroups.venues.length > 0 ||
-    heroAcGroups.areas.length > 0 ||
-    heroAcGroups.zones.length > 0 ||
-    heroAcGroups.types.length > 0;
-
-  const closeHeroAc = useCallback(() => setSearchFocused(false), []);
-
-  // Click-outside closes the autocomplete. Uses the wrapper ref so clicks on
-  // the input itself or on any dropdown row stay "inside".
-  useEffect(() => {
-    if (!heroAcOpen) return undefined;
-    const onMouseDown = (e) => {
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
-        closeHeroAc();
-      }
-    };
-    document.addEventListener("mousedown", onMouseDown);
-    return () => document.removeEventListener("mousedown", onMouseDown);
-  }, [heroAcOpen, closeHeroAc]);
-
-  // Hero autocomplete result-click handlers — each commits a filter or
-  // navigates, then closes the dropdown and (where applicable) jumps to the
-  // listing so the user sees the change immediately.
-  const onHeroAcPickVenue = useCallback((venue) => {
-    closeHeroAc();
-    router.push(`/venues/${venue.slug}`);
-  }, [closeHeroAc, router]);
-
-  const onHeroAcPickArea = useCallback((locality) => {
-    setNameSearch(locality);
-    setSearchQuery(locality);
-    closeHeroAc();
-    setTimeout(scrollToListing, 60);
-  }, [closeHeroAc, scrollToListing]);
-
-  const onHeroAcPickZone = useCallback((zoneValue) => {
-    setSelectedZones([zoneValue]);
-    closeHeroAc();
-    setTimeout(scrollToListing, 60);
-  }, [closeHeroAc, scrollToListing]);
-
-  const onHeroAcPickType = useCallback((typeValue) => {
-    setVenueType(typeValue);
-    closeHeroAc();
-    setTimeout(scrollToListing, 60);
-  }, [closeHeroAc, scrollToListing]);
 
   // ─── Sticky filter bar — click-outside closes the active dropdown. The
   // chip wrappers carry a [data-filter-dropdown] attribute so we can scope
@@ -1142,52 +1000,62 @@ export default function VenuesPage({
       </Head>
 
       <main style={S.page}>
-        {/* ────────── 1 — HERO (two-column: copy + photo collage) ────────── */}
+        {/* ────────── 1 — HERO (Option K: Ivory + Crown Divider) ────────── */}
         <section
           style={{
             display: "flex",
             flexDirection: isMobile ? "column" : "row",
-            alignItems: "stretch",
             minHeight: "52vh",
-            background: "#fdf6ec",
             overflow: "hidden",
-            position: "relative",
+            background: "#ffffff",
           }}
         >
-          {/* LEFT — copy + search */}
+          {/* LEFT — divider + headline + statement + seal + search */}
           <div
             style={{
-              width: isMobile ? "100%" : "55%",
+              flex: 1,
+              padding: isMobile ? "24px 20px" : "32px 36px",
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
-              padding: isMobile ? "2rem 1.5rem 1rem" : "3.5rem 2rem 3.5rem 3rem",
             }}
           >
-            <div
-              style={{
-                display: "inline-flex",
-                width: "fit-content",
-                border: "1px solid #b8852a",
-                color: "#b8852a",
-                borderRadius: 100,
-                padding: "5px 14px",
-                fontSize: 10,
-                letterSpacing: 2.5,
-                textTransform: "uppercase",
-                marginBottom: 24,
-                fontWeight: 500,
-              }}
-            >
-              Bangalore's finest wedding venues
+            {/* Gold crown divider */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+              <div
+                style={{
+                  flex: 1,
+                  height: 0.5,
+                  background: "linear-gradient(to right, transparent, #b8852a)",
+                }}
+                aria-hidden="true"
+              />
+              <div
+                style={{
+                  fontSize: 9,
+                  color: "#b8852a",
+                  letterSpacing: 4,
+                  textTransform: "uppercase",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                WEDSY · BANGALORE
+              </div>
+              <div
+                style={{
+                  flex: 1,
+                  height: 0.5,
+                  background: "linear-gradient(to left, transparent, #b8852a)",
+                }}
+                aria-hidden="true"
+              />
             </div>
 
-            <h1 style={{ fontFamily: "Georgia, 'Times New Roman', serif", margin: 0 }}>
+            <h1 style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400, margin: 0 }}>
               <span
                 style={{
                   color: "#1a0a0a",
-                  fontSize: "clamp(1.9rem, 3.2vw, 3rem)",
-                  fontWeight: 400,
+                  fontSize: "clamp(1.8rem, 3vw, 2.8rem)",
                   display: "block",
                   lineHeight: 1.1,
                 }}
@@ -1198,10 +1066,9 @@ export default function VenuesPage({
                 style={{
                   color: "#b8852a",
                   fontStyle: "italic",
-                  fontWeight: 400,
-                  fontSize: "clamp(2.6rem, 4.5vw, 4.2rem)",
+                  fontSize: "clamp(2.4rem, 4vw, 3.8rem)",
                   display: "block",
-                  lineHeight: 1,
+                  lineHeight: 0.95,
                   marginTop: -4,
                 }}
               >
@@ -1210,8 +1077,7 @@ export default function VenuesPage({
               <span
                 style={{
                   color: "#1a0a0a",
-                  fontSize: "clamp(1.9rem, 3.2vw, 3rem)",
-                  fontWeight: 400,
+                  fontSize: "clamp(1.8rem, 3vw, 2.8rem)",
                   display: "block",
                   lineHeight: 1.1,
                   marginTop: -4,
@@ -1223,395 +1089,134 @@ export default function VenuesPage({
 
             <p
               style={{
-                marginTop: 18,
+                marginTop: 16,
+                fontSize: 13,
                 color: "#5a3a2a",
-                fontSize: 14,
                 lineHeight: 1.7,
-                maxWidth: 400,
+                maxWidth: 380,
+                fontStyle: "italic",
               }}
             >
-              {total} handpicked venues across Bangalore — every photo is real, every listing is verified.
+              Not every venue in Bangalore is on Wedsy. Just the ones worth your time.
             </p>
 
-            <div
-              ref={searchRef}
+            {/* Search (sharp-edged, no border-radius) */}
+            <form
+              onSubmit={(e) => { e.preventDefault(); scrollToListing(); }}
               style={{
-                position: "relative",
-                width: "100%",
-                maxWidth: 440,
-                marginTop: 24,
-              }}
-            >
-              <form
-                onSubmit={(e) => { e.preventDefault(); closeHeroAc(); scrollToListing(); }}
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  background: "#ffffff",
-                  border: "1px solid #e8d8c4",
-                  borderRadius: 100,
-                  padding: "6px 6px 6px 18px",
-                  boxShadow: "0 4px 20px rgba(107,30,46,0.08)",
-                }}
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#b8852a"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="M21 21l-4.35-4.35" />
-                </svg>
-                <input
-                  style={{
-                    flex: 1,
-                    marginLeft: 10,
-                    border: "none",
-                    outline: "none",
-                    fontSize: 14,
-                    background: "transparent",
-                    color: "#2c1810",
-                  }}
-                  placeholder="Search by name, area, or vibe…"
-                  value={nameSearch}
-                  onChange={(e) => { setNameSearch(e.target.value); setSearchQuery(e.target.value); }}
-                  onFocus={() => setSearchFocused(true)}
-                  onKeyDown={(e) => { if (e.key === "Escape") closeHeroAc(); }}
-                  aria-label="Search venues"
-                  role="combobox"
-                  aria-autocomplete="list"
-                  aria-expanded={heroAcOpen}
-                  aria-controls="hero-search-suggestions"
-                />
-                <button
-                  type="submit"
-                  style={{
-                    background: "#6b1e2e",
-                    color: "#fdf6ec",
-                    border: "none",
-                    borderRadius: 100,
-                    padding: "10px 22px",
-                    fontSize: 13,
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    flexShrink: 0,
-                  }}
-                >
-                  Search →
-                </button>
-              </form>
-
-              {heroAcOpen && (
-                <div id="hero-search-suggestions" style={S.heroAcDropdown} role="listbox" aria-label="Search suggestions">
-                  {heroAcHasResults ? (
-                    <>
-                      {heroAcGroups.venues.length > 0 && (
-                        <div>
-                          <div style={S.heroAcGroupHeader}>Venues</div>
-                          {heroAcGroups.venues.map((v) => (
-                            <button
-                              key={`v-${v._id || v.slug}`}
-                              type="button"
-                              style={S.heroAcRow}
-                              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(107,30,46,0.04)"; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-                              onClick={() => onHeroAcPickVenue(v)}
-                            >
-                              {v.coverPhoto ? (
-                                <img src={v.coverPhoto} alt="" style={S.heroAcThumb} />
-                              ) : (
-                                <div style={S.heroAcThumbPlaceholder} aria-hidden="true">🏡</div>
-                              )}
-                              <span style={S.heroAcLabel}>{v.name}</span>
-                              {v.venueType && HERO_TYPE_LABELS[v.venueType] && (
-                                <span style={S.heroAcBadge}>{HERO_TYPE_LABELS[v.venueType]}</span>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      {heroAcGroups.areas.length > 0 && (
-                        <div>
-                          <div style={S.heroAcGroupHeader}>Areas</div>
-                          {heroAcGroups.areas.map((a) => (
-                            <button
-                              key={`a-${a.locality}`}
-                              type="button"
-                              style={S.heroAcRow}
-                              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(107,30,46,0.04)"; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-                              onClick={() => onHeroAcPickArea(a.locality)}
-                            >
-                              <div style={S.heroAcIcon} aria-hidden="true">📍</div>
-                              <span style={S.heroAcLabel}>{a.locality}</span>
-                              <span style={S.heroAcCount}>{a.count} {a.count === 1 ? "venue" : "venues"}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      {heroAcGroups.zones.length > 0 && (
-                        <div>
-                          <div style={S.heroAcGroupHeader}>Zones</div>
-                          {heroAcGroups.zones.map((z) => (
-                            <button
-                              key={`z-${z.value}`}
-                              type="button"
-                              style={S.heroAcRow}
-                              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(107,30,46,0.04)"; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-                              onClick={() => onHeroAcPickZone(z.value)}
-                            >
-                              <div style={S.heroAcIcon} aria-hidden="true">🗺</div>
-                              <span style={S.heroAcLabel}>{z.label}</span>
-                              <span style={S.heroAcCount}>{z.count} {z.count === 1 ? "venue" : "venues"}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      {heroAcGroups.types.length > 0 && (
-                        <div>
-                          <div style={S.heroAcGroupHeader}>Types</div>
-                          {heroAcGroups.types.map((t) => (
-                            <button
-                              key={`t-${t.value}`}
-                              type="button"
-                              style={S.heroAcRow}
-                              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(107,30,46,0.04)"; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-                              onClick={() => onHeroAcPickType(t.value)}
-                            >
-                              <div style={S.heroAcIcon} aria-hidden="true">🏛</div>
-                              <span style={S.heroAcLabel}>{t.label}</span>
-                              <span style={S.heroAcCount}>{t.count} {t.count === 1 ? "venue" : "venues"}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <div style={S.heroAcEmpty}>No results for &ldquo;{searchQuery}&rdquo;</div>
-                      <div style={S.heroAcEmptyHint}>Press Enter to search all venues →</div>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div
-              style={{
-                marginTop: 20,
+                marginTop: 18,
+                maxWidth: 380,
                 display: "flex",
-                flexWrap: "wrap",
-                gap: 8,
+                alignItems: "center",
+                background: "#ffffff",
+                border: "1px solid #1a0a0a",
+                padding: "8px 8px 8px 16px",
               }}
             >
-              {[
-                {
-                  icon: (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#b8852a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  ),
-                  text: "Free for couples. Always.",
-                },
-                {
-                  icon: (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#b8852a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                      <circle cx="12" cy="13" r="4" />
-                    </svg>
-                  ),
-                  text: "Real photos. No stock.",
-                },
-                {
-                  icon: (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#b8852a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    </svg>
-                  ),
-                  text: "Chat directly with venues.",
-                },
-                {
-                  icon: (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#b8852a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                    </svg>
-                  ),
-                  text: "Personally verified.",
-                },
-              ].map((b, i) => (
-                <span
-                  key={i}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    background: "rgba(107,30,46,0.05)",
-                    border: "1px solid rgba(107,30,46,0.12)",
-                    borderRadius: 100,
-                    padding: "7px 14px",
-                    fontSize: 12,
-                    color: "#3f1020",
-                  }}
-                >
-                  {b.icon}
-                  {b.text}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* RIGHT — photo collage (desktop) / single strip (mobile) */}
-          {isMobile ? (
-            heroPhotos[0]?.coverPhoto && (
-              <div style={{ width: "100%", height: 180, padding: "0 1.5rem 1rem", boxSizing: "border-box" }}>
-                <img
-                  src={heroPhotos[0].coverPhoto}
-                  alt=""
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    borderRadius: 12,
-                    display: "block",
-                  }}
-                />
-              </div>
-            )
-          ) : (
-            <div style={{ width: "45%", position: "relative", padding: "2rem 3rem 2rem 1rem", boxSizing: "border-box" }}>
-              <div
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#b8852a"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 aria-hidden="true"
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path d="M21 21l-4.35-4.35" />
+              </svg>
+              <input
+                className="hero-k-input"
+                value={nameSearch}
+                onChange={(e) => setNameSearch(e.target.value)}
+                placeholder="Search by name, area, or vibe…"
+                aria-label="Search venues"
                 style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: "radial-gradient(circle at 65% 35%, rgba(184,133,42,0.07) 0%, transparent 55%)",
-                  pointerEvents: "none",
+                  flex: 1,
+                  marginLeft: 10,
+                  border: "none",
+                  outline: "none",
+                  fontSize: 12,
+                  background: "transparent",
+                  color: "#1a0a0a",
                 }}
               />
-              <div
+              <button
+                type="submit"
                 style={{
-                  position: "relative",
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 8,
-                  justifyContent: "center",
+                  background: "#1a0a0a",
+                  color: "#f8f4ef",
+                  border: "none",
+                  padding: "9px 18px",
+                  fontSize: 11,
+                  cursor: "pointer",
+                  letterSpacing: 0.5,
+                  fontWeight: 500,
                 }}
               >
-                <div style={{ position: "relative" }}>
-                  {heroPhotos[0]?.coverPhoto && (
-                    <img
-                      src={heroPhotos[0].coverPhoto}
-                      alt=""
-                      style={{
-                        width: "100%",
-                        height: 240,
-                        objectFit: "cover",
-                        borderRadius: 16,
-                        display: "block",
-                      }}
-                    />
-                  )}
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 16,
-                      left: 16,
-                      background: "#ffffff",
-                      borderRadius: 100,
-                      padding: "7px 14px",
-                      fontSize: 12,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
-                      zIndex: 2,
-                    }}
-                  >
-                    <span style={{ color: "#b8852a", fontWeight: 600 }}>★</span>
-                    <span style={{ color: "#2c1810", fontWeight: 500 }}>4.8 avg rating</span>
-                  </div>
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 16,
-                      right: 16,
-                      background: "#6b1e2e",
-                      color: "#fdf6ec",
-                      borderRadius: 100,
-                      padding: "7px 14px",
-                      fontSize: 12,
-                      fontWeight: 500,
-                      zIndex: 2,
-                    }}
-                  >
-                    {total} venues
-                  </div>
-                </div>
+                Search →
+              </button>
+            </form>
+          </div>
 
-                <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                  {heroPhotos[1]?.coverPhoto && (
-                    <img
-                      src={heroPhotos[1].coverPhoto}
-                      alt=""
-                      style={{ flex: 1, height: 148, objectFit: "cover", borderRadius: 12, display: "block" }}
-                    />
-                  )}
-                  {heroPhotos[2]?.coverPhoto && (
-                    <img
-                      src={heroPhotos[2].coverPhoto}
-                      alt=""
-                      style={{ flex: 1, height: 148, objectFit: "cover", borderRadius: 12, display: "block" }}
-                    />
-                  )}
-                </div>
-
-                {heroPhotos[3]?.coverPhoto && (
-                  <img
-                    src={heroPhotos[3].coverPhoto}
-                    alt=""
-                    style={{
-                      position: "absolute",
-                      bottom: 0,
-                      right: -20,
-                      width: 112,
-                      height: 112,
-                      borderRadius: "50%",
-                      objectFit: "cover",
-                      border: "4px solid #ffffff",
-                      boxShadow: "0 8px 28px rgba(0,0,0,0.18)",
-                      zIndex: 2,
-                    }}
-                  />
-                )}
-
+          {/* RIGHT — three stat panels (vertical stack on desktop, horizontal row on mobile) */}
+          <div
+            style={{
+              width: isMobile ? "100%" : 220,
+              display: "flex",
+              flexDirection: isMobile ? "row" : "column",
+              borderLeft: isMobile ? "none" : "0.5px solid #e8d8c4",
+              borderTop: isMobile ? "0.5px solid #e8d8c4" : "none",
+            }}
+          >
+            {[
+              { number: total, label: "Curated venues", sub: "Across Bangalore" },
+              { number: "4.8★", label: "Avg rating", sub: "Across all venues" },
+              { number: "₹0", label: "Commission", sub: "Always free for couples" },
+            ].map((p, i, arr) => {
+              const last = i === arr.length - 1;
+              return (
                 <div
-                  aria-hidden="true"
+                  key={i}
                   style={{
-                    position: "absolute",
-                    bottom: 40,
-                    left: 0,
-                    width: 60,
-                    height: 60,
-                    background: "radial-gradient(circle, rgba(184,133,42,0.15) 0%, transparent 70%)",
-                    pointerEvents: "none",
+                    flex: 1,
+                    padding: isMobile ? 14 : "20px 20px",
+                    borderBottom: !isMobile && !last ? "0.5px solid #e8d8c4" : "none",
+                    borderRight: isMobile && !last ? "0.5px solid #e8d8c4" : "none",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    background: "#fafafa",
                   }}
-                />
-              </div>
-            </div>
-          )}
+                >
+                  <div
+                    style={{
+                      fontFamily: "Georgia, 'Times New Roman', serif",
+                      fontSize: 32,
+                      color: "#6b1e2e",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {p.number}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 8,
+                      color: "#b09080",
+                      letterSpacing: 2,
+                      textTransform: "uppercase",
+                      marginTop: 5,
+                    }}
+                  >
+                    {p.label}
+                  </div>
+                  <div style={{ fontSize: 9, color: "#7a5a48", marginTop: 3 }}>{p.sub}</div>
+                </div>
+              );
+            })}
+          </div>
         </section>
 
         {/* ────────── 2 — WHY WEDSY IS DIFFERENT ────────── */}
@@ -2040,6 +1645,7 @@ export default function VenuesPage({
           box-shadow: 0 6px 28px rgba(107, 30, 46, 0.12);
           border-color: ${C.gold} !important;
         }
+        :global(.hero-k-input)::placeholder { color: #b09080; }
         /* Hide scrollbars on horizontal scrollers (filter bar, curated rows). */
         :global(.filter-bar-row)::-webkit-scrollbar,
         :global(.curated-scroll)::-webkit-scrollbar { display: none; }
