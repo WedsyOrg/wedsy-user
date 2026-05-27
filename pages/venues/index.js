@@ -4,6 +4,21 @@ import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 
 import { trimTitle, trimDescription } from "@/utils/seo";
 
+// Tracks viewport width client-side. Initial value is fixed (1200) so the
+// SSR markup matches the first client render and React doesn't warn about
+// hydration mismatch — the useEffect runs right after mount and re-renders
+// with the real width, accepting a brief desktop-layout flash on mobile.
+const useWindowWidth = () => {
+  const [width, setWidth] = useState(1200);
+  useEffect(() => {
+    const handler = () => setWidth(window.innerWidth);
+    handler();
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+  return width;
+};
+
 // ─── Filter option vocabularies ───
 const VENUE_TYPE_TABS = [
   { value: "", label: "All" },
@@ -573,6 +588,16 @@ Object.assign(S, {
   miniCardFooter: { display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, paddingTop: 8, borderTop: "0.5px solid #f0e4d0" },
   miniCardPrice: { fontSize: 13, color: C.gold, fontWeight: 500 },
   miniCardRating: { fontSize: 12, color: "#7a5a48" },
+
+  // ─── Responsive overrides — merged in conditionally via isMobile/isTablet ───
+  heroV3StatsMobile: { flexDirection: "column", gap: 18 },
+  heroV3SearchBarMobile: { maxWidth: "100%", marginLeft: 0, marginRight: 0 },
+  filterBarFlexMobile: { flexDirection: "column", alignItems: "stretch", gap: 8, padding: "10px 16px" },
+  filterBarRowMobile: { width: "100%", flex: "none" },
+  filterBarSearchMobile: { width: "100%" },
+  filterDropdownMobile: { top: "auto", bottom: 0, left: 0, right: 0, minWidth: "100%", borderRadius: "16px 16px 0 0", padding: 20, boxShadow: "0 -8px 32px rgba(0,0,0,0.18)" },
+  fullWidthGridMobile: { gridTemplateColumns: "1fr", gap: 18 },
+  fullWidthGridTablet: { gridTemplateColumns: "repeat(2, 1fr)", gap: 20 },
 });
 
 // ─── Card components ───
@@ -704,6 +729,11 @@ function MiniVenueCard({ venue }) {
 
 // ─── Page ───
 export default function VenuesPage({ venues: initialVenues = [], total: initialTotal = 0 }) {
+  // Responsive breakpoint flags — drive style overrides in mobile/tablet.
+  const viewportWidth = useWindowWidth();
+  const isMobile = viewportWidth < 768;
+  const isTablet = viewportWidth >= 768 && viewportWidth < 1024;
+
   const [nameSearch, setNameSearch] = useState("");
   const [venueType, setVenueType] = useState("");
   const [capacityBucket, setCapacityBucket] = useState("");
@@ -1043,7 +1073,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
             </p>
             <form
               className="hero-search"
-              style={S.heroV3SearchBar}
+              style={{ ...S.heroV3SearchBar, ...(isMobile ? S.heroV3SearchBarMobile : {}) }}
               onSubmit={(e) => { e.preventDefault(); scrollToListing(); }}
             >
               <span style={S.heroV3SearchIcon} aria-hidden="true">
@@ -1059,19 +1089,19 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                 onChange={(e) => setNameSearch(e.target.value)}
                 aria-label="Search venues"
               />
-              <button type="submit" style={S.heroV3SearchBtn}>Begin →</button>
+              <button type="submit" style={S.heroV3SearchBtn}>{isMobile ? "Go" : "Begin →"}</button>
             </form>
-            <div className="hero-stats" style={S.heroV3Stats}>
+            <div className="hero-stats" style={{ ...S.heroV3Stats, ...(isMobile ? S.heroV3StatsMobile : {}) }}>
               <div style={S.heroV3Stat}>
                 <div style={S.heroV3StatNum}>{statVenues}</div>
                 <div style={S.heroV3StatLbl}>Curated venues</div>
               </div>
-              <div style={S.heroV3StatRule} aria-hidden="true" />
+              {!isMobile && <div style={S.heroV3StatRule} aria-hidden="true" />}
               <div style={S.heroV3Stat}>
                 <div style={S.heroV3StatNum}>{statVerified}</div>
                 <div style={S.heroV3StatLbl}>Personally verified</div>
               </div>
-              <div style={S.heroV3StatRule} aria-hidden="true" />
+              {!isMobile && <div style={S.heroV3StatRule} aria-hidden="true" />}
               <div style={S.heroV3Stat}>
                 <div style={S.heroV3StatNumWord}>Always</div>
                 <div style={S.heroV3StatLbl}>Free for couples</div>
@@ -1160,12 +1190,14 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
           </div>
         </section>
 
-        {/* ────────── 5 — STICKY FILTER BAR (single horizontal-scroll row) ────────── */}
+        {/* ────────── 5 — STICKY FILTER BAR ──────────
+           Desktop: one horizontal-scroll row with search inside.
+           Mobile: search becomes its own full-width row above a scrolling
+                   row of category pills + filter chips. */}
         <div style={S.filterBar}>
-          <div style={S.filterBarFlex}>
-            <div className="filter-bar-row" style={S.filterBarRow}>
-              {/* Live name/address search — 200px pill on the far left. */}
-              <div style={S.filterBarSearch}>
+          <div style={{ ...S.filterBarFlex, ...(isMobile ? S.filterBarFlexMobile : {}) }}>
+            {isMobile && (
+              <div style={{ ...S.filterBarSearch, ...S.filterBarSearchMobile }}>
                 <span style={S.filterBarSearchIcon} aria-hidden="true">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="11" cy="11" r="7" />
@@ -1181,8 +1213,29 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                   aria-label="Search venues by name or address"
                 />
               </div>
-
-              <div style={S.filterDivider} aria-hidden="true" />
+            )}
+            <div className="filter-bar-row" style={{ ...S.filterBarRow, ...(isMobile ? S.filterBarRowMobile : {}) }}>
+              {!isMobile && (
+                <>
+                  <div style={S.filterBarSearch}>
+                    <span style={S.filterBarSearchIcon} aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="7" />
+                        <path d="M21 21l-4.35-4.35" />
+                      </svg>
+                    </span>
+                    <input
+                      type="search"
+                      style={S.filterBarSearchInput}
+                      placeholder="Search venues..."
+                      value={nameSearch}
+                      onChange={(e) => setNameSearch(e.target.value)}
+                      aria-label="Search venues by name or address"
+                    />
+                  </div>
+                  <div style={S.filterDivider} aria-hidden="true" />
+                </>
+              )}
 
               {/* Category pills */}
               {CATEGORIES.map((c) => (
@@ -1226,7 +1279,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); clearFilterGroup("zone"); } }}
                     >×</span>
                   ) : (
-                    <span style={S.filterChipCaret} aria-hidden="true">▾</span>
+                    !isMobile && <span style={S.filterChipCaret} aria-hidden="true">▾</span>
                   )}
                 </button>
                 {openDropdown === "zone" && (
@@ -1280,11 +1333,11 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); clearFilterGroup("price"); } }}
                     >×</span>
                   ) : (
-                    <span style={S.filterChipCaret} aria-hidden="true">▾</span>
+                    !isMobile && <span style={S.filterChipCaret} aria-hidden="true">▾</span>
                   )}
                 </button>
                 {openDropdown === "price" && (
-                  <div style={{ ...S.filterDropdown, top: dropdownAnchor.top, left: dropdownAnchor.left }} role="listbox">
+                  <div style={{ ...S.filterDropdown, top: dropdownAnchor.top, left: dropdownAnchor.left, ...(isMobile ? S.filterDropdownMobile : {}) }} role="listbox">
                     {PRICE_OPTIONS.map((o) => (
                       <label key={o.value} style={S.filterDropdownItem}>
                         <input
@@ -1321,11 +1374,11 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); clearFilterGroup("capacity"); } }}
                     >×</span>
                   ) : (
-                    <span style={S.filterChipCaret} aria-hidden="true">▾</span>
+                    !isMobile && <span style={S.filterChipCaret} aria-hidden="true">▾</span>
                   )}
                 </button>
                 {openDropdown === "capacity" && (
-                  <div style={{ ...S.filterDropdown, top: dropdownAnchor.top, left: dropdownAnchor.left }} role="listbox">
+                  <div style={{ ...S.filterDropdown, top: dropdownAnchor.top, left: dropdownAnchor.left, ...(isMobile ? S.filterDropdownMobile : {}) }} role="listbox">
                     {CAPACITY_OPTIONS.map((o) => (
                       <label key={o.value} style={S.filterDropdownItem}>
                         <input
@@ -1362,11 +1415,11 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); clearFilterGroup("amenities"); } }}
                     >×</span>
                   ) : (
-                    <span style={S.filterChipCaret} aria-hidden="true">▾</span>
+                    !isMobile && <span style={S.filterChipCaret} aria-hidden="true">▾</span>
                   )}
                 </button>
                 {openDropdown === "amenities" && (
-                  <div style={{ ...S.filterDropdown, top: dropdownAnchor.top, left: dropdownAnchor.left }}>
+                  <div style={{ ...S.filterDropdown, top: dropdownAnchor.top, left: dropdownAnchor.left, ...(isMobile ? S.filterDropdownMobile : {}) }}>
                     {AMENITY_FILTERS.filter((a) => a.key !== "accommodation").map((a) => (
                       <label key={a.key} style={S.filterDropdownItem}>
                         <input
@@ -1418,7 +1471,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
             </div>
             {filtered.length > 0 ? (
               <>
-                <div className="all-venues-grid" style={S.fullWidthGrid}>
+                <div className="all-venues-grid" style={{ ...S.fullWidthGrid, ...(isMobile ? S.fullWidthGridMobile : isTablet ? S.fullWidthGridTablet : {}) }}>
                   {filtered.map((v) => <VenueCard key={v._id} venue={v} />)}
                 </div>
                 {hasMore && (

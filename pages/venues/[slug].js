@@ -3,6 +3,20 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { trimTitle, trimDescription } from "@/utils/seo";
 
+// Tracks viewport width client-side. Initial value is fixed (1200) so the
+// SSR markup matches the first client render — avoids React hydration
+// warnings; useEffect immediately re-renders with the real width.
+const useWindowWidth = () => {
+  const [width, setWidth] = useState(1200);
+  useEffect(() => {
+    const handler = () => setWidth(window.innerWidth);
+    handler();
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+  return width;
+};
+
 const S = {
   page: { background: "#fdf6ec", minHeight: "100vh", color: "#2c1810" },
   nav: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 2rem", height: 56, background: "#fffaf4", borderBottom: "0.5px solid #e8d8c4", position: "sticky", top: 0, zIndex: 10 },
@@ -345,6 +359,35 @@ const S = {
   sideConciergeBody: { fontSize: 11, color: "#7a5a48", lineHeight: 1.55, marginBottom: 10 },
   sideConciergeLink: { display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "#6b1e2e", textDecoration: "none", fontWeight: 500, borderBottom: "0.5px solid #b8852a", paddingBottom: 2 },
   sideSecurity: { fontSize: 10, color: "#b09080", textAlign: "center", lineHeight: 1.55, padding: "0 0.5rem" },
+
+  // ─── Responsive overrides — merged in conditionally via isMobile/isTablet ───
+  heroMobile: { minHeight: "52vh" },
+  heroNameMobile: { fontSize: "clamp(1.8rem, 6vw, 3.5rem)", lineHeight: 1.05, marginBottom: 12 },
+  heroInnerMobile: { padding: "2.5rem 1.25rem 2rem" },
+  heroEyebrowMobile: { gap: 6 },
+  heroChipMobile: { fontSize: 10, padding: "4px 9px" },
+  // Body two-col grid → single column on mobile (sidebar above), narrower
+  // sidebar on tablet.
+  bodyV3Mobile: { gridTemplateColumns: "1fr", gap: "1.25rem", padding: "1.5rem 1rem 0" },
+  bodyV3Tablet: { gridTemplateColumns: "1fr 260px", gap: "1.5rem" },
+  mainV3Mobile: { order: 1 },
+  sidebarV3Mobile: { order: 0, position: "static", top: "auto" },
+  // Policy 2×2 grid collapses to 1 column on mobile
+  policyGridMobile: { gridTemplateColumns: "1fr", gap: 12 },
+  // Photo grid alternating rows — mobile stacks everything 1-col, tablet
+  // keeps the row-1 65/35 split only (the other rows lose the split / hide
+  // entirely depending on count; handled by mapping over allHeroPhotos).
+  photoGridRowSingleMobile: { height: 240 },
+  photoGridRow65_35Mobile: { gridTemplateColumns: "1fr", height: "auto", rowGap: 8 },
+  photoGridRow65_35MobileCellTall: { height: 240 },
+  photoGridRow35_65Mobile: { gridTemplateColumns: "1fr", height: "auto", rowGap: 8 },
+  photoGridRow3Mobile: { gridTemplateColumns: "1fr", height: "auto", rowGap: 8 },
+  photoGridCellMobile: { height: 200 },
+  // Amenity tiles shrink on mobile so 3 fit per row without ugly wrapping.
+  amTileMobile: { width: 80, height: 76, padding: 4, gap: 4 },
+  amTileLabelMobile: { fontSize: 10 },
+  // Tighten the sticky quick-facts strip on mobile so chips don't wrap.
+  stickyBarInnerMobile: { gap: 10, padding: "8px 1rem" },
 };
 
 const VIBES = ["Traditional", "Contemporary", "Outdoor", "Intimate", "Grand"];
@@ -432,6 +475,11 @@ const AmenityIcon = ({ type, size = 22, color = "currentColor" }) => {
 };
 
 export default function VenueDetailPage({ venue, similar = [], nearby = [], reviews = null, setOpenLoginModalv2, setSource }) {
+  // Responsive breakpoint flags — drive style overrides on mobile/tablet.
+  const viewportWidth = useWindowWidth();
+  const isMobile = viewportWidth < 768;
+  const isTablet = viewportWidth >= 768 && viewportWidth < 1024;
+
   const [selectedVibes, setSelectedVibes] = useState(["Traditional", "Outdoor"]);
   const [eventDate, setEventDate] = useState("");
   const [guestCount, setGuestCount] = useState("");
@@ -814,13 +862,16 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
   const highlightsTrimmed = highlights.slice(0, 6);
 
   // Sticky-bar quick facts — only render the chips we actually have data for
+  // On mobile, only the four highest-signal chips render — venue type,
+  // capacity, rating, and price. Rooms/catering/curfew are dropped to keep
+  // the bar a single tight line that doesn't horizontally scroll on phones.
   const stickyChips = [];
   if (vType) stickyChips.push({ icon: "🏠", text: vType });
   if (guestsRange) stickyChips.push({ icon: "👥", text: <><span style={S.stickyChipNum}>{guestsRange}</span> guests</> });
-  if (accTotalRooms > 0) stickyChips.push({ icon: "🛏", text: <><span style={S.stickyChipNum}>{accTotalRooms}</span> rooms</> });
+  if (!isMobile && accTotalRooms > 0) stickyChips.push({ icon: "🛏", text: <><span style={S.stickyChipNum}>{accTotalRooms}</span> rooms</> });
   if (venue.googleRating) stickyChips.push({ icon: "⭐", text: <><span style={S.stickyChipNum}>{venue.googleRating}</span> rating</> });
-  stickyChips.push({ icon: "🍽", text: catPolicyLabel });
-  if (mp.outdoorCurfew) stickyChips.push({ icon: "🎵", text: <>Outdoor till <span style={S.stickyChipNum}>{mp.outdoorCurfew}</span></> });
+  if (!isMobile) stickyChips.push({ icon: "🍽", text: catPolicyLabel });
+  if (!isMobile && mp.outdoorCurfew) stickyChips.push({ icon: "🎵", text: <>Outdoor till <span style={S.stickyChipNum}>{mp.outdoorCurfew}</span></> });
   if (lowestTierPrice) stickyChips.push({ icon: "💰", text: <>from <span style={S.stickyChipNum}>₹{formatINR(lowestTierPrice)}</span></> });
 
   // FAQ entries — pre-fill from venue data where possible, keep tappable
@@ -983,7 +1034,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
         </div>
 
         {/* ───────────────────────────── 1. HERO ───────────────────────────── */}
-        <section style={S.hero} aria-label={`${venue.name} cover`}>
+        <section style={{ ...S.hero, ...(isMobile ? S.heroMobile : {}) }} aria-label={`${venue.name} cover`}>
           {allHeroPhotos.length === 0 && (
             <div style={{ ...S.heroImg, background: "linear-gradient(135deg, #4a1520 0%, #2c1810 100%)" }} />
           )}
@@ -1015,8 +1066,8 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
               <span aria-hidden="true">⊞</span> View all {totalPhotos} photos
             </button>
           )}
-          <div style={S.heroInner}>
-            <div style={S.heroEyebrow}>
+          <div style={{ ...S.heroInner, ...(isMobile ? S.heroInnerMobile : {}) }}>
+            <div style={{ ...S.heroEyebrow, ...(isMobile ? S.heroEyebrowMobile : {}) }}>
               <span style={S.heroChip}>📍 {venue.address?.split(",")[0] || venue.city || "Bangalore"}</span>
               <span style={S.heroChip}>🌿 {vType}</span>
               {venue.googleRating && (
@@ -1026,7 +1077,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                 </span>
               )}
             </div>
-            <h1 style={S.heroName}>{venue.name}</h1>
+            <h1 style={{ ...S.heroName, ...(isMobile ? S.heroNameMobile : {}) }}>{venue.name}</h1>
             {venue.tagline && (
               <div style={{ fontSize: 15, color: "rgba(253,246,236,0.85)", fontFamily: "Georgia, serif", fontStyle: "italic", maxWidth: 640 }}>
                 {venue.tagline}
@@ -1039,7 +1090,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
         {/* ───────────────────── 2. STICKY QUICK FACTS BAR ───────────────────── */}
         {stickyChips.length > 0 && (
           <div style={S.stickyBar} aria-label="Quick facts">
-            <div style={S.stickyBarInner}>
+            <div style={{ ...S.stickyBarInner, ...(isMobile ? S.stickyBarInnerMobile : {}) }}>
               {stickyChips.map((chip, i) => (
                 <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
                   <span style={S.stickyChip}>
@@ -1180,9 +1231,9 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
         )}
 
         {/* ───────────────────────── 3. BODY GRID ───────────────────────── */}
-        <div style={S.bodyV3}>
+        <div style={{ ...S.bodyV3, ...(isMobile ? S.bodyV3Mobile : isTablet ? S.bodyV3Tablet : {}) }}>
           {/* MAIN COLUMN */}
-          <div style={S.mainV3}>
+          <div style={{ ...S.mainV3, ...(isMobile ? S.mainV3Mobile : {}) }}>
             {/* ───── 4. ABOUT — Part 1: description block (no card, full-width) ───── */}
             {(venue.description || highlightsTrimmed.length > 0) && (
               <section style={S.aboutDescWrap}>
@@ -1213,7 +1264,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
               <section style={S.photoGridWrap}>
                 {/* Row 1 — 1 or 2 photos */}
                 {allPhotos.length === 1 ? (
-                  <div style={S.photoGridRowSingle}>
+                  <div style={{ ...S.photoGridRowSingle, ...(isMobile ? S.photoGridRowSingleMobile : {}) }}>
                     <button
                       type="button"
                       className="venue-photo-cell"
@@ -1225,7 +1276,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                     </button>
                   </div>
                 ) : (
-                  <div style={S.photoGridRow65_35}>
+                  <div style={{ ...S.photoGridRow65_35, ...(isMobile ? S.photoGridRow65_35Mobile : {}) }}>
                     {[0, 1].map((i) => (
                       <button
                         key={i}
@@ -1243,7 +1294,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
 
                 {/* Row 2 — up to 3 equal photos */}
                 {allPhotos.length >= 3 && (
-                  <div style={S.photoGridRow3}>
+                  <div style={{ ...S.photoGridRow3, ...(isMobile ? S.photoGridRow3Mobile : {}) }}>
                     {allPhotos.slice(2, 5).map((url, i) => (
                       <button
                         key={i}
@@ -1261,7 +1312,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
 
                 {/* Row 3 — 35/65 reversed, up to 2 photos */}
                 {allPhotos.length >= 6 && (
-                  <div style={S.photoGridRow35_65}>
+                  <div style={{ ...S.photoGridRow35_65, ...(isMobile ? S.photoGridRow35_65Mobile : {}) }}>
                     {allPhotos.slice(5, 7).map((url, i) => (
                       <button
                         key={i}
@@ -1522,7 +1573,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                 <div style={S.sTitle}>Policies & Rules</div>
                 <div style={S.sTitleRule} />
               </div>
-              <div style={S.policyGrid}>
+              <div style={{ ...S.policyGrid, ...(isMobile ? S.policyGridMobile : {}) }}>
                 {/* CATERING */}
                 <article style={S.policyCard}>
                   <div style={S.policyIcon} aria-hidden="true">🍽</div>
@@ -1622,11 +1673,11 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                           ? S.amTileLabelStrike
                           : S.amTileLabelMuted;
                       return (
-                        <div key={it.key} style={tileStyle}>
+                        <div key={it.key} style={{ ...tileStyle, ...(isMobile ? S.amTileMobile : {}) }}>
                           <span style={iconWrapStyle} aria-hidden="true">
-                            <AmenityIcon type={it.iconType} size={22} color={iconColor} />
+                            <AmenityIcon type={it.iconType} size={isMobile ? 18 : 22} color={iconColor} />
                           </span>
-                          <span style={labelStyle}>{it.label}</span>
+                          <span style={{ ...labelStyle, ...(isMobile ? S.amTileLabelMobile : {}) }}>{it.label}</span>
                           {state === "on" && it.extra && (
                             <span style={S.amTileExtra}>{it.extra}</span>
                           )}
@@ -1717,7 +1768,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
           </div>
 
           {/* SIDEBAR (320px sticky) */}
-          <aside style={S.sidebarV3}>
+          <aside style={{ ...S.sidebarV3, ...(isMobile ? S.sidebarV3Mobile : {}) }}>
             {/* Chat card */}
             <div style={S.sideCard}>
               <div style={S.sideChatHeader}>
