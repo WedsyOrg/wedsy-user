@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
+Allow: /venues
+Allow: /venues/*
 Disallow: /event/
 Disallow: /my-account
 Disallow: /my-orders/

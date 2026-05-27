@@ -927,16 +927,33 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
     return "tba";
   };
 
+  // LocalBusiness JSON-LD. `undefined` values are dropped by JSON.stringify,
+  // so the geo/aggregateRating/priceRange keys only appear when we have data.
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": ["LocalBusiness", "EventVenue"],
+    "@type": "LocalBusiness",
     name: venue.name,
-    description: venue.description || `${venue.name} — wedding venue in Bangalore`,
-    address: { "@type": "PostalAddress", streetAddress: venue.address, addressLocality: "Bangalore", addressCountry: "IN" },
-    telephone: venue.phone || "",
+    description: venue.description,
+    image: venue.coverPhoto,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: venue.address,
+      addressLocality: venue.locality || "Bangalore",
+      addressRegion: "Karnataka",
+      addressCountry: "IN",
+    },
+    geo: venue.location?.coordinates ? {
+      "@type": "GeoCoordinates",
+      latitude: venue.location.coordinates[1],
+      longitude: venue.location.coordinates[0],
+    } : undefined,
+    aggregateRating: venue.googleRating ? {
+      "@type": "AggregateRating",
+      ratingValue: venue.googleRating,
+      reviewCount: venue.googleReviewCount || 0,
+    } : undefined,
+    priceRange: venue.pricing?.tiers?.length > 0 ? "₹₹₹" : undefined,
     url: `https://wedsy.in/venues/${venue.slug}`,
-    image: venue.coverPhoto || "",
-    aggregateRating: venue.googleRating ? { "@type": "AggregateRating", ratingValue: venue.googleRating, reviewCount: venue.googleReviewCount || 0 } : undefined,
   };
 
   // First letter of description for the drop-cap — only when there's meaningful body text
@@ -946,12 +963,13 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
   return (
     <>
       <Head>
-        <title>{trimTitle(`${venue.name} — Wedding Venue in Bangalore | Wedsy`)}</title>
-        <meta name="description" content={trimDescription(venue.description || `${venue.name} is a premium wedding venue in Bangalore. Browse photos, pricing, availability and chat directly with the venue on Wedsy.`)} />
-        <meta property="og:title" content={`${venue.name} | Wedsy`} />
-        <meta property="og:description" content={venue.description?.slice(0, 160) || ""} />
+        <title>{trimTitle(`${venue.name} — Wedding Venue in ${venue.locality || "Bangalore"} | Wedsy`)}</title>
+        <meta name="description" content={trimDescription(`Book ${venue.name} for your wedding in Bangalore. ${(venue.description || "").substring(0, 120)}... Enquire directly on Wedsy.`)} />
+        <meta property="og:title" content={`${venue.name} — Wedding Venue in Bangalore`} />
+        <meta property="og:description" content={(venue.description || "").substring(0, 160)} />
         <meta property="og:image" content={venue.coverPhoto || ""} />
-        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`https://wedsy.in/venues/${venue.slug}`} />
+        <meta property="og:type" content="business.business" />
         <link rel="canonical" href={`https://wedsy.in/venues/${venue.slug}`} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </Head>
