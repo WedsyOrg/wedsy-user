@@ -220,6 +220,32 @@ const S = {
   pricingChipWarn: { fontSize: 11, padding: "5px 12px", borderRadius: 100, background: "#fff4dc", border: "0.5px solid #e8c47a", color: "#8a5a1a", fontWeight: 500 },
   pricingFoot: { fontSize: 11, color: "#b09080", textAlign: "center", paddingTop: 10, borderTop: "0.5px solid #f0e4d0", fontStyle: "italic" },
   pricingNote: { background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.5rem 1.75rem", fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 15, color: "#3a2820", lineHeight: 1.75, boxShadow: "0 2px 16px rgba(107,30,46,0.06)", fontStyle: "italic" },
+  // Pricing calculator
+  calcTierPills: { display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 },
+  calcPill: { padding: "9px 18px", borderRadius: 100, border: "0.5px solid #e8d8c4", background: "#fdf6ec", color: "#7a5a48", fontSize: 13, fontWeight: 500, cursor: "pointer", letterSpacing: 0.2 },
+  calcPillOn: { padding: "9px 18px", borderRadius: 100, border: "0.5px solid #6b1e2e", background: "#6b1e2e", color: "#fdf6ec", fontSize: 13, fontWeight: 500, cursor: "pointer", letterSpacing: 0.2 },
+  calcPriceDisplay: { background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.75rem 1.75rem", textAlign: "center", marginBottom: 18, boxShadow: "0 2px 16px rgba(184,133,42,0.08)" },
+  calcPriceLabel: { fontSize: 11, textTransform: "uppercase", letterSpacing: 1.4, color: "#b09080", marginBottom: 10 },
+  calcPriceBig: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 44, color: "#b8852a", fontWeight: 500, letterSpacing: -1, lineHeight: 1 },
+  calcPriceSub: { fontSize: 12, color: "#7a5a48", marginTop: 8 },
+  calcGuestBlock: { background: "#fdf4e6", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.25rem 1.5rem", marginBottom: 18 },
+  calcGuestLabel: { fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: "#b8852a", fontWeight: 500, marginBottom: 10, display: "block" },
+  calcGuestInput: { width: "100%", height: 44, border: "0.5px solid #e8d8c4", borderRadius: 10, padding: "0 14px", fontSize: 16, color: "#2c1810", background: "#fffaf4", outline: "none", boxSizing: "border-box", fontFamily: "Georgia, serif" },
+  calcCateringRow: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 },
+  calcCateringChip: { background: "#fffaf4", border: "0.5px solid #f0e4d0", borderRadius: 10, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 2 },
+  calcCateringLbl: { fontSize: 11, color: "#b09080" },
+  calcCateringVal: { fontSize: 16, fontFamily: "Georgia, serif", color: "#2c1810", fontWeight: 500 },
+  calcCateringSub: { fontSize: 10, color: "#b09080" },
+  calcTotalCard: { background: "linear-gradient(135deg, #6b1e2e 0%, #4a1520 100%)", borderRadius: 14, padding: "1.4rem 1.75rem", textAlign: "center", marginBottom: 18, color: "#fdf6ec", boxShadow: "0 2px 24px rgba(107,30,46,0.18)" },
+  calcTotalLbl: { fontSize: 11, textTransform: "uppercase", letterSpacing: 1.4, color: "#e8c47a", marginBottom: 8 },
+  calcTotalVal: { fontFamily: "Georgia, serif", fontSize: 36, fontWeight: 500, letterSpacing: -0.5, lineHeight: 1 },
+  calcTotalSub: { fontSize: 12, color: "rgba(253,246,236,0.72)", marginTop: 8 },
+  calcPeakWarn: { background: "#fff4dc", border: "0.5px solid #e8c47a", borderRadius: 12, padding: "11px 14px", display: "flex", alignItems: "flex-start", gap: 9, fontSize: 12, color: "#8a5a1a", marginBottom: 14, lineHeight: 1.5 },
+  // Location section
+  locMapWrap: { width: "100%", height: 350, borderRadius: 12, overflow: "hidden", border: "0.5px solid #e8d8c4", marginBottom: 16, boxShadow: "0 2px 16px rgba(107,30,46,0.06)" },
+  locMap: { width: "100%", height: "100%", border: 0, display: "block" },
+  locDesc: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 15, color: "#3a2820", lineHeight: 1.8, marginBottom: 16 },
+  locMapsBtn: { display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 100, background: "#fffaf4", border: "0.5px solid #e8d8c4", color: "#6b1e2e", textDecoration: "none", fontSize: 13, fontWeight: 500 },
   // policies 2x2
   policyGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 },
   policyCard: { background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.25rem 1.35rem", boxShadow: "0 2px 16px rgba(107,30,46,0.06)" },
@@ -349,6 +375,9 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
   const [galleryTab, setGalleryTab] = useState("all");
   // "What couples say" — track which review cards are expanded (read more)
   const [expandedReviews, setExpandedReviews] = useState({});
+  // Pricing calculator state — selected tier index + guest count for catering math
+  const [selectedTierIndex, setSelectedTierIndex] = useState(0);
+  const [calcGuestCount, setCalcGuestCount] = useState("");
 
   // The server's GET /auth/ returns { name, phone, email, event } — no _id.
   // The JWT payload (signed by /auth/otp verify) carries { _id, isAdmin, isVendor },
@@ -661,6 +690,16 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
   const hasTieredPricing = tiers.length > 0;
   const hasPricingNote = !!(pricing.note && String(pricing.note).trim().length > 0);
   const showPricingSection = hasTieredPricing || hasPricingNote;
+
+  // Calculator derivations — clamp index, parse guest count, compute estimate.
+  // Veg per-plate is the base catering estimate (non-veg shown separately).
+  const safeTierIndex = hasTieredPricing ? Math.min(Math.max(selectedTierIndex, 0), tiers.length - 1) : 0;
+  const selectedTier = hasTieredPricing ? tiers[safeTierIndex] : null;
+  const selectedTierPrice = Number(selectedTier?.price) || 0;
+  const numGuests = parseInt(calcGuestCount, 10) || 0;
+  const cateringEstimateVeg = perPlateVeg > 0 ? perPlateVeg * numGuests : 0;
+  const cateringEstimateNonVeg = perPlateNonVeg > 0 ? perPlateNonVeg * numGuests : 0;
+  const totalEstimate = selectedTierPrice + cateringEstimateVeg;
 
   // Music policy
   const mp = venue.musicPolicy || {};
@@ -1166,43 +1205,102 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                 </div>
                 {hasTieredPricing ? (
                   <>
-                    {minDuration > 0 && (
-                      <div style={S.pricingBadge}>⏱ Minimum duration: {minDuration} hours</div>
-                    )}
-                    <div style={S.tierGrid}>
+                    {/* Duration pill buttons — one per tier */}
+                    <div style={S.calcTierPills}>
                       {tiers.map((t, i) => (
-                        <div key={i} style={S.tierCard}>
-                          <div style={S.tierHours}>{t.hours ? `${t.hours} hours` : "Package"}</div>
-                          <div style={S.tierPrice}>₹{formatINR(Number(t.price)) || "—"}</div>
-                        </div>
+                        <button
+                          key={i}
+                          type="button"
+                          style={safeTierIndex === i ? S.calcPillOn : S.calcPill}
+                          onClick={() => setSelectedTierIndex(i)}
+                        >
+                          {t.hours ? `${t.hours} hrs` : `Tier ${i + 1}`}
+                        </button>
                       ))}
                     </div>
+
+                    {/* Large gold price for the selected tier */}
+                    <div style={S.calcPriceDisplay}>
+                      <div style={S.calcPriceLabel}>
+                        {selectedTier?.hours ? `${selectedTier.hours}-hour package` : "Package"}
+                      </div>
+                      <div style={S.calcPriceBig}>
+                        {selectedTierPrice > 0 ? `₹${formatINR(selectedTierPrice)}` : "Ask the venue"}
+                      </div>
+                      <div style={S.calcPriceSub}>venue cost</div>
+                    </div>
+
+                    {/* Guest count + catering math (only if per-plate exists) */}
                     {(perPlateVeg > 0 || perPlateNonVeg > 0) && (
-                      <div style={S.perPlateRow}>
-                        {perPlateVeg > 0 && (
-                          <div style={S.perPlateCard}>
-                            <div style={S.perPlateLbl}>Per plate · 🥦 Veg</div>
-                            <div style={S.perPlateVal}>₹{formatINR(perPlateVeg)}</div>
-                          </div>
-                        )}
-                        {perPlateNonVeg > 0 && (
-                          <div style={S.perPlateCard}>
-                            <div style={S.perPlateLbl}>Per plate · 🍖 Non-veg</div>
-                            <div style={S.perPlateVal}>₹{formatINR(perPlateNonVeg)}</div>
+                      <div style={S.calcGuestBlock}>
+                        <label htmlFor="calc-guest-count" style={S.calcGuestLabel}>How many guests?</label>
+                        <input
+                          id="calc-guest-count"
+                          type="number"
+                          min={0}
+                          max={10000}
+                          placeholder="e.g. 250"
+                          value={calcGuestCount}
+                          onChange={(e) => setCalcGuestCount(e.target.value)}
+                          style={S.calcGuestInput}
+                        />
+                        {numGuests > 0 && (
+                          <div style={S.calcCateringRow}>
+                            {perPlateVeg > 0 && (
+                              <div style={S.calcCateringChip}>
+                                <span style={S.calcCateringLbl}>🥦 Veg catering</span>
+                                <span style={S.calcCateringVal}>₹{formatINR(cateringEstimateVeg)}</span>
+                                <span style={S.calcCateringSub}>{numGuests} × ₹{formatINR(perPlateVeg)}</span>
+                              </div>
+                            )}
+                            {perPlateNonVeg > 0 && (
+                              <div style={S.calcCateringChip}>
+                                <span style={S.calcCateringLbl}>🍖 Non-veg catering</span>
+                                <span style={S.calcCateringVal}>₹{formatINR(cateringEstimateNonVeg)}</span>
+                                <span style={S.calcCateringSub}>{numGuests} × ₹{formatINR(perPlateNonVeg)}</span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
                     )}
+
+                    {/* Total estimate (venue + veg catering) */}
+                    {totalEstimate > 0 && (
+                      <div style={S.calcTotalCard}>
+                        <div style={S.calcTotalLbl}>Estimated total</div>
+                        <div style={S.calcTotalVal}>₹{formatINR(totalEstimate)}</div>
+                        <div style={S.calcTotalSub}>
+                          Venue ₹{formatINR(selectedTierPrice)}
+                          {numGuests > 0 && cateringEstimateVeg > 0 && (
+                            <> · veg catering ₹{formatINR(cateringEstimateVeg)}</>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Booking chips */}
                     <div style={S.pricingChips}>
                       {securityDeposit > 0 && <span style={S.pricingChip}>🔒 Security deposit ₹{formatINR(securityDeposit)}</span>}
                       {advancePercent > 0 && <span style={S.pricingChip}>📅 Advance {advancePercent}% to book</span>}
-                      {peakMarkup > 0 && <span style={S.pricingChipWarn}>⚡ Peak-season markup +{peakMarkup}%</span>}
+                      {minDuration > 0 && <span style={S.pricingChip}>⏱ Minimum {minDuration}-hour booking</span>}
                     </div>
+
+                    {/* Peak season warning */}
+                    {peakMarkup > 0 && (
+                      <div style={S.calcPeakWarn}>
+                        <span aria-hidden="true">⚡</span>
+                        <span>
+                          <strong>Peak season +{peakMarkup}%</strong> — rates may be higher during November, December, and February.
+                        </span>
+                      </div>
+                    )}
+
                     <div style={S.pricingFoot}>All prices in {pricing.currency || "INR"} · Final pricing subject to package negotiation</div>
                   </>
                 ) : (
                   hasPricingNote && (
-                    <div style={S.pricingNote}>“{pricing.note}”</div>
+                    <div style={S.pricingNote}>&ldquo;{pricing.note}&rdquo;</div>
                   )
                 )}
               </section>
@@ -1370,6 +1468,41 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                 </div>
               </section>
             )}
+
+            {/* ───── 11. LOCATION & SURROUNDINGS ───── */}
+            {Array.isArray(venue.location?.coordinates) && venue.location.coordinates.length === 2 && (() => {
+              const [lng, lat] = venue.location.coordinates;
+              const mapsKey = "AIzaSyBX3lYHUerv0i4Yje05KKCxI2DGyM0KooY";
+              return (
+                <section style={S.section}>
+                  <div style={S.sTitleWrap}>
+                    <div style={S.sTitle}>Location & Surroundings</div>
+                    <div style={S.sTitleRule} />
+                  </div>
+                  <div style={S.locMapWrap}>
+                    <iframe
+                      title={`Map of ${venue.name}`}
+                      src={`https://www.google.com/maps/embed/v1/place?key=${mapsKey}&q=${lat},${lng}&zoom=14`}
+                      style={S.locMap}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      allowFullScreen
+                    />
+                  </div>
+                  {venue.locationDescription && (
+                    <p style={S.locDesc}>{venue.locationDescription}</p>
+                  )}
+                  <a
+                    href={`https://www.google.com/maps?q=${lat},${lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={S.locMapsBtn}
+                  >
+                    <span aria-hidden="true">📍</span> View on Google Maps <span aria-hidden="true">→</span>
+                  </a>
+                </section>
+              );
+            })()}
 
             {/* FAQ / Reviews / Nearby / Similar moved to full-width bands below the grid (rendered after </div> closing bodyV3). */}
           </div>
@@ -1783,6 +1916,23 @@ export async function getServerSideProps({ params }) {
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venues/${slug}/reviews`, { method: "POST" });
       if (r.ok) reviews = await r.json();
     } catch (e) {}
+    // Lazy-generate the location blurb once if missing. The endpoint is
+    // idempotent — it persists the result and returns cached values on every
+    // subsequent SSR, so this only hits Claude on the first view per venue.
+    if (
+      venue &&
+      Array.isArray(venue.location?.coordinates) &&
+      venue.location.coordinates.length === 2 &&
+      !venue.locationDescription
+    ) {
+      try {
+        const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venues/${slug}/generate-location-description`, { method: "POST" });
+        if (r.ok) {
+          const j = await r.json();
+          if (j && j.locationDescription) venue.locationDescription = j.locationDescription;
+        }
+      } catch (e) {}
+    }
     return { props: { venue, similar, nearby, reviews } };
   } catch (err) {
     console.error("Venue detail SSR error:", err.message);
