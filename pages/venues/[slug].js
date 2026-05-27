@@ -187,8 +187,6 @@ const S = {
   aboutDescBody: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 18, lineHeight: 1.85, color: "#2c1810", maxWidth: 720, margin: "0 0 24px 0" },
   aboutDescHighlightsTitle: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 16, color: "#2c1810", marginBottom: 12, fontWeight: 400 },
   aboutDescHighlight: { display: "inline-flex", alignItems: "flex-start", gap: 8, fontSize: 14, color: "#5a3a2a", marginBottom: 6, lineHeight: 1.5 },
-  aboutDescVibeRow: { display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14 },
-  aboutDescVibeChip: { fontSize: 11, padding: "4px 11px", borderRadius: 100, border: "0.5px solid #b8852a", color: "#b8852a", background: "#fffaf4" },
   // About — photo grid (Part 2: full-width, alternating-row editorial layout)
   photoGridWrap: { width: "100%", padding: "0 2rem 3rem 2rem" },
   photoGridRowSingle: { width: "100%", height: 420, marginBottom: 8 },
@@ -277,16 +275,20 @@ const S = {
   policyChipRow: { display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 },
   policyChip: { fontSize: 10, padding: "3px 9px", borderRadius: 100, background: "#fdf4e6", border: "0.5px solid #e8d8c4", color: "#7a5a48" },
   policyRestriction: { fontSize: 12, color: "#8a5a1a", fontStyle: "italic", marginTop: 8, lineHeight: 1.6 },
-  // amenities icon grid
-  amSubGroup: { marginBottom: 18 },
-  amSubH: { fontSize: 10, textTransform: "uppercase", letterSpacing: 1.4, color: "#b8852a", fontWeight: 500, marginBottom: 10 },
-  amIconGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 10 },
-  amIconItem: { display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", borderRadius: 8 },
-  amIconItemOff: { display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", borderRadius: 8, opacity: 0.4 },
-  amIcon: { fontSize: 15, color: "#6b1e2e", flexShrink: 0, width: 18, textAlign: "center" },
-  amIconOff: { fontSize: 15, color: "#b09080", flexShrink: 0, width: 18, textAlign: "center" },
-  amLabel: { fontSize: 12, color: "#3a2820" },
-  amLabelOff: { fontSize: 12, color: "#7a5a48", textDecoration: "line-through" },
+  // amenities — SVG icon tiles (3 states: available / unavailable / TBA)
+  amGroup: { marginBottom: 24 },
+  amGroupLabel: { fontSize: 10, color: "#b09080", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
+  amTiles: { display: "flex", flexWrap: "wrap", gap: 8 },
+  amTile: { width: 96, height: 88, borderRadius: 10, background: "#fff8f0", border: "0.5px solid #e8d8c4", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: 6, boxSizing: "border-box" },
+  amTileOff: { width: 96, height: 88, borderRadius: 10, background: "#f8f8f8", border: "0.5px solid #eeeeee", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: 6, boxSizing: "border-box" },
+  amTileTba: { width: 96, height: 88, borderRadius: 10, background: "#fafafa", border: "0.5px dashed #e0e0e0", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: 6, boxSizing: "border-box" },
+  amTileIcon: { display: "inline-flex", lineHeight: 0 },
+  amTileIconMuted: { display: "inline-flex", lineHeight: 0, opacity: 0.2, filter: "grayscale(100%)" },
+  amTileLabel: { fontSize: 11, color: "#2c1810", fontWeight: 500, textAlign: "center", lineHeight: 1.2 },
+  amTileLabelStrike: { fontSize: 11, color: "#cccccc", textDecoration: "line-through", textAlign: "center", lineHeight: 1.2 },
+  amTileLabelMuted: { fontSize: 11, color: "#cccccc", textAlign: "center", lineHeight: 1.2 },
+  amTileExtra: { fontSize: 10, color: "#b8852a", textAlign: "center" },
+  amTileTbaText: { fontSize: 9, color: "#aaaaaa", textAlign: "center", letterSpacing: 0.4 },
   // contact
   contactCard: { background: "#ffffff", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.5rem 1.75rem", boxShadow: "0 2px 16px rgba(107,30,46,0.06)" },
   contactName: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 20, color: "#2c1810", fontWeight: 400, letterSpacing: -0.2, marginBottom: 4 },
@@ -370,6 +372,36 @@ const SPACE_TYPE_LABEL = {
   outdoor: { icon: "🌿", label: "Outdoor" },
   indoor: { icon: "🏛", label: "Indoor" },
   "semi-outdoor": { icon: "⛅", label: "Semi-outdoor" },
+};
+
+// Stroke-based amenity icons used by the Amenities & Facilities section. Kept
+// inline (not a separate package) so the icon set ships with the page and
+// stays editable alongside the tile mappings below.
+const AmenityIcon = ({ type, size = 22, color = "currentColor" }) => {
+  const icons = {
+    pool: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12h20M2 20s2-2 4-2 4 2 6 2 4-2 6-2"/><circle cx="12" cy="6" r="3"/></svg>,
+    generator: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+    parking: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg>,
+    elevator: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 9l3-3 3 3M9 15l3 3 3-3"/></svg>,
+    wifi: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0L12 21l-3.47-4.89z"/></svg>,
+    ac: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="8" rx="2"/><path d="M7 18l5-5 5 5M12 13v8"/></svg>,
+    cctv: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>,
+    helipad: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>,
+    bridal: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a5 5 0 0 1 5 5c0 3-2 5-5 8-3-3-5-5-5-8a5 5 0 0 1 5-5z"/><path d="M6 21c0-3 2.5-5 6-5s6 2 6 5"/></svg>,
+    groom: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>,
+    makeup: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+    changing: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+    prayer: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>,
+    fireNOC: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>,
+    liquor: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 22h8M7 10h10L17 3H7l-4 7"/><path d="M12 15v7"/><circle cx="12" cy="13" r="3"/></svg>,
+    coordinator: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 14l2 2 4-4"/></svg>,
+    security: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+    housekeeping: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 0 0 1 1h3m10-11l2 2m-2-2v10a1 1 0 0 1-1 1h-3m-6 0a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1m-6 0h6"/></svg>,
+    valet: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
+    shuttle: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3m-1 11h-8m-3 0H3"/><rect x="9" y="11" width="14" height="10" rx="1"/><circle cx="12" cy="21" r="1"/><circle cx="20" cy="21" r="1"/></svg>,
+    pet: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><path d="M9 10l4.5 5L11 22H7l-2-6 2-6"/><path d="M14 14.5S16 19 18 19s4.5-3 4.5-3"/></svg>,
+  };
+  return icons[type] || null;
 };
 
 export default function VenueDetailPage({ venue, similar = [], nearby = [], reviews = null, setOpenLoginModalv2, setSource }) {
@@ -726,8 +758,6 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
 
   // Amenities — schema has them as an object of booleans (not the legacy array)
   const am = venue.amenities && typeof venue.amenities === "object" && !Array.isArray(venue.amenities) ? venue.amenities : null;
-  // Legacy array form support (older docs may still use this)
-  const amenitiesArrayLegacy = Array.isArray(venue.amenities) ? venue.amenities : null;
 
   // Build the highlights list dynamically — only items the venue actually has
   const highlights = [];
@@ -800,45 +830,61 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
   // Build a stable palette for review avatars (alternates burgundy/gold tones)
   const reviewAvatarColors = ["#6b1e2e", "#b8852a", "#8a3045", "#a07020", "#4a1520"];
 
-  // Amenity icon map — drives the amenities grid below
-  const AMENITY_ICONS = {
-    swimmingPool: { icon: "🏊", label: "Swimming pool" },
-    generatorBackup: { icon: "🔌", label: "Generator backup" },
-    parking: { icon: "🅿️", label: "Parking" },
-    helipad: { icon: "🚁", label: "Helipad" },
-    garden: { icon: "🌳", label: "Garden" },
-    airConditioning: { icon: "❄️", label: "Air conditioning" },
-    cctv: { icon: "📹", label: "CCTV" },
-    wifi: { icon: "📶", label: "WiFi" },
-    elevator: { icon: "🛗", label: "Elevator" },
-    bridalSuite: { icon: "👰", label: "Bridal suite" },
-    groomRoom: { icon: "🤵", label: "Groom room" },
-    makeupRoom: { icon: "💄", label: "Makeup room" },
-    changingRooms: { icon: "🚪", label: "Changing rooms" },
-    prayerRoom: { icon: "🛕", label: "Prayer room" },
-    fireNOC: { icon: "🧯", label: "Fire NOC" },
-    liquorLicense: { icon: "🍾", label: "Liquor license" },
-    dayOfCoordinator: { icon: "📋", label: "Day-of coordinator" },
-    securityStaff: { icon: "🛡", label: "Security staff" },
-    housekeeping: { icon: "🧹", label: "Housekeeping" },
-    valetParking: { icon: "🚗", label: "Valet parking" },
-    shuttleService: { icon: "🚐", label: "Shuttle service" },
-    petFriendly: { icon: "🐾", label: "Pet friendly" },
-  };
+  // Amenity tile groups — drives the icon-tile grid below. Order = display
+  // order. Each item carries the schema key, the SVG iconType, the label,
+  // and an optional `extra` string rendered under the label when AVAILABLE.
+  const parkingExtra = am?.parking === true && Number(am.parkingCapacity) > 0
+    ? `${am.parkingCapacity} cars`
+    : null;
   const AMENITY_GROUPS = [
     {
       title: "Facilities",
-      keys: ["swimmingPool", "garden", "airConditioning", "elevator", "wifi", "generatorBackup", "cctv", "parking", "helipad"],
+      items: [
+        { key: "swimmingPool", iconType: "pool", label: "Swimming Pool" },
+        { key: "generatorBackup", iconType: "generator", label: "Generator" },
+        { key: "parking", iconType: "parking", label: "Parking", extra: parkingExtra },
+        { key: "elevator", iconType: "elevator", label: "Elevator" },
+        { key: "wifi", iconType: "wifi", label: "WiFi" },
+        { key: "airConditioning", iconType: "ac", label: "Air Conditioning" },
+        { key: "cctv", iconType: "cctv", label: "CCTV Security" },
+        { key: "helipad", iconType: "helipad", label: "Helipad" },
+      ],
     },
     {
       title: "Wedding Facilities",
-      keys: ["bridalSuite", "groomRoom", "makeupRoom", "changingRooms", "prayerRoom"],
+      items: [
+        { key: "bridalSuite", iconType: "bridal", label: "Bridal Suite" },
+        { key: "groomRoom", iconType: "groom", label: "Groom Room" },
+        { key: "makeupRoom", iconType: "makeup", label: "Makeup Room" },
+        { key: "changingRooms", iconType: "changing", label: "Changing Rooms" },
+        { key: "prayerRoom", iconType: "prayer", label: "Prayer Room" },
+        { key: "fireNOC", iconType: "fireNOC", label: "Fire NOC" },
+        { key: "liquorLicense", iconType: "liquor", label: "Liquor License" },
+      ],
     },
     {
       title: "Services",
-      keys: ["dayOfCoordinator", "housekeeping", "securityStaff", "valetParking", "shuttleService", "fireNOC", "liquorLicense", "petFriendly"],
+      items: [
+        { key: "dayOfCoordinator", iconType: "coordinator", label: "Day Coordinator" },
+        { key: "securityStaff", iconType: "security", label: "Security Staff" },
+        { key: "housekeeping", iconType: "housekeeping", label: "Housekeeping" },
+        { key: "valetParking", iconType: "valet", label: "Valet Parking" },
+        { key: "shuttleService", iconType: "shuttle", label: "Shuttle Service" },
+        { key: "petFriendly", iconType: "pet", label: "Pet Friendly" },
+      ],
     },
   ];
+
+  // Per-key state derived from venue.amenities. The schema defaults every
+  // boolean to false on create, so "tba" only fires when the amenities object
+  // is missing entirely or a key was explicitly cleared.
+  const amState = (key) => {
+    if (!am) return "tba";
+    const v = am[key];
+    if (v === true) return "on";
+    if (v === false) return "off";
+    return "tba";
+  };
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -1069,9 +1115,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
           {/* MAIN COLUMN */}
           <div style={S.mainV3}>
             {/* ───── 4. ABOUT — Part 1: description block (no card, full-width) ───── */}
-            {(venue.description ||
-              highlightsTrimmed.length > 0 ||
-              (Array.isArray(venue.seoKeywords) && venue.seoKeywords.length > 0)) && (
+            {(venue.description || highlightsTrimmed.length > 0) && (
               <section style={S.aboutDescWrap}>
                 <div style={S.aboutDescEyebrow}>{venue.name}</div>
                 <p style={S.aboutDescBody}>
@@ -1091,13 +1135,6 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                       ))}
                     </div>
                   </>
-                )}
-                {Array.isArray(venue.seoKeywords) && venue.seoKeywords.length > 0 && (
-                  <div style={S.aboutDescVibeRow}>
-                    {venue.seoKeywords.slice(0, 8).map((v, i) => (
-                      <span key={i} style={S.aboutDescVibeChip}>{v}</span>
-                    ))}
-                  </div>
                 )}
               </section>
             )}
@@ -1495,46 +1532,45 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
               </div>
             </section>
 
-            {/* ───── 9. AMENITIES — ICON GRID ───── */}
-            {(am || amenitiesArrayLegacy) && (
-              <section style={S.section}>
-                <div style={S.sTitleWrap}>
-                  <div style={S.sTitle}>Amenities & Facilities</div>
-                  <div style={S.sTitleRule} />
-                </div>
-                {am ? (
-                  AMENITY_GROUPS.map((group) => {
-                    const items = group.keys
-                      .map((k) => ({ key: k, available: am[k] === true, meta: AMENITY_ICONS[k] }))
-                      .filter((it) => it.meta && typeof am[it.key] === "boolean");
-                    if (items.length === 0) return null;
-                    return (
-                      <div key={group.title} style={S.amSubGroup}>
-                        <div style={S.amSubH}>{group.title}</div>
-                        <div style={S.amIconGrid}>
-                          {items.map((it) => (
-                            <div key={it.key} style={it.available ? S.amIconItem : S.amIconItemOff}>
-                              <span style={it.available ? S.amIcon : S.amIconOff} aria-hidden="true">{it.meta.icon}</span>
-                              <span style={it.available ? S.amLabel : S.amLabelOff}>{it.meta.label}</span>
-                            </div>
-                          ))}
+            {/* ───── 9. AMENITIES — SVG ICON TILES (3 states: on / off / TBA) ───── */}
+            <section style={S.section}>
+              <div style={S.sTitleWrap}>
+                <div style={S.sTitle}>Amenities & Facilities</div>
+                <div style={S.sTitleRule} />
+              </div>
+              {AMENITY_GROUPS.map((group) => (
+                <div key={group.title} style={S.amGroup}>
+                  <div style={S.amGroupLabel}>{group.title}</div>
+                  <div style={S.amTiles}>
+                    {group.items.map((it) => {
+                      const state = amState(it.key);
+                      const tileStyle = state === "on" ? S.amTile : state === "off" ? S.amTileOff : S.amTileTba;
+                      const iconWrapStyle = state === "on" ? S.amTileIcon : S.amTileIconMuted;
+                      const iconColor = state === "on" ? "#6b1e2e" : state === "off" ? "#999999" : "#bbbbbb";
+                      const labelStyle = state === "on"
+                        ? S.amTileLabel
+                        : state === "off"
+                          ? S.amTileLabelStrike
+                          : S.amTileLabelMuted;
+                      return (
+                        <div key={it.key} style={tileStyle}>
+                          <span style={iconWrapStyle} aria-hidden="true">
+                            <AmenityIcon type={it.iconType} size={22} color={iconColor} />
+                          </span>
+                          <span style={labelStyle}>{it.label}</span>
+                          {state === "on" && it.extra && (
+                            <span style={S.amTileExtra}>{it.extra}</span>
+                          )}
+                          {state === "tba" && (
+                            <span style={S.amTileTbaText}>TBA</span>
+                          )}
                         </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  // Legacy array-of-strings fallback
-                  <div style={S.amIconGrid}>
-                    {amenitiesArrayLegacy.map((a) => (
-                      <div key={a} style={S.amIconItem}>
-                        <span style={S.amIcon} aria-hidden="true">✦</span>
-                        <span style={S.amLabel}>{String(a).replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
-                )}
-              </section>
-            )}
+                </div>
+              ))}
+            </section>
 
             {/* ───── 10. CONTACT ───── */}
             {venue.contact?.primaryName && (
