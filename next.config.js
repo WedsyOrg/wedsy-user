@@ -1,3 +1,18 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   WARNING: styled-jsx with TWO template-literal `<style jsx>` blocks in the
+   same component file causes a Next.js SWC compile failure with an
+   unhelpful generic message: `./pages/.../foo.js  Error: failed to process`.
+
+   It surfaces specifically when one of the two blocks uses dynamic
+   interpolation (e.g. `${someVar}` inside the template literal). Both blocks
+   parse individually, ESLint passes, `node --check` passes — only
+   `next build` fails, with no line number.
+
+   ALWAYS use ONE `<style jsx>` block per component. Consolidate keyframes,
+   :global() selectors, hover rules, and animations into that single block.
+   See pages/venues/index.js for the canonical pattern.
+   ───────────────────────────────────────────────────────────────────────── */
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,

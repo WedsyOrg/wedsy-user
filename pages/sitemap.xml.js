@@ -64,6 +64,12 @@ export async function getServerSideProps({ res }) {
       priority: '0.8',
     },
     {
+      loc: `${baseUrl}/venues`,
+      lastmod: currentDate,
+      changefreq: 'daily',
+      priority: '0.9',
+    },
+    {
       loc: `${baseUrl}/home`,
       lastmod: currentDate,
       changefreq: 'monthly',
@@ -152,13 +158,39 @@ export async function getServerSideProps({ res }) {
     console.error('Error fetching vendors:', error);
   }
 
+  // Fetch venue detail pages (only published — the same status the public
+  // /venues browse uses). Response shape is { venues: [...], total }.
+  let venuePages = [];
+  try {
+    const venueResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/venues?status=published&limit=10000&skip=0`
+    );
+    if (venueResponse.ok) {
+      const venueData = await venueResponse.json();
+      if (Array.isArray(venueData.venues)) {
+        venuePages = venueData.venues
+          .map((v) => v && v.slug)
+          .filter((s) => typeof s === "string" && s.length > 0)
+          .map((slug) => ({
+            loc: `${baseUrl}/venues/${slug}`,
+            lastmod: currentDate,
+            changefreq: 'weekly',
+            priority: '0.8',
+          }));
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching venues:', error);
+  }
+
   // Combine all URLs
-  const allUrls = [...staticPages, ...decorPages, ...packagePages, ...vendorPages];
+  const allUrls = [...staticPages, ...decorPages, ...packagePages, ...vendorPages, ...venuePages];
 
   // Generate the XML sitemap with the blog data
   const sitemap = generateSiteMap(allUrls);
 
   res.setHeader('Content-Type', 'text/xml');
+  res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=43200');
   // Write the XML to the response
   res.write(sitemap);
   res.end();

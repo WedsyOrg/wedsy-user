@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 
 function App({ Component, pageProps }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [logIn, setLogIn] = useState(false);
   const [user, setUser] = useState({});
   const [openLoginModal, setOpenLoginModal] = useState(false);
@@ -70,6 +70,13 @@ function App({ Component, pageProps }) {
   };
 
   useEffect(() => {
+    const publicPaths = ['/venues'];
+    const isPublicPath = publicPaths.some(p => router.pathname.startsWith(p));
+    if (isPublicPath) {
+      setLogIn(true);
+      setLoading(false);
+      return;
+    }
     if (!localStorage.getItem("token")) {
       if (isPathRestricted()) router.push("/login");
       setLogIn(true);

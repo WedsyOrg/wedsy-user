@@ -1,9 +1,5 @@
 "use client";
 
-import {
-  Modal,
-  Spinner
-} from "flowbite-react";
 import { useEffect, useState } from "react";
 import { COUNTRIES, getCountry, isIndia, isOther, isValidCustomCode, effectiveCountryCode, detectCountryCode } from "@/utils/countries";
 
@@ -37,6 +33,13 @@ export default function LoginModalv2({
       setData((d) => ({ ...d, countryCode: code }));
     });
   }, []);
+
+  // Auto-close the success state 1.5s after a successful login/signup.
+  useEffect(() => {
+    if (!data.success) return;
+    const t = setTimeout(() => setOpenLoginModal(false), 1500);
+    return () => clearTimeout(t);
+  }, [data.success, setOpenLoginModal]);
 
   const country = getCountry(data.countryCode);
   const effectiveCC = effectiveCountryCode(data.countryCode, data.customCountryCode);
@@ -238,26 +241,62 @@ export default function LoginModalv2({
     ? !data.name || !data.email || data.loading
     : !data.phone || !isPhoneValid || !customCodeOK || data.loading || (data.otpSent ? !data.Otp : false);
 
+  if (!(openLoginModal && logIn)) return null;
+
+  const subtitle = data.needsSignup
+    ? "Create your account"
+    : source === "venue_enquiry"
+    ? "Sign in to track your venue conversation"
+    : "Welcome back";
+
+  const serif = { fontFamily: "Georgia, 'Times New Roman', serif" };
+
   return (
-    <>
-      <Modal
-        show={openLoginModal && logIn}
-        size="md"
-        popup
-        onClose={() => setOpenLoginModal(false)}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      onClick={() => setOpenLoginModal(false)}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        className="relative bg-[#fdf6ec] rounded-2xl shadow-2xl max-w-sm w-full mx-4 p-8"
+        onClick={(e) => e.stopPropagation()}
       >
-        <Modal.Header />
-        <Modal.Body>
-          <div className="space-y-6">
-            <h3 className="text-xl font-medium text-gray-900 dark:text-white text-center">
-              {data.needsSignup ? "Create your account" : "Login to proceed"}
-            </h3>
-            <div className=" gap-6 flex flex-col w-2/3 mx-auto">
+        {/* Close X */}
+        <button
+          type="button"
+          aria-label="Close"
+          onClick={() => setOpenLoginModal(false)}
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-[#6b1e2e] hover:opacity-70 transition-opacity"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+            <line x1="3" y1="3" x2="13" y2="13" />
+            <line x1="13" y1="3" x2="3" y2="13" />
+          </svg>
+        </button>
+
+        {/* Header */}
+        <div className="text-center">
+          <h2 style={serif} className="text-[#6b1e2e] text-2xl tracking-widest">WEDSY</h2>
+          <div className="h-px bg-[#b8852a] opacity-40 w-12 mx-auto my-2" />
+          {!data.success && (
+            <p className="text-[#7a5a48] text-sm">{subtitle}</p>
+          )}
+        </div>
+
+        {data.success ? (
+          <div className="mt-8 text-center">
+            <div className="text-[#b8852a] text-5xl leading-none mb-3">✓</div>
+            <div style={serif} className="text-[#6b1e2e] text-xl">You&apos;re signed in!</div>
+          </div>
+        ) : (
+          <>
+            <div className="mt-6 flex flex-col gap-5">
               {!data.needsSignup && (
                 <>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center border-b border-[#e8d8c4]">
                     {isOther(data.countryCode) ? (
-                      <div className="w-[120px] flex items-center border-b border-b-black">
+                      <div className="w-[110px] flex items-center">
                         <input
                           type="text"
                           inputMode="numeric"
@@ -275,7 +314,7 @@ export default function LoginModalv2({
                             }
                           }}
                           disabled={data.otpSent}
-                          className="flex-1 min-w-0 focus:ring-0 text-center text-black bg-transparent border-0 outline-0 placeholder:text-black"
+                          className="flex-1 min-w-0 bg-transparent border-0 outline-none focus:ring-0 text-[#2c1810] placeholder-[#b09080] text-center py-2"
                         />
                         <button
                           type="button"
@@ -283,7 +322,7 @@ export default function LoginModalv2({
                           disabled={data.otpSent}
                           title="Back to country list"
                           aria-label="Back to country list"
-                          className="text-gray-500 hover:text-black text-lg leading-none px-1"
+                          className="text-[#b09080] hover:text-[#6b1e2e] text-lg leading-none px-1"
                         >
                           ×
                         </button>
@@ -293,7 +332,7 @@ export default function LoginModalv2({
                         value={data.countryCode}
                         onChange={(e) => setData({ ...data, countryCode: e.target.value, phone: "" })}
                         disabled={data.otpSent}
-                        className="w-[120px] text-black bg-transparent border-0 border-b border-b-black focus:ring-0"
+                        className="w-[110px] bg-transparent border-0 outline-none focus:ring-0 text-[#2c1810] py-2"
                       >
                         {COUNTRIES.map((c) => (
                           <option key={`${c.code}-${c.name}`} value={c.code} title={c.name}>
@@ -311,45 +350,55 @@ export default function LoginModalv2({
                       onChange={(e) => setData({ ...data, phone: e.target.value.replace(/\D/g, "") })}
                       disabled={data.otpSent}
                       name="phone"
-                      className="flex-1 min-w-0 focus:ring-0 text-center text-black bg-transparent border-0 border-b border-b-black outline-0 placeholder:text-black"
+                      className="flex-1 min-w-0 bg-transparent border-0 outline-none focus:ring-0 text-[#2c1810] placeholder-[#b09080] py-2"
                     />
                   </div>
 
                   {data.otpSent && (
-                    <input
-                      type="text"
-                      placeholder="OTP"
-                      value={data.Otp}
-                      onChange={(e) => setData({ ...data, Otp: e.target.value })}
-                      name="otp"
-                      className="focus:ring-0 text-center text-black bg-transparent border-0 border-b border-b-black outline-0 outline-0 placeholder:text-black"
-                    />
+                    <div className="border-b border-[#e8d8c4]">
+                      <input
+                        type="text"
+                        placeholder="Enter OTP"
+                        value={data.Otp}
+                        onChange={(e) => setData({ ...data, Otp: e.target.value })}
+                        name="otp"
+                        className="w-full bg-transparent border-0 outline-none focus:ring-0 text-[#2c1810] placeholder-[#b09080] text-center tracking-widest py-2"
+                      />
+                    </div>
                   )}
                 </>
               )}
+
               {data.needsSignup && (
                 <>
-                  <input
-                    type="text"
-                    placeholder="Name"
-                    value={data.name}
-                    onChange={(e) => setData({ ...data, name: e.target.value })}
-                    className="focus:ring-0 text-center text-black bg-transparent border-0 border-b border-b-black outline-0 placeholder:text-black"
-                  />
-                  <input
-                    type="email"
-                    placeholder="Email"
-                    value={data.email}
-                    onChange={(e) => setData({ ...data, email: e.target.value })}
-                    className="focus:ring-0 text-center text-black bg-transparent border-0 border-b border-b-black outline-0 placeholder:text-black"
-                  />
+                  <div className="border-b border-[#e8d8c4]">
+                    <input
+                      type="text"
+                      placeholder="Your name"
+                      value={data.name}
+                      onChange={(e) => setData({ ...data, name: e.target.value })}
+                      className="w-full bg-transparent border-0 outline-none focus:ring-0 text-[#2c1810] placeholder-[#b09080] py-2"
+                    />
+                  </div>
+                  <div className="border-b border-[#e8d8c4]">
+                    <input
+                      type="email"
+                      placeholder="Email address"
+                      value={data.email}
+                      onChange={(e) => setData({ ...data, email: e.target.value })}
+                      className="w-full bg-transparent border-0 outline-none focus:ring-0 text-[#2c1810] placeholder-[#b09080] py-2"
+                    />
+                  </div>
                 </>
               )}
-              {data.message && <p className="text-red-500">{data.message}</p>}
+
+              {data.message && (
+                <p className="text-red-400 text-xs text-center">{data.message}</p>
+              )}
             </div>
+
             <button
               type="submit"
-              className="rounded-full bg-black text-white py-2 block w-3/4 mx-auto disabled:bg-black/50"
               disabled={isDisabled}
               onClick={() => {
                 if (data.needsSignup) {
@@ -360,11 +409,12 @@ export default function LoginModalv2({
                   SendOTP();
                 }
               }}
+              className="mt-6 w-full bg-[#6b1e2e] text-[#fdf6ec] rounded-full py-3 hover:bg-[#8b2a3e] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {data.loading ? (
                 <>
-                  <Spinner size="sm" />
-                  <span className="pl-3">Loading...</span>
+                  <span className="inline-block w-4 h-4 rounded-full border-2 border-[#fdf6ec]/40 border-t-[#6b1e2e] animate-spin" />
+                  <span>Loading...</span>
                 </>
               ) : data.needsSignup ? (
                 <>Create account</>
@@ -372,9 +422,13 @@ export default function LoginModalv2({
                 <>Login</>
               )}
             </button>
-          </div>
-        </Modal.Body>
-      </Modal>
-    </>
+
+            <p className="mt-3 text-[#b09080] text-xs text-center">
+              By continuing, you agree to Wedsy&apos;s Terms
+            </p>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
