@@ -717,7 +717,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
   // 24 — a pure client-side filter would render "no venues found" even
   // though matching venues exist on the server. Area stays client-side for
   // live-typing feedback and rides along on Load-More fetches.
-  const [activeZone, setActiveZone] = useState("all");
+  const [selectedZones, setSelectedZones] = useState([]);
   // Sticky filter bar dropdown — only one open at a time, null when closed.
   // `dropdownAnchor` holds the {top,left} viewport coords captured from the
   // chip's getBoundingClientRect() at the moment it was clicked; the dropdown
@@ -738,10 +738,10 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
       limit: "24",
       skip: String(skip),
     });
-    if (activeZone && activeZone !== "all") params.set("zone", activeZone);
+    if (selectedZones.length > 0) params.set("zone", selectedZones.join(","));
     if (nameSearch.trim()) params.set("name", nameSearch.trim());
     return `${process.env.NEXT_PUBLIC_API_URL}/venues?${params.toString()}`;
-  }, [activeZone, nameSearch]);
+  }, [selectedZones, nameSearch]);
 
   const loadMore = useCallback(async () => {
     if (loadMoreBusy || !hasMore) return;
@@ -772,7 +772,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
     (async () => {
       try {
         const params = new URLSearchParams({ status: "published", limit: "24", skip: "0" });
-        if (activeZone && activeZone !== "all") params.set("zone", activeZone);
+        if (selectedZones.length > 0) params.set("zone", selectedZones.join(","));
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venues?${params.toString()}`);
         if (!res.ok) return;
         const data = await res.json();
@@ -785,7 +785,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
       }
     })();
     return () => { cancelled = true; };
-  }, [activeZone]);
+  }, [selectedZones]);
 
   const toggleAmenity = useCallback((key) => {
     setAmenitySet((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -793,7 +793,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
   const resetFilters = () => {
     setNameSearch("");
     setVenueType("");
-    setActiveZone("all");
+    setSelectedZones([]);
     setCapacityBucket("");
     setPriceBucket("");
     setAmenitySet({});
@@ -879,11 +879,11 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
   }, []);
 
   const filterActiveFlags = useMemo(() => ({
-    zone: !!activeZone && activeZone !== "all",
+    zone: selectedZones.length > 0,
     price: !!priceBucket,
     capacity: !!capacityBucket,
     amenities: verifiedOnly || Object.values(amenitySet).some(Boolean),
-  }), [activeZone, priceBucket, capacityBucket, verifiedOnly, amenitySet]);
+  }), [selectedZones, priceBucket, capacityBucket, verifiedOnly, amenitySet]);
 
   const anyFilterActive =
     !!venueType ||
@@ -894,7 +894,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
     !!nameSearch;
 
   const clearFilterGroup = useCallback((group) => {
-    if (group === "zone") setActiveZone("all");
+    if (group === "zone") setSelectedZones([]);
     else if (group === "price") setPriceBucket("");
     else if (group === "capacity") setCapacityBucket("");
     else if (group === "amenities") { setAmenitySet({}); setVerifiedOnly(false); }
@@ -916,7 +916,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
   })), [venues, ZONE_AREA_DEFS]);
   const applyZone = useCallback((zoneValue) => {
     resetFilters();
-    setActiveZone(zoneValue);
+    setSelectedZones([zoneValue]);
     setTimeout(scrollToListing, 60);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scrollToListing]);
@@ -929,7 +929,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
         key: "north-resorts",
         title: "Best in North Bangalore",
         predicate: (v) => (v.zone === "north" || v.zone === "airport") && v.venueType === "resort",
-        viewAll: () => { resetFilters(); setActiveZone("north"); setVenueType("resort"); setTimeout(scrollToListing, 60); },
+        viewAll: () => { resetFilters(); setSelectedZones(["north"]); setVenueType("resort"); setTimeout(scrollToListing, 60); },
       },
       {
         key: "loved",
@@ -977,9 +977,9 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
       // API response omits `v.zone` (older deployment), trust the server
       // filter rather than dropping every card.
       .filter((v) => {
-        if (!activeZone || activeZone === "all") return true;
+        if (selectedZones.length === 0) return true;
         if (v.zone === undefined) return true;
-        return v.zone === activeZone;
+        return selectedZones.includes(v.zone);
       })
       .filter((v) => inCapacityBucket(venueMaxCapacity(v), capacityBucket))
       .filter((v) => inPriceBucket(venueLowestPrice(v), priceBucket))
@@ -999,7 +999,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
         }
         return (b.dataCompleteness || 0) - (a.dataCompleteness || 0);
       });
-  }, [venues, nameSearch, venueType, activeZone, capacityBucket, priceBucket, amenitySet, verifiedOnly, sort]);
+  }, [venues, nameSearch, venueType, selectedZones, capacityBucket, priceBucket, amenitySet, verifiedOnly, sort]);
 
   const featured = useMemo(() => {
     return [...venues]
@@ -1200,7 +1200,7 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
 
               <div style={S.filterDivider} aria-hidden="true" />
 
-              {/* Zone dropdown */}
+              {/* Zone dropdown (multi-select checkboxes) */}
               <div style={S.filterChipWrap} data-filter-dropdown>
                 <button
                   type="button"
@@ -1209,7 +1209,13 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                   aria-expanded={openDropdown === "zone"}
                   aria-haspopup="listbox"
                 >
-                  <span>Zone</span>
+                  <span>
+                    {selectedZones.length === 0
+                      ? "Zone"
+                      : selectedZones.length === 1
+                        ? `Zone: ${ZONES.find((z) => z.value === selectedZones[0])?.label || selectedZones[0]}`
+                        : `Zone: ${selectedZones.length} selected`}
+                  </span>
                   {filterActiveFlags.zone ? (
                     <span
                       role="button"
@@ -1224,19 +1230,32 @@ export default function VenuesPage({ venues: initialVenues = [], total: initialT
                   )}
                 </button>
                 {openDropdown === "zone" && (
-                  <div style={{ ...S.filterDropdown, top: dropdownAnchor.top, left: dropdownAnchor.left }} role="listbox">
-                    {ZONES.map((z) => (
-                      <label key={z.value} style={S.filterDropdownItem}>
-                        <input
-                          type="radio"
-                          name="zoneFilter"
-                          checked={activeZone === z.value}
-                          onChange={() => { setActiveZone(z.value); setOpenDropdown(null); }}
-                          style={{ accentColor: C.burgundy }}
-                        />
-                        <span>{z.label}</span>
-                      </label>
-                    ))}
+                  <div style={{ ...S.filterDropdown, top: dropdownAnchor.top, left: dropdownAnchor.left }}>
+                    {ZONES.map((z) => {
+                      const isAll = z.value === "all";
+                      const checked = isAll ? selectedZones.length === 0 : selectedZones.includes(z.value);
+                      return (
+                        <label key={z.value} style={S.filterDropdownItem}>
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => {
+                              if (isAll) {
+                                setSelectedZones([]);
+                              } else {
+                                setSelectedZones((prev) =>
+                                  prev.includes(z.value)
+                                    ? prev.filter((x) => x !== z.value)
+                                    : [...prev, z.value]
+                                );
+                              }
+                            }}
+                            style={{ accentColor: C.burgundy }}
+                          />
+                          <span>{z.label}</span>
+                        </label>
+                      );
+                    })}
                   </div>
                 )}
               </div>
