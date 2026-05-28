@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 
 import { trimTitle, trimDescription } from "@/utils/seo";
@@ -379,6 +380,12 @@ const S = {
     background: C.burgundy, color: C.ivory,
     display: "inline-flex", alignItems: "center", gap: 4,
   },
+  cardBadgeFeatured: {
+    position: "absolute", top: 44, left: 12,
+    fontSize: 9, fontWeight: 600, letterSpacing: 0.5,
+    padding: "3px 8px", borderRadius: 4,
+    background: "#b8852a", color: "white",
+  },
   cardBody: { padding: "14px 16px 16px" },
   cardName: {
     fontFamily: "Georgia, 'Times New Roman', serif",
@@ -637,6 +644,7 @@ function VenueCard({ venue, featured = false }) {
           <div style={S.cardImgPlaceholder}>🏡</div>
         )}
         <span style={S.cardBadgeType}>{vTypeLabel}</span>
+        {venue.featured === true && <span style={S.cardBadgeFeatured}>✦ FEATURED</span>}
         {isVerified && <span style={S.cardBadgeVerified}>✓ Verified</span>}
       </div>
       <div style={S.cardBody}>
@@ -711,6 +719,18 @@ export default function VenuesPage({
   const viewportWidth = useWindowWidth();
   const isMobile = viewportWidth < 768;
   const isTablet = viewportWidth >= 768 && viewportWidth < 1024;
+
+  // ─── Hero autocomplete (search dropdown under the Option-K hero input) ───
+  // `searchRef` attaches to the form wrapping the hero input. `searchQuery`
+  // mirrors what's typed (kept separate from nameSearch so the dropdown can
+  // show results even before the user "commits" with Enter). `heroAnchor`
+  // stores the search box's getBoundingClientRect-derived position so the
+  // (position: fixed) dropdown sits exactly under it on focus/scroll/resize.
+  const router = useRouter();
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [heroAnchor, setHeroAnchor] = useState({ top: 0, left: 0, width: 0 });
+  const searchRef = useRef(null);
 
   const [nameSearch, setNameSearch] = useState("");
   const [venueType, setVenueType] = useState("");
@@ -819,6 +839,51 @@ export default function VenuesPage({
     }
   }, []);
 
+  // ─── Hero autocomplete dropdown — position tracking + close behaviors ───
+  // Recompute the (position: fixed) dropdown's top/left/width from the search
+  // box's bounding rect whenever it becomes focused, the window scrolls, or
+  // the viewport resizes — keeps the panel glued under the input.
+  const recomputeHeroAnchor = useCallback(() => {
+    const node = searchRef.current;
+    if (!node) return;
+    const rect = node.getBoundingClientRect();
+    setHeroAnchor({ top: rect.bottom + 8, left: rect.left, width: rect.width });
+  }, []);
+  useEffect(() => {
+    if (!searchFocused) return undefined;
+    recomputeHeroAnchor();
+    const onScroll = () => recomputeHeroAnchor();
+    const onResize = () => recomputeHeroAnchor();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [searchFocused, recomputeHeroAnchor]);
+
+  // Close on click-outside (mousedown anywhere not inside searchRef) and on
+  // Escape. Enter is handled by the existing form's onSubmit — which calls
+  // scrollToListing — so we just close the panel there.
+  useEffect(() => {
+    if (!searchFocused) return undefined;
+    const onMouseDown = (e) => {
+      const node = searchRef.current;
+      if (node && !node.contains(e.target)) {
+        setSearchFocused(false);
+      }
+    };
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setSearchFocused(false);
+    };
+    document.addEventListener("mousedown", onMouseDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onMouseDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [searchFocused]);
+
   // ─── Sticky filter bar — click-outside closes the active dropdown. The
   // chip wrappers carry a [data-filter-dropdown] attribute so we can scope
   // the "inside" check tightly. Dropdown panels render position: fixed but
@@ -910,6 +975,7 @@ export default function VenuesPage({
         key: "north-resorts",
         title: "Best in North Bangalore",
         predicate: (v) => (v.zone === "north" || v.zone === "airport") && v.venueType === "resort",
+        featuredFirst: true,
         viewAll: () => { resetFilters(); setSelectedZones(["north"]); setVenueType("resort"); setTimeout(scrollToListing, 60); },
       },
       {
@@ -922,10 +988,13 @@ export default function VenuesPage({
     ];
     return rows.map((row) => {
       const matches = (row.sorted || venues).filter(row.predicate);
+      const ordered = row.featuredFirst
+        ? [...matches].sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0))
+        : matches;
       return {
         key: row.key,
         title: row.title,
-        venues: matches.slice(0, 4),
+        venues: ordered.slice(0, 4),
         totalCount: matches.length,
         viewAll: row.viewAll,
       };
@@ -986,6 +1055,82 @@ export default function VenuesPage({
       .sort((a, b) => (b.dataCompleteness || 0) - (a.dataCompleteness || 0))
       .slice(0, 3);
   }, [venues]);
+
+  // ─── Autocomplete result groups ─────────────────────────────────────────
+  // The venue model doesn't carry a dedicated `locality` field, so we derive
+  // one from `address` — taking the first comma-segment with "Bangalore" /
+  // "Bengaluru" / trailing PIN stripped. Click on an area sets nameSearch
+  // (the existing locality fallback already used on line ~1050) and scrolls
+  // to the listing. Zones / types map 1:1 to the existing ZONES + CATEGORIES
+  // vocabularies above.
+  const venueLocality = useCallback((v) => {
+    const addr = (v?.address || "").trim();
+    if (!addr) return "";
+    const firstSeg = addr.split(",")[0] || "";
+    return firstSeg
+      .replace(/\bBengaluru\b/gi, "")
+      .replace(/\bBangalore\b/gi, "")
+      .replace(/\b\d{6}\b/g, "")
+      .trim();
+  }, []);
+
+  const autocomplete = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (q.length < 2) return { venues: [], areas: [], zones: [], types: [], total: 0 };
+    const venueHits = venues
+      .filter((v) => v?.name && v.name.toLowerCase().includes(q))
+      .slice(0, 4);
+    const localityCounts = new Map();
+    venues.forEach((v) => {
+      const loc = venueLocality(v);
+      if (!loc) return;
+      if (!loc.toLowerCase().includes(q)) return;
+      localityCounts.set(loc, (localityCounts.get(loc) || 0) + 1);
+    });
+    const areaHits = Array.from(localityCounts.entries())
+      .map(([label, count]) => ({ label, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 4);
+    const zoneHits = ZONES.filter(
+      (z) => z.value !== "all" && z.label.toLowerCase().includes(q),
+    ).slice(0, 4);
+    const typeHits = CATEGORIES.filter(
+      (c) => c.value && c.label.toLowerCase().includes(q),
+    ).slice(0, 4);
+    return {
+      venues: venueHits,
+      areas: areaHits,
+      zones: zoneHits,
+      types: typeHits,
+      total: venueHits.length + areaHits.length + zoneHits.length + typeHits.length,
+    };
+  }, [searchQuery, venues, venueLocality]);
+
+  const showAutocomplete = searchFocused && searchQuery.trim().length >= 2;
+
+  // ─── Result-click handlers — close the dropdown, apply the filter the
+  // same way the rest of the page does, and (for non-venue results) scroll
+  // to the All Venues section.
+  const onPickVenue = useCallback((venue) => {
+    setSearchFocused(false);
+    router.push(`/venues/${venue.slug}`);
+  }, [router]);
+  const onPickArea = useCallback((label) => {
+    setSearchFocused(false);
+    setNameSearch(label);
+    setSearchQuery(label);
+    setTimeout(scrollToListing, 60);
+  }, [scrollToListing]);
+  const onPickZone = useCallback((zoneValue) => {
+    setSearchFocused(false);
+    setSelectedZones([zoneValue]);
+    setTimeout(scrollToListing, 60);
+  }, [scrollToListing]);
+  const onPickType = useCallback((typeValue) => {
+    setSearchFocused(false);
+    setVenueType(typeValue);
+    setTimeout(scrollToListing, 60);
+  }, [scrollToListing]);
 
   return (
     <>
@@ -1101,11 +1246,11 @@ export default function VenuesPage({
             </p>
 
             {/* Search (sharp-edged, no border-radius) */}
+            <div ref={searchRef} style={{ position: "relative", maxWidth: 380 }}>
             <form
-              onSubmit={(e) => { e.preventDefault(); scrollToListing(); }}
+              onSubmit={(e) => { e.preventDefault(); setSearchFocused(false); scrollToListing(); }}
               style={{
                 marginTop: 18,
-                maxWidth: 380,
                 display: "flex",
                 alignItems: "center",
                 background: "#ffffff",
@@ -1130,9 +1275,11 @@ export default function VenuesPage({
               <input
                 className="hero-k-input"
                 value={nameSearch}
-                onChange={(e) => setNameSearch(e.target.value)}
+                onFocus={() => { setSearchQuery(nameSearch || ""); setSearchFocused(true); }}
+                onChange={(e) => { setNameSearch(e.target.value); setSearchQuery(e.target.value); }}
                 placeholder="Search by name, area, or vibe…"
                 aria-label="Search venues"
+                aria-autocomplete="list"
                 style={{
                   flex: 1,
                   marginLeft: 10,
@@ -1159,6 +1306,131 @@ export default function VenuesPage({
                 Search →
               </button>
             </form>
+
+            {/* ─── Hero autocomplete dropdown ─────────────────────────────
+                Visible only while focused AND query length >= 2. Uses
+                position: fixed (top/left/width from getBoundingClientRect
+                on the form wrapper) so it escapes any parent overflow. */}
+            {showAutocomplete && (
+              <div
+                role="listbox"
+                aria-label="Search suggestions"
+                style={{
+                  position: "fixed",
+                  top: heroAnchor.top,
+                  left: heroAnchor.left,
+                  width: heroAnchor.width,
+                  zIndex: 300,
+                  background: "#ffffff",
+                  borderRadius: 12,
+                  border: "1px solid #e8d8c4",
+                  boxShadow: "0 8px 32px rgba(107,30,46,0.12)",
+                  maxHeight: 400,
+                  overflowY: "auto",
+                  padding: "8px 0",
+                }}
+              >
+                {autocomplete.total === 0 ? (
+                  <div style={{ padding: "16px 18px", textAlign: "left" }}>
+                    <div style={{ fontSize: 14, color: "#2c1810", marginBottom: 6 }}>
+                      No results for &ldquo;{searchQuery}&rdquo;
+                    </div>
+                    <div style={{ fontSize: 12, color: "#7a5a48" }}>
+                      Press Enter to search →
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {autocomplete.venues.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: 10, letterSpacing: 1.4, color: "#b09080", textTransform: "uppercase", padding: "8px 16px 4px", fontWeight: 500 }}>
+                          Venues
+                        </div>
+                        {autocomplete.venues.map((v) => (
+                          <div
+                            key={v._id || v.slug}
+                            role="option"
+                            aria-selected={false}
+                            tabIndex={0}
+                            className="hero-ac-row"
+                            style={{ padding: "10px 16px", fontSize: 14, cursor: "pointer", color: "#2c1810", display: "flex", alignItems: "center", gap: 10 }}
+                            onMouseDown={(e) => { e.preventDefault(); onPickVenue(v); }}
+                          >
+                            <span aria-hidden="true" style={{ color: "#b8852a", fontSize: 12 }}>🏡</span>
+                            <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {autocomplete.areas.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: 10, letterSpacing: 1.4, color: "#b09080", textTransform: "uppercase", padding: "8px 16px 4px", fontWeight: 500 }}>
+                          Areas
+                        </div>
+                        {autocomplete.areas.map((a) => (
+                          <div
+                            key={a.label}
+                            role="option"
+                            aria-selected={false}
+                            tabIndex={0}
+                            className="hero-ac-row"
+                            style={{ padding: "10px 16px", fontSize: 14, cursor: "pointer", color: "#2c1810", display: "flex", alignItems: "center", gap: 10 }}
+                            onMouseDown={(e) => { e.preventDefault(); onPickArea(a.label); }}
+                          >
+                            <span aria-hidden="true" style={{ color: "#b8852a", fontSize: 12 }}>📍</span>
+                            <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.label}</span>
+                            <span style={{ fontSize: 11, color: "#b09080" }}>{a.count} venue{a.count === 1 ? "" : "s"}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {autocomplete.zones.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: 10, letterSpacing: 1.4, color: "#b09080", textTransform: "uppercase", padding: "8px 16px 4px", fontWeight: 500 }}>
+                          Zones
+                        </div>
+                        {autocomplete.zones.map((z) => (
+                          <div
+                            key={z.value}
+                            role="option"
+                            aria-selected={false}
+                            tabIndex={0}
+                            className="hero-ac-row"
+                            style={{ padding: "10px 16px", fontSize: 14, cursor: "pointer", color: "#2c1810", display: "flex", alignItems: "center", gap: 10 }}
+                            onMouseDown={(e) => { e.preventDefault(); onPickZone(z.value); }}
+                          >
+                            <span aria-hidden="true" style={{ color: "#b8852a", fontSize: 12 }}>🧭</span>
+                            <span style={{ flex: 1, minWidth: 0 }}>{z.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {autocomplete.types.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: 10, letterSpacing: 1.4, color: "#b09080", textTransform: "uppercase", padding: "8px 16px 4px", fontWeight: 500 }}>
+                          Types
+                        </div>
+                        {autocomplete.types.map((t) => (
+                          <div
+                            key={t.value}
+                            role="option"
+                            aria-selected={false}
+                            tabIndex={0}
+                            className="hero-ac-row"
+                            style={{ padding: "10px 16px", fontSize: 14, cursor: "pointer", color: "#2c1810", display: "flex", alignItems: "center", gap: 10 }}
+                            onMouseDown={(e) => { e.preventDefault(); onPickType(t.value); }}
+                          >
+                            <span aria-hidden="true" style={{ color: "#b8852a", fontSize: 12 }}>🏷</span>
+                            <span style={{ flex: 1, minWidth: 0 }}>{t.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+            </div>
           </div>
 
           {/* RIGHT — three stat panels (vertical stack on desktop, horizontal row on mobile) */}
@@ -1646,6 +1918,8 @@ export default function VenuesPage({
           border-color: ${C.gold} !important;
         }
         :global(.hero-k-input)::placeholder { color: #b09080; }
+        :global(.hero-ac-row):hover { background: rgba(107,30,46,0.04); }
+        :global(.hero-ac-row):focus { background: rgba(107,30,46,0.04); outline: none; }
         /* Hide scrollbars on horizontal scrollers (filter bar, curated rows). */
         :global(.filter-bar-row)::-webkit-scrollbar,
         :global(.curated-scroll)::-webkit-scrollbar { display: none; }

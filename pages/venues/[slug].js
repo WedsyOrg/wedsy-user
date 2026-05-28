@@ -388,6 +388,7 @@ const S = {
   amTileLabelMobile: { fontSize: 10 },
   // Tighten the sticky quick-facts strip on mobile so chips don't wrap.
   stickyBarInnerMobile: { gap: 10, padding: "8px 1rem" },
+  stickyChipMobile: { fontSize: 11, gap: 5 },
 };
 
 const VIBES = ["Traditional", "Contemporary", "Outdoor", "Intimate", "Grand"];
@@ -1096,7 +1097,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
             <div style={{ ...S.stickyBarInner, ...(isMobile ? S.stickyBarInnerMobile : {}) }}>
               {stickyChips.map((chip, i) => (
                 <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
-                  <span style={S.stickyChip}>
+                  <span style={{ ...S.stickyChip, ...(isMobile ? S.stickyChipMobile : {}) }}>
                     <span aria-hidden="true">{chip.icon}</span> {chip.text}
                   </span>
                   {i < stickyChips.length - 1 && <span style={S.stickyDivider} />}
