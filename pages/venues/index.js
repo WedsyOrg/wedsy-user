@@ -1000,181 +1000,177 @@ export default function VenuesPage({
       </Head>
 
       <main style={S.page}>
-        {/* ────────── 1 — HERO (Option K: Ivory + Crown Divider) ────────── */}
+        {/* ────────── 1 — HERO (Option K: Ivory + Crown Divider, centered) ────────── */}
         <section
           style={{
+            padding: "40px 24px 36px",
             display: "flex",
-            flexDirection: isMobile ? "column" : "row",
-            minHeight: "52vh",
-            overflow: "hidden",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            textAlign: "center",
             background: "#ffffff",
+            overflow: "hidden",
           }}
         >
-          {/* LEFT — divider + headline + statement + seal + search */}
-          <div
-            style={{
-              flex: 1,
-              padding: isMobile ? "24px 20px" : "32px 36px",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-            }}
-          >
-            {/* Gold crown divider */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
-              <div
-                style={{
-                  flex: 1,
-                  height: 0.5,
-                  background: "linear-gradient(to right, transparent, #b8852a)",
-                }}
-                aria-hidden="true"
-              />
-              <div
-                style={{
-                  fontSize: 9,
-                  color: "#b8852a",
-                  letterSpacing: 4,
-                  textTransform: "uppercase",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                WEDSY · BANGALORE
-              </div>
-              <div
-                style={{
-                  flex: 1,
-                  height: 0.5,
-                  background: "linear-gradient(to left, transparent, #b8852a)",
-                }}
-                aria-hidden="true"
-              />
+          {/* Gold crown divider */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, maxWidth: 560, width: "100%" }}>
+            <div
+              style={{
+                flex: 1,
+                height: 0.5,
+                background: "linear-gradient(to right, transparent, #b8852a)",
+              }}
+              aria-hidden="true"
+            />
+            <div
+              style={{
+                fontSize: 9,
+                color: "#b8852a",
+                letterSpacing: 4,
+                textTransform: "uppercase",
+                whiteSpace: "nowrap",
+              }}
+            >
+              WEDSY · BANGALORE
             </div>
-
-            <h1 style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400, margin: 0 }}>
-              <span
-                style={{
-                  color: "#1a0a0a",
-                  fontSize: "clamp(1.8rem, 3vw, 2.8rem)",
-                  display: "block",
-                  lineHeight: 1.1,
-                }}
-              >
-                Find your
-              </span>
-              <span
-                style={{
-                  color: "#b8852a",
-                  fontStyle: "italic",
-                  fontSize: "clamp(2.4rem, 4vw, 3.8rem)",
-                  display: "block",
-                  lineHeight: 0.95,
-                  marginTop: -4,
-                }}
-              >
-                perfect
-              </span>
-              <span
-                style={{
-                  color: "#1a0a0a",
-                  fontSize: "clamp(1.8rem, 3vw, 2.8rem)",
-                  display: "block",
-                  lineHeight: 1.1,
-                  marginTop: -4,
-                }}
-              >
-                wedding venue.
-              </span>
-            </h1>
-
-            <p
+            <div
               style={{
-                marginTop: 16,
-                fontSize: 13,
-                color: "#5a3a2a",
-                lineHeight: 1.7,
-                maxWidth: 380,
-                fontStyle: "italic",
+                flex: 1,
+                height: 0.5,
+                background: "linear-gradient(to left, transparent, #b8852a)",
               }}
-            >
-              Not every venue in Bangalore is on Wedsy. Just the ones worth your time.
-            </p>
-
-            {/* Search (sharp-edged, no border-radius) */}
-            <form
-              onSubmit={(e) => { e.preventDefault(); scrollToListing(); }}
-              style={{
-                marginTop: 18,
-                maxWidth: 380,
-                display: "flex",
-                alignItems: "center",
-                background: "#ffffff",
-                border: "1px solid #1a0a0a",
-                padding: "8px 8px 8px 16px",
-              }}
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#b8852a"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="M21 21l-4.35-4.35" />
-              </svg>
-              <input
-                className="hero-k-input"
-                value={nameSearch}
-                onChange={(e) => setNameSearch(e.target.value)}
-                placeholder="Search by name, area, or vibe…"
-                aria-label="Search venues"
-                style={{
-                  flex: 1,
-                  marginLeft: 10,
-                  border: "none",
-                  outline: "none",
-                  fontSize: 12,
-                  background: "transparent",
-                  color: "#1a0a0a",
-                }}
-              />
-              <button
-                type="submit"
-                style={{
-                  background: "#1a0a0a",
-                  color: "#f8f4ef",
-                  border: "none",
-                  padding: "9px 18px",
-                  fontSize: 11,
-                  cursor: "pointer",
-                  letterSpacing: 0.5,
-                  fontWeight: 500,
-                }}
-              >
-                Search →
-              </button>
-            </form>
+              aria-hidden="true"
+            />
           </div>
 
-          {/* RIGHT — three stat panels (vertical stack on desktop, horizontal row on mobile) */}
+          <h1 style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400, margin: 0 }}>
+            <span
+              style={{
+                color: "#1a0a0a",
+                fontSize: "clamp(2.2rem, 4vw, 3.4rem)",
+                display: "block",
+                lineHeight: 1.1,
+              }}
+            >
+              Find your
+            </span>
+            <span
+              style={{
+                color: "#b8852a",
+                fontStyle: "italic",
+                fontSize: "clamp(3rem, 5.5vw, 5rem)",
+                display: "block",
+                lineHeight: 0.95,
+                marginTop: -4,
+              }}
+            >
+              perfect
+            </span>
+            <span
+              style={{
+                color: "#1a0a0a",
+                fontSize: "clamp(2.2rem, 4vw, 3.4rem)",
+                display: "block",
+                lineHeight: 1.1,
+                marginTop: -4,
+              }}
+            >
+              wedding venue.
+            </span>
+          </h1>
+
+          <p
+            style={{
+              maxWidth: 480,
+              textAlign: "center",
+              margin: "16px auto 0",
+              fontSize: 13,
+              color: "#5a3a2a",
+              lineHeight: 1.7,
+              fontStyle: "italic",
+            }}
+          >
+            Not every venue in Bangalore is on Wedsy. Just the ones worth your time.
+          </p>
+
+          {/* Search (sharp-edged, no border-radius) */}
+          <form
+            onSubmit={(e) => { e.preventDefault(); scrollToListing(); }}
+            style={{
+              marginTop: 18,
+              maxWidth: 480,
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              background: "#ffffff",
+              border: "1px solid #1a0a0a",
+              padding: "8px 8px 8px 16px",
+            }}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#b8852a"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+            <input
+              className="hero-k-input"
+              value={nameSearch}
+              onChange={(e) => setNameSearch(e.target.value)}
+              placeholder="Search by name, area, or vibe…"
+              aria-label="Search venues"
+              style={{
+                flex: 1,
+                marginLeft: 10,
+                border: "none",
+                outline: "none",
+                fontSize: 12,
+                background: "transparent",
+                color: "#1a0a0a",
+              }}
+            />
+            <button
+              type="submit"
+              style={{
+                background: "#1a0a0a",
+                color: "#f8f4ef",
+                border: "none",
+                padding: "9px 18px",
+                fontSize: 11,
+                cursor: "pointer",
+                letterSpacing: 0.5,
+                fontWeight: 500,
+              }}
+            >
+              Search →
+            </button>
+          </form>
+
+          {/* Stat panels — horizontal row BELOW search, same width */}
           <div
             style={{
-              width: isMobile ? "100%" : 220,
+              marginTop: 24,
+              maxWidth: 480,
+              width: "100%",
               display: "flex",
-              flexDirection: isMobile ? "row" : "column",
-              borderLeft: isMobile ? "none" : "0.5px solid #e8d8c4",
-              borderTop: isMobile ? "0.5px solid #e8d8c4" : "none",
+              flexDirection: "row",
+              border: "0.5px solid #e8d8c4",
+              background: "#fafafa",
             }}
           >
             {[
-              { number: total, label: "Curated venues", sub: "Across Bangalore" },
-              { number: "4.8★", label: "Avg rating", sub: "Across all venues" },
-              { number: "₹0", label: "Commission", sub: "Always free for couples" },
+              { number: total, label: "Curated venues" },
+              { number: "4.8★", label: "Avg rating" },
+              { number: "₹0", label: "Commission" },
             ].map((p, i, arr) => {
               const last = i === arr.length - 1;
               return (
@@ -1182,19 +1178,15 @@ export default function VenuesPage({
                   key={i}
                   style={{
                     flex: 1,
-                    padding: isMobile ? 14 : "20px 20px",
-                    borderBottom: !isMobile && !last ? "0.5px solid #e8d8c4" : "none",
-                    borderRight: isMobile && !last ? "0.5px solid #e8d8c4" : "none",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    background: "#fafafa",
+                    padding: isMobile ? "10px 8px" : "14px 16px",
+                    borderRight: !last ? "0.5px solid #e8d8c4" : "none",
+                    textAlign: "center",
                   }}
                 >
                   <div
                     style={{
                       fontFamily: "Georgia, 'Times New Roman', serif",
-                      fontSize: 32,
+                      fontSize: isMobile ? 20 : 26,
                       color: "#6b1e2e",
                       lineHeight: 1,
                     }}
@@ -1203,16 +1195,15 @@ export default function VenuesPage({
                   </div>
                   <div
                     style={{
-                      fontSize: 8,
+                      fontSize: isMobile ? 7 : 8,
                       color: "#b09080",
                       letterSpacing: 2,
                       textTransform: "uppercase",
-                      marginTop: 5,
+                      marginTop: 4,
                     }}
                   >
                     {p.label}
                   </div>
-                  <div style={{ fontSize: 9, color: "#7a5a48", marginTop: 3 }}>{p.sub}</div>
                 </div>
               );
             })}
