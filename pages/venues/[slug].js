@@ -418,28 +418,22 @@ const SPACE_TYPE_LABEL = {
   "semi-outdoor": { icon: "⛅", label: "Semi-outdoor" },
 };
 
-// Build the hero carousel photo list: coverPhoto first, then either the V1
-// flat venue.photos array OR (for V2 docs) venue.photos.venue — deduped,
-// capped at 10. Decor/rooms/spaces categories are intentionally excluded —
-// only "venue" photos belong in the atmospheric hero.
+// Build the hero carousel photo list: coverPhoto first, then V2 venue/decor/
+// rooms (or V1 flat array), plus Google Business Profile photos — deduped,
+// capped at 10. Spaces are intentionally excluded.
 function buildHeroPhotos(v) {
   if (!v) return [];
-  const raw = v.photos;
-  let base = [];
-  if (Array.isArray(raw)) {
-    base = raw;
-  } else if (raw && typeof raw === "object" && Array.isArray(raw.venue)) {
-    base = raw.venue;
-  }
-  const seen = new Set();
-  const unique = [];
-  for (const url of [v.coverPhoto, ...base]) {
-    if (!url || seen.has(url)) continue;
-    seen.add(url);
-    unique.push(url);
-    if (unique.length >= 10) break;
-  }
-  return unique;
+  const list = [];
+  if (v.coverPhoto) list.push(v.coverPhoto);
+  // V2 photos
+  if (v.photos?.venue?.length) list.push(...v.photos.venue);
+  if (v.photos?.decor?.length) list.push(...v.photos.decor);
+  if (v.photos?.rooms?.length) list.push(...v.photos.rooms);
+  // V1 flat array
+  if (Array.isArray(v.photos) && v.photos.length) list.push(...v.photos);
+  // Google Business Profile photos
+  if (v.googlePhotos?.length) list.push(...v.googlePhotos);
+  return [...new Set(list)].slice(0, 10);
 }
 
 // Stroke-based amenity icons used by the Amenities & Facilities section. Kept
@@ -729,27 +723,36 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
       Array.isArray(rawPhotos.decor) ||
       Array.isArray(rawPhotos.rooms) ||
       Array.isArray(rawPhotos.spaces));
-  const photoCats = isPhotosV2
+  const baseCats = isPhotosV2
     ? [
         { key: "venue", label: "Venue", list: Array.isArray(rawPhotos.venue) ? rawPhotos.venue : [] },
         { key: "decor", label: "Decor", list: Array.isArray(rawPhotos.decor) ? rawPhotos.decor : [] },
         { key: "rooms", label: "Rooms", list: Array.isArray(rawPhotos.rooms) ? rawPhotos.rooms : [] },
         { key: "spaces", label: "Spaces", list: Array.isArray(rawPhotos.spaces) ? rawPhotos.spaces : [] },
-      ].filter((c) => c.list.length > 0)
+      ]
     : Array.isArray(rawPhotos) && rawPhotos.length > 0
     ? [{ key: "venue", label: "Venue", list: rawPhotos }]
     : [];
+  if (venue.googlePhotos?.length > 0) {
+    baseCats.push({ key: "google", label: "Google", list: venue.googlePhotos });
+  }
+  const photoCats = baseCats.filter((c) => c.list.length > 0);
   const allPhotos = (() => {
-    const list = photoCats.reduce((acc, c) => acc.concat(c.list), []);
+    const list = photoCats
+      .filter((c) => c.key !== "google")
+      .reduce((acc, c) => acc.concat(c.list), []);
     // Ensure the cover photo is part of the gallery (prepended if not already present).
     if (venue.coverPhoto && !list.includes(venue.coverPhoto)) {
       return [venue.coverPhoto, ...list];
     }
     return list;
   })();
+  // Append Google photos that aren't already in the curated list.
+  const googleExtras = (venue.googlePhotos || []).filter((p) => !allPhotos.includes(p));
+  const allPhotosWithGoogle = [...allPhotos, ...googleExtras];
   // Photos visible after the active tab filter (drives both grid + modal)
   const activeCat = photoCats.find((c) => c.key === galleryTab) || null;
-  const photos = activeCat ? activeCat.list : allPhotos;
+  const photos = activeCat ? activeCat.list : allPhotosWithGoogle;
   const showTabs = photoCats.length > 0;
   const totalPhotos = photos.length;
   const gridSlots = [0, 1, 2, 3, 4];
@@ -1121,7 +1124,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                       onClick={() => setGalleryTab("all")}
                     >
                       <span>All</span>
-                      <span style={galleryTab === "all" ? S.gallV2_tabBadgeOn : S.gallV2_tabBadge}>{allPhotos.length}</span>
+                      <span style={galleryTab === "all" ? S.gallV2_tabBadgeOn : S.gallV2_tabBadge}>{allPhotosWithGoogle.length}</span>
                     </button>
                     {photoCats.map((c) => (
                       <button
@@ -1260,10 +1263,10 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
             )}
 
             {/* ───── 4b. ABOUT — Part 2: alternating photo grid (max 7 photos) ───── */}
-            {allPhotos.length > 0 && (
+            {allPhotosWithGoogle.length > 0 && (
               <section style={S.photoGridWrap}>
                 {/* Row 1 — 1 or 2 photos */}
-                {allPhotos.length === 1 ? (
+                {allPhotosWithGoogle.length === 1 ? (
                   <div style={{ ...S.photoGridRowSingle, ...(isMobile ? S.photoGridRowSingleMobile : {}) }}>
                     <button
                       type="button"
@@ -1272,7 +1275,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                       onClick={openThumbnailGrid}
                       aria-label="View all photos"
                     >
-                      <img src={allPhotos[0]} alt={`${venue.name} 1`} style={S.photoGridImg} />
+                      <img src={allPhotosWithGoogle[0]} alt={`${venue.name} 1`} style={S.photoGridImg} />
                     </button>
                   </div>
                 ) : (
@@ -1286,16 +1289,16 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                         onClick={openThumbnailGrid}
                         aria-label={`View photo ${i + 1}`}
                       >
-                        <img src={allPhotos[i]} alt={`${venue.name} ${i + 1}`} style={S.photoGridImg} />
+                        <img src={allPhotosWithGoogle[i]} alt={`${venue.name} ${i + 1}`} style={S.photoGridImg} />
                       </button>
                     ))}
                   </div>
                 )}
 
                 {/* Row 2 — up to 3 equal photos */}
-                {allPhotos.length >= 3 && (
+                {allPhotosWithGoogle.length >= 3 && (
                   <div style={{ ...S.photoGridRow3, ...(isMobile ? S.photoGridRow3Mobile : {}) }}>
-                    {allPhotos.slice(2, 5).map((url, i) => (
+                    {allPhotosWithGoogle.slice(2, 5).map((url, i) => (
                       <button
                         key={i}
                         type="button"
@@ -1311,9 +1314,9 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                 )}
 
                 {/* Row 3 — 35/65 reversed, up to 2 photos */}
-                {allPhotos.length >= 6 && (
+                {allPhotosWithGoogle.length >= 6 && (
                   <div style={{ ...S.photoGridRow35_65, ...(isMobile ? S.photoGridRow35_65Mobile : {}) }}>
-                    {allPhotos.slice(5, 7).map((url, i) => (
+                    {allPhotosWithGoogle.slice(5, 7).map((url, i) => (
                       <button
                         key={i}
                         type="button"
@@ -1330,7 +1333,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
 
                 <div style={S.photoGridViewAllRow}>
                   <button type="button" style={S.photoGridViewAllBtn} onClick={openThumbnailGrid}>
-                    View all {allPhotos.length} photos →
+                    View all {allPhotosWithGoogle.length} photos →
                   </button>
                 </div>
 
