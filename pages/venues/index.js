@@ -65,6 +65,96 @@ const ZONE_LABEL = {
   central: "Central Bangalore",
 };
 
+// ─── Smart area search ───
+// Centroid (lat/lng) for each known Bangalore micro-locality. Used to compute
+// "X km from {area}" labels and to distance-sort cards once an area is picked.
+// Keys are lowercased locality names — look up via name.toLowerCase().
+const AREA_CENTROIDS = {
+  "yelahanka": { lat: 13.1007, lng: 77.5963 },
+  "devanahalli": { lat: 13.2468, lng: 77.7137 },
+  "bagalur": { lat: 13.3012, lng: 77.7560 },
+  "jakkur": { lat: 13.0674, lng: 77.5998 },
+  "hebbal": { lat: 13.0450, lng: 77.5950 },
+  "thanisandra": { lat: 13.0590, lng: 77.6280 },
+  "kogilu": { lat: 13.0780, lng: 77.5890 },
+  "whitefield": { lat: 12.9698, lng: 77.7500 },
+  "marathahalli": { lat: 12.9563, lng: 77.7011 },
+  "sarjapur": { lat: 12.8604, lng: 77.7860 },
+  "bellandur": { lat: 12.9257, lng: 77.6750 },
+  "koramangala": { lat: 12.9352, lng: 77.6245 },
+  "hsr layout": { lat: 12.9116, lng: 77.6389 },
+  "btm layout": { lat: 12.9165, lng: 77.6101 },
+  "jp nagar": { lat: 12.9063, lng: 77.5857 },
+  "bannerghatta": { lat: 12.8002, lng: 77.5773 },
+  "electronic city": { lat: 12.8399, lng: 77.6770 },
+  "kanakapura": { lat: 12.5479, lng: 77.4178 },
+  "rajajinagar": { lat: 12.9925, lng: 77.5560 },
+  "yeshwanthpur": { lat: 13.0289, lng: 77.5430 },
+  "magadi road": { lat: 12.9752, lng: 77.5125 },
+  "indiranagar": { lat: 12.9784, lng: 77.6408 },
+  "domlur": { lat: 12.9609, lng: 77.6387 },
+  "mg road": { lat: 12.9758, lng: 77.6096 },
+  "jayanagar": { lat: 12.9308, lng: 77.5830 },
+  "banashankari": { lat: 12.9255, lng: 77.5468 },
+  "malleshwaram": { lat: 13.0035, lng: 77.5709 },
+  "sadashivanagar": { lat: 13.0100, lng: 77.5810 },
+  "electronic city phase 1": { lat: 12.8452, lng: 77.6602 },
+  "electronic city phase 2": { lat: 12.8345, lng: 77.6756 },
+  "varthur": { lat: 12.9396, lng: 77.7456 },
+  "brookefield": { lat: 12.9675, lng: 77.7121 },
+  "kadugodi": { lat: 12.9991, lng: 77.7470 },
+  "kr puram": { lat: 13.0098, lng: 77.6947 },
+  "hoodi": { lat: 12.9877, lng: 77.7173 },
+  "doddanekundi": { lat: 12.9756, lng: 77.7134 },
+  "hennur": { lat: 13.0519, lng: 77.6329 },
+  "banaswadi": { lat: 13.0195, lng: 77.6465 },
+  "horamavu": { lat: 13.0293, lng: 77.6607 },
+  "ramamurthy nagar": { lat: 13.0134, lng: 77.6661 },
+  "bommasandra": { lat: 12.8094, lng: 77.6975 },
+  "chandapura": { lat: 12.7938, lng: 77.6846 },
+  "attibele": { lat: 12.7704, lng: 77.7659 },
+  "anekal": { lat: 12.7085, lng: 77.6966 },
+  "begur": { lat: 12.8713, lng: 77.6165 },
+  "gottigere": { lat: 12.8560, lng: 77.5978 },
+  "hulimavu": { lat: 12.8723, lng: 77.5875 },
+  "kengeri": { lat: 12.9081, lng: 77.4862 },
+  "mysore road": { lat: 12.9421, lng: 77.5095 },
+  "vijayanagar": { lat: 12.9713, lng: 77.5297 },
+  "peenya": { lat: 13.0289, lng: 77.5178 },
+};
+
+// Great-circle distance in km between two lat/lng points (Haversine).
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Loose match for the area search box: substring either way, else a cheap
+// positional-overlap heuristic for short typo-tolerant matches.
+function fuzzyMatch(input, target) {
+  const a = input.toLowerCase().trim();
+  const b = target.toLowerCase().trim();
+  if (b.includes(a) || a.includes(b)) return true;
+  // Simple Levenshtein for short strings
+  if (Math.abs(a.length - b.length) > 4) return false;
+  let matches = 0;
+  for (let i = 0; i < Math.min(a.length, b.length); i++) {
+    if (a[i] === b[i]) matches++;
+  }
+  return matches / Math.max(a.length, b.length) > 0.7;
+}
+
+// Zone labels + display order for the grouped Area dropdown.
+const ZONE_LABELS = {
+  airport: "Near Airport", north: "North Bangalore",
+  east: "East Bangalore", south: "South Bangalore",
+  west: "West Bangalore", central: "Central Bangalore",
+};
+const ZONE_ORDER = ["airport", "north", "east", "south", "west", "central"];
+
 // Top-level category pills in the sticky filter bar. Maps to venue.venueType.
 const CATEGORIES = [
   { value: "", label: "All" },
@@ -572,6 +662,21 @@ Object.assign(S, {
   filterDropdownMobile: { top: "auto", bottom: 0, left: 0, right: 0, minWidth: "100%", borderRadius: "16px 16px 0 0", padding: 20, boxShadow: "0 -8px 32px rgba(0,0,0,0.18)" },
   fullWidthGridMobile: { gridTemplateColumns: "1fr", gap: 18 },
   fullWidthGridTablet: { gridTemplateColumns: "repeat(2, 1fr)", gap: 20 },
+
+  // ─── Area dropdown (smart area search) ───
+  areaDropdown: { position: "fixed", background: "#ffffff", borderRadius: 12, border: "1px solid #e8d8c4", boxShadow: "0 8px 32px rgba(107,30,46,0.12)", width: 260, maxHeight: 380, overflow: "hidden", zIndex: 300, display: "flex", flexDirection: "column" },
+  areaDropdownHeader: { padding: "10px 12px 8px", borderBottom: "0.5px solid #f0e8dc" },
+  areaDropdownSearch: { width: "100%", border: "1px solid #e8d8c4", borderRadius: 8, padding: "7px 12px", fontSize: 12, color: "#2c1810", outline: "none", boxSizing: "border-box" },
+  areaDropdownBody: { flex: 1, overflowY: "auto" },
+  areaZoneHeader: { padding: "8px 14px 4px", fontSize: 9, color: "#b8852a", letterSpacing: 2, textTransform: "uppercase", fontWeight: 600 },
+  areaRow: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "8px 14px", fontSize: 13, color: "#1a0a0a", cursor: "pointer", background: "transparent", border: "none", width: "100%", textAlign: "left" },
+  areaSuggestRow: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "9px 14px", cursor: "pointer", background: "transparent", border: "none", width: "100%", textAlign: "left" },
+  areaRowLeft: { display: "flex", alignItems: "center", gap: 6, minWidth: 0 },
+  areaRowCheck: { color: C.burgundy, fontSize: 12, lineHeight: 1, flexShrink: 0 },
+  areaRowName: { fontSize: 13, color: "#1a0a0a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+  areaRowCount: { fontSize: 10, color: "#b09080", flexShrink: 0 },
+  areaRowZone: { fontSize: 10, color: "#b09080", flexShrink: 0 },
+  areaEmpty: { padding: "16px 14px", fontSize: 12, color: "#b09080", textAlign: "center" },
 });
 
 // ─── Card components ───
@@ -611,7 +716,7 @@ function AmenityIcons({ venue }) {
   return <div style={S.cardAmens}>{icons.map((ic, i) => <span key={i} aria-hidden="true">{ic}</span>)}</div>;
 }
 
-function VenueCard({ venue, featured = false }) {
+function VenueCard({ venue, featured = false, distanceLabel = null }) {
   const isVerified = venue.status === "verified";
   const vTypeLabel = venue.venueType
     ? venue.venueType.charAt(0).toUpperCase() + venue.venueType.slice(1)
@@ -646,6 +751,11 @@ function VenueCard({ venue, featured = false }) {
           <div style={S.cardZoneChip}>
             <span aria-hidden="true">📍</span> {ZONE_LABEL[venue.zone]}
           </div>
+        )}
+        {distanceLabel && (
+          <span style={{ fontSize: 11, color: "#7a5a48", marginTop: 2, display: "block", marginBottom: 10 }}>
+            📍 {distanceLabel}
+          </span>
         )}
         {capacityText && <div style={S.cardCapacityChip}><span aria-hidden="true">👥</span> {capacityText}</div>}
         <PriceSignal venue={venue} />
@@ -726,6 +836,11 @@ export default function VenuesPage({
   // though matching venues exist on the server. Area stays client-side for
   // live-typing feedback and rides along on Load-More fetches.
   const [selectedZones, setSelectedZones] = useState([]);
+  // Smart area filter — client-side, layered on top of the loaded slice.
+  // `selectedArea` is { name, zone, lat, lng } (lat/lng may be undefined if the
+  // locality isn't in AREA_CENTROIDS — distance labels/sort just skip those).
+  const [areaFilterSearch, setAreaFilterSearch] = useState("");
+  const [selectedArea, setSelectedArea] = useState(null);
   // Sticky filter bar dropdown — only one open at a time, null when closed.
   // `dropdownAnchor` holds the {top,left} viewport coords captured from the
   // chip's getBoundingClientRect() at the moment it was clicked; the dropdown
@@ -806,6 +921,8 @@ export default function VenuesPage({
     setPriceBucket("");
     setAmenitySet({});
     setVerifiedOnly(false);
+    setSelectedArea(null);
+    setAreaFilterSearch("");
     setOpenDropdown(null);
   };
 
@@ -872,6 +989,7 @@ export default function VenuesPage({
     filterActiveFlags.price ||
     filterActiveFlags.capacity ||
     filterActiveFlags.amenities ||
+    !!selectedArea ||
     !!nameSearch;
 
   const clearFilterGroup = useCallback((group) => {
@@ -933,6 +1051,71 @@ export default function VenuesPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [venues, scrollToListing]);
 
+  // ─── Smart area filter — derive the grouped area list, fuzzy suggestions,
+  // and per-card distance labels off the loaded venue slice. ───
+  const areasByZone = useMemo(() => {
+    const map = {};
+    ZONE_ORDER.forEach((z) => { map[z] = []; });
+    const seen = new Set();
+    venues.forEach((v) => {
+      if (v.locality && v.zone && !seen.has(v.locality.toLowerCase())) {
+        seen.add(v.locality.toLowerCase());
+        const count = venues.filter((x) => x.locality?.toLowerCase() === v.locality.toLowerCase()).length;
+        if (map[v.zone]) map[v.zone].push({ name: v.locality, count, zone: v.zone });
+      }
+    });
+    // Sort alphabetically within each zone
+    ZONE_ORDER.forEach((z) => {
+      map[z].sort((a, b) => a.name.localeCompare(b.name));
+    });
+    return map;
+  }, [venues]);
+
+  const areaSuggestions = useMemo(() => {
+    if (!areaFilterSearch || areaFilterSearch.length < 2) return [];
+    const results = [];
+    ZONE_ORDER.forEach((zone) => {
+      (areasByZone[zone] || []).forEach((area) => {
+        if (fuzzyMatch(areaFilterSearch, area.name)) {
+          results.push({ ...area, zoneLabel: ZONE_LABELS[zone] });
+        }
+      });
+    });
+    return results.slice(0, 8);
+  }, [areaFilterSearch, areasByZone]);
+
+  const hasAnyArea = useMemo(
+    () => ZONE_ORDER.some((z) => (areasByZone[z] || []).length > 0),
+    [areasByZone],
+  );
+
+  // "In {area}" / "{n} km from {area}" — null when no area is picked, the
+  // locality has no centroid, or the venue lacks coordinates.
+  const getDistanceLabel = useCallback((venue) => {
+    if (!selectedArea) return null;
+    const centroid = AREA_CENTROIDS[selectedArea.name.toLowerCase()];
+    if (!centroid || !venue.location?.coordinates) return null;
+    const [lng, lat] = venue.location.coordinates;
+    const dist = haversineKm(centroid.lat, centroid.lng, lat, lng);
+    if (dist < 0.5) return "In " + selectedArea.name;
+    return dist.toFixed(1) + " km from " + selectedArea.name;
+  }, [selectedArea]);
+
+  // Select an area from the dropdown. Area and Zone are separate filters — so
+  // picking an area clears any zone selection. Then jump to the listing.
+  const selectArea = useCallback((area) => {
+    setSelectedArea({ name: area.name, zone: area.zone });
+    setSelectedZones([]);
+    setAreaFilterSearch("");
+    setOpenDropdown(null);
+    setTimeout(scrollToListing, 60);
+  }, [scrollToListing]);
+
+  const clearArea = useCallback(() => {
+    setSelectedArea(null);
+    setAreaFilterSearch("");
+  }, []);
+
   // ─── Counts (per facet — based on the loaded slice, so badges grow as the
   // user paginates). ───
   const typeCounts = useMemo(() => {
@@ -946,7 +1129,7 @@ export default function VenuesPage({
 
   // ─── Filtered + sorted list ───
   const filtered = useMemo(() => {
-    return venues
+    let result = venues
       .filter((v) => {
         if (!nameSearch) return true;
         const q = nameSearch.toLowerCase();
@@ -979,7 +1162,27 @@ export default function VenuesPage({
         }
         return (b.dataCompleteness || 0) - (a.dataCompleteness || 0);
       });
-  }, [venues, nameSearch, venueType, selectedZones, capacityBucket, priceBucket, amenitySet, verifiedOnly, sort]);
+
+    // Area filter — narrow to the area's zone, then surface the exact locality
+    // first and order the rest by distance from the area centroid.
+    if (selectedArea) {
+      const centroid = AREA_CENTROIDS[selectedArea.name.toLowerCase()];
+      result = result.filter((v) => v.zone === selectedArea.zone);
+      if (centroid) {
+        result = [...result].sort((a, b) => {
+          const aExact = a.locality?.toLowerCase() === selectedArea.name.toLowerCase();
+          const bExact = b.locality?.toLowerCase() === selectedArea.name.toLowerCase();
+          if (aExact && !bExact) return -1;
+          if (!aExact && bExact) return 1;
+          const [alng, alat] = a.location?.coordinates || [0, 0];
+          const [blng, blat] = b.location?.coordinates || [0, 0];
+          return haversineKm(centroid.lat, centroid.lng, alat, alng) -
+                 haversineKm(centroid.lat, centroid.lng, blat, blng);
+        });
+      }
+    }
+    return result;
+  }, [venues, nameSearch, venueType, selectedZones, capacityBucket, priceBucket, amenitySet, verifiedOnly, sort, selectedArea]);
 
   const featured = useMemo(() => {
     return [...venues]
@@ -1392,6 +1595,9 @@ export default function VenuesPage({
                             type="checkbox"
                             checked={checked}
                             onChange={() => {
+                              // Zone and Area are separate filters — picking a
+                              // zone clears any selected area.
+                              setSelectedArea(null);
                               if (isAll) {
                                 setSelectedZones([]);
                               } else {
@@ -1408,6 +1614,99 @@ export default function VenuesPage({
                         </label>
                       );
                     })}
+                  </div>
+                )}
+              </div>
+
+              {/* Area dropdown (smart area search) */}
+              <div style={S.filterChipWrap} data-filter-dropdown>
+                <button
+                  type="button"
+                  style={selectedArea ? S.filterChipOn : S.filterChip}
+                  onClick={(e) => toggleDropdown("area", e)}
+                  aria-expanded={openDropdown === "area"}
+                  aria-haspopup="listbox"
+                >
+                  <span>{selectedArea ? `📍 ${selectedArea.name}` : "Area"}</span>
+                  {selectedArea ? (
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Clear area filter"
+                      style={S.filterChipX}
+                      onClick={(e) => { e.stopPropagation(); clearArea(); }}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); clearArea(); } }}
+                    >×</span>
+                  ) : (
+                    !isMobile && <span style={S.filterChipCaret} aria-hidden="true">▾</span>
+                  )}
+                </button>
+                {openDropdown === "area" && (
+                  <div style={{ ...S.areaDropdown, top: dropdownAnchor.top, left: dropdownAnchor.left }}>
+                    <div style={S.areaDropdownHeader}>
+                      <input
+                        type="search"
+                        style={S.areaDropdownSearch}
+                        placeholder="Search areas..."
+                        value={areaFilterSearch}
+                        onChange={(e) => setAreaFilterSearch(e.target.value)}
+                        aria-label="Search areas"
+                        autoFocus
+                      />
+                    </div>
+                    <div style={S.areaDropdownBody}>
+                      {areaFilterSearch.length >= 2 ? (
+                        areaSuggestions.length > 0 ? (
+                          areaSuggestions.map((area) => (
+                            <button
+                              key={`${area.zone}-${area.name}`}
+                              type="button"
+                              className="area-row"
+                              style={S.areaSuggestRow}
+                              onClick={() => selectArea(area)}
+                            >
+                              <span style={S.areaRowLeft}>
+                                <span style={S.areaRowName}>{area.name}</span>
+                                <span style={S.areaRowCount}>({area.count})</span>
+                              </span>
+                              <span style={S.areaRowZone}>{area.zoneLabel}</span>
+                            </button>
+                          ))
+                        ) : (
+                          <div style={S.areaEmpty}>No areas found</div>
+                        )
+                      ) : hasAnyArea ? (
+                        ZONE_ORDER.map((zone) => {
+                          const list = areasByZone[zone] || [];
+                          if (list.length === 0) return null;
+                          return (
+                            <div key={zone}>
+                              <div style={S.areaZoneHeader}>{ZONE_LABELS[zone]}</div>
+                              {list.map((area) => {
+                                const isSelected = selectedArea?.name?.toLowerCase() === area.name.toLowerCase();
+                                return (
+                                  <button
+                                    key={`${zone}-${area.name}`}
+                                    type="button"
+                                    className="area-row"
+                                    style={S.areaRow}
+                                    onClick={() => selectArea(area)}
+                                  >
+                                    <span style={S.areaRowLeft}>
+                                      {isSelected && <span style={S.areaRowCheck} aria-hidden="true">✓</span>}
+                                      <span style={S.areaRowName}>{area.name}</span>
+                                    </span>
+                                    <span style={S.areaRowCount}>({area.count})</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div style={S.areaEmpty}>No areas available</div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1571,7 +1870,7 @@ export default function VenuesPage({
             {filtered.length > 0 ? (
               <>
                 <div className="all-venues-grid" style={{ ...S.fullWidthGrid, ...(isMobile ? S.fullWidthGridMobile : isTablet ? S.fullWidthGridTablet : {}) }}>
-                  {filtered.map((v) => <VenueCard key={v._id} venue={v} />)}
+                  {filtered.map((v) => <VenueCard key={v._id} venue={v} distanceLabel={getDistanceLabel(v)} />)}
                 </div>
                 {hasMore && (
                   <div style={S.loadMoreWrap}>
@@ -1637,6 +1936,7 @@ export default function VenuesPage({
           border-color: ${C.gold} !important;
         }
         :global(.hero-k-input)::placeholder { color: #b09080; }
+        :global(.area-row):hover { background: rgba(107, 30, 46, 0.04); }
         /* Hide scrollbars on horizontal scrollers (filter bar, curated rows). */
         :global(.filter-bar-row)::-webkit-scrollbar,
         :global(.curated-scroll)::-webkit-scrollbar { display: none; }
