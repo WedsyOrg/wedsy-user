@@ -1240,6 +1240,49 @@ export default function VenuesPage({
     setShowSearchSuggestions(false);
   }, []);
 
+  // Shared suggestions dropdown — used by BOTH the hero search and the sticky
+  // filter-bar search. Renders nothing unless suggestions are open and present.
+  // Its parent container must be position: relative.
+  const renderSuggestionsDropdown = () => {
+    if (!showSearchSuggestions || searchSuggestions.length === 0) return null;
+    return (
+      <div style={S.searchSuggestDropdown}>
+        {searchSuggestions.some((s) => s.type === "area") && (
+          <div style={S.searchSuggestHeader}>📍 Areas</div>
+        )}
+        {searchSuggestions.filter((s) => s.type === "area").map((s, i) => (
+          <button
+            key={`sa-${s.name}-${i}`}
+            type="button"
+            className="area-row"
+            style={S.searchSuggestRow}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => handleSuggestionSelect(s)}
+          >
+            <span style={S.searchSuggestName}>{s.name}</span>
+            <span style={S.searchSuggestMeta}>{s.zoneLabel}</span>
+          </button>
+        ))}
+        {searchSuggestions.some((s) => s.type === "venue") && (
+          <div style={S.searchSuggestHeader}>🏛️ Venues</div>
+        )}
+        {searchSuggestions.filter((s) => s.type === "venue").map((s, i) => (
+          <button
+            key={`sv-${s.name}-${i}`}
+            type="button"
+            className="area-row"
+            style={S.searchSuggestRow}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => handleSuggestionSelect(s)}
+          >
+            <span style={S.searchSuggestName}>{s.name}</span>
+            <span style={S.searchSuggestMeta}>{s.locality || ""}</span>
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   // Sticky-bar search box (rendered once, used on both mobile and desktop).
   // Typing only updates suggestions; the listing filter (appliedSearch) changes
   // on Enter, suggestion select, or clear.
@@ -1273,42 +1316,7 @@ export default function VenuesPage({
           onClick={() => { setSearchInputValue(""); setAppliedSearch(""); setShowSearchSuggestions(false); }}
         >×</button>
       )}
-      {showSearchSuggestions && searchSuggestions.length > 0 && (
-        <div style={S.searchSuggestDropdown}>
-          {searchSuggestions.some((s) => s.type === "area") && (
-            <div style={S.searchSuggestHeader}>📍 Areas</div>
-          )}
-          {searchSuggestions.filter((s) => s.type === "area").map((s, i) => (
-            <button
-              key={`sa-${s.name}-${i}`}
-              type="button"
-              className="area-row"
-              style={S.searchSuggestRow}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => handleSuggestionSelect(s)}
-            >
-              <span style={S.searchSuggestName}>{s.name}</span>
-              <span style={S.searchSuggestMeta}>{s.zoneLabel}</span>
-            </button>
-          ))}
-          {searchSuggestions.some((s) => s.type === "venue") && (
-            <div style={S.searchSuggestHeader}>🏛️ Venues</div>
-          )}
-          {searchSuggestions.filter((s) => s.type === "venue").map((s, i) => (
-            <button
-              key={`sv-${s.name}-${i}`}
-              type="button"
-              className="area-row"
-              style={S.searchSuggestRow}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => handleSuggestionSelect(s)}
-            >
-              <span style={S.searchSuggestName}>{s.name}</span>
-              <span style={S.searchSuggestMeta}>{s.locality || ""}</span>
-            </button>
-          ))}
-        </div>
-      )}
+      {renderSuggestionsDropdown()}
     </div>
   );
 
@@ -1513,6 +1521,7 @@ export default function VenuesPage({
           <form
             onSubmit={(e) => { e.preventDefault(); setAppliedSearch(searchInputValue); setShowSearchSuggestions(false); scrollToListing(); }}
             style={{
+              position: "relative",
               marginTop: 18,
               maxWidth: 480,
               width: "100%",
@@ -1540,7 +1549,10 @@ export default function VenuesPage({
             <input
               className="hero-k-input"
               value={searchInputValue}
-              onChange={(e) => setSearchInputValue(e.target.value)}
+              onChange={(e) => { setSearchInputValue(e.target.value); setShowSearchSuggestions(true); }}
+              onKeyDown={(e) => { if (e.key === "Escape") setShowSearchSuggestions(false); }}
+              onFocus={() => { if (searchInputValue.length >= 2) setShowSearchSuggestions(true); }}
+              onBlur={() => { setTimeout(() => setShowSearchSuggestions(false), 150); }}
               placeholder="Search by name, area, or vibe…"
               aria-label="Search venues"
               style={{
@@ -1568,6 +1580,7 @@ export default function VenuesPage({
             >
               Search →
             </button>
+            {renderSuggestionsDropdown()}
           </form>
 
           {/* Stat panels — horizontal row BELOW search, same width */}
