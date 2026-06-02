@@ -682,6 +682,14 @@ Object.assign(S, {
   areaSuggestLabel: { fontSize: 9, textTransform: "uppercase", color: "#b09080", letterSpacing: 2, padding: "10px 14px 4px", fontWeight: 600 },
   areaCheckbox: { width: 16, height: 16, borderRadius: 4, border: "1.5px solid #d8c4a8", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 11, lineHeight: 1, color: "transparent" },
   areaCheckboxOn: { width: 16, height: 16, borderRadius: 4, border: "1.5px solid " + C.burgundy, background: C.burgundy, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 11, lineHeight: 1, color: "#fff" },
+
+  // ─── Search suggestions dropdown (sticky-bar search) ───
+  searchSuggestDropdown: { position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#ffffff", borderRadius: 12, border: "1px solid #e8d8c4", boxShadow: "0 8px 32px rgba(107,30,46,0.12)", maxHeight: 300, overflowY: "auto", zIndex: 9999 },
+  searchSuggestHeader: { fontSize: 9, textTransform: "uppercase", color: "#b8852a", letterSpacing: 1, padding: "8px 14px 4px", fontWeight: 600 },
+  searchSuggestRow: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "10px 14px", cursor: "pointer", background: "transparent", border: "none", width: "100%", textAlign: "left" },
+  searchSuggestName: { fontSize: 13, fontWeight: 500, color: "#1a0a0a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+  searchSuggestMeta: { fontSize: 10, color: "#b09080", flexShrink: 0 },
+  searchClearBtn: { flexShrink: 0, width: 18, height: 18, borderRadius: "50%", border: "none", background: "#f0e4d0", color: "#7a5a48", fontSize: 13, lineHeight: 1, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", padding: 0 },
 });
 
 // ─── Card components ───
@@ -855,7 +863,11 @@ export default function VenuesPage({
   const isMobile = viewportWidth < 768;
   const isTablet = viewportWidth >= 768 && viewportWidth < 1024;
 
-  const [nameSearch, setNameSearch] = useState("");
+  // Search is split: what's typed (drives suggestions only) vs what actually
+  // filters the listing (applied on Enter / suggestion select).
+  const [searchInputValue, setSearchInputValue] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const [venueType, setVenueType] = useState("");
   const [capacityBucket, setCapacityBucket] = useState("");
   const [priceBucket, setPriceBucket] = useState("");
@@ -896,9 +908,9 @@ export default function VenuesPage({
       skip: String(skip),
     });
     if (selectedZones.length > 0) params.set("zone", selectedZones.join(","));
-    if (nameSearch.trim()) params.set("name", nameSearch.trim());
+    if (appliedSearch.trim()) params.set("name", appliedSearch.trim());
     return `${process.env.NEXT_PUBLIC_API_URL}/venues?${params.toString()}`;
-  }, [selectedZones, nameSearch]);
+  }, [selectedZones, appliedSearch]);
 
   const loadMore = useCallback(async () => {
     if (loadMoreBusy || !hasMore) return;
@@ -948,7 +960,9 @@ export default function VenuesPage({
     setAmenitySet((prev) => ({ ...prev, [key]: !prev[key] }));
   }, []);
   const resetFilters = () => {
-    setNameSearch("");
+    setSearchInputValue("");
+    setAppliedSearch("");
+    setShowSearchSuggestions(false);
     setVenueType("");
     setSelectedZones([]);
     setCapacityBucket("");
@@ -1046,7 +1060,7 @@ export default function VenuesPage({
     filterActiveFlags.capacity ||
     filterActiveFlags.amenities ||
     selectedAreas.length > 0 ||
-    !!nameSearch;
+    !!appliedSearch;
 
   const clearFilterGroup = useCallback((group) => {
     if (group === "zone") setSelectedZones([]);
@@ -1145,6 +1159,31 @@ export default function VenuesPage({
     [areasByZone],
   );
 
+  // Live suggestions for the sticky-bar search — areas + venue names. Driven by
+  // searchInputValue (what's typed); does NOT touch the applied filter.
+  const searchSuggestions = useMemo(() => {
+    if (!searchInputValue || searchInputValue.length < 2) return [];
+    const q = searchInputValue.toLowerCase().trim();
+    const suggestions = [];
+
+    // Area suggestions
+    ZONE_ORDER.forEach((zone) => {
+      (areasByZone[zone] || []).forEach((area) => {
+        if (area.name.toLowerCase().includes(q) || fuzzyMatch(q, area.name)) {
+          suggestions.push({ type: "area", name: area.name, zone: area.zone, zoneLabel: ZONE_LABELS[zone] });
+        }
+      });
+    });
+
+    // Venue name suggestions (top 5)
+    venues
+      .filter((v) => v.name && v.name.toLowerCase().includes(q))
+      .slice(0, 5)
+      .forEach((v) => suggestions.push({ type: "venue", name: v.name, slug: v.slug, locality: v.locality }));
+
+    return suggestions.slice(0, 8);
+  }, [searchInputValue, areasByZone, venues]);
+
   // "In {area}" / "{n} km from {area}" relative to the CLOSEST selected area —
   // null when no area is picked or the venue lacks coordinates.
   const getDistanceLabel = useCallback((venue) => {
@@ -1185,6 +1224,94 @@ export default function VenuesPage({
     setOpenDropdown(null);
   }, []);
 
+  // Pick a search suggestion: area → set as the (single) area filter; venue →
+  // apply its name as the listing search.
+  const handleSuggestionSelect = useCallback((s) => {
+    if (s.type === "area") {
+      const centroid = AREA_CENTROIDS[s.name.toLowerCase()];
+      setSelectedAreas([{ name: s.name, zone: s.zone, lat: centroid?.lat, lng: centroid?.lng }]);
+      setSelectedZones([]);
+      setSearchInputValue("");
+      setAppliedSearch("");
+    } else {
+      setSearchInputValue(s.name);
+      setAppliedSearch(s.name);
+    }
+    setShowSearchSuggestions(false);
+  }, []);
+
+  // Sticky-bar search box (rendered once, used on both mobile and desktop).
+  // Typing only updates suggestions; the listing filter (appliedSearch) changes
+  // on Enter, suggestion select, or clear.
+  const renderSearchBox = () => (
+    <div style={{ ...S.filterBarSearch, ...(isMobile ? S.filterBarSearchMobile : {}), position: "relative" }}>
+      <span style={S.filterBarSearchIcon} aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="7" />
+          <path d="M21 21l-4.35-4.35" />
+        </svg>
+      </span>
+      <input
+        type="text"
+        style={S.filterBarSearchInput}
+        placeholder="Search venues..."
+        value={searchInputValue}
+        onChange={(e) => { setSearchInputValue(e.target.value); setShowSearchSuggestions(true); }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") { setAppliedSearch(searchInputValue); setShowSearchSuggestions(false); }
+          if (e.key === "Escape") { setShowSearchSuggestions(false); }
+        }}
+        onFocus={() => { if (searchInputValue.length >= 2) setShowSearchSuggestions(true); }}
+        onBlur={() => { setTimeout(() => setShowSearchSuggestions(false), 150); }}
+        aria-label="Search venues by name or area"
+      />
+      {searchInputValue && (
+        <button
+          type="button"
+          aria-label="Clear search"
+          style={S.searchClearBtn}
+          onClick={() => { setSearchInputValue(""); setAppliedSearch(""); setShowSearchSuggestions(false); }}
+        >×</button>
+      )}
+      {showSearchSuggestions && searchSuggestions.length > 0 && (
+        <div style={S.searchSuggestDropdown}>
+          {searchSuggestions.some((s) => s.type === "area") && (
+            <div style={S.searchSuggestHeader}>📍 Areas</div>
+          )}
+          {searchSuggestions.filter((s) => s.type === "area").map((s, i) => (
+            <button
+              key={`sa-${s.name}-${i}`}
+              type="button"
+              className="area-row"
+              style={S.searchSuggestRow}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => handleSuggestionSelect(s)}
+            >
+              <span style={S.searchSuggestName}>{s.name}</span>
+              <span style={S.searchSuggestMeta}>{s.zoneLabel}</span>
+            </button>
+          ))}
+          {searchSuggestions.some((s) => s.type === "venue") && (
+            <div style={S.searchSuggestHeader}>🏛️ Venues</div>
+          )}
+          {searchSuggestions.filter((s) => s.type === "venue").map((s, i) => (
+            <button
+              key={`sv-${s.name}-${i}`}
+              type="button"
+              className="area-row"
+              style={S.searchSuggestRow}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => handleSuggestionSelect(s)}
+            >
+              <span style={S.searchSuggestName}>{s.name}</span>
+              <span style={S.searchSuggestMeta}>{s.locality || ""}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   // ─── Counts (per facet — based on the loaded slice, so badges grow as the
   // user paginates). ───
   const typeCounts = useMemo(() => {
@@ -1200,8 +1327,8 @@ export default function VenuesPage({
   const filtered = useMemo(() => {
     let result = venues
       .filter((v) => {
-        if (!nameSearch) return true;
-        const q = nameSearch.toLowerCase();
+        if (!appliedSearch) return true;
+        const q = appliedSearch.toLowerCase();
         return v.name?.toLowerCase().includes(q) || v.address?.toLowerCase().includes(q);
       })
       .filter((v) => (venueType ? v.venueType === venueType : true))
@@ -1267,7 +1394,7 @@ export default function VenuesPage({
       return 0;
     });
     return result;
-  }, [venues, nameSearch, venueType, selectedZones, capacityBucket, priceBucket, amenitySet, verifiedOnly, sort, selectedAreas]);
+  }, [venues, appliedSearch, venueType, selectedZones, capacityBucket, priceBucket, amenitySet, verifiedOnly, sort, selectedAreas]);
 
   const featured = useMemo(() => {
     return [...venues]
@@ -1384,7 +1511,7 @@ export default function VenuesPage({
 
           {/* Search (sharp-edged, no border-radius) */}
           <form
-            onSubmit={(e) => { e.preventDefault(); scrollToListing(); }}
+            onSubmit={(e) => { e.preventDefault(); setAppliedSearch(searchInputValue); setShowSearchSuggestions(false); scrollToListing(); }}
             style={{
               marginTop: 18,
               maxWidth: 480,
@@ -1412,8 +1539,8 @@ export default function VenuesPage({
             </svg>
             <input
               className="hero-k-input"
-              value={nameSearch}
-              onChange={(e) => setNameSearch(e.target.value)}
+              value={searchInputValue}
+              onChange={(e) => setSearchInputValue(e.target.value)}
               placeholder="Search by name, area, or vibe…"
               aria-label="Search venues"
               style={{
@@ -1583,46 +1710,11 @@ export default function VenuesPage({
                    row of category pills + filter chips. */}
         <div style={S.filterBar}>
           <div style={{ ...S.filterBarFlex, ...(isMobile ? S.filterBarFlexMobile : {}) }}>
-            {isMobile && (
-              <div style={{ ...S.filterBarSearch, ...S.filterBarSearchMobile }}>
-                <span style={S.filterBarSearchIcon} aria-hidden="true">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="11" cy="11" r="7" />
-                    <path d="M21 21l-4.35-4.35" />
-                  </svg>
-                </span>
-                <input
-                  type="search"
-                  style={S.filterBarSearchInput}
-                  placeholder="Search venues..."
-                  value={nameSearch}
-                  onChange={(e) => setNameSearch(e.target.value)}
-                  aria-label="Search venues by name or address"
-                />
-              </div>
-            )}
+            {/* Search box rendered OUTSIDE the overflow-x scroller below, so its
+                absolutely-positioned suggestions dropdown isn't clipped. */}
+            {renderSearchBox()}
             <div className="filter-bar-row" style={{ ...S.filterBarRow, ...(isMobile ? S.filterBarRowMobile : {}) }}>
-              {!isMobile && (
-                <>
-                  <div style={S.filterBarSearch}>
-                    <span style={S.filterBarSearchIcon} aria-hidden="true">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="11" cy="11" r="7" />
-                        <path d="M21 21l-4.35-4.35" />
-                      </svg>
-                    </span>
-                    <input
-                      type="search"
-                      style={S.filterBarSearchInput}
-                      placeholder="Search venues..."
-                      value={nameSearch}
-                      onChange={(e) => setNameSearch(e.target.value)}
-                      aria-label="Search venues by name or address"
-                    />
-                  </div>
-                  <div style={S.filterDivider} aria-hidden="true" />
-                </>
-              )}
+              {!isMobile && <div style={S.filterDivider} aria-hidden="true" />}
 
               {/* Category pills */}
               {CATEGORIES.map((c) => (
