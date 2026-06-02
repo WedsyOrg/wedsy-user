@@ -943,23 +943,45 @@ export default function VenuesPage({
   // ───
   useEffect(() => {
     if (!openDropdown) return undefined;
-    const onMouseDown = (e) => {
+    const onOutside = (e) => {
       if (!e.target.closest || !e.target.closest("[data-filter-dropdown]")) {
         setOpenDropdown(null);
       }
     };
-    document.addEventListener("mousedown", onMouseDown);
-    return () => document.removeEventListener("mousedown", onMouseDown);
+    // Listen for both mouse (desktop) and touch (mobile) so tapping outside
+    // the dropdown closes it on touch devices too.
+    document.addEventListener("mousedown", onOutside);
+    document.addEventListener("touchstart", onOutside);
+    return () => {
+      document.removeEventListener("mousedown", onOutside);
+      document.removeEventListener("touchstart", onOutside);
+    };
   }, [openDropdown]);
 
   // Close any open dropdown the moment the user scrolls — the dropdown's
   // fixed coords were captured at open time and would otherwise drift away
   // from the chip once the sticky bar's chip moves with the scroll.
+  // Exception: the area dropdown on mobile is full-width and scroll-locked
+  // (see below), so it must not close on scroll.
   useEffect(() => {
     if (!openDropdown) return undefined;
+    if (openDropdown === "area" && typeof window !== "undefined" && window.innerWidth < 768) {
+      return undefined;
+    }
     const close = () => setOpenDropdown(null);
     window.addEventListener("scroll", close, { passive: true, once: true });
     return () => window.removeEventListener("scroll", close);
+  }, [openDropdown]);
+
+  // Lock body scroll while the area dropdown is open on mobile so the
+  // full-width panel behaves like a sheet and the page doesn't scroll behind it.
+  useEffect(() => {
+    if (openDropdown === "area" && typeof window !== "undefined" && window.innerWidth < 768) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
   }, [openDropdown]);
 
   // Toggle a filter chip's dropdown. Captures the chip's bounding rect so
@@ -1624,6 +1646,7 @@ export default function VenuesPage({
                   type="button"
                   style={selectedArea ? S.filterChipOn : S.filterChip}
                   onClick={(e) => toggleDropdown("area", e)}
+                  onTouchStart={(e) => e.stopPropagation()}
                   aria-expanded={openDropdown === "area"}
                   aria-haspopup="listbox"
                 >
@@ -1642,7 +1665,17 @@ export default function VenuesPage({
                   )}
                 </button>
                 {openDropdown === "area" && (
-                  <div style={{ ...S.areaDropdown, top: dropdownAnchor.top, left: dropdownAnchor.left }}>
+                  <div
+                    style={{
+                      ...S.areaDropdown,
+                      // On mobile, ignore the chip's getBoundingClientRect anchor
+                      // (which mispositions on scroll/narrow viewports) and pin the
+                      // dropdown full-width below the sticky bar, above everything.
+                      ...(isMobile
+                        ? { top: 60, left: 8, right: 8, width: "auto", zIndex: 9999 }
+                        : { top: dropdownAnchor.top, left: dropdownAnchor.left }),
+                    }}
+                  >
                     <div style={S.areaDropdownHeader}>
                       <input
                         type="search"
