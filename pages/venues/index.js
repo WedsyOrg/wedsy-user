@@ -868,6 +868,9 @@ export default function VenuesPage({
   const [searchInputValue, setSearchInputValue] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+  // Anchor for the hero search dropdown — it uses position: fixed off this
+  // input's rect so the hero section's overflow:hidden doesn't clip it.
+  const heroSearchRef = useRef(null);
   const [venueType, setVenueType] = useState("");
   const [capacityBucket, setCapacityBucket] = useState("");
   const [priceBucket, setPriceBucket] = useState("");
@@ -892,7 +895,7 @@ export default function VenuesPage({
   // chip's getBoundingClientRect() at the moment it was clicked; the dropdown
   // renders position: fixed so it escapes the bar row's overflow clipping.
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [dropdownAnchor, setDropdownAnchor] = useState({ top: 0, left: 0 });
+  const [dropdownAnchor, setDropdownAnchor] = useState({ top: 0, left: 0, right: 0 });
   // Pagination — SSR delivers the first 24, "Load more" appends in 24-chunks.
   // `total` is in state (not just a prop) so zone refetches can update it.
   const [venues, setVenues] = useState(initialVenues);
@@ -1008,28 +1011,14 @@ export default function VenuesPage({
 
   // Close any open dropdown the moment the user scrolls — the dropdown's
   // fixed coords were captured at open time and would otherwise drift away
-  // from the chip once the sticky bar's chip moves with the scroll.
-  // Exception: the area dropdown on mobile is full-width and scroll-locked
-  // (see below), so it must not close on scroll.
+  // from the chip once the sticky bar's chip moves with the scroll. The area
+  // dropdown is now a compact chip-anchored panel (like Zone), so it closes on
+  // scroll the same way — no special-casing or body scroll-lock.
   useEffect(() => {
     if (!openDropdown) return undefined;
-    if (openDropdown === "area" && typeof window !== "undefined" && window.innerWidth < 768) {
-      return undefined;
-    }
     const close = () => setOpenDropdown(null);
     window.addEventListener("scroll", close, { passive: true, once: true });
     return () => window.removeEventListener("scroll", close);
-  }, [openDropdown]);
-
-  // Lock body scroll while the area dropdown is open on mobile so the
-  // full-width panel behaves like a sheet and the page doesn't scroll behind it.
-  useEffect(() => {
-    if (openDropdown === "area" && typeof window !== "undefined" && window.innerWidth < 768) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
   }, [openDropdown]);
 
   // Toggle a filter chip's dropdown. Captures the chip's bounding rect so
@@ -1043,7 +1032,7 @@ export default function VenuesPage({
   const toggleDropdown = useCallback((name, event) => {
     const rect = event.currentTarget.getBoundingClientRect();
     setOpenDropdown((cur) => (cur === name ? null : name));
-    setDropdownAnchor({ top: rect.bottom + 8, left: rect.left });
+    setDropdownAnchor({ top: rect.bottom + 8, left: rect.left, right: rect.right });
   }, []);
 
   const filterActiveFlags = useMemo(() => ({
@@ -1242,11 +1231,30 @@ export default function VenuesPage({
 
   // Shared suggestions dropdown — used by BOTH the hero search and the sticky
   // filter-bar search. Renders nothing unless suggestions are open and present.
-  // Its parent container must be position: relative.
-  const renderSuggestionsDropdown = () => {
+  // Without anchorRef: absolute, relative to a position:relative parent.
+  // With anchorRef (hero search): position:fixed off the input's rect, so the
+  // hero section's overflow:hidden can't clip it.
+  const renderSuggestionsDropdown = (anchorRef) => {
     if (!showSearchSuggestions || searchSuggestions.length === 0) return null;
+    let dropdownStyle = S.searchSuggestDropdown;
+    if (anchorRef?.current) {
+      const rect = anchorRef.current.getBoundingClientRect();
+      dropdownStyle = {
+        position: "fixed",
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+        zIndex: 9999,
+        background: "#ffffff",
+        borderRadius: 12,
+        border: "1px solid #e8d8c4",
+        boxShadow: "0 8px 32px rgba(107,30,46,0.12)",
+        maxHeight: 300,
+        overflowY: "auto",
+      };
+    }
     return (
-      <div style={S.searchSuggestDropdown}>
+      <div style={dropdownStyle}>
         {searchSuggestions.some((s) => s.type === "area") && (
           <div style={S.searchSuggestHeader}>📍 Areas</div>
         )}
@@ -1547,6 +1555,7 @@ export default function VenuesPage({
               <path d="M21 21l-4.35-4.35" />
             </svg>
             <input
+              ref={heroSearchRef}
               className="hero-k-input"
               value={searchInputValue}
               onChange={(e) => { setSearchInputValue(e.target.value); setShowSearchSuggestions(true); }}
@@ -1580,7 +1589,7 @@ export default function VenuesPage({
             >
               Search →
             </button>
-            {renderSuggestionsDropdown()}
+            {renderSuggestionsDropdown(heroSearchRef)}
           </form>
 
           {/* Stat panels — horizontal row BELOW search, same width */}
@@ -1844,12 +1853,17 @@ export default function VenuesPage({
                   <div
                     style={{
                       ...S.areaDropdown,
-                      // On mobile, ignore the chip's getBoundingClientRect anchor
-                      // (which mispositions on scroll/narrow viewports) and pin the
-                      // dropdown full-width below the sticky bar, above everything.
-                      ...(isMobile
-                        ? { top: 60, left: 8, right: 8, width: "auto", zIndex: 9999 }
-                        : { top: dropdownAnchor.top, left: dropdownAnchor.left }),
+                      // Compact chip-anchored dropdown on ALL screen sizes (same
+                      // behaviour as the Zone dropdown). Clamp to the chip's right
+                      // edge if a left-anchored 260px panel would overflow the
+                      // viewport's right side.
+                      top: dropdownAnchor.top,
+                      left:
+                        typeof window !== "undefined" && dropdownAnchor.left + 260 > window.innerWidth - 8
+                          ? Math.max(8, dropdownAnchor.right - 260)
+                          : dropdownAnchor.left,
+                      width: 260,
+                      maxHeight: 320,
                     }}
                   >
                     <div style={S.areaDropdownHeader}>
