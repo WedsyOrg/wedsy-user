@@ -677,6 +677,11 @@ Object.assign(S, {
   areaRowCount: { fontSize: 10, color: "#b09080", flexShrink: 0 },
   areaRowZone: { fontSize: 10, color: "#b09080", flexShrink: 0 },
   areaEmpty: { padding: "16px 14px", fontSize: 12, color: "#b09080", textAlign: "center" },
+  // Suggestions box (highlighted) + multi-select checkboxes
+  areaSuggestBox: { background: "#fffbf5", borderBottom: "0.5px solid #f0e8dc" },
+  areaSuggestLabel: { fontSize: 9, textTransform: "uppercase", color: "#b09080", letterSpacing: 2, padding: "10px 14px 4px", fontWeight: 600 },
+  areaCheckbox: { width: 16, height: 16, borderRadius: 4, border: "1.5px solid #d8c4a8", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 11, lineHeight: 1, color: "transparent" },
+  areaCheckboxOn: { width: 16, height: 16, borderRadius: 4, border: "1.5px solid " + C.burgundy, background: C.burgundy, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 11, lineHeight: 1, color: "#fff" },
 });
 
 // ─── Card components ───
@@ -736,6 +741,20 @@ function VenueCard({ venue, featured = false, distanceLabel = null }) {
       style={featured ? S.fcard : S.card}
     >
       <div style={featured ? S.fcardImgWrap : S.cardImgWrap}>
+        {venue.featured === true && (
+          <div
+            style={{
+              position: "absolute", top: 10, right: 10,
+              background: "linear-gradient(135deg, #b8852a, #d4a843)",
+              color: "white", fontSize: 10, fontWeight: 700,
+              padding: "4px 8px", borderRadius: 4,
+              letterSpacing: "0.5px", zIndex: 2,
+              textTransform: "uppercase",
+            }}
+          >
+            ✦ FEATURED
+          </div>
+        )}
         {venue.coverPhoto ? (
           <img src={venue.coverPhoto} alt={venue.name} style={S.cardImg} loading="lazy" />
         ) : (
@@ -746,6 +765,20 @@ function VenueCard({ venue, featured = false, distanceLabel = null }) {
       </div>
       <div style={S.cardBody}>
         <div style={S.cardName}>{venue.name}</div>
+        {venue.featured === true && (
+          <div
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 4,
+              fontSize: 10, fontWeight: 600, color: "#6b1e2e",
+              background: "rgba(107,30,46,0.08)",
+              padding: "3px 8px", borderRadius: 20,
+              letterSpacing: "0.3px", marginTop: 4,
+              textTransform: "uppercase",
+            }}
+          >
+            ✦ Managed by Wedsy
+          </div>
+        )}
         <div style={S.cardLoc}><span aria-hidden="true">📍</span> {shortAddr}</div>
         {venue.zone && ZONE_LABEL[venue.zone] && (
           <div style={S.cardZoneChip}>
@@ -837,10 +870,11 @@ export default function VenuesPage({
   // live-typing feedback and rides along on Load-More fetches.
   const [selectedZones, setSelectedZones] = useState([]);
   // Smart area filter — client-side, layered on top of the loaded slice.
-  // `selectedArea` is { name, zone, lat, lng } (lat/lng may be undefined if the
-  // locality isn't in AREA_CENTROIDS — distance labels/sort just skip those).
+  // Multi-select: `selectedAreas` is an array of { name, zone, lat, lng }
+  // (lat/lng may be undefined if the locality isn't in AREA_CENTROIDS — distance
+  // labels/sort just skip those).
   const [areaFilterSearch, setAreaFilterSearch] = useState("");
-  const [selectedArea, setSelectedArea] = useState(null);
+  const [selectedAreas, setSelectedAreas] = useState([]);
   // Sticky filter bar dropdown — only one open at a time, null when closed.
   // `dropdownAnchor` holds the {top,left} viewport coords captured from the
   // chip's getBoundingClientRect() at the moment it was clicked; the dropdown
@@ -921,7 +955,7 @@ export default function VenuesPage({
     setPriceBucket("");
     setAmenitySet({});
     setVerifiedOnly(false);
-    setSelectedArea(null);
+    setSelectedAreas([]);
     setAreaFilterSearch("");
     setOpenDropdown(null);
   };
@@ -1011,7 +1045,7 @@ export default function VenuesPage({
     filterActiveFlags.price ||
     filterActiveFlags.capacity ||
     filterActiveFlags.amenities ||
-    !!selectedArea ||
+    selectedAreas.length > 0 ||
     !!nameSearch;
 
   const clearFilterGroup = useCallback((group) => {
@@ -1111,31 +1145,44 @@ export default function VenuesPage({
     [areasByZone],
   );
 
-  // "In {area}" / "{n} km from {area}" — null when no area is picked, the
-  // locality has no centroid, or the venue lacks coordinates.
+  // "In {area}" / "{n} km from {area}" relative to the CLOSEST selected area —
+  // null when no area is picked or the venue lacks coordinates.
   const getDistanceLabel = useCallback((venue) => {
-    if (!selectedArea) return null;
-    const centroid = AREA_CENTROIDS[selectedArea.name.toLowerCase()];
-    if (!centroid || !venue.location?.coordinates) return null;
+    if (!selectedAreas.length) return null;
+    if (!venue.location?.coordinates) return null;
     const [lng, lat] = venue.location.coordinates;
-    const dist = haversineKm(centroid.lat, centroid.lng, lat, lng);
-    if (dist < 0.5) return "In " + selectedArea.name;
-    return dist.toFixed(1) + " km from " + selectedArea.name;
-  }, [selectedArea]);
+    let closestArea = null;
+    let closestDist = Infinity;
+    selectedAreas.forEach((area) => {
+      const centroid = AREA_CENTROIDS[area.name.toLowerCase()];
+      if (!centroid) return;
+      const dist = haversineKm(centroid.lat, centroid.lng, lat, lng);
+      if (dist < closestDist) { closestDist = dist; closestArea = area; }
+    });
+    if (!closestArea) return null;
+    if (closestDist < 0.5) return "In " + closestArea.name;
+    return closestDist.toFixed(1) + " km from " + closestArea.name;
+  }, [selectedAreas]);
 
-  // Select an area from the dropdown. Area and Zone are separate filters — so
-  // picking an area clears any zone selection. Then jump to the listing.
+  // Toggle an area in the multi-select. Area and Zone are separate filters — so
+  // picking an area clears any zone selection. The dropdown stays open so the
+  // user can keep selecting (a "Done" button closes it).
   const selectArea = useCallback((area) => {
-    setSelectedArea({ name: area.name, zone: area.zone });
+    const centroid = AREA_CENTROIDS[area.name.toLowerCase()];
+    const areaObj = { name: area.name, zone: area.zone, lat: centroid?.lat, lng: centroid?.lng };
+    setSelectedAreas((prev) => {
+      const exists = prev.find((a) => a.name.toLowerCase() === area.name.toLowerCase());
+      if (exists) return prev.filter((a) => a.name.toLowerCase() !== area.name.toLowerCase());
+      return [...prev, areaObj];
+    });
     setSelectedZones([]);
     setAreaFilterSearch("");
-    setOpenDropdown(null);
-    setTimeout(scrollToListing, 60);
-  }, [scrollToListing]);
+  }, []);
 
   const clearArea = useCallback(() => {
-    setSelectedArea(null);
+    setSelectedAreas([]);
     setAreaFilterSearch("");
+    setOpenDropdown(null);
   }, []);
 
   // ─── Counts (per facet — based on the loaded slice, so badges grow as the
@@ -1185,26 +1232,42 @@ export default function VenuesPage({
         return (b.dataCompleteness || 0) - (a.dataCompleteness || 0);
       });
 
-    // Area filter — narrow to the area's zone, then surface the exact locality
-    // first and order the rest by distance from the area centroid.
-    if (selectedArea) {
-      const centroid = AREA_CENTROIDS[selectedArea.name.toLowerCase()];
-      result = result.filter((v) => v.zone === selectedArea.zone);
-      if (centroid) {
-        result = [...result].sort((a, b) => {
-          const aExact = a.locality?.toLowerCase() === selectedArea.name.toLowerCase();
-          const bExact = b.locality?.toLowerCase() === selectedArea.name.toLowerCase();
-          if (aExact && !bExact) return -1;
-          if (!aExact && bExact) return 1;
-          const [alng, alat] = a.location?.coordinates || [0, 0];
-          const [blng, blat] = b.location?.coordinates || [0, 0];
-          return haversineKm(centroid.lat, centroid.lng, alat, alng) -
-                 haversineKm(centroid.lat, centroid.lng, blat, blng);
+    // Area filter (multi-select) — narrow to ANY selected area's zone, then
+    // surface venues whose locality matches ANY selected area first, ordered by
+    // distance to the CLOSEST selected area centroid.
+    if (selectedAreas.length > 0) {
+      const names = new Set(selectedAreas.map((a) => a.name.toLowerCase()));
+      // Nearest selected-area centroid distance for a venue (Infinity if none).
+      const closestDist = (v) => {
+        if (!v.location?.coordinates) return Infinity;
+        const [lng, lat] = v.location.coordinates;
+        let min = Infinity;
+        selectedAreas.forEach((a) => {
+          const c = AREA_CENTROIDS[a.name.toLowerCase()];
+          if (!c) return;
+          const d = haversineKm(c.lat, c.lng, lat, lng);
+          if (d < min) min = d;
         });
-      }
+        return min;
+      };
+      result = result.filter((v) => selectedAreas.some((a) => a.zone === v.zone));
+      result = [...result].sort((a, b) => {
+        const aExact = names.has((a.locality || "").toLowerCase());
+        const bExact = names.has((b.locality || "").toLowerCase());
+        if (aExact && !bExact) return -1;
+        if (!aExact && bExact) return 1;
+        return closestDist(a) - closestDist(b);
+      });
     }
+
+    // Final pass — featured venues (e.g. Crown Estate) always sort first.
+    result = [...result].sort((a, b) => {
+      if (a.featured && !b.featured) return -1;
+      if (!a.featured && b.featured) return 1;
+      return 0;
+    });
     return result;
-  }, [venues, nameSearch, venueType, selectedZones, capacityBucket, priceBucket, amenitySet, verifiedOnly, sort, selectedArea]);
+  }, [venues, nameSearch, venueType, selectedZones, capacityBucket, priceBucket, amenitySet, verifiedOnly, sort, selectedAreas]);
 
   const featured = useMemo(() => {
     return [...venues]
@@ -1618,8 +1681,8 @@ export default function VenuesPage({
                             checked={checked}
                             onChange={() => {
                               // Zone and Area are separate filters — picking a
-                              // zone clears any selected area.
-                              setSelectedArea(null);
+                              // zone clears any selected areas.
+                              setSelectedAreas([]);
                               if (isAll) {
                                 setSelectedZones([]);
                               } else {
@@ -1644,14 +1707,22 @@ export default function VenuesPage({
               <div style={S.filterChipWrap} data-filter-dropdown>
                 <button
                   type="button"
-                  style={selectedArea ? S.filterChipOn : S.filterChip}
+                  style={selectedAreas.length > 0 ? S.filterChipOn : S.filterChip}
                   onClick={(e) => toggleDropdown("area", e)}
                   onTouchStart={(e) => e.stopPropagation()}
                   aria-expanded={openDropdown === "area"}
                   aria-haspopup="listbox"
                 >
-                  <span>{selectedArea ? `📍 ${selectedArea.name}` : "Area"}</span>
-                  {selectedArea ? (
+                  <span>
+                    {selectedAreas.length === 0
+                      ? "Area"
+                      : selectedAreas.length === 1
+                        ? `📍 ${selectedAreas[0].name}`
+                        : selectedAreas.length === 2
+                          ? `📍 ${selectedAreas[0].name}, ${selectedAreas[1].name}`
+                          : `📍 ${selectedAreas.length} areas`}
+                  </span>
+                  {selectedAreas.length > 0 ? (
                     <span
                       role="button"
                       tabIndex={0}
@@ -1690,21 +1761,32 @@ export default function VenuesPage({
                     <div style={S.areaDropdownBody}>
                       {areaFilterSearch.length >= 2 ? (
                         areaSuggestions.length > 0 ? (
-                          areaSuggestions.map((area) => (
-                            <button
-                              key={`${area.zone}-${area.name}`}
-                              type="button"
-                              className="area-row"
-                              style={S.areaSuggestRow}
-                              onClick={() => selectArea(area)}
-                            >
-                              <span style={S.areaRowLeft}>
-                                <span style={S.areaRowName}>{area.name}</span>
-                                <span style={S.areaRowCount}>({area.count})</span>
-                              </span>
-                              <span style={S.areaRowZone}>{area.zoneLabel}</span>
-                            </button>
-                          ))
+                          <div style={S.areaSuggestBox}>
+                            <div style={S.areaSuggestLabel}>Suggestions</div>
+                            {areaSuggestions.map((area) => {
+                              const isSelected = selectedAreas.some(
+                                (a) => a.name.toLowerCase() === area.name.toLowerCase(),
+                              );
+                              return (
+                                <button
+                                  key={`${area.zone}-${area.name}`}
+                                  type="button"
+                                  className="area-row"
+                                  style={S.areaSuggestRow}
+                                  onClick={() => selectArea(area)}
+                                >
+                                  <span style={S.areaRowLeft}>
+                                    <span style={isSelected ? S.areaCheckboxOn : S.areaCheckbox} aria-hidden="true">
+                                      {isSelected ? "✓" : ""}
+                                    </span>
+                                    <span style={{ ...S.areaRowName, fontWeight: 600 }}>{area.name}</span>
+                                    <span style={S.areaRowCount}>({area.count})</span>
+                                  </span>
+                                  <span style={{ fontSize: 10, color: "#b8852a" }}>{area.zoneLabel}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
                         ) : (
                           <div style={S.areaEmpty}>No areas found</div>
                         )
@@ -1716,7 +1798,9 @@ export default function VenuesPage({
                             <div key={zone}>
                               <div style={S.areaZoneHeader}>{ZONE_LABELS[zone]}</div>
                               {list.map((area) => {
-                                const isSelected = selectedArea?.name?.toLowerCase() === area.name.toLowerCase();
+                                const isSelected = selectedAreas.some(
+                                  (a) => a.name.toLowerCase() === area.name.toLowerCase(),
+                                );
                                 return (
                                   <button
                                     key={`${zone}-${area.name}`}
@@ -1726,7 +1810,9 @@ export default function VenuesPage({
                                     onClick={() => selectArea(area)}
                                   >
                                     <span style={S.areaRowLeft}>
-                                      {isSelected && <span style={S.areaRowCheck} aria-hidden="true">✓</span>}
+                                      <span style={isSelected ? S.areaCheckboxOn : S.areaCheckbox} aria-hidden="true">
+                                        {isSelected ? "✓" : ""}
+                                      </span>
                                       <span style={S.areaRowName}>{area.name}</span>
                                     </span>
                                     <span style={S.areaRowCount}>({area.count})</span>
@@ -1740,6 +1826,19 @@ export default function VenuesPage({
                         <div style={S.areaEmpty}>No areas available</div>
                       )}
                     </div>
+                    {selectedAreas.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setOpenDropdown(null)}
+                        style={{
+                          width: "100%", padding: "10px", background: "#6b1e2e", color: "white",
+                          border: "none", borderRadius: "0 0 12px 12px", cursor: "pointer",
+                          fontSize: 13, fontWeight: 600,
+                        }}
+                      >
+                        Done
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
