@@ -464,6 +464,7 @@ const AmenityIcon = ({ type, size = 22, color = "currentColor" }) => {
     valet: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
     shuttle: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3m-1 11h-8m-3 0H3"/><rect x="9" y="11" width="14" height="10" rx="1"/><circle cx="12" cy="21" r="1"/><circle cx="20" cy="21" r="1"/></svg>,
     pet: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><path d="M9 10l4.5 5L11 22H7l-2-6 2-6"/><path d="M14 14.5S16 19 18 19s4.5-3 4.5-3"/></svg>,
+    ev: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="10" height="18" rx="2"/><path d="M3 9h10"/><path d="M8 5.5l-1.5 2.5H9l-1.5 2.5"/><path d="M17 8l3 3v8a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2"/></svg>,
   };
   return icons[type] || null;
 };
@@ -945,6 +946,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
         { key: "airConditioning", iconType: "ac", label: "Air Conditioning" },
         { key: "cctv", iconType: "cctv", label: "CCTV Security" },
         { key: "helipad", iconType: "helipad", label: "Helipad" },
+        { key: "evCharging", iconType: "ev", label: "EV Charging" },
       ],
     },
     {
