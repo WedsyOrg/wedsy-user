@@ -906,6 +906,24 @@ export default function VenueDetailPage({ venue, isVerified = false, similar = [
   const cateringEstimateNonVeg = perPlateNonVeg > 0 ? perPlateNonVeg * numGuests : 0;
   const totalEstimate = selectedTierPrice + cateringEstimateVeg;
 
+  // Structured policy clauses (back-compat). The server sends venue.policyDoc
+  // already migrated; if absent (older API), derive from the legacy policies
+  // object so nothing is lost: otherRestrictions -> policies, cancel+refund -> refund.
+  const rawPolicyDoc = venue.policyDoc || {};
+  const legacyPol = venue.policies || {};
+  const cleanClauses = (...v) => v.map((s) => (s == null ? "" : String(s).trim())).filter(Boolean);
+  const hasStructured = ["policies", "terms", "refund"].some(
+    (k) => Array.isArray(rawPolicyDoc[k]) && rawPolicyDoc[k].length > 0
+  );
+  const policyDoc = hasStructured
+    ? { policies: rawPolicyDoc.policies || [], terms: rawPolicyDoc.terms || [], refund: rawPolicyDoc.refund || [] }
+    : { policies: cleanClauses(legacyPol.otherRestrictions), terms: [], refund: cleanClauses(legacyPol.cancellation, legacyPol.refund) };
+  const policyGroups = [
+    { title: "Venue Policies", items: policyDoc.policies },
+    { title: "Terms & Conditions", items: policyDoc.terms },
+    { title: "Cancellation & Refund Policy", items: policyDoc.refund },
+  ].filter((g) => Array.isArray(g.items) && g.items.length > 0);
+
   // Music policy
   const mp = venue.musicPolicy || {};
   const musicPermissive = mp.djAllowed !== false && mp.liveMusicAllowed !== false;
@@ -1883,6 +1901,22 @@ export default function VenueDetailPage({ venue, isVerified = false, similar = [
                   )}
                 </article>
               </div>
+
+              {/* Structured policy clauses (numbered) — venue.policyDoc, with legacy back-compat */}
+              {policyGroups.length > 0 && (
+                <div style={{ marginTop: 24, display: "grid", gap: 20 }}>
+                  {policyGroups.map((g) => (
+                    <div key={g.title}>
+                      <div style={S.policyKicker}>{g.title}</div>
+                      <ol style={{ margin: "8px 0 0", paddingLeft: 22 }}>
+                        {g.items.map((clause, i) => (
+                          <li key={i} style={{ ...S.policyRow, listStyleType: "decimal", marginBottom: 4 }}>{clause}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
 
             {/* ───── 9. AMENITIES — SVG ICON TILES (3 states: on / off / TBA) ───── */}
