@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 
 import { trimTitle, trimDescription } from "@/utils/seo";
@@ -174,6 +175,7 @@ const AMENITY_FILTERS = [
   { key: "garden", label: "Outdoor lawn", icon: "🌿", path: ["amenities", "garden"] },
   { key: "kalyanMandap", label: "Kalyani Mandap", icon: "🛕", path: ["amenities", "kalyanMandap"] },
   { key: "floatingMandap", label: "Floating Mandap", icon: "🪷", path: ["amenities", "floatingMandap"] },
+  { key: "evCharging", label: "EV Charging", icon: "🔋", path: ["amenities", "evCharging"] },
 ];
 
 // Helpers
@@ -730,7 +732,9 @@ function AmenityIcons({ venue }) {
 }
 
 function VenueCard({ venue, featured = false, distanceLabel = null }) {
-  const isVerified = venue.status === "verified";
+  // Verified badge renders ONLY when the API marks the venue verified. Prefer
+  // the documented `isVerified` boolean; fall back to the legacy status flag.
+  const isVerified = venue.isVerified === true || venue.status === "verified";
   const vTypeLabel = venue.venueType
     ? venue.venueType.charAt(0).toUpperCase() + venue.venueType.slice(1)
     : "Venue";
@@ -858,6 +862,7 @@ export default function VenuesPage({
   total: initialTotal = 0,
   zoneCounts = { airport: 0, north: 0, south: 0, east: 0, west: 0, central: 0 },
 }) {
+  const router = useRouter();
   // Responsive breakpoint flags — drive style overrides in mobile/tablet.
   const viewportWidth = useWindowWidth();
   const isMobile = viewportWidth < 768;
@@ -876,6 +881,9 @@ export default function VenuesPage({
   const [priceBucket, setPriceBucket] = useState("");
   const [amenitySet, setAmenitySet] = useState({});
   const [verifiedOnly, setVerifiedOnly] = useState(false);
+  // Catering diet filters → veg=true / nonVeg=true on the GET /venues endpoint.
+  const [vegOnly, setVegOnly] = useState(false);
+  const [nonVegOnly, setNonVegOnly] = useState(false);
   const [sort, setSort] = useState("recommended");
   // Location filters — zone refetches from the server when changed. The SSR
   // slice is dataCompleteness-sorted across all zones, so small zones (e.g.
@@ -904,27 +912,64 @@ export default function VenuesPage({
   const [loadMoreBusy, setLoadMoreBusy] = useState(false);
   const hasMore = venues.length < total;
 
-  const buildFetchUrl = useCallback((skip) => {
-    const params = new URLSearchParams({
-      status: "published",
-      limit: "24",
-      skip: String(skip),
-    });
+  // Map the capacity/price bucket sentinels to the numeric min/max params the
+  // GET /venues endpoint understands.
+  const serverFilterParams = useCallback(() => {
+    const params = new URLSearchParams({ status: "published" });
     if (selectedZones.length > 0) params.set("zone", selectedZones.join(","));
-    if (appliedSearch.trim()) params.set("name", appliedSearch.trim());
+    if (appliedSearch.trim()) params.set("search", appliedSearch.trim());
+    if (venueType) params.set("venueType", venueType);
+    // Capacity bucket → minCapacity (only a floor is server-supported).
+    if (capacityBucket === "100-250") params.set("minCapacity", "100");
+    else if (capacityBucket === "250-500") params.set("minCapacity", "250");
+    else if (capacityBucket === "500+") params.set("minCapacity", "500");
+    // Price bucket → min/maxPrice.
+    if (priceBucket === "0-200000") params.set("maxPrice", "200000");
+    else if (priceBucket === "200000-500000") { params.set("minPrice", "200000"); params.set("maxPrice", "500000"); }
+    else if (priceBucket === "500000-1000000") { params.set("minPrice", "500000"); params.set("maxPrice", "1000000"); }
+    else if (priceBucket === "1000000+") params.set("minPrice", "1000000");
+    // Amenities (incl. evCharging) — CSV of amenity keys the schema exposes.
+    const amenKeys = AMENITY_FILTERS.filter((a) => amenitySet[a.key] && a.path[0] === "amenities").map((a) => a.key);
+    if (amenKeys.length > 0) params.set("amenities", amenKeys.join(","));
+    if (vegOnly) params.set("veg", "true");
+    if (nonVegOnly) params.set("nonVeg", "true");
+    // Sort mapping → endpoint vocabulary.
+    if (sort === "price") params.set("sort", "price_low");
+    else if (sort === "capacity") params.set("sort", "capacity");
+    else if (sort === "rating") params.set("sort", "relevance");
+    else if (sort === "newest") params.set("sort", "newest");
+    return params;
+  }, [selectedZones, appliedSearch, venueType, capacityBucket, priceBucket, amenitySet, sort, vegOnly, nonVegOnly]);
+
+  const buildFetchUrl = useCallback((skip) => {
+    const params = serverFilterParams();
+    params.set("limit", "24");
+    params.set("skip", String(skip));
     return `${process.env.NEXT_PUBLIC_API_URL}/venues?${params.toString()}`;
-  }, [selectedZones, appliedSearch]);
+  }, [serverFilterParams]);
 
   const loadMore = useCallback(async () => {
     if (loadMoreBusy || !hasMore) return;
     setLoadMoreBusy(true);
     try {
-      const res = await fetch(buildFetchUrl(page * 24));
+      // Skip past exactly what's already loaded. The SSR initial page can be
+      // larger than one 24-chunk (the endpoint caps each page at 200), so
+      // deriving skip from venues.length keeps paging correct regardless of
+      // the initial count. Dedupe by slug defends against any overlap.
+      const res = await fetch(buildFetchUrl(venues.length));
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const fresh = Array.isArray(data.venues) ? data.venues : [];
       if (fresh.length > 0) {
-        setVenues((prev) => [...prev, ...fresh]);
+        setVenues((prev) => {
+          const have = new Set(prev.map((v) => v.slug || v._id));
+          const merged = [...prev];
+          for (const v of fresh) {
+            const id = v.slug || v._id;
+            if (!have.has(id)) { merged.push(v); have.add(id); }
+          }
+          return merged;
+        });
         setPage((p) => p + 1);
       }
     } catch (e) {
@@ -932,19 +977,27 @@ export default function VenuesPage({
     } finally {
       setLoadMoreBusy(false);
     }
-  }, [page, loadMoreBusy, hasMore, buildFetchUrl]);
+  }, [venues.length, loadMoreBusy, hasMore, buildFetchUrl]);
 
-  // Refetch from the server whenever the zone changes. Skips on first mount
-  // (the SSR slice is already loaded). `total` is replaced with the
-  // zone-filtered count so the Load-More button is accurate.
-  const isFirstZoneRender = useRef(true);
+  // Refetch from the server whenever any server-supported filter changes
+  // (zone, search, venueType, capacity/price bucket, amenities, sort). Skips on
+  // first mount (the SSR slice is already loaded). `total` is replaced with the
+  // server's filtered count so Load-More + skip math stay accurate. The
+  // client-side `filtered` memo then layers on the remaining UI filters (area,
+  // featured ordering). A short debounce coalesces rapid changes.
+  const isFirstFilterRender = useRef(true);
+  const serverFilterKey = useMemo(
+    () => serverFilterParams().toString(),
+    [serverFilterParams],
+  );
   useEffect(() => {
-    if (isFirstZoneRender.current) { isFirstZoneRender.current = false; return; }
+    if (isFirstFilterRender.current) { isFirstFilterRender.current = false; return; }
     let cancelled = false;
-    (async () => {
+    const t = setTimeout(async () => {
       try {
-        const params = new URLSearchParams({ status: "published", limit: "24", skip: "0" });
-        if (selectedZones.length > 0) params.set("zone", selectedZones.join(","));
+        const params = serverFilterParams();
+        params.set("limit", "24");
+        params.set("skip", "0");
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venues?${params.toString()}`);
         if (!res.ok) return;
         const data = await res.json();
@@ -953,11 +1006,12 @@ export default function VenuesPage({
         setTotal(Number(data.total) || 0);
         setPage(1);
       } catch (e) {
-        // Keep the previous list; user can retry by toggling the zone.
+        // Keep the previous list; user can retry by toggling a filter.
       }
-    })();
-    return () => { cancelled = true; };
-  }, [selectedZones]);
+    }, 250);
+    return () => { cancelled = true; clearTimeout(t); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverFilterKey]);
 
   const toggleAmenity = useCallback((key) => {
     setAmenitySet((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -972,10 +1026,74 @@ export default function VenuesPage({
     setPriceBucket("");
     setAmenitySet({});
     setVerifiedOnly(false);
+    setVegOnly(false);
+    setNonVegOnly(false);
     setSelectedAreas([]);
     setAreaFilterSearch("");
     setOpenDropdown(null);
   };
+
+  // ─── URL ⇄ filter state sync (shareable / back-button safe) ───
+  // All filter state is reflected in the URL query string so a filtered view
+  // can be copied/shared and the browser back button restores prior filters.
+  // `urlHydrated` gates the writeback effect so it never runs before we've
+  // read the initial query (which would clobber a shared link's params).
+  const urlHydrated = useRef(false);
+  useEffect(() => {
+    if (!router.isReady || urlHydrated.current) return;
+    const q = router.query;
+    if (typeof q.search === "string") { setAppliedSearch(q.search); setSearchInputValue(q.search); }
+    if (typeof q.venueType === "string") setVenueType(q.venueType);
+    if (typeof q.capacity === "string") setCapacityBucket(q.capacity);
+    if (typeof q.price === "string") setPriceBucket(q.price);
+    if (typeof q.sort === "string") setSort(q.sort);
+    if (typeof q.zone === "string" && q.zone) setSelectedZones(q.zone.split(",").filter(Boolean));
+    if (q.verified === "1" || q.verified === "true") setVerifiedOnly(true);
+    if (q.veg === "1" || q.veg === "true") setVegOnly(true);
+    if (q.nonVeg === "1" || q.nonVeg === "true") setNonVegOnly(true);
+    if (typeof q.amenities === "string" && q.amenities) {
+      const next = {};
+      q.amenities.split(",").filter(Boolean).forEach((k) => { next[k] = true; });
+      setAmenitySet(next);
+    }
+    if (typeof q.areas === "string" && q.areas) {
+      const areas = q.areas.split(",").filter(Boolean).map((name) => {
+        const c = AREA_CENTROIDS[name.toLowerCase()];
+        return { name, zone: undefined, lat: c?.lat, lng: c?.lng };
+      });
+      setSelectedAreas(areas);
+    }
+    urlHydrated.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.isReady]);
+
+  // Write current filter state back to the URL (shallow — no SSR refetch). Only
+  // non-default values are written so a clean /venues stays clean.
+  useEffect(() => {
+    if (!router.isReady || !urlHydrated.current) return;
+    const query = {};
+    if (appliedSearch) query.search = appliedSearch;
+    if (venueType) query.venueType = venueType;
+    if (capacityBucket) query.capacity = capacityBucket;
+    if (priceBucket) query.price = priceBucket;
+    if (sort && sort !== "recommended") query.sort = sort;
+    if (selectedZones.length > 0) query.zone = selectedZones.join(",");
+    if (verifiedOnly) query.verified = "1";
+    if (vegOnly) query.veg = "1";
+    if (nonVegOnly) query.nonVeg = "1";
+    const amenKeys = Object.keys(amenitySet).filter((k) => amenitySet[k]);
+    if (amenKeys.length > 0) query.amenities = amenKeys.join(",");
+    if (selectedAreas.length > 0) query.areas = selectedAreas.map((a) => a.name).join(",");
+
+    const current = router.query;
+    // Cheap shallow-equality check so we don't push duplicate history entries.
+    const sameKeys = Object.keys(query).length === Object.keys(current).filter((k) => current[k] !== undefined && current[k] !== "").length;
+    const sameVals = Object.keys(query).every((k) => String(current[k] ?? "") === String(query[k]));
+    if (sameKeys && sameVals) return;
+
+    router.replace({ pathname: "/venues", query }, undefined, { shallow: true, scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appliedSearch, venueType, capacityBucket, priceBucket, sort, selectedZones, verifiedOnly, vegOnly, nonVegOnly, amenitySet, selectedAreas, router.isReady]);
 
   // ─── Scroll target for "All Venues" section (vibes + zones jump here) ───
   const allVenuesRef = useRef(null);
@@ -1039,8 +1157,8 @@ export default function VenuesPage({
     zone: selectedZones.length > 0,
     price: !!priceBucket,
     capacity: !!capacityBucket,
-    amenities: verifiedOnly || Object.values(amenitySet).some(Boolean),
-  }), [selectedZones, priceBucket, capacityBucket, verifiedOnly, amenitySet]);
+    amenities: verifiedOnly || vegOnly || nonVegOnly || Object.values(amenitySet).some(Boolean),
+  }), [selectedZones, priceBucket, capacityBucket, verifiedOnly, amenitySet, vegOnly, nonVegOnly]);
 
   const anyFilterActive =
     !!venueType ||
@@ -1055,7 +1173,7 @@ export default function VenuesPage({
     if (group === "zone") setSelectedZones([]);
     else if (group === "price") setPriceBucket("");
     else if (group === "capacity") setCapacityBucket("");
-    else if (group === "amenities") { setAmenitySet({}); setVerifiedOnly(false); }
+    else if (group === "amenities") { setAmenitySet({}); setVerifiedOnly(false); setVegOnly(false); setNonVegOnly(false); }
   }, []);
 
   // ─── Section 4 — Area cards (zones). Photo + count from loaded venues. ───
@@ -1363,7 +1481,7 @@ export default function VenuesPage({
         if (active.length === 0) return true;
         return active.every((a) => venueHasAmenity(v, a.path));
       })
-      .filter((v) => (verifiedOnly ? v.status === "verified" : true))
+      .filter((v) => (verifiedOnly ? (v.isVerified === true || v.status === "verified") : true))
       .sort((a, b) => {
         if (sort === "rating") return (b.googleRating || 0) - (a.googleRating || 0);
         if (sort === "capacity") return venueMaxCapacity(b) - venueMaxCapacity(a);
@@ -1426,6 +1544,11 @@ export default function VenuesPage({
         <meta property="og:title" content="Wedding Venues in Bangalore | Wedsy" />
         <meta property="og:description" content={`${total} curated wedding venues in Bangalore. Browse, compare, and chat directly with venues.`} />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://wedsy.in/venues" />
+        <meta property="og:site_name" content="Wedsy" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Wedding Venues in Bangalore | Wedsy" />
+        <meta name="twitter:description" content={`${total} curated wedding venues in Bangalore. Browse, compare, and chat directly with venues.`} />
         <link rel="canonical" href="https://wedsy.in/venues" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", name: "Wedding Venues in Bangalore", description: "Curated wedding resorts, farmhouses, and villas in Bangalore", numberOfItems: total, url: "https://wedsy.in/venues" }) }} />
       </Head>
@@ -2083,11 +2206,29 @@ export default function VenuesPage({
                     <label style={S.filterDropdownItem}>
                       <input
                         type="checkbox"
+                        checked={vegOnly}
+                        onChange={(e) => setVegOnly(e.target.checked)}
+                        style={{ accentColor: C.burgundy }}
+                      />
+                      <span>🥦 Veg catering</span>
+                    </label>
+                    <label style={S.filterDropdownItem}>
+                      <input
+                        type="checkbox"
+                        checked={nonVegOnly}
+                        onChange={(e) => setNonVegOnly(e.target.checked)}
+                        style={{ accentColor: C.burgundy }}
+                      />
+                      <span>🍖 Non-veg catering</span>
+                    </label>
+                    <label style={S.filterDropdownItem}>
+                      <input
+                        type="checkbox"
                         checked={verifiedOnly}
                         onChange={(e) => setVerifiedOnly(e.target.checked)}
                         style={{ accentColor: C.burgundy }}
                       />
-                      <span>Verified only</span>
+                      <span>✓ Verified only</span>
                     </label>
                   </div>
                 )}
