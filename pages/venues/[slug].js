@@ -1,6 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { trimTitle, trimDescription } from "@/utils/seo";
 
 // Tracks viewport width client-side. Initial value is fixed (1200) so the
@@ -388,6 +388,33 @@ const S = {
   amTileLabelMobile: { fontSize: 10 },
   // Tighten the sticky quick-facts strip on mobile so chips don't wrap.
   stickyBarInnerMobile: { gap: 10, padding: "8px 1rem" },
+
+  // ── Enquiry form: inline errors, confirmation & rate-limit panels ──
+  cfInputErr: { width: "100%", height: 36, border: "1px solid #c0392b", borderRadius: 8, padding: "0 10px", fontSize: 13, background: "#fdecea", color: "#2c1810", outline: "none", boxSizing: "border-box" },
+  fieldErr: { fontSize: 10.5, color: "#c0392b", marginTop: 3, lineHeight: 1.4 },
+  enquirySuccess: { marginTop: 12, padding: "14px 15px", background: "#f0f7f1", border: "0.5px solid #bfe0c5", borderRadius: 12, textAlign: "left" },
+  enquirySuccessTitle: { fontSize: 13, fontWeight: 600, color: "#2d6a4f", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 },
+  enquirySuccessRow: { display: "flex", alignItems: "flex-start", gap: 8, fontSize: 11.5, color: "#3a5a44", lineHeight: 1.5, marginBottom: 6 },
+  enquirySuccessEta: { marginTop: 8, paddingTop: 8, borderTop: "0.5px solid #d4e8d8", fontSize: 11, color: "#5a7a64", fontStyle: "italic" },
+  enquiryRateLimit: { marginTop: 12, padding: "14px 15px", background: "#fff8ec", border: "0.5px solid #e8d4a8", borderRadius: 12, fontSize: 12, color: "#8a5a1a", lineHeight: 1.55, textAlign: "left", display: "flex", gap: 9 },
+  // Sticky mobile "Send Enquiry" bar
+  mobileEnquiryBar: { position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 50, background: "#fffaf4", borderTop: "0.5px solid #e8d8c4", padding: "10px 14px calc(10px + env(safe-area-inset-bottom))", boxShadow: "0 -4px 20px rgba(107,30,46,0.12)", display: "flex", alignItems: "center", gap: 10 },
+  mobileEnquiryMeta: { flex: 1, minWidth: 0 },
+  mobileEnquiryMetaTop: { fontSize: 11, color: "#b09080" },
+  mobileEnquiryMetaBig: { fontFamily: "Georgia, serif", fontSize: 15, color: "#2c1810", fontWeight: 500 },
+  mobileEnquiryBtn: { flexShrink: 0, height: 46, padding: "0 22px", background: "#6b1e2e", border: "none", borderRadius: 100, color: "#fdf6ec", fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 4px 16px rgba(107,30,46,0.3)" },
+  // Availability widget
+  availCard: { background: "#fffaf4", border: "0.5px solid #e8d8c4", borderRadius: 14, padding: "1.1rem 1.25rem", boxShadow: "0 2px 16px rgba(107,30,46,0.06)" },
+  availTitle: { fontFamily: "Georgia, serif", fontSize: 15, color: "#2c1810", fontWeight: 400, marginBottom: 4 },
+  availSub: { fontSize: 11, color: "#b09080", marginBottom: 12, lineHeight: 1.5 },
+  availRow: { display: "flex", gap: 8, alignItems: "flex-end" },
+  availInput: { flex: 1, height: 40, border: "0.5px solid #e8d8c4", borderRadius: 8, padding: "0 10px", fontSize: 13, background: "#f7edda", color: "#2c1810", outline: "none", boxSizing: "border-box" },
+  availCheckBtn: { flexShrink: 0, height: 40, padding: "0 16px", background: "#6b1e2e", border: "none", borderRadius: 8, color: "#fdf6ec", fontSize: 13, fontWeight: 500, cursor: "pointer" },
+  availResult: { marginTop: 12, padding: "11px 13px", borderRadius: 10, fontSize: 12.5, lineHeight: 1.5, display: "flex", alignItems: "flex-start", gap: 8 },
+  availResultGood: { background: "#f0f7f1", border: "0.5px solid #bfe0c5", color: "#2d6a4f" },
+  availResultBad: { background: "#fdecea", border: "0.5px solid #f0c4bf", color: "#a03028" },
+  availResultUnknown: { background: "#fff8ec", border: "0.5px solid #e8d4a8", color: "#8a5a1a" },
+  availEnquireBtn: { marginTop: 10, width: "100%", height: 40, background: "#fdf4e6", border: "0.5px solid #6b1e2e", borderRadius: 100, color: "#6b1e2e", fontSize: 13, fontWeight: 500, cursor: "pointer" },
 };
 
 const VIBES = ["Traditional", "Contemporary", "Outdoor", "Intimate", "Grand"];
@@ -464,11 +491,12 @@ const AmenityIcon = ({ type, size = 22, color = "currentColor" }) => {
     valet: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
     shuttle: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3m-1 11h-8m-3 0H3"/><rect x="9" y="11" width="14" height="10" rx="1"/><circle cx="12" cy="21" r="1"/><circle cx="20" cy="21" r="1"/></svg>,
     pet: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><path d="M9 10l4.5 5L11 22H7l-2-6 2-6"/><path d="M14 14.5S16 19 18 19s4.5-3 4.5-3"/></svg>,
+    ev: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="10" height="18" rx="2"/><path d="M3 9h10"/><path d="M8 5.5l-1.5 2.5H9l-1.5 2.5"/><path d="M17 8l3 3v8a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2"/></svg>,
   };
   return icons[type] || null;
 };
 
-export default function VenueDetailPage({ venue, similar = [], nearby = [], reviews = null, setOpenLoginModalv2, setSource }) {
+export default function VenueDetailPage({ venue, isVerified = false, similar = [], nearby = [], reviews = null, setOpenLoginModalv2, setSource }) {
   // Responsive breakpoint flags — drive style overrides on mobile/tablet.
   const viewportWidth = useWindowWidth();
   const isMobile = viewportWidth < 768;
@@ -482,6 +510,24 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  // Bulletproof enquiry form state:
+  //  - fieldErrors: inline per-field validation messages
+  //  - rateLimited: true when the server returns 429 (friendly state)
+  //  - emailValue / messageValue: optional fields the backend accepts
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [rateLimited, setRateLimited] = useState(false);
+  const [emailValue, setEmailValue] = useState("");
+  const [messageValue, setMessageValue] = useState("");
+  // Ref + helper to scroll the enquiry form into view (used by the sticky
+  // mobile CTA bar and the availability widget's "check / enquire").
+  const enquiryFormRef = useRef(null);
+  const scrollToEnquiry = () => {
+    if (typeof window === "undefined") return;
+    const el = enquiryFormRef.current;
+    if (el && typeof el.scrollIntoView === "function") {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
   // _app.js short-circuits its own CheckLogin for /venues (public path), so
   // user/userLoggedIn props from the parent are unreliable here — we look the
   // couple up ourselves from the same /auth/ endpoint _app.js uses.
@@ -500,6 +546,11 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
   const [calcGuestCount, setCalcGuestCount] = useState("");
   // Hero crossfade carousel — current photo index
   const [heroIndex, setHeroIndex] = useState(0);
+  // Availability widget — date input, in-flight flag, and the last result
+  // ({ status: "available" | "unavailable" | "unknown" } from the API).
+  const [availDate, setAvailDate] = useState("");
+  const [availChecking, setAvailChecking] = useState(false);
+  const [availResult, setAvailResult] = useState(null);
 
   // The server's GET /auth/ returns { name, phone, email, event } — no _id.
   // The JWT payload (signed by /auth/otp verify) carries { _id, isAdmin, isVendor },
@@ -571,11 +622,14 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
     (async () => {
       try {
         const body = {
-          name,
-          phone,
-          eventDate,
-          guestCount: parseInt(guestCount) || null,
+          coupleName: name,
+          couplePhone: phone,
+          email: emailValue || undefined,
+          eventDate: eventDate || undefined,
+          guestCount: parseInt(guestCount) || undefined,
+          message: messageValue || undefined,
           vibe: selectedVibes,
+          source: "venue_detail",
           userId: authUser._id,
         };
         const res = await fetch(
@@ -601,24 +655,29 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authUser, submitted]);
 
-  // Fire-and-forget view tracking. Pings the server once we know which couple
-  // is viewing this venue. The server dedups within a 30-min window.
+  // Fire-and-forget VIEW beacon. POST /venues/:slug/view is PUBLIC — it fires
+  // once on mount for every visitor (no auth required), is never awaited, and
+  // swallows all failures so it can never affect render. The server dedups
+  // within its own window. Attaches the token when present (so logged-in views
+  // are attributed) but does NOT require it.
+  const viewBeaconSent = useRef(false);
   useEffect(() => {
-    if (!authUser || !venue?.slug) return;
+    if (!venue?.slug || viewBeaconSent.current) return;
+    viewBeaconSent.current = true;
     try {
-      fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/venues/${venue.slug}/view`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      ).catch(() => {});
+      const headers = {};
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (token) headers.Authorization = `Bearer ${token}`;
+      // fire-and-forget — do not await, do not block render
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/venues/${venue.slug}/view`, {
+        method: "POST",
+        headers,
+        keepalive: true,
+      }).catch(() => {});
     } catch (e) {
       // swallow — view tracking must never affect the page
     }
-  }, [authUser, venue?.slug]);
+  }, [venue?.slug]);
 
   const openLogin = () => {
     if (setSource) setSource("venue_enquiry");
@@ -709,7 +768,8 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
   }
 
   const toggleVibe = (v) => setSelectedVibes((prev) => prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]);
-  const isVerified = venue.status === "verified";
+  // isVerified comes from the API ({ venue, isVerified }) via SSR props — a
+  // stable boolean. The Verified badge renders ONLY when this is true.
   const vType = venue.venueType === "farmhouse" ? "Farmhouse" : "Resort";
   // Photo shape detection — supports two backend formats:
   //   V1: venue.photos is a flat string[] (legacy)
@@ -846,6 +906,24 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
   const cateringEstimateNonVeg = perPlateNonVeg > 0 ? perPlateNonVeg * numGuests : 0;
   const totalEstimate = selectedTierPrice + cateringEstimateVeg;
 
+  // Structured policy clauses (back-compat). The server sends venue.policyDoc
+  // already migrated; if absent (older API), derive from the legacy policies
+  // object so nothing is lost: otherRestrictions -> policies, cancel+refund -> refund.
+  const rawPolicyDoc = venue.policyDoc || {};
+  const legacyPol = venue.policies || {};
+  const cleanClauses = (...v) => v.map((s) => (s == null ? "" : String(s).trim())).filter(Boolean);
+  const hasStructured = ["policies", "terms", "refund"].some(
+    (k) => Array.isArray(rawPolicyDoc[k]) && rawPolicyDoc[k].length > 0
+  );
+  const policyDoc = hasStructured
+    ? { policies: rawPolicyDoc.policies || [], terms: rawPolicyDoc.terms || [], refund: rawPolicyDoc.refund || [] }
+    : { policies: cleanClauses(legacyPol.otherRestrictions), terms: [], refund: cleanClauses(legacyPol.cancellation, legacyPol.refund) };
+  const policyGroups = [
+    { title: "Venue Policies", items: policyDoc.policies },
+    { title: "Terms & Conditions", items: policyDoc.terms },
+    { title: "Cancellation & Refund Policy", items: policyDoc.refund },
+  ].filter((g) => Array.isArray(g.items) && g.items.length > 0);
+
   // Music policy
   const mp = venue.musicPolicy || {};
   const musicPermissive = mp.djAllowed !== false && mp.liveMusicAllowed !== false;
@@ -945,6 +1023,7 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
         { key: "airConditioning", iconType: "ac", label: "Air Conditioning" },
         { key: "cctv", iconType: "cctv", label: "CCTV Security" },
         { key: "helipad", iconType: "helipad", label: "Helipad" },
+        { key: "evCharging", iconType: "ev", label: "EV Charging" },
       ],
     },
     {
@@ -983,15 +1062,34 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
 
   // LocalBusiness JSON-LD. `undefined` values are dropped by JSON.stringify,
   // so the geo/aggregateRating/priceRange keys only appear when we have data.
+  // priceRange derived from the lowest tier price where available.
+  const jsonLdPriceRange = (() => {
+    const lows = Array.isArray(venue.pricing?.tiers)
+      ? venue.pricing.tiers.map((t) => Number(t?.price) || 0).filter((p) => p > 0)
+      : [];
+    if (lows.length === 0) return undefined;
+    const min = Math.min(...lows);
+    if (min < 200000) return "₹₹";
+    if (min < 700000) return "₹₹₹";
+    return "₹₹₹₹";
+  })();
+  // EventVenue structured data: name, address, geo, image gallery, priceRange,
+  // aggregateRating. `undefined` keys are dropped by JSON.stringify.
+  const jsonLdImages = (() => {
+    const imgs = [];
+    if (venue.coverPhoto) imgs.push(venue.coverPhoto);
+    imgs.push(...buildHeroPhotos(venue));
+    return [...new Set(imgs)].slice(0, 6);
+  })();
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": "EventVenue",
     name: venue.name,
     description: venue.description,
-    image: venue.coverPhoto,
+    image: jsonLdImages.length > 0 ? jsonLdImages : undefined,
     address: {
       "@type": "PostalAddress",
-      streetAddress: venue.address,
+      streetAddress: venue.formattedAddress || venue.address,
       addressLocality: venue.locality || "Bangalore",
       addressRegion: "Karnataka",
       addressCountry: "IN",
@@ -1006,7 +1104,8 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
       ratingValue: venue.googleRating,
       reviewCount: venue.googleReviewCount || 0,
     } : undefined,
-    priceRange: venue.pricing?.tiers?.length > 0 ? "₹₹₹" : undefined,
+    maximumAttendeeCapacity: guestsMax > 0 ? guestsMax : undefined,
+    priceRange: jsonLdPriceRange,
     url: `https://wedsy.in/venues/${venue.slug}`,
   };
 
@@ -1014,16 +1113,165 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
   const descRest = venue.description && venue.description.length > 1 ? venue.description.slice(1) : "";
   const descFirst = venue.description && venue.description.length > 0 ? venue.description.charAt(0) : "";
 
+  // ── Enquiry form: client-side validation mirroring the backend ──
+  // Returns a { field: message } map; empty map === valid.
+  //  - coupleName: required, non-blank
+  //  - couplePhone: exactly 10 digits after stripping non-digits
+  //  - eventDate (optional): if present must parse and be a sane future-ish
+  //    date (today or later, not absurdly far out)
+  //  - email (optional): if present must look like an email
+  const validateEnquiry = () => {
+    const errs = {};
+    if (!name || !name.trim()) {
+      errs.name = "Please enter your name";
+    }
+    const digits = (phone || "").replace(/\D/g, "");
+    if (!digits) {
+      errs.phone = "Please enter your phone number";
+    } else if (digits.length !== 10) {
+      errs.phone = "Enter a valid 10-digit phone number";
+    }
+    if (eventDate) {
+      const d = new Date(eventDate);
+      if (isNaN(d.getTime())) {
+        errs.eventDate = "Enter a valid date";
+      } else {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const maxDate = new Date();
+        maxDate.setFullYear(maxDate.getFullYear() + 5);
+        if (d < today) errs.eventDate = "Pick a date in the future";
+        else if (d > maxDate) errs.eventDate = "That date is too far out";
+      }
+    }
+    if (emailValue && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue.trim())) {
+      errs.email = "Enter a valid email";
+    }
+    return errs;
+  };
+
+  // Single bulletproof submit handler used by both the sidebar form and the
+  // sticky mobile CTA. Handles: in-flight disable (no double submit), inline
+  // validation, 429 (friendly), 400 (clean server message), success panel.
+  const submitEnquiry = async () => {
+    if (submitting) return; // guard against double-submit
+    const errs = validateEnquiry();
+    setFieldErrors(errs);
+    if (Object.keys(errs).length > 0) {
+      scrollToEnquiry();
+      return;
+    }
+    setSubmitting(true);
+    setError("");
+    setRateLimited(false);
+    try {
+      const digits = (phone || "").replace(/\D/g, "");
+      const body = {
+        coupleName: name.trim(),
+        couplePhone: digits,
+        email: emailValue.trim() || undefined,
+        eventDate: eventDate || undefined,
+        guestCount: parseInt(guestCount) || undefined,
+        message: messageValue.trim() || undefined,
+        vibe: selectedVibes,
+        source: "venue_detail",
+      };
+      if (authUser && authUser._id) body.userId = authUser._id;
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/venues/${venue.slug}/enquiry`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      );
+      if (res.status === 429) {
+        setRateLimited(true);
+        setSubmitting(false);
+        return;
+      }
+      let data = {};
+      try { data = await res.json(); } catch (e) { data = {}; }
+      if (res.ok) {
+        setSubmitted(true);
+        if (data && data.conversationId) setConversationId(data.conversationId);
+      } else {
+        // 400 (and other errors): surface the server message cleanly.
+        setError(data && data.message ? data.message : "Something went wrong. Please try again.");
+      }
+    } catch (e) {
+      setError("Could not send. Please check your connection and try again.");
+    }
+    setSubmitting(false);
+  };
+
+  // ── Availability widget — GET /venues/:slug/availability-check?date= ──
+  const checkAvailability = async () => {
+    if (!availDate || availChecking) return;
+    setAvailChecking(true);
+    setAvailResult(null);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/venues/${venue.slug}/availability-check?date=${encodeURIComponent(availDate)}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setAvailResult({ status: data?.status || "unknown", date: data?.date || availDate });
+      } else {
+        setAvailResult({ status: "unknown", date: availDate });
+      }
+    } catch (e) {
+      setAvailResult({ status: "unknown", date: availDate });
+    }
+    setAvailChecking(false);
+  };
+
+  // Route the checked date into the enquiry form (prefill + scroll).
+  const enquireWithDate = () => {
+    if (availResult?.date) {
+      setEventDate(availResult.date);
+      setFieldErrors((p) => ({ ...p, eventDate: undefined }));
+    }
+    scrollToEnquiry();
+  };
+
+  // Format an ISO date (YYYY-MM-DD) for display in IST-friendly long form.
+  const formatDisplayDate = (iso) => {
+    if (!iso) return "";
+    try {
+      const d = new Date(`${iso}T00:00:00+05:30`);
+      return d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
+    } catch (e) {
+      return iso;
+    }
+  };
+  // Today in IST as a YYYY-MM-DD min for the date pickers.
+  const todayISO = (() => {
+    try {
+      return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+    } catch (e) {
+      return undefined;
+    }
+  })();
+
   return (
     <>
       <Head>
         <title>{trimTitle(`${venue.name} — Wedding Venue in ${venue.locality || "Bangalore"} | Wedsy`)}</title>
         <meta name="description" content={trimDescription(`Book ${venue.name} for your wedding in Bangalore. ${(venue.description || "").substring(0, 120)}... Enquire directly on Wedsy.`)} />
-        <meta property="og:title" content={`${venue.name} — Wedding Venue in Bangalore`} />
-        <meta property="og:description" content={(venue.description || "").substring(0, 160)} />
-        <meta property="og:image" content={venue.coverPhoto || ""} />
+        <meta property="og:title" content={`${venue.name} — Wedding Venue in ${venue.locality || "Bangalore"}`} />
+        <meta property="og:description" content={(venue.description || `Book ${venue.name} for your wedding. Enquire directly on Wedsy.`).substring(0, 200)} />
+        {venue.coverPhoto && <meta property="og:image" content={venue.coverPhoto} />}
+        {venue.coverPhoto && <meta property="og:image:alt" content={`${venue.name} wedding venue`} />}
         <meta property="og:url" content={`https://wedsy.in/venues/${venue.slug}`} />
         <meta property="og:type" content="business.business" />
+        <meta property="og:site_name" content="Wedsy" />
+        {/* Twitter card */}
+        <meta name="twitter:card" content={venue.coverPhoto ? "summary_large_image" : "summary"} />
+        <meta name="twitter:title" content={`${venue.name} — Wedding Venue in ${venue.locality || "Bangalore"}`} />
+        <meta name="twitter:description" content={(venue.description || `Book ${venue.name} for your wedding. Enquire on Wedsy.`).substring(0, 200)} />
+        {venue.coverPhoto && <meta name="twitter:image" content={venue.coverPhoto} />}
+        {venue.coverPhoto && <meta name="twitter:image:alt" content={`${venue.name} wedding venue`} />}
         <link rel="canonical" href={`https://wedsy.in/venues/${venue.slug}`} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </Head>
@@ -1653,6 +1901,22 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                   )}
                 </article>
               </div>
+
+              {/* Structured policy clauses (numbered) — venue.policyDoc, with legacy back-compat */}
+              {policyGroups.length > 0 && (
+                <div style={{ marginTop: 24, display: "grid", gap: 20 }}>
+                  {policyGroups.map((g) => (
+                    <div key={g.title}>
+                      <div style={S.policyKicker}>{g.title}</div>
+                      <ol style={{ margin: "8px 0 0", paddingLeft: 22 }}>
+                        {g.items.map((clause, i) => (
+                          <li key={i} style={{ ...S.policyRow, listStyleType: "decimal", marginBottom: 4 }}>{clause}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
 
             {/* ───── 9. AMENITIES — SVG ICON TILES (3 states: on / off / TBA) ───── */}
@@ -1735,28 +1999,54 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
             {/* ───── 11. LOCATION & SURROUNDINGS ───── */}
             {Array.isArray(venue.location?.coordinates) && venue.location.coordinates.length === 2 && (() => {
               const [lng, lat] = venue.location.coordinates;
-              const mapsKey = "AIzaSyBX3lYHUerv0i4Yje05KKCxI2DGyM0KooY";
+              // No Google JS SDK / no Maps key on this public page — link out to
+              // Google Maps using the venue's STORED coordinates (or place_id
+              // when present). The visual is a no-key static panel; the CTA
+              // opens the real map in a new tab.
+              const mapsLink = venue.googlePlaceId
+                ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}&query_place_id=${venue.googlePlaceId}`
+                : `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
               return (
                 <section style={S.section}>
                   <div style={S.sTitleWrap}>
                     <div style={S.sTitle}>Location & Surroundings</div>
                     <div style={S.sTitleRule} />
                   </div>
-                  <div style={S.locMapWrap}>
-                    <iframe
-                      title={`Map of ${venue.name}`}
-                      src={`https://www.google.com/maps/embed/v1/place?key=${mapsKey}&q=${lat},${lng}&zoom=14`}
-                      style={S.locMap}
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                      allowFullScreen
-                    />
-                  </div>
+                  <a
+                    href={mapsLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      ...S.locMapWrap,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 8,
+                      textDecoration: "none",
+                      color: "#6b1e2e",
+                      background: "linear-gradient(135deg, #f3ead7 0%, #e8dcc4 100%)",
+                      backgroundImage:
+                        "linear-gradient(135deg, rgba(243,234,215,0.92) 0%, rgba(232,220,196,0.92) 100%), repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(107,30,46,0.06) 38px, rgba(107,30,46,0.06) 39px), repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(107,30,46,0.06) 38px, rgba(107,30,46,0.06) 39px)",
+                    }}
+                    aria-label={`Open ${venue.name} on Google Maps`}
+                  >
+                    <span style={{ fontSize: 38, lineHeight: 1 }} aria-hidden="true">📍</span>
+                    <span style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2c1810" }}>{venue.name}</span>
+                    {(venue.formattedAddress || venue.address) && (
+                      <span style={{ fontSize: 12, color: "#7a5a48", maxWidth: 480, textAlign: "center", lineHeight: 1.5 }}>
+                        {venue.formattedAddress || venue.address}
+                      </span>
+                    )}
+                    <span style={{ fontSize: 12, fontWeight: 500, color: "#6b1e2e", marginTop: 4 }}>
+                      Open in Google Maps →
+                    </span>
+                  </a>
                   {venue.locationDescription && (
                     <p style={S.locDesc}>{venue.locationDescription}</p>
                   )}
                   <a
-                    href={`https://www.google.com/maps?q=${lat},${lng}`}
+                    href={mapsLink}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={S.locMapsBtn}
@@ -1782,26 +2072,82 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                 <div style={S.sideVname}>{venue.name}</div>
                 <div style={S.sideStatus}><span style={S.onlineDot} /> Usually replies in 2 hours</div>
               </div>
-              <div style={S.cbForm}>
+              <div style={S.cbForm} ref={enquiryFormRef} id="enquiry-form">
+                {submitted ? (
+                  // ── Success confirmation panel — what happens next + ETA ──
+                  <div style={S.enquirySuccess}>
+                    <div style={S.enquirySuccessTitle}>
+                      <span aria-hidden="true">✓</span> Enquiry sent to {venue.name}
+                    </div>
+                    <div style={S.enquirySuccessRow}>
+                      <span aria-hidden="true">📨</span>
+                      <span>We&apos;ve shared your details with the venue&apos;s team.</span>
+                    </div>
+                    <div style={S.enquirySuccessRow}>
+                      <span aria-hidden="true">💬</span>
+                      <span>They&apos;ll reach out with availability, pricing and a site-visit slot.</span>
+                    </div>
+                    <div style={S.enquirySuccessEta}>
+                      The venue typically responds within 24 hours. If they don&apos;t, the Wedsy team steps in.
+                    </div>
+                    {authUser && conversationId && (
+                      <Link
+                        href={`/chats/venue/${conversationId}`}
+                        style={{
+                          display: 'block', marginTop: 12, padding: '10px 14px',
+                          background: '#fdf4e6', border: '0.5px solid #6b1e2e', borderRadius: 100,
+                          color: '#6b1e2e', textDecoration: 'none', textAlign: 'center', fontSize: 13, fontWeight: 500,
+                        }}
+                      >
+                        View your conversation →
+                      </Link>
+                    )}
+                    {!authUser && (
+                      <div style={{ fontSize: 11.5, color: '#5a7a64', marginTop: 10, lineHeight: 1.55 }}>
+                        <button
+                          type="button"
+                          onClick={openLogin}
+                          style={{ background: 'none', border: 'none', padding: 0, color: '#6b1e2e', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}
+                        >
+                          Sign in
+                        </button>
+                        {' '}to track this conversation in your inbox.
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <>
                 <div style={S.cfRow}>
                   <div style={S.cfField}>
-                    <label style={S.cfLabel}>Wedding date</label>
-                    <input style={S.cfInput} type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
+                    <label style={S.cfLabel} htmlFor="enq-date">Wedding date</label>
+                    <input id="enq-date" style={fieldErrors.eventDate ? S.cfInputErr : S.cfInput} type="date" value={eventDate} onChange={(e) => { setEventDate(e.target.value); setFieldErrors((p) => ({ ...p, eventDate: undefined })); }} aria-invalid={!!fieldErrors.eventDate} />
+                    {fieldErrors.eventDate && <div style={S.fieldErr}>{fieldErrors.eventDate}</div>}
                   </div>
                   <div style={S.cfField}>
-                    <label style={S.cfLabel}>Guest count</label>
-                    <input style={S.cfInput} placeholder="350" value={guestCount} onChange={(e) => setGuestCount(e.target.value)} />
+                    <label style={S.cfLabel} htmlFor="enq-guests">Guest count</label>
+                    <input id="enq-guests" style={S.cfInput} inputMode="numeric" placeholder="350" value={guestCount} onChange={(e) => setGuestCount(e.target.value)} />
                   </div>
                 </div>
                 <div style={S.cfRow}>
                   <div style={S.cfField}>
-                    <label style={S.cfLabel}>Your name</label>
-                    <input style={S.cfInput} placeholder="Priya" value={name} onChange={(e) => setName(e.target.value)} />
+                    <label style={S.cfLabel} htmlFor="enq-name">Your name</label>
+                    <input id="enq-name" style={fieldErrors.name ? S.cfInputErr : S.cfInput} placeholder="Priya" value={name} onChange={(e) => { setName(e.target.value); setFieldErrors((p) => ({ ...p, name: undefined })); }} aria-invalid={!!fieldErrors.name} />
+                    {fieldErrors.name && <div style={S.fieldErr}>{fieldErrors.name}</div>}
                   </div>
                   <div style={S.cfField}>
-                    <label style={S.cfLabel}>Phone</label>
-                    <input style={S.cfInput} placeholder="+91 98xxx" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                    <label style={S.cfLabel} htmlFor="enq-phone">Phone</label>
+                    <input id="enq-phone" style={fieldErrors.phone ? S.cfInputErr : S.cfInput} inputMode="tel" placeholder="98xxxxxxxx" value={phone} onChange={(e) => { setPhone(e.target.value); setFieldErrors((p) => ({ ...p, phone: undefined })); }} aria-invalid={!!fieldErrors.phone} />
+                    {fieldErrors.phone && <div style={S.fieldErr}>{fieldErrors.phone}</div>}
                   </div>
+                </div>
+                <div style={S.cfField}>
+                  <label style={S.cfLabel} htmlFor="enq-email">Email <span style={{ textTransform: "none", letterSpacing: 0, color: "#c4ac98" }}>(optional)</span></label>
+                  <input id="enq-email" style={fieldErrors.email ? S.cfInputErr : S.cfInput} type="email" placeholder="you@email.com" value={emailValue} onChange={(e) => { setEmailValue(e.target.value); setFieldErrors((p) => ({ ...p, email: undefined })); }} aria-invalid={!!fieldErrors.email} />
+                  {fieldErrors.email && <div style={S.fieldErr}>{fieldErrors.email}</div>}
+                </div>
+                <div style={S.cfField}>
+                  <label style={S.cfLabel} htmlFor="enq-message">Message <span style={{ textTransform: "none", letterSpacing: 0, color: "#c4ac98" }}>(optional)</span></label>
+                  <textarea id="enq-message" style={{ ...S.cfInput, height: 60, padding: "8px 10px", resize: "vertical" }} placeholder="Tell the venue about your plans…" value={messageValue} onChange={(e) => setMessageValue(e.target.value)} />
                 </div>
                 <div style={S.cfField}>
                   <label style={S.cfLabel}>Your wedding vibe</label>
@@ -1813,64 +2159,28 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                 </div>
                 {/* Two-state CTA:
                     - Not logged in: muted "Enquire about this venue" → anonymous enquiry (no userId)
-                    - Logged in: full-opacity "💬 Start conversation" → enquiry + conversation */}
+                    - Logged in: full-opacity "💬 Start conversation" → enquiry + conversation
+                    Disabled while in-flight to prevent double-submit. */}
                 <button
-                  style={{ ...S.chatBtn, opacity: submitting ? 0.7 : (authUser ? 1 : 0.85), boxShadow: "0 4px 16px rgba(107,30,46,0.25)" }}
+                  type="button"
+                  style={{ ...S.chatBtn, opacity: submitting ? 0.6 : (authUser ? 1 : 0.85), cursor: submitting ? "wait" : "pointer", boxShadow: "0 4px 16px rgba(107,30,46,0.25)" }}
                   disabled={submitting}
-                  onClick={async () => {
-                    if (!name || !phone) { setError('Please enter your name and phone'); return; }
-                    setSubmitting(true); setError('');
-                    try {
-                      const body = { name, phone, eventDate, guestCount: parseInt(guestCount) || null, vibe: selectedVibes };
-                      if (authUser && authUser._id) body.userId = authUser._id;
-                      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/venues/' + venue.slug + '/enquiry', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(body)
-                      });
-                      const data = await res.json();
-                      if (res.ok) {
-                        setSubmitted(true);
-                        if (data && data.conversationId) setConversationId(data.conversationId);
-                      } else { setError(data.message || 'Something went wrong'); }
-                    } catch(e) { setError('Could not send. Please try again.'); }
-                    setSubmitting(false);
-                  }}
+                  onClick={submitEnquiry}
                 >
                   {submitting
-                    ? '⏳ Sending...'
-                    : submitted
-                      ? (authUser ? '✓ Conversation started!' : '✓ Enquiry sent!')
-                      : (authUser ? '💬 Start conversation' : 'Enquire about this venue')}
+                    ? '⏳ Sending…'
+                    : (authUser ? '💬 Start conversation' : 'Send enquiry')}
                 </button>
-                {error && <div style={{ fontSize: 11, color: '#c0392b', textAlign: 'center', marginTop: 4 }}>{error}</div>}
-                {submitted && authUser && conversationId && (
-                  <>
-                    <div style={{ fontSize: 12, color: '#2d6a4f', textAlign: 'center', marginTop: 6, lineHeight: 1.5 }}>✓ Your details have been shared with the venue. They will respond shortly.</div>
-                    <Link
-                      href={`/chats/venue/${conversationId}`}
-                      style={{
-                        display: 'block', marginTop: 10, padding: '10px 14px',
-                        background: '#fdf4e6', border: '0.5px solid #6b1e2e', borderRadius: 100,
-                        color: '#6b1e2e', textDecoration: 'none', textAlign: 'center', fontSize: 13, fontWeight: 500,
-                      }}
-                    >
-                      View your conversation →
-                    </Link>
-                  </>
-                )}
-                {submitted && !authUser && (
-                  <div style={{ fontSize: 12, color: '#7a5a48', textAlign: 'center', marginTop: 8, lineHeight: 1.6 }}>
-                    <div style={{ color: '#2d6a4f', marginBottom: 6 }}>✓ Enquiry sent! The venue will respond shortly.</div>
-                    <button
-                      type="button"
-                      onClick={openLogin}
-                      style={{ background: 'none', border: 'none', padding: 0, color: '#6b1e2e', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}
-                    >
-                      Sign in
-                    </button>
-                    {' '}to track this conversation in your inbox.
+                {rateLimited && (
+                  <div style={S.enquiryRateLimit}>
+                    <span aria-hidden="true">✓</span>
+                    <span>You&apos;ve sent us a few enquiries — our team will be in touch shortly. No need to send another.</span>
                   </div>
+                )}
+                {error && !rateLimited && (
+                  <div style={{ fontSize: 11.5, color: '#c0392b', textAlign: 'center', marginTop: 8, lineHeight: 1.5 }}>{error}</div>
+                )}
+                  </>
                 )}
                 <div style={S.cbTrust}>
                   <div style={S.trustItem}>🔒 Private</div>
@@ -1878,6 +2188,62 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
                   <div style={S.trustItem}>🛡 Wedsy secured</div>
                 </div>
               </div>
+            </div>
+
+            {/* Availability widget — check a date, then enquire with it prefilled */}
+            <div style={S.availCard}>
+              <div style={S.availTitle}>Check your date</div>
+              <div style={S.availSub}>See if {venue.name} is open for your wedding day.</div>
+              <div style={S.availRow}>
+                <input
+                  type="date"
+                  style={S.availInput}
+                  value={availDate}
+                  min={todayISO}
+                  onChange={(e) => { setAvailDate(e.target.value); setAvailResult(null); }}
+                  aria-label="Wedding date to check availability"
+                />
+                <button
+                  type="button"
+                  style={{ ...S.availCheckBtn, opacity: (!availDate || availChecking) ? 0.6 : 1, cursor: (!availDate || availChecking) ? "default" : "pointer" }}
+                  disabled={!availDate || availChecking}
+                  onClick={checkAvailability}
+                >
+                  {availChecking ? "…" : "Check"}
+                </button>
+              </div>
+              {availResult && (
+                <>
+                  <div
+                    style={{
+                      ...S.availResult,
+                      ...(availResult.status === "available"
+                        ? S.availResultGood
+                        : availResult.status === "unavailable"
+                        ? S.availResultBad
+                        : S.availResultUnknown),
+                    }}
+                  >
+                    <span aria-hidden="true">
+                      {availResult.status === "available" ? "✓" : availResult.status === "unavailable" ? "✕" : "?"}
+                    </span>
+                    <span>
+                      {availResult.status === "available" && (
+                        <><strong>Likely available</strong> on {formatDisplayDate(availResult.date)}. Confirm with the venue to lock it in.</>
+                      )}
+                      {availResult.status === "unavailable" && (
+                        <><strong>Looks booked</strong> on {formatDisplayDate(availResult.date)}. Enquire — they may have alternatives.</>
+                      )}
+                      {availResult.status === "unknown" && (
+                        <>We couldn&apos;t confirm {formatDisplayDate(availResult.date)} automatically. Send an enquiry and the venue will confirm.</>
+                      )}
+                    </span>
+                  </div>
+                  <button type="button" style={S.availEnquireBtn} onClick={enquireWithDate}>
+                    {availResult.status === "available" ? "Enquire to confirm →" : "Enquire about this date →"}
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Quick facts card */}
@@ -2150,6 +2516,29 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
             </div>
           </div>
         </section>
+
+        {/* ── Sticky mobile "Send Enquiry" bar — scrolls to / opens the form ── */}
+        {isMobile && !submitted && (
+          <div style={S.mobileEnquiryBar} role="region" aria-label="Send an enquiry">
+            <div style={S.mobileEnquiryMeta}>
+              <div style={S.mobileEnquiryMetaTop}>
+                {lowestTierPrice ? "Starting from" : "Get a quote"}
+              </div>
+              <div style={S.mobileEnquiryMetaBig}>
+                {lowestTierPrice ? `₹${formatINR(lowestTierPrice)}` : venue.name}
+              </div>
+            </div>
+            <button
+              type="button"
+              style={S.mobileEnquiryBtn}
+              onClick={scrollToEnquiry}
+            >
+              Send Enquiry
+            </button>
+          </div>
+        )}
+        {/* Spacer so the sticky bar never covers the footer content on mobile */}
+        {isMobile && !submitted && <div style={{ height: 76 }} aria-hidden="true" />}
       </main>
     </>
   );
@@ -2158,14 +2547,36 @@ export default function VenueDetailPage({ venue, similar = [], nearby = [], revi
 export async function getServerSideProps({ params }) {
   try {
     const { slug } = params;
-    const [venueRes, allRes] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/venues/${slug}`),
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/venues?status=published&limit=4`),
-    ]);
+    const venueRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venues/${slug}`);
     if (!venueRes.ok) return { notFound: true };
-    const { venue } = await venueRes.json();
-    const { venues: allVenues = [] } = await allRes.json();
-    const similar = allVenues.filter((v) => v.slug !== slug).slice(0, 3);
+    const venueJson = await venueRes.json();
+    const venue = venueJson.venue;
+    // isVerified is a stable boolean from the API ({ venue, isVerified }).
+    // Render the Verified badge ONLY when this is true.
+    const isVerified = venueJson.isVerified === true;
+
+    // Similar venues — prefer the same zone, fall back to any published.
+    let similar = [];
+    try {
+      const zoneQ = venue?.zone ? `&zone=${encodeURIComponent(venue.zone)}` : "";
+      const simRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venues?status=published&limit=6${zoneQ}`);
+      if (simRes.ok) {
+        const { venues: zoneVenues = [] } = await simRes.json();
+        similar = zoneVenues.filter((v) => v.slug !== slug).slice(0, 3);
+      }
+      // Top up from any published venues if the zone yielded too few.
+      if (similar.length < 3) {
+        const anyRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venues?status=published&limit=6`);
+        if (anyRes.ok) {
+          const { venues: anyVenues = [] } = await anyRes.json();
+          const have = new Set(similar.map((v) => v.slug));
+          for (const v of anyVenues) {
+            if (similar.length >= 3) break;
+            if (v.slug !== slug && !have.has(v.slug)) { similar.push(v); have.add(v.slug); }
+          }
+        }
+      }
+    } catch (e) {}
     let nearby = [];
     try {
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venues/${slug}/nearby`, { method: "POST" });
@@ -2196,7 +2607,7 @@ export async function getServerSideProps({ params }) {
         }
       } catch (e) {}
     }
-    return { props: { venue, similar, nearby, reviews } };
+    return { props: { venue, isVerified, similar, nearby, reviews } };
   } catch (err) {
     console.error("Venue detail SSR error:", err.message);
     return { notFound: true };
