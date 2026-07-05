@@ -66,6 +66,22 @@ const S = {
     whiteSpace: "pre-wrap", wordBreak: "break-word",
   },
   bubbleTime: { fontSize: 10, color: COLORS.textMuted, marginTop: 2 },
+  // MB-V2 D4 — Wedsy intervention card (Ivory & Wine gold accent, centered).
+  bubbleRowC: { display: "flex", justifyContent: "center" },
+  bubbleWedsy: {
+    maxWidth: "86%", background: "#fbf3e0", color: COLORS.text,
+    border: `1px solid ${COLORS.gold}`,
+    padding: "9px 14px", borderRadius: 14, fontSize: 14, lineHeight: 1.45,
+    whiteSpace: "pre-wrap", wordBreak: "break-word",
+  },
+  wedsyLabel: {
+    fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase",
+    fontWeight: 700, color: COLORS.gold, marginBottom: 4,
+  },
+  offerTitle: { fontSize: 14, fontWeight: 700, color: COLORS.burgundy },
+  offerBody: { fontSize: 13, color: COLORS.text, marginTop: 2 },
+  offerValid: { fontSize: 11, color: COLORS.gold, marginTop: 4 },
+  bubbleTimeC: { fontSize: 10, color: COLORS.textMuted, marginTop: 3, textAlign: "center" },
   bubbleTimeR: { fontSize: 10, color: COLORS.textMuted, marginTop: 2, textAlign: "right" },
   inputBar: {
     display: "flex", gap: 8, alignItems: "center",
@@ -322,6 +338,33 @@ export default function VenueChatPage({ conversationId }) {
               const isCouple = msg?.senderType === "couple";
               const body = msg?.content?.text || "";
               const time = formatMessageTime(msg?.createdAt);
+              // MB-V2 D4: a Wedsy intervention/offer renders as a distinct
+              // centered gold card so the couple can tell it apart from the
+              // venue's own messages.
+              if (msg?.senderType === "wedsy") {
+                const offer = msg?.messageType === "offer" ? msg?.offer : null;
+                return (
+                  <div key={msg?._id} style={S.bubbleRowC}>
+                    <div style={S.bubbleWedsy}>
+                      <div style={S.wedsyLabel}>From Wedsy</div>
+                      {offer ? (
+                        <div>
+                          <div style={S.offerTitle}>{offer.title}</div>
+                          {offer.body ? <div style={S.offerBody}>{offer.body}</div> : null}
+                          {offer.validUntil ? (
+                            <div style={S.offerValid}>
+                              Valid until {new Date(offer.validUntil).toLocaleDateString()}
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <div>{body}</div>
+                      )}
+                      <div style={S.bubbleTimeC}>{time}</div>
+                    </div>
+                  </div>
+                );
+              }
               if (isCouple) {
                 return (
                   <div key={msg?._id} style={S.bubbleRowR}>
