@@ -1197,6 +1197,52 @@ export default function VenuesPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scrollToListing]);
 
+  // ─── Section 3 — Vibes ("Find your vibe", prototype section 3). Each vibe
+  // maps onto an EXISTING filter (venueType or amenity) so clicking a card is
+  // just a filter shortcut — same state, same URL round-trip, same server
+  // refetch. Card photos come from the loaded slice (first match that has a
+  // coverPhoto); when no photo matches we fall back to the prototype's dark
+  // panel + radial-gold treatment.
+  const VIBE_DEFS = useMemo(() => [
+    {
+      key: "palace",
+      name: "Palace grandeur",
+      desc: "Sweeping halls & royal courtyards",
+      fallback: "#5b1f1a",
+      pick: (v) => v.venueType === "banquet_hall" || v.venueType === "hotel",
+      apply: () => { resetFilters(); setVenueType("banquet_hall"); },
+    },
+    {
+      key: "garden",
+      name: "Garden & lawn",
+      desc: "Open skies & sunset ceremonies",
+      fallback: "#33422f",
+      pick: (v) => v.amenities?.garden === true,
+      apply: () => { resetFilters(); setAmenitySet({ garden: true }); },
+    },
+    {
+      key: "resort",
+      name: "Resort retreat",
+      desc: "Stay, celebrate & unwind",
+      fallback: "#2f3b4a",
+      pick: (v) => v.venueType === "resort",
+      apply: () => { resetFilters(); setVenueType("resort"); },
+    },
+    {
+      key: "farmhouse",
+      name: "Farmhouse charm",
+      desc: "Rustic, intimate, unhurried",
+      fallback: "#473a22",
+      pick: (v) => v.venueType === "farmhouse",
+      apply: () => { resetFilters(); setVenueType("farmhouse"); },
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], []);
+  const vibeCards = useMemo(() => VIBE_DEFS.map((d) => ({
+    ...d,
+    image: venues.find((v) => d.pick(v) && v.coverPhoto)?.coverPhoto || "",
+  })), [venues, VIBE_DEFS]);
+
   // ─── Section 5 — Curated rows. Pure derivations off loaded venues. ───
   const curatedRows = useMemo(() => {
     const sortedByRating = [...venues].sort((a, b) => (b.googleRating || 0) - (a.googleRating || 0));
@@ -1554,129 +1600,25 @@ export default function VenuesPage({
       </Head>
 
       <main style={S.page}>
-        {/* ────────── 1 — HERO (Option K: Ivory + Crown Divider, centered) ────────── */}
-        <section
-          style={{
-            padding: "40px 24px 36px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
-            background: "#ffffff",
-            overflow: "hidden",
-          }}
-        >
-          {/* Gold crown divider */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, maxWidth: 560, width: "100%" }}>
-            <div
-              style={{
-                flex: 1,
-                height: 0.5,
-                background: "linear-gradient(to right, transparent, #b8852a)",
-              }}
-              aria-hidden="true"
-            />
-            <div
-              style={{
-                fontSize: 9,
-                color: "#b8852a",
-                letterSpacing: 4,
-                textTransform: "uppercase",
-                whiteSpace: "nowrap",
-              }}
-            >
-              WEDSY · BANGALORE
-            </div>
-            <div
-              style={{
-                flex: 1,
-                height: 0.5,
-                background: "linear-gradient(to left, transparent, #b8852a)",
-              }}
-              aria-hidden="true"
-            />
-          </div>
-
-          <h1 style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400, margin: 0 }}>
-            <span
-              style={{
-                color: "#1a0a0a",
-                fontSize: "clamp(2.2rem, 4vw, 3.4rem)",
-                display: "block",
-                lineHeight: 1.1,
-              }}
-            >
-              Find your
-            </span>
-            <span
-              style={{
-                color: "#b8852a",
-                fontStyle: "italic",
-                fontSize: "clamp(3rem, 5.5vw, 5rem)",
-                display: "block",
-                lineHeight: 0.95,
-                marginTop: -4,
-              }}
-            >
-              perfect
-            </span>
-            <span
-              style={{
-                color: "#1a0a0a",
-                fontSize: "clamp(2.2rem, 4vw, 3.4rem)",
-                display: "block",
-                lineHeight: 1.1,
-                marginTop: -4,
-              }}
-            >
-              wedding venue.
-            </span>
+        {/* ────────── 1 — HERO (prototype: ivory + radial gold, Georgia serif,
+            pill search with zone/capacity selects, stats row) ────────── */}
+        <section style={{ ...S.hero, ...(isMobile ? { padding: "3rem 1.25rem 2.25rem" } : {}) }}>
+          <div style={S.heroEyebrow}>Curated · Verified · Bookable</div>
+          <h1 style={{ ...S.heroTitle, ...(isMobile ? { fontSize: "clamp(1.9rem, 8vw, 3.25rem)", letterSpacing: -0.5 } : {}) }}>
+            Find the place your <span style={S.heroTitleEm}>story</span> begins.
           </h1>
-
-          <p
-            style={{
-              maxWidth: 480,
-              textAlign: "center",
-              margin: "16px auto 0",
-              fontSize: 13,
-              color: "#5a3a2a",
-              lineHeight: 1.7,
-              fontStyle: "italic",
-            }}
-          >
-            Not every venue in Bangalore is on Wedsy. Just the ones worth your time.
+          <p style={S.heroSub}>
+            {total > 0 ? `${total} verified wedding venues` : "Verified wedding venues"} across
+            Bangalore — palaces, lawns, banquets &amp; resorts, each held to a five-star standard.
           </p>
 
-          {/* Search (sharp-edged, no border-radius) */}
+          {/* Pill search — input + zone/capacity selects + burgundy Search.
+              Selects drive the SAME filter state as the sticky bar, so URL
+              round-trip and server refetch behave identically. */}
           <form
             onSubmit={(e) => { e.preventDefault(); setAppliedSearch(searchInputValue); setShowSearchSuggestions(false); scrollToListing(); }}
-            style={{
-              position: "relative",
-              marginTop: 18,
-              maxWidth: 480,
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              background: "#ffffff",
-              border: "1px solid #1a0a0a",
-              padding: "8px 8px 8px 16px",
-            }}
+            style={{ ...S.searchBar, position: "relative", width: "100%" }}
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#b8852a"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="11" cy="11" r="7" />
-              <path d="M21 21l-4.35-4.35" />
-            </svg>
             <input
               ref={heroSearchRef}
               className="hero-k-input"
@@ -1685,88 +1627,50 @@ export default function VenuesPage({
               onKeyDown={(e) => { if (e.key === "Escape") setShowSearchSuggestions(false); }}
               onFocus={() => { if (searchInputValue.length >= 2) setShowSearchSuggestions(true); }}
               onBlur={() => { setTimeout(() => setShowSearchSuggestions(false), 150); }}
-              placeholder="Search by name, area, or vibe…"
+              placeholder="Search venue or area…"
               aria-label="Search venues"
-              style={{
-                flex: 1,
-                marginLeft: 10,
-                border: "none",
-                outline: "none",
-                fontSize: 12,
-                background: "transparent",
-                color: "#1a0a0a",
-              }}
+              style={S.searchInput}
             />
-            <button
-              type="submit"
-              style={{
-                background: "#1a0a0a",
-                color: "#f8f4ef",
-                border: "none",
-                padding: "9px 18px",
-                fontSize: 11,
-                cursor: "pointer",
-                letterSpacing: 0.5,
-                fontWeight: 500,
-              }}
-            >
-              Search →
-            </button>
+            {!isMobile && (
+              <>
+                <div style={S.searchDivider} aria-hidden="true" />
+                <select
+                  style={S.searchSelect}
+                  value={selectedZones.length === 1 ? selectedZones[0] : ""}
+                  onChange={(e) => { setSelectedAreas([]); setSelectedZones(e.target.value ? [e.target.value] : []); }}
+                  aria-label="Filter by zone"
+                >
+                  <option value="">All zones</option>
+                  {ZONES.filter((z) => z.value !== "all").map((z) => (
+                    <option key={z.value} value={z.value}>{z.label}</option>
+                  ))}
+                </select>
+                <div style={S.searchDivider} aria-hidden="true" />
+                <select
+                  style={S.searchSelect}
+                  value={capacityBucket}
+                  onChange={(e) => setCapacityBucket(e.target.value)}
+                  aria-label="Filter by capacity"
+                >
+                  {CAPACITY_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </>
+            )}
+            <button type="submit" style={S.searchBtn}>Search</button>
             {renderSuggestionsDropdown(heroSearchRef)}
           </form>
 
-          {/* Stat panels — horizontal row BELOW search, same width */}
-          <div
-            style={{
-              marginTop: 24,
-              maxWidth: 480,
-              width: "100%",
-              display: "flex",
-              flexDirection: "row",
-              border: "0.5px solid #e8d8c4",
-              background: "#fafafa",
-            }}
-          >
-            {[
-              { number: total, label: "Curated venues" },
-              { number: "4.8★", label: "Avg rating" },
-              { number: "₹0", label: "Commission" },
-            ].map((p, i, arr) => {
-              const last = i === arr.length - 1;
-              return (
-                <div
-                  key={i}
-                  style={{
-                    flex: 1,
-                    padding: isMobile ? "10px 8px" : "14px 16px",
-                    borderRight: !last ? "0.5px solid #e8d8c4" : "none",
-                    textAlign: "center",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontFamily: "Georgia, 'Times New Roman', serif",
-                      fontSize: isMobile ? 20 : 26,
-                      color: "#6b1e2e",
-                      lineHeight: 1,
-                    }}
-                  >
-                    {p.number}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: isMobile ? 7 : 8,
-                      color: "#b09080",
-                      letterSpacing: 2,
-                      textTransform: "uppercase",
-                      marginTop: 4,
-                    }}
-                  >
-                    {p.label}
-                  </div>
-                </div>
-              );
-            })}
+          {/* Stats row */}
+          <div style={S.statsRow}>
+            <span><span style={S.statNum}>{total}</span> verified venues</span>
+            <span style={S.statSep} aria-hidden="true">·</span>
+            <span><span style={S.statNum}>6</span> zones</span>
+            <span style={S.statSep} aria-hidden="true">·</span>
+            <span><span style={S.statNum}>4.8★</span> avg rating</span>
+            <span style={S.statSep} aria-hidden="true">·</span>
+            <span>Replies within the hour</span>
           </div>
         </section>
 
@@ -1777,34 +1681,75 @@ export default function VenuesPage({
             <div style={S.whyGrid}>
               <div style={S.whyCard}>
                 <div style={S.whyIcon}>
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg>
                 </div>
-                <div style={S.whyTitle}>Real photos, not stock</div>
-                <div style={S.whyDesc}>Every photo is from the actual venue — no staged shoots</div>
+                <div style={S.whyTitle}>Only verified venues</div>
+                <div style={S.whyDesc}>Every listing is checked by our team — real photos, real pricing, real availability.</div>
+              </div>
+              <div style={S.whyCard}>
+                <div style={S.whyIcon}>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></svg>
+                </div>
+                <div style={S.whyTitle}>Transparent pricing</div>
+                <div style={S.whyDesc}>See venue cost and per-plate rates upfront. No surprises, no inflated middleman fees.</div>
               </div>
               <div style={S.whyCard}>
                 <div style={S.whyIcon}>
                   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                 </div>
-                <div style={S.whyTitle}>Chat directly, no middleman</div>
-                <div style={S.whyDesc}>Enquire and chat with venue teams right here on Wedsy</div>
-              </div>
-              <div style={S.whyCard}>
-                <div style={S.whyIcon}>
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-                </div>
-                <div style={S.whyTitle}>Free forever for couples</div>
-                <div style={S.whyDesc}>Zero commission, zero booking fees — always</div>
+                <div style={S.whyTitle}>Talk directly</div>
+                <div style={S.whyDesc}>Enquire and chat with the venue team right here on Wedsy. They reply within the hour.</div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ────────── 3 — EXPLORE BY AREA ────────── */}
+        {/* ────────── 3 — FIND YOUR VIBE (horizontal scroll cards) ────────── */}
+        <section style={S.vibesSec}>
+          <div style={S.vibesInner}>
+            <div style={S.vibesEyebrow}>FIND YOUR VIBE</div>
+            <h2 style={S.vibesTitle}>A setting for every kind of celebration.</h2>
+            <div style={S.vibesRow} className="curated-scroll">
+              {vibeCards.map((vb) => (
+                <button
+                  key={vb.key}
+                  type="button"
+                  style={{ ...S.vibeCard, background: vb.fallback }}
+                  onClick={() => { vb.apply(); setTimeout(scrollToListing, 60); }}
+                  aria-label={`Browse ${vb.name} venues`}
+                >
+                  {vb.image ? (
+                    <img src={vb.image} alt="" aria-hidden="true" style={S.vibeCardImg} loading="lazy" />
+                  ) : (
+                    <div
+                      style={{ position: "absolute", inset: 0, background: "radial-gradient(70% 60% at 50% 0%, rgba(184,133,42,0.28), transparent 60%)" }}
+                      aria-hidden="true"
+                    />
+                  )}
+                  <div style={S.vibeCardOverlay} />
+                  <div style={S.vibeCardText}>
+                    <div style={S.vibeCardName}>{vb.name}</div>
+                    <div style={S.vibeCardDesc}>{vb.desc}</div>
+                  </div>
+                </button>
+              ))}
+              <button
+                type="button"
+                style={{ flex: "0 0 110px", height: 360, borderRadius: 16, background: "#fdf4e6", border: "0.5px solid #e8d8c4", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", cursor: "pointer" }}
+                onClick={() => { resetFilters(); setTimeout(scrollToListing, 60); }}
+                aria-label="View all venues"
+              >
+                <span style={{ fontSize: 12, color: C.burgundy, fontWeight: 600, lineHeight: 1.5 }}>View<br />all →</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* ────────── 4 — BROWSE BY AREA ────────── */}
         <section style={S.areasSec}>
           <div style={S.areasInner}>
-            <div style={S.areasEyebrow}>EXPLORE BY AREA</div>
-            <h2 style={S.areasTitle}>Where in Bangalore?</h2>
+            <div style={S.areasEyebrow}>BROWSE BY AREA</div>
+            <h2 style={S.areasTitle}>Wherever your people are gathering.</h2>
             <div style={S.areasGrid}>
               {zoneCards.map((z) => (
                 <button
@@ -2246,18 +2191,18 @@ export default function VenuesPage({
         <section id="all-venues" ref={allVenuesRef} style={S.allVenuesSecFull}>
           <div style={S.allVenuesInnerFull}>
             <div style={S.allVenuesHeader}>
-              <h2 style={S.allVenuesTitleFull}>All venues in Bangalore</h2>
-              <div style={S.allVenuesCount}>
-                Showing <span style={S.allVenuesCountStrong}>{filtered.length}</span> of {total} venues
+              <h2 style={S.allVenuesTitleFull}>All venues</h2>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
+                <div style={S.allVenuesCount}>
+                  <span style={S.allVenuesCountStrong}>{filtered.length}</span> of {total} venues
+                </div>
+                <select style={S.sortSelect} value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort venues">
+                  <option value="recommended">Sort: Recommended</option>
+                  <option value="rating">Rating: Highest</option>
+                  <option value="capacity">Capacity: Largest</option>
+                  <option value="price">Price: Low to high</option>
+                </select>
               </div>
-            </div>
-            <div style={S.sortRow}>
-              <select style={S.sortSelect} value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort venues">
-                <option value="recommended">Sort: Recommended</option>
-                <option value="rating">Rating: Highest</option>
-                <option value="capacity">Capacity: Largest</option>
-                <option value="price">Price: Low to high</option>
-              </select>
             </div>
             {filtered.length > 0 ? (
               <>
@@ -2292,15 +2237,15 @@ export default function VenuesPage({
         {/* ────────── 7 — VENUE OWNER CTA ────────── */}
         <section style={S.ownerCtaSec}>
           <div style={S.ownerCtaEyebrow}>FOR VENUE OWNERS</div>
-          <h2 style={S.ownerCtaTitle}>List your venue on Wedsy</h2>
+          <h2 style={S.ownerCtaTitle}>List your venue on Wedsy.</h2>
           <p style={S.ownerCtaSub}>
-            Join {total} venues already reaching thousands of couples every month
+            Reach India&rsquo;s most discerning couples and run your bookings with the Wedsy partner dashboard.
           </p>
           <div style={S.ownerCtaBtns}>
             <Link href="/venues/join" style={S.ownerCtaBtnPrimary}>
               List your venue <span aria-hidden="true" style={{ marginLeft: 6 }}>→</span>
             </Link>
-            <a href="mailto:venues@wedsy.in" style={S.ownerCtaBtnSecondary}>Contact us</a>
+            <a href="mailto:venues@wedsy.in?subject=Book%20a%20demo" style={S.ownerCtaBtnSecondary}>Book a demo</a>
           </div>
         </section>
       </main>

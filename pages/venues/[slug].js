@@ -2072,6 +2072,21 @@ export default function VenueDetailPage({ venue, isVerified = false, similar = [
                 <div style={S.sideVname}>{venue.name}</div>
                 <div style={S.sideStatus}><span style={S.onlineDot} /> Usually replies in 2 hours</div>
               </div>
+              {/* Prototype enquiry card leads with the starting price — only
+                  rendered when tiered pricing exists (never a fake number). */}
+              {lowestTierPrice > 0 && (
+                <div style={{ padding: "14px 1.25rem 0" }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
+                    <span style={{ fontSize: 12, color: "#b09080" }}>From</span>
+                    <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 28, color: "#b8852a", fontWeight: 500, letterSpacing: -0.5 }}>
+                      ₹{formatINR(lowestTierPrice)}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 11, color: "#b09080", marginTop: 2 }}>
+                    venue cost · all-in packages available
+                  </div>
+                </div>
+              )}
               <div style={S.cbForm} ref={enquiryFormRef} id="enquiry-form">
                 {submitted ? (
                   // ── Success confirmation panel — what happens next + ETA ──
