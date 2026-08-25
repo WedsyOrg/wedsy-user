@@ -232,6 +232,15 @@ const S = {
   roomName: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 16, color: "#2c1810", fontWeight: 400 },
   roomCountBadge: { fontSize: 10, fontWeight: 500, padding: "3px 9px", borderRadius: 100, background: "#6b1e2e", color: "#fdf6ec", letterSpacing: 0.3 },
   roomMeta: { fontSize: 12, color: "#7a5a48", marginBottom: 4 },
+  // ROOMS 4: the room type's own photos. Cover first, the rest as a small
+  // strip beneath it. Deliberately inside the existing card rather than a new
+  // section — this is what a Deluxe looks like, not a second gallery. The
+  // venue-level "Rooms" tab in the photo gallery keeps its own meaning: the
+  // corridor, the pool view, the lobby — the property, not one room type.
+  roomCover: { width: "100%", height: 132, objectFit: "cover", borderRadius: 10, display: "block", marginBottom: 10, background: "#f6ead0" },
+  roomThumbRow: { display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" },
+  roomThumb: { width: 44, height: 34, objectFit: "cover", borderRadius: 6, background: "#f6ead0", border: "0.5px solid #e8d8c4" },
+  roomThumbMore: { width: 44, height: 34, borderRadius: 6, background: "#f6ead0", border: "0.5px solid #e8d8c4", fontSize: 10, color: "#7a5a48", display: "flex", alignItems: "center", justifyContent: "center" },
   roomPrice: { fontFamily: "Georgia, serif", fontSize: 18, color: "#b8852a", fontWeight: 500, marginTop: 6 },
   roomPriceLbl: { fontSize: 10, color: "#b09080", textTransform: "uppercase", letterSpacing: 0.5, marginLeft: 4 },
   totalCapNote: { marginTop: 14, padding: "10px 14px", background: "#fdf4e6", borderRadius: 10, border: "0.5px solid #e8d8c4", fontSize: 12, color: "#7a5a48" },
@@ -876,6 +885,18 @@ export default function VenueDetailPage({ venue, isVerified = false, similar = [
     : null;
 
   // Accommodation derivations
+  //
+  // ── `acc.rooms` IS NOT DEAD, DESPITE NOT BEING IN THE SCHEMA ──────────────
+  // It is absent from models/Venue.js and looks like a leftover. It is not.
+  // scripts/seed-venues-combined.js writes it directly (building the document
+  // rather than going through the model, so strict mode does not strip it), as
+  // a headline room count for venues that have one but no room-type breakdown.
+  //
+  // In the Aug-2026 snapshot it is set on 74 venues and greater than zero on
+  // two — the-ritz-carlton-bangalore (277) and four-seasons-hotel-bangalore
+  // (230) — and on both it is the ONLY source of the number. Removing it makes
+  // the guard below false and blanks the whole accommodation section on two
+  // live hotel listings. Audited in ROOMS 4; leave it.
   const acc = venue.accommodation || {};
   const accRoomTypes = Array.isArray(acc.roomTypes) ? acc.roomTypes : [];
   const accTotalRooms = accRoomTypes.reduce((sum, rt) => sum + (Number(rt.count) || 0), 0)
@@ -1667,11 +1688,73 @@ export default function VenueDetailPage({ venue, isVerified = false, similar = [
                           : `${rt.occupancyPerRoom || rt.maxPeoplePerRoom || 2}`;
                         return (
                           <article key={i} style={S.roomCard}>
+                            {/* ── WHAT THIS ROOM TYPE LOOKS LIKE ─────────────
+                                photos[0] is the COVER: the server flattens the
+                                type's ordered photos cover-first, so the one
+                                the owner chose to represent the type leads
+                                here. A type with no photos renders nothing at
+                                all and the card is exactly as it was.
+
+                                NOT WIRED TO THE LIGHTBOX, deliberately. That
+                                modal reads the venue gallery's own list and its
+                                keyboard handler indexes into it, so accepting
+                                an arbitrary list would mean restructuring the
+                                gallery — out of scope here, and the venue-level
+                                "Rooms" tab keeps its own meaning. Enlarging
+                                these is a follow-up, not a silent widening. */}
+                            {Array.isArray(rt.photos) && rt.photos.length > 0 && (
+                              <>
+                                <img
+                                  src={rt.photos[0]}
+                                  alt={`${rt.name || "Room"} at ${venue.name}`}
+                                  loading="lazy"
+                                  style={S.roomCover}
+                                />
+                                {rt.photos.length > 1 && (
+                                  <div style={S.roomThumbRow}>
+                                    {rt.photos.slice(1, 4).map((src, pi) => (
+                                      <img
+                                        key={pi}
+                                        src={src}
+                                        alt={`${rt.name || "Room"} photo ${pi + 2}`}
+                                        loading="lazy"
+                                        style={S.roomThumb}
+                                      />
+                                    ))}
+                                    {rt.photos.length > 4 && (
+                                      <div style={S.roomThumbMore}>+{rt.photos.length - 4}</div>
+                                    )}
+                                  </div>
+                                )}
+                              </>
+                            )}
                             <div style={S.roomNameRow}>
                               <div style={S.roomName}>{rt.name || `Room type ${i + 1}`}</div>
                               {rt.count > 0 && <span style={S.roomCountBadge}>× {rt.count}</span>}
                             </div>
-                            <div style={S.roomMeta}>Sleeps {sleeps}{rt.isAC ? " · ❄️ AC" : ""}</div>
+                            {/* ── WHAT A COUPLE DECIDES ON ───────────────────
+                                Size, beds and view are ROOMS 4 and all
+                                optional. Each renders only when the owner
+                                stated it — the server omits an unstated field
+                                entirely rather than sending 0 or "" — so a
+                                venue that fills none of them produces exactly
+                                the line this has always shown.
+
+                                Beds and view are the OWNER'S WORDS, printed as
+                                typed: "2 twins, can be joined" and "lake, from
+                                the balcony only" both carry a qualifier that a
+                                dropdown would have deleted. */}
+                            <div style={S.roomMeta}>
+                              Sleeps {sleeps}
+                              {rt.sizeSqFt > 0 ? ` · ${rt.sizeSqFt} sq ft` : ""}
+                              {rt.isAC ? " · ❄️ AC" : ""}
+                            </div>
+                            {rt.bedConfiguration && (
+                              <div style={S.roomMeta}>🛏 {rt.bedConfiguration}</div>
+                            )}
+                            {rt.view && (
+                              <div style={S.roomMeta}>🪟 {rt.view}</div>
+                            )}
                             {rt.description && <div style={{ ...S.roomMeta, fontSize: 11, color: "#b09080", lineHeight: 1.5 }}>{rt.description}</div>}
                             {rt.pricePerNight > 0 && (
                               <div>
