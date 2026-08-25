@@ -1732,7 +1732,29 @@ export default function VenueDetailPage({ venue, isVerified = false, similar = [
                               <div style={S.roomName}>{rt.name || `Room type ${i + 1}`}</div>
                               {rt.count > 0 && <span style={S.roomCountBadge}>× {rt.count}</span>}
                             </div>
-                            <div style={S.roomMeta}>Sleeps {sleeps}{rt.isAC ? " · ❄️ AC" : ""}</div>
+                            {/* ── WHAT A COUPLE DECIDES ON ───────────────────
+                                Size, beds and view are ROOMS 4 and all
+                                optional. Each renders only when the owner
+                                stated it — the server omits an unstated field
+                                entirely rather than sending 0 or "" — so a
+                                venue that fills none of them produces exactly
+                                the line this has always shown.
+
+                                Beds and view are the OWNER'S WORDS, printed as
+                                typed: "2 twins, can be joined" and "lake, from
+                                the balcony only" both carry a qualifier that a
+                                dropdown would have deleted. */}
+                            <div style={S.roomMeta}>
+                              Sleeps {sleeps}
+                              {rt.sizeSqFt > 0 ? ` · ${rt.sizeSqFt} sq ft` : ""}
+                              {rt.isAC ? " · ❄️ AC" : ""}
+                            </div>
+                            {rt.bedConfiguration && (
+                              <div style={S.roomMeta}>🛏 {rt.bedConfiguration}</div>
+                            )}
+                            {rt.view && (
+                              <div style={S.roomMeta}>🪟 {rt.view}</div>
+                            )}
                             {rt.description && <div style={{ ...S.roomMeta, fontSize: 11, color: "#b09080", lineHeight: 1.5 }}>{rt.description}</div>}
                             {rt.pricePerNight > 0 && (
                               <div>
