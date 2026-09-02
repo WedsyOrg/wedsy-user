@@ -97,8 +97,55 @@ export default function Home() {
             be posted on this page, and the effective date will be updated.
           </p>
         </div>
+        <div id="data-deletion">
+          <p className="text-xl font-semibold">8. Data Deletion</p>
+          <p>
+            You can ask us to delete the personal data we hold about you at any
+            time.
+          </p>
+          <p className="font-medium text-lg">How to request deletion</p>
+          <p>
+            Email hello@wedsy.in from the email address associated with your
+            Wedsy account, or from the phone number or Instagram account you
+            contacted us on, with the subject line &quot;Data deletion
+            request&quot;. Tell us which account or conversation the request
+            relates to so we can identify your records.
+          </p>
+          <p>
+            We will acknowledge your request within 7 working days and complete
+            the deletion within 30 days. We will confirm by email once it is
+            done.
+          </p>
+          <p className="font-medium text-lg">What we delete</p>
+          <ul className="list-disc pl-6">
+            <li>Your account and profile details</li>
+            <li>Your enquiry and booking records</li>
+            <li>
+              Messages you have exchanged with us on WhatsApp or Instagram
+            </li>
+            <li>Any files or images you have shared with us</li>
+          </ul>
+          <p className="font-medium text-lg">What we may keep</p>
+          <p>
+            We may retain a limited amount of information where the law requires
+            it — for example invoices and tax records, which Indian law
+            requires us to keep for a set period — or where we need it to
+            resolve a dispute or enforce an agreement. We will tell you if this
+            applies to your request.
+          </p>
+          <p className="font-medium text-lg">
+            Businesses connecting an Instagram account
+          </p>
+          <p>
+            If your business has connected an Instagram professional account to
+            Wedsy OS, disconnecting that account from your dashboard removes the
+            connection and the access token we hold for it. Conversations
+            already received from your clients are retained as business records;
+            to have those removed as well, email us using the process above.
+          </p>
+        </div>
         <div>
-          <p className="text-xl font-semibold">8. Contact Us</p>
+          <p className="text-xl font-semibold">9. Contact Us</p>
           <p>
             If you have questions or concerns about our Privacy Policy, please
             contact us at [
